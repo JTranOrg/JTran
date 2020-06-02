@@ -1,0 +1,40 @@
+{
+    "Name":               "MailGun Batch Email",
+    "Type":               "RestApi",
+    "UrlSink":
+    {
+        "Url":            "{$MailGun-Url}/{$MailGun-Domain}/messages",
+        "Method":         "POST",
+        "ContentType":    "application/x-www-form-urlencoded",
+        "Authorization":  "HttpBasic",
+        "HttpBasic":
+        {
+            "Username":   "api",
+            "Password":   "$MailGun-ApiKey"
+        }
+    },
+    "Transform":
+    {
+        "Headers":
+        {
+            "X-Starbucks-CampaignId":     "#valueof($.CampaignId)",
+            "X-Starbucks-CorrelationId":  "#valueof($.CorrelationId)"
+        },
+        "Form":
+        {
+            "from":                       "$MailGun-FromAddress",
+            "array(to)":                  
+            {
+                "#loop($@Emails)":
+                {
+                    "to":                 "#currentvalueatpath($.Email)"
+                }
+            },
+            "subject":                    "#valueof($.Subject)",
+            "html":                       "#valueof($.HtmlTemplate)",
+            "text":                       "#valueof($.TextTemplate)",
+            "o:tag":                      "#valueof($.CampaignName)",
+            "recipient-variables":        "#valueof($.Recipients)"
+        }
+    }
+}
