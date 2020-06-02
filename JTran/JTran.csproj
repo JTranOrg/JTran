@@ -8,6 +8,9 @@
     <Copyright>© 2020 - Jim Lightfoot, All Rights Reserved</Copyright>
     <Company>JTran</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
