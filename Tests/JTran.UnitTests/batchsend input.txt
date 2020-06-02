@@ -1,0 +1,23 @@
+{
+    Path:            "jim_may4_campaignId/2020-05-04_21-10-52/file1.json",   // Path of segment file
+    CorrelationId:   "12345678",
+    TemplateId:      "abcdef",
+    ActionId:        "xyz123",
+    CampaignId:      "123",
+    SegmentId:       "839393",
+    CampaignName:    "Welcome back",
+    DeliveryTime:    "2020-05-19T16:00:00Z" // Utc time
+    Recipients:
+    [
+        {
+            Email:     "fred@flintstone.com",
+            FirstName: "Fred",  // These fields are determined by the output of the segmentation engine
+            LastName:  "Flintstone"
+        },
+        {
+            Email:     "wilma@flintstone.com",
+            FirstName: "Wilma",
+            LastName:  "Flintstone"
+        }
+    ]
+}
