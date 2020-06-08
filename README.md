@@ -244,7 +244,7 @@ More than one slash can be specified. Each slash refers to one level up the pare
 
 <br>
 
-#### Elements
+### Elements
 
 Elements are akin to programming constructs, e.g foreach and if. <br><br>
 
@@ -255,9 +255,9 @@ The only purpose of #bind is to change the scope:
 ###### Transform
 
     {
-        #bind(Driver)
-        {
-            DriverName:   #(Name)
+        "#bind(Driver)"
+        {"
+            DriverName:   "#(Name)
         }
     }
 
@@ -285,15 +285,15 @@ The result is that any instruction inside the #bind block will operate on the co
 ###### Transform
 
     {
-        #foreach(Cars, Vehicles)
+        "#foreach(Cars, Vehicles)"
         {
-            Make:    #(Make)
-            Model:   #(Model)
-            Driver:  #(//Driver.Name)
+            Make:    "#(Make)",
+            Model:   "#(Model)",
+            Driver:  "#(//Driver.Name)"
         }
     }
 
-###### Source Document
+###### Source
 
     {
         Cars:
@@ -313,7 +313,7 @@ The result is that any instruction inside the #bind block will operate on the co
         }
     }
 
-###### Output Document
+###### Output
 
     {
         Vehicles:
@@ -336,12 +336,12 @@ If no array name is specified then no new array is created and contents are outp
 ###### Transform
 
     {
-        #foreach(Cars)
+        "#foreach(Cars)"
         {
             "#(Make)":
             {
-                Model:   #(Model)
-                Driver:  #(//Driver.Name)
+                Model:   "#(Model)",
+                Driver:  "#(//Driver.Name)"
             }
         }
     }
@@ -366,7 +366,7 @@ If no array name is specified then no new array is created and contents are outp
         }
     }
 
-###### Output Document
+###### Output
 
     {
         Chevy:
@@ -384,20 +384,20 @@ If no array name is specified then no new array is created and contents are outp
 
 #### #if
 
-#if conditionally processes it's contents based on the outout of it's expression.
+#if conditionally processes it's contents based on the evaluation of it's expression.
 
 ###### Transform
 
     {
-        Driver:      #(Driver.Name),
+        Driver:      "#(Driver.Name)",
 
         "#if(Car.Make == 'Chevy')"
         {
-            Car:    #('Chevy ' + Car.Make)
+            Car:    "#('Chevy ' + Car.Make)"
         }
     }
 
-###### Source Document
+###### Source
 
     {
         Driver:
@@ -411,7 +411,7 @@ If no array name is specified then no new array is created and contents are outp
         }
     }
 
-###### Output Document
+###### Output
 
     {
         Driver: "Joe Smith",
@@ -421,7 +421,7 @@ If no array name is specified then no new array is created and contents are outp
 Using the same transform:
 
 
-###### Source Document
+###### Source
 
     {
         Driver:
@@ -437,7 +437,7 @@ Using the same transform:
 
 Would then output this:
 
-###### Output Document
+###### Output
 
     {
         Driver: "Joe Smith"
@@ -447,24 +447,24 @@ Would then output this:
 
 #### #elseif
 
-#elseif conditionally processes it's contents based on the outout of it's expression and only if the previous #if expression evaluated to false.
+#elseif conditionally processes it's contents based on the evaluation of it's expression and only if the previous #if expression evaluated to false.
 
 ###### Transform
 
     {
-        Driver:      #(Driver.Name),
+        Driver:      "#(Driver.Name)",
 
         "#if(Car.Make == 'Chevy')"
         {
-            Car:    #('Chevy ' + Car.Make)
+            Car:    "#('Chevy ' + Car.Make)"
         },
         "#elseif(Car.Make == 'Pontiac')"
         {
-            Car:    #('Pontiac ' + Car.Make)
+            Car:    "#('Pontiac ' + Car.Make)"
         }
     }
 
-###### Source Document
+###### Source
 
     {
         Driver:
@@ -478,7 +478,7 @@ Would then output this:
         }
     }
 
-###### Output Document
+###### Output
 
     {
         Driver: "Joe Smith",
@@ -493,23 +493,23 @@ Would then output this:
 ###### Transform
 
     {
-        Driver:      #(Driver.Name),
+        Driver:      "#(Driver.Name)",
 
         "#if(Car.Make == 'Chevy')"
         {
-            Car:    #('Chevy ' + Car.Make)
+            Car:    "#('Chevy ' + Car.Make)"
         },
         "#elseif(Car.Make == 'Pontiac')"
         {
-            Car:    #('Pontiac ' + Car.Make)
+            Car:    "#('Pontiac ' + Car.Make)"
         },
         "#else
         {
-            Car:    #(Car.Model + Car.Make)
+            Car:    "#(Car.Model + Car.Make)"
         }
     }
 
-###### Source Document
+###### Source
 
     {
         Driver:
@@ -523,10 +523,114 @@ Would then output this:
         }
     }
 
-###### Output Document
+###### Output
 
     {
         Driver: "Joe Smith",
         Car: "Dodge Charger"
+    }
+
+<br>
+
+#### #variable
+
+#variable allows you to specify a placeholder for data, A variable has two parameters. This first is the expressions specifying which data to store and 2nd is the name of the variable.
+
+###### Transform
+
+    {
+        "#variable(Driver, Driver)",
+
+        "#foreach(Cars, Vehicles)"
+        {
+            Make:    "#(Make)",
+            Model:   "#(Model)",
+            Driver:  "#($Driver.Name)"
+        }
+    }
+
+###### Source
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model : "Corvette"
+            },
+            {
+               Make: "Pontiac",
+               Model : "Firebird"
+            }
+        }
+        Driver:
+        {
+           Name: "Joe Smith"
+        }
+    }
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Make: "Chevy",
+               Model : "Corvette",
+               Driver: "Joe Smith"
+            },
+            {
+               Make: "Pontiac",
+               Model : "Firebird",
+               Driver: "Joe Smith"
+            }
+        }
+    }
+
+<br>
+
+#### #copyof
+
+#copyof copies the contents of the specified object.
+
+###### Transform
+
+    {
+        Car:
+        {
+            Make:       "#(Make)",
+            Model:      "#(Model)",
+            Drivetrain: "#copyof(Parts)"
+        }
+    }
+
+###### Source
+
+    {
+        Car:
+        {
+            Make: "Chevy",
+            Model : "Corvette",
+            Parts:
+            {
+                Tires:  "BFR2000-S4"
+                Wheels: "Acme AC87-D49S"
+            }
+        }
+    }
+
+###### Output
+
+    {
+        Car:
+        {
+            Make: "Chevy",
+            Model : "Corvette",
+            Drivetrain:
+            {
+                Tires:  "BFR2000-S4"
+                Wheels: "Acme AC87-D49S"
+            }
+        }
     }
 
