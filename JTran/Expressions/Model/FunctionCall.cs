@@ -71,7 +71,7 @@ namespace JTran.Expressions
                 case "string":          
                 { 
                     var parameters = EvaluateParameters(context).AssertNumParams(1, _functionName);
-                    return parameters[0].ToString();
+                    return new StringValue(parameters[0].ToString());
                 }
 
                 case "not":            

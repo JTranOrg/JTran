@@ -33,22 +33,27 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
         {
-            var leftVal  = left.Evaluate(context).ToString(); 
-            var rightVal = right.Evaluate(context).ToString(); 
+            var leftVal     = left.Evaluate(context);
+            var rightVal    = right.Evaluate(context);
+            var leftValStr  = leftVal.ToString(); 
+            var rightValStr = rightVal.ToString(); 
 
-            if(long.TryParse(leftVal, out long leftLong))
-                if(long.TryParse(rightVal, out long rightLong))
-                    return DoLongMath(leftLong, rightLong);
+            if(!(leftVal is StringValue || rightVal is StringValue))
+            { 
+                if(long.TryParse(leftValStr, out long leftLong))
+                    if(long.TryParse(rightValStr, out long rightLong))
+                        return DoLongMath(leftLong, rightLong);
 
-            if(decimal.TryParse(leftVal, out decimal leftDecimal))
-                if(decimal.TryParse(rightVal, out decimal rightDecimal))
-                    return DoDecimalMath(leftDecimal, rightDecimal);
+                if(decimal.TryParse(leftValStr, out decimal leftDecimal))
+                    if(decimal.TryParse(rightValStr, out decimal rightDecimal))
+                        return DoDecimalMath(leftDecimal, rightDecimal);
 
-            if(bool.TryParse(leftVal, out bool leftBool))
-                if(bool.TryParse(rightVal, out bool rightBool))
-                    return DoBoolMath(leftBool, rightBool);
+                if(bool.TryParse(leftValStr, out bool leftBool))
+                    if(bool.TryParse(rightValStr, out bool rightBool))
+                        return DoBoolMath(leftBool, rightBool);
+            }
 
-            return DoStringMath(leftVal, rightVal);
+            return DoStringMath(leftValStr, rightValStr);
         }
 
         /*****************************************************************************/
