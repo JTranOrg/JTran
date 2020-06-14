@@ -32,6 +32,7 @@ A transform is a JSON file that contains JTran processing instructions. To trans
 JTran is made up of processing instructions. All processing instructions start with a "#". Processing instructions operate on the current object, known as the "scope". The starting scope is the json object passed in to the Transform method. There are two types of processing instructions:<br><br>
 
 - <strong>[Output Expressions](#Output-Expressions)</strong> - Output expressions are simply expressions which are evaluated and written to the output document
+    - <strong>[Function Reference](docs/functions.md)</strong> - Functions are called within expressions.
 - <strong>[Elements](#Elements)</strong> - Elements are akin to programming constructs, e.g foreach and if. 
 
 <br>

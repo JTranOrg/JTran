@@ -579,6 +579,23 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
+    internal class StringValue
+    {
+        private readonly string _val;
+
+        internal StringValue(string val)
+        {
+            _val = val;
+        }
+
+        public override string ToString()
+        {
+            return _val;
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
     internal class NumberValue : IValue
     {
         private decimal _value;
