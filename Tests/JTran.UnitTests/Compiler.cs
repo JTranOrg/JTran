@@ -431,7 +431,19 @@ namespace JTranUnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
    
-            Assert.AreEqual("2012", expression.Evaluate(context));
+            Assert.AreEqual("2012", expression.Evaluate(context).ToString());
+        }
+
+        [TestMethod]
+        public void Compiler_function_string2_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("string(1) + string(2) + string(3)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+   
+            Assert.AreEqual("123", expression.Evaluate(context));
         }
 
         [TestMethod]
