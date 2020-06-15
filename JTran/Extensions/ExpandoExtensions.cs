@@ -40,11 +40,14 @@ namespace JTran.Extensions
 
             foreach(var val in dict)
             {
-                var type = val.Value.GetType().Name;
+                if(val.Value != null)
+                { 
+                    var type = val.Value.GetType().Name;
 
-                if(!val.Key.StartsWith("_jtran_"))
-                {
-                    SetChild(val.Value, obj, null, -1);
+                    if(!val.Key.StartsWith("_jtran_"))
+                    {
+                        SetChild(val.Value, obj, null, -1);
+                    }
                 }
             }
 

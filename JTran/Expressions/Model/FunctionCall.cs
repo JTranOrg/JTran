@@ -17,12 +17,8 @@
  *                                                                          
  ****************************************************************************/
 
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 
 namespace JTran.Expressions
 {
@@ -223,7 +219,7 @@ namespace JTran.Expressions
                 }
 
                 default:
-                    throw new SyntaxErrorException($"'{_functionName}' is an unknown function");
+                    throw new Transformer.SyntaxException($"'{_functionName}' is an unknown function");
             }
         }
 
@@ -259,7 +255,7 @@ namespace JTran.Expressions
         internal static IList<object> AssertNumParams(this IList<object> parameters, int min, string functionName)
         {
             if(parameters.Count < min)
-                throw new SyntaxErrorException($"{functionName} has incorrect number of parameters");
+                throw new Transformer.SyntaxException($"{functionName} has incorrect number of parameters");
 
             return parameters;
         }
