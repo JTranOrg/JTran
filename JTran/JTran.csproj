@@ -11,6 +11,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

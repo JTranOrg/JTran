@@ -17,14 +17,10 @@
  *                                                                          
  ****************************************************************************/
 
-using JTran.Extensions;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
+
+using JTran.Extensions;
 
 namespace JTran.Expressions
 {
@@ -40,11 +36,6 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public Compiler()
         {
-        }
-
-        public class SyntaxErrorException : Exception
-        {
-            public SyntaxErrorException(string msg) : base(msg) { }
         }
 
         /*****************************************************************************/
@@ -150,7 +141,7 @@ namespace JTran.Expressions
                             tertiary.IfTrue = CreateExpression(tokens, out string lastToken2);
 
                             if(lastToken2 != ":")
-                                throw new SyntaxErrorException("Missing ':' in tertiary expression");
+                                throw new Transformer.SyntaxException("Missing ':' in tertiary expression");
 
                             tertiary.IfFalse = CreateExpression(tokens, out string lastToken3);
 
@@ -262,7 +253,7 @@ namespace JTran.Expressions
                 }
 
                 default:
-                    throw new SyntaxErrorException("Unknown token type");
+                    throw new Transformer.SyntaxException("Unknown token type");
             }
         }
 
@@ -286,7 +277,7 @@ namespace JTran.Expressions
                 case "||": return new OrOperator();
 
                 default:
-                    throw new SyntaxErrorException($"'{op}' is an invalid operator");
+                    throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
             }
         }
     }
