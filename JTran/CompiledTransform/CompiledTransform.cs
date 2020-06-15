@@ -27,10 +27,9 @@ using JTran.Extensions;
 using JTran.Expressions;
 using System.Collections;
 using System.Dynamic;
-using System.Data;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("JTranUnitTests")]
+[assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran
 {
@@ -84,7 +83,7 @@ namespace JTran
                 return _variables[name];
 
             if(_parent == null)
-                throw new SyntaxErrorException($"A variable with that name does not exist: {name}");
+                throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
 
             return _parent.GetVariable(name);
         }
@@ -265,7 +264,7 @@ namespace JTran
                     if(_previous is TIf || _previous is TElseIf)
                         return new TElseIf(name, obj);
 
-                    throw new SyntaxErrorException("#elseif must follow an #if or another #elseif");
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
                 }
 
                 if(name.StartsWith("#else"))
@@ -273,7 +272,7 @@ namespace JTran
                     if(_previous is TIf || _previous is TElseIf)
                         return new TElse(name, obj);
 
-                    throw new SyntaxErrorException("#elseif must follow an #if or an #elseif");
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
                 }
 
                 return new TObject(name, obj);
@@ -305,7 +304,14 @@ namespace JTran
             base.Evaluate(child, context);
 
             if(output is JObject joutput)
-                joutput.Add(this.Name.Evaluate(context).ToString(), child);
+            { 
+                var name = this.Name.Evaluate(context)?.ToString();
+
+                if(string.IsNullOrWhiteSpace(name))
+                    throw new Transformer.SyntaxException("Property name evaluates to null or empty string");
+
+                joutput.Add(name, child);
+            }
             else if(output is JArray jarray)
                 jarray.Add(child);
         }

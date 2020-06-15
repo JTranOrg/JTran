@@ -3,11 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
 using Newtonsoft.Json;
-
-using JTran;
 using Newtonsoft.Json.Linq;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class TransformerTests
@@ -154,6 +152,14 @@ namespace JTranUnitTests
             Assert.AreEqual("Charger", json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Email_Fails()
+        {
+            var transformer = new JTran.Transformer(_transformEmail);
+
+             Assert.ThrowsException<Transformer.SyntaxException>( ()=> transformer.Transform(_dataEmail) );
+        }
+
         #region Private 
 
         #region Transforms 
@@ -218,6 +224,24 @@ namespace JTranUnitTests
             }
         }";
 
+        private static readonly string _transformEmail = 
+        @"{
+            'from':                 'noreply@noreply.com',
+            'subject':              '#(Subject)',
+            'body':                 '#(Body)',
+            'Recipients':        
+            {
+                '#foreach(Recipients)':
+                {
+                    '#(Email)':
+                    {
+                        'FirstName': '#(FirstName)',
+                        'LastName':  '#(LastName)'
+                    }
+                }
+            }
+        }";
+     
         #endregion
 
         #region Data
@@ -360,6 +384,26 @@ namespace JTranUnitTests
                     Color:    'Black'
                 }
             ]
+        }";
+
+        private static readonly string _dataEmail = 
+        @"{
+              'Body':       '<html><body>Your library book is overdue</body></html>',
+              'Subject':    'Your library book is overdue',
+              'Recipients': 
+              [
+                {
+                  'FirstName':    'Fred',
+                  'LastName':     'Flintstone',
+                  'EmailAddress': 'fred.flintstone@bedrock.com'
+                },
+                {
+                  'FirstName':    'Barney',
+                  'LastName':     'Rubble',
+                  'EmailAddress': 'barney.rubble@bedrock.com'
+                }
+              ]
+
         }";
 
         #endregion
