@@ -17,10 +17,10 @@ A transform is a JSON file that contains JTran processing instructions. To trans
     {
         public string Transform(string transform, string source)
         {
-            var transformer = new JTran.Transformer(_transform1);
+            var transformer = new JTran.Transformer(transform1);
             var context     = new TransformContext { Arguments = new Dictionary<string, object>() };
 
-            return transformer.Transform(_data1, context);
+            return transformer.Transform(source, context);
         }
     }
 
@@ -33,6 +33,7 @@ JTran is made up of processing instructions. All processing instructions start w
 
 - <strong>[Output Expressions](#Output-Expressions)</strong> - Output expressions are simply expressions which are evaluated and written to the output document
     - <strong>[Function Reference](docs/functions.md)</strong> - Functions are called within expressions.
+    - <strong>[Extension Functions](docs/extensions.md)</strong> - Adding custom Extension Functions.
 - <strong>[Elements](#Elements)</strong> - Elements are akin to programming constructs, e.g foreach and if. 
 
 <br>

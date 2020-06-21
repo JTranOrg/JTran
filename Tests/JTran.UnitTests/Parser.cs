@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using JTran;
 using JTran.Expressions;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class ParserTests

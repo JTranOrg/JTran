@@ -13,7 +13,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_Success()
         {
-            var transformer = new JTran.Transformer(_transform1);
+            var transformer = new JTran.Transformer(_transform1, null);
             var result      = transformer.Transform(_data1, null);
    
             Assert.AreNotEqual(_transform1, _data1);
@@ -22,7 +22,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_ForEach_Success()
         {
-            var transformer = new JTran.Transformer(_transformForEach1);
+            var transformer = new JTran.Transformer(_transformForEach1, null);
             var result      = transformer.Transform(_data2);
    
             Assert.AreNotEqual(_transformForEach1, _data2);
@@ -54,7 +54,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_ForEach2_Success()
         {
-            var transformer = new JTran.Transformer(_transformForEach2);
+            var transformer = new JTran.Transformer(_transformForEach2, null);
             var result      = transformer.Transform(_data3);
    
             Assert.AreNotEqual(_transformForEach1, _data3);
@@ -86,7 +86,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_ForEach3_Success()
         {
-            var transformer = new JTran.Transformer(_transformForEach3);
+            var transformer = new JTran.Transformer(_transformForEach3, null);
             var result      = transformer.Transform(_data4, null);
    
             Assert.AreNotEqual(_transformForEach3, _data4);
@@ -108,7 +108,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_copyof_Success()
         {
-            var transformer = new JTran.Transformer(_transformForEach2);
+            var transformer = new JTran.Transformer(_transformForEach2, null);
             var result      = transformer.Transform(_data3);
    
             Assert.AreNotEqual(_transformForEach1, _data3);
@@ -140,7 +140,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_ForEach_noarray_Success()
         {
-            var transformer = new JTran.Transformer(_transformForEachNoArray);
+            var transformer = new JTran.Transformer(_transformForEachNoArray, null);
             var result      = transformer.Transform(_data5);
    
             Assert.AreNotEqual(_transformForEachNoArray, _data5);
@@ -155,12 +155,59 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Transformer_Transform_Email_Fails()
         {
-            var transformer = new JTran.Transformer(_transformEmail);
+            var transformer = new JTran.Transformer(_transformEmail, null);
 
              Assert.ThrowsException<Transformer.SyntaxException>( ()=> transformer.Transform(_dataEmail) );
         }
 
+        [TestMethod]
+        public void Transformer_Transform_ExtensionFunction_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformExtFunction, new object[] { new ExtFunctions() } );
+            var result      = transformer.Transform(_data5);
+   
+            Assert.AreNotEqual(_transformExtFunction, _data5);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("xCamaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+            Assert.AreEqual("xFirebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
+            Assert.AreEqual("xCharger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
+            Assert.AreEqual("yGreen",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
+            Assert.AreEqual("yBlue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
+            Assert.AreEqual("yBlack",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_ExtensionFunction_ClassParam_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformExtFunction2, new object[] { new ExtFunctions2() } );
+            var result      = transformer.Transform(_data5);
+   
+            Assert.AreNotEqual(_transformExtFunction2, _data5);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Camaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
+            Assert.AreEqual("Charger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
+            Assert.AreEqual("Green",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
+            Assert.AreEqual("Blue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
+            Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
+        }
+
         #region Private 
+
+        private class ExtFunctions
+        {
+            public string addx(string val)  { return "x" + val; }
+            public string addy(string val)  { return "y" + val; }
+        }
+
+        private class ExtFunctions2
+        {
+            public string CarModel(Automobile val)  { return val.Model; }
+        }
 
         #region Transforms 
 
@@ -217,6 +264,44 @@ namespace JTran.UnitTests
                         '#(Make)':
                         {
                             Model: '#(Model)',
+                            Color:  '#(Color)'
+                        }
+                    }
+                }
+            }
+        }";
+
+        private static readonly string _transformExtFunction = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                'Cars':       
+                {
+                    '#foreach(Automobiles)':
+                    {
+                        '#(Make)':
+                        {
+                            Model: '#(addx(Model))',
+                            Color:  '#(addy(Color))'
+                        }
+                    }
+                }
+            }
+        }";
+
+        private static readonly string _transformExtFunction2 = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                'Cars':       
+                {
+                    '#foreach(Automobiles)':
+                    {
+                        '#(Make)':
+                        {
+                            Model: '#(CarModel(@))',
                             Color:  '#(Color)'
                         }
                     }
@@ -418,6 +503,14 @@ namespace JTran.UnitTests
             public string Address     { get; set; }
         }        
         
+        public class Automobile
+        {
+            public string        Make     { get; set; }
+            public string        Model    { get; set; }
+            public int           Year     { get; set; }
+            public string        Color    { get; set; }
+        }
+
         public class CustomerContainer
         {
             public List<Customer> Customers   { get; set; }
