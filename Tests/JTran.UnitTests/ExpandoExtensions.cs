@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using JTran;
 using JTran.Extensions;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class ExpandoExtensionsTests

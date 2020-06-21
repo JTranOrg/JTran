@@ -17,16 +17,13 @@
  *                                                                          
  ****************************************************************************/
 
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Dynamic;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
-[assembly: InternalsVisibleTo("JTranUnitTests")]
+[assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran.Extensions
 {

@@ -14,7 +14,7 @@ using JTran.Extensions;
 using System.Collections;
 using System.Xml.Schema;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class CompilerTests
@@ -357,7 +357,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("floor(3.5)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ));
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.IsNotNull(expression);
 
@@ -373,7 +373,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("ceiling(3.5)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ));
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.IsNotNull(expression);
 
@@ -389,7 +389,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("floor(ceiling(3.5))");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ));
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.IsNotNull(expression);
 
@@ -405,7 +405,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("not(Make == 'Chevy')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ));
+            var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.IsFalse(expression.EvaluateToBool(context));
         }
@@ -417,7 +417,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("normalizespace(Make + ' ' + ' Camaro ')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ));
+            var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("Chevy Camaro", expression.Evaluate(context));
         }
@@ -429,7 +429,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("string(2 + Year)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("2012", expression.Evaluate(context).ToString());
         }
@@ -441,7 +441,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("string(1) + string(2) + string(3)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("123", expression.Evaluate(context));
         }
@@ -453,7 +453,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("stringlength('crop')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual(4, expression.Evaluate(context));
         }
@@ -465,7 +465,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substring('franklin', 0, 5)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("frank", expression.Evaluate(context));
         }
@@ -477,7 +477,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("indexof('franklin', 'ank')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual(2, expression.Evaluate(context));
         }
@@ -489,7 +489,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substringafter('beebop', 'bee')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("bop", expression.Evaluate(context));
         }
@@ -501,7 +501,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substringafter('beebop' + Foo, 'bee')");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Foo = "Foo"} ));
+            var context    = new ExpressionContext(CreateTestData(new {Foo = "Foo"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("bopFoo", expression.Evaluate(context));
         }
@@ -513,7 +513,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substring(normalizespace(substringbefore(substringafter('Franklin Delano Roosevelt', 'Franklin'), 'Roosevelt')), 1, 4)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ));
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("elan", expression.Evaluate(context));
         }
@@ -525,7 +525,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("count(Cars)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ));
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual(2, expression.Evaluate(context));
         }
@@ -537,7 +537,7 @@ namespace JTranUnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sum(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1000M }, new { Model = "Pontiac", SaleAmount = 2000M} }} ));
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1000M }, new { Model = "Pontiac", SaleAmount = 2000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual(3000M, expression.Evaluate(context));
         }

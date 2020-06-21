@@ -10,7 +10,7 @@ using JTran.Expressions;
 
 using Moq;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class ExpressionTests

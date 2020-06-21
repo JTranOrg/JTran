@@ -43,12 +43,14 @@ namespace JTran
         private readonly ExpressionContext                        _parent;
 
         /*****************************************************************************/
-        internal ExpressionContext(object data, TransformerContext transformerContext = null)
+        internal ExpressionContext(object data, TransformerContext transformerContext = null, IDictionary<string, Function> extensionFunctions = null)
         {
             _data            = data;
             _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
+
+            this.ExtensionFunctions = extensionFunctions;
         }
 
         /*****************************************************************************/
@@ -58,10 +60,13 @@ namespace JTran
             _variables       = new Dictionary<string, object>();
             _docRepositories = parentContext?._docRepositories;
             _parent          = parentContext;
+
+            this.ExtensionFunctions = parentContext?.ExtensionFunctions;
         }
 
-        internal object Data      => _data;
-        internal bool   PreviousCondition { get; set; }
+        internal object                        Data               => _data;
+        internal bool                          PreviousCondition  { get; set; }
+        internal IDictionary<string, Function> ExtensionFunctions { get; }
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
@@ -154,12 +159,12 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal string Transform(string data, TransformerContext context)
+        internal string Transform(string data, TransformerContext context, IDictionary<string, Function> extensionFunctions)
         {
             var output  = JObject.Parse("{}");
             var expando = data.JsonToExpando();
 
-            this.Evaluate(output, new ExpressionContext(expando, context));
+            this.Evaluate(output, new ExpressionContext(expando, context, extensionFunctions));
               
             return output.ToString();
         }

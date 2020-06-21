@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using JTran.Extensions;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class ObjectExtensionsTests

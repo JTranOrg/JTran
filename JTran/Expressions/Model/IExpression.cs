@@ -110,14 +110,19 @@ namespace JTran.Expressions
 
         public string Name { get; }
 
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
+            if(this.Name == "@")
+                return context.Data;
+
             return context.GetDataValue(this.Name);
         }
 
+        /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
         {
-            object val = context.GetDataValue(this.Name);
+            object val = this.Evaluate(context);
 
             return Value.EvaluateToBool(val, context);
         }
