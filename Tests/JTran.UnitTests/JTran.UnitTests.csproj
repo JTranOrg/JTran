@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyName>JTranUnitTests</AssemblyName>
+    <AssemblyName>JTran.UnitTests</AssemblyName>
 
-    <RootNamespace>JTranUnitTests</RootNamespace>
+    <RootNamespace>JTran.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

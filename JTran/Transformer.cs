@@ -18,8 +18,9 @@
  ****************************************************************************/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-
+using JTran.Expressions;
 using Newtonsoft.Json.Linq;
 
 namespace JTran
@@ -29,21 +30,23 @@ namespace JTran
     public class Transformer
     {
         private readonly CompiledTransform _transform;
+        private readonly IDictionary<string, Function> _extensionFunctions;
 
         /****************************************************************************/
         /// <summary>
         /// Construct a new Transformer
         /// </summary>
         /// <param name="transform">The JSON that defines the transform</param>
-        public Transformer(string transform)
+        public Transformer(string transform, IEnumerable extensionFunctions)
         {
             _transform = CompiledTransform.Compile(transform);
+            _extensionFunctions = CompileFunctions(extensionFunctions);
         }
 
         /****************************************************************************/
         public string Transform(string data, TransformerContext context = null)
         {
-            return _transform.Transform(data, context);
+            return _transform.Transform(data, context, _extensionFunctions);
         }
 
         /****************************************************************************/
@@ -51,8 +54,37 @@ namespace JTran
         {
             public SyntaxException(string error) : base(error)
             {
-
             }
         }
+
+        #region Private
+
+        /****************************************************************************/
+        internal static IDictionary<string, Function> CompileFunctions(IEnumerable extensionFunctions)
+        {
+            var result = new Dictionary<string, Function>();
+            var containers = new List<object>();
+
+            containers.Add(new BuiltinFunctions());
+
+            if(extensionFunctions != null)
+                foreach(var container in extensionFunctions)
+                    containers.Add(container);
+
+            foreach(var container in containers)
+            {
+                var list = Function.Extract(container);
+
+                foreach(var func in list)
+                {
+                    if(!result.ContainsKey(func.Name))
+                        result.Add(func.Name, func);
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

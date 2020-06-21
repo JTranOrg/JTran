@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using JTran;
 using JTran.Expressions;
 
-namespace JTranUnitTests
+namespace JTran.UnitTests
 {
     [TestClass]
     public class CompiledTransformTests
@@ -17,7 +17,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_simple_Success()
         {
             var transformer = CompiledTransform.Compile(_transform1);
-            var result      = transformer.Transform(_data1, null);
+            var result      = transformer.Transform(_data1, null, null);
 
             Assert.AreNotEqual(_transform1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -36,7 +36,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_propnames_Success()
         {
             var transformer = CompiledTransform.Compile(_transform2);
-            var result      = transformer.Transform(_data2, null);
+            var result      = transformer.Transform(_data2, null, null);
 
             Assert.AreNotEqual(_transform2, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -53,7 +53,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_propnames2_Success()
         {
             var transformer = CompiledTransform.Compile(_transform2a);
-            var result      = transformer.Transform(_data2, null);
+            var result      = transformer.Transform(_data2, null, null);
 
             Assert.AreNotEqual(_transform2a, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -70,7 +70,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_ChildObject_Success()
         {
             var transformer =  CompiledTransform.Compile(_transform3);
-            var result      = transformer.Transform(_data2, null);
+            var result      = transformer.Transform(_data2, null, null);
 
             Assert.AreNotEqual(_transform3, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -87,7 +87,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_Bind_Success()
         {
             var transformer = CompiledTransform.Compile(_transform4);
-            var result      = transformer.Transform(_data3, null);
+            var result      = transformer.Transform(_data3, null, null);
 
             Assert.AreNotEqual(_transform4, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -104,7 +104,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_wArguments_Success()
         {
             var transformer = CompiledTransform.Compile(_transform5);
-            var result      = transformer.Transform(_data3, new TransformerContext { Arguments = new Dictionary<string, object> { { "CarMake", "Aston-Martin" }}});
+            var result      = transformer.Transform(_data3, new TransformerContext { Arguments = new Dictionary<string, object> { { "CarMake", "Aston-Martin" }}}, null);
 
             Assert.AreNotEqual(_transform5, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -121,7 +121,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_ForEach_Success()
         {
             var transformer = CompiledTransform.Compile(_transformForEach1);
-            var result      = transformer.Transform(_dataCarList, null);
+            var result      = transformer.Transform(_dataCarList, null, null);
 
             Assert.AreNotEqual(_transformForEach1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -139,7 +139,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_If_Success()
         {
             var transformer = CompiledTransform.Compile(_transformIf1);
-            var result      = transformer.Transform(_dataCarList, null);
+            var result      = transformer.Transform(_dataCarList, null, null);
 
             Assert.AreNotEqual(_transformIf1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -157,7 +157,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse1_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf1);
-            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformIf1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -172,7 +172,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_Variable_Success()
         {
             var transformer = CompiledTransform.Compile(_transformVariable);
-            var result      = transformer.Transform("{ Region: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformVariable, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -187,7 +187,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_Variable2_Success()
         {
             var transformer = CompiledTransform.Compile(_transformVariable2);
-            var result      = transformer.Transform("{ Region: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformVariable2, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -202,7 +202,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse2_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf1);
-            var result      = transformer.Transform("{ Region: 'OR', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'OR', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformIf1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -217,7 +217,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse3_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf1);
-            var result      = transformer.Transform("{ Region: 'CA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'CA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformIf1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -232,7 +232,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse4_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf1);
-            var result      = transformer.Transform("{ Region: 'ID', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null);
+            var result      = transformer.Transform("{ Region: 'ID', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
 
             Assert.AreNotEqual(_transformIf1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -247,7 +247,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse1_2Levels_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf2);
-            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA', Subregion: 'Seattle', CurrentSubregion: 'Seattle',  }", null);
+            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA', Subregion: 'Seattle', CurrentSubregion: 'Seattle',  }", null, null);
 
             Assert.AreNotEqual(_transformElseIf2, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -262,7 +262,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_IfElsifElse2_2Levels_Success()
         {
             var transformer = CompiledTransform.Compile(_transformElseIf2);
-            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA', Subregion: 'Seattle', CurrentSubregion: 'Bellevue'  }", null);
+            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA', Subregion: 'Seattle', CurrentSubregion: 'Bellevue'  }", null, null);
 
             Assert.AreNotEqual(_transformElseIf2, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -277,7 +277,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_CopyOf_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf1);
-            var result      = transformer.Transform(_dataCopyOf, null);
+            var result      = transformer.Transform(_dataCopyOf, null, null);
 
             Assert.AreNotEqual(_transformCopyOf1, result);
 
@@ -295,7 +295,7 @@ namespace JTranUnitTests
         public void CompiledTransform_Transform_function_position_Success()
         {
             var transformer = CompiledTransform.Compile(_transformForEach2);
-            var result      = transformer.Transform(_dataCarList, null);
+            var result      = transformer.Transform(_dataCarList, null, Transformer.CompileFunctions(null));
 
             Assert.AreNotEqual(_transformForEach1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -325,7 +325,7 @@ namespace JTranUnitTests
 
             context.DocumentRepositories.Add("Locations", repo);
 
-            var result      = transformer.Transform("{ FirstName: 'Fred', LastName: 'Flintstone' }", context);
+            var result      = transformer.Transform("{ FirstName: 'Fred', LastName: 'Flintstone' }", context, Transformer.CompileFunctions(null));
 
             Assert.AreNotEqual(_transformDocument1, result);
             Assert.IsNotNull(JObject.Parse(result));

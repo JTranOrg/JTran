@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-[assembly: InternalsVisibleTo("JTranUnitTests")]
+[assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran.Extensions
 {
