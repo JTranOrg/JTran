@@ -46,7 +46,7 @@ namespace JTran.Extensions
 
                     if(!val.Key.StartsWith("_jtran_"))
                     {
-                        SetChild(val.Value, obj, null, -1);
+                        SetChild(val.Value, obj, null, -1, val.Key);
                     }
                 }
             }
@@ -116,7 +116,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        private static void SetChild(object child, object parent, object gparent, int index)
+        private static void SetChild(object child, object parent, object gparent, int index, string name)
         {
             if(child is ExpandoObject expando)
             {
@@ -130,6 +130,9 @@ namespace JTran.Extensions
                 if(index != -1)
                     dyn._jtran_position = index;
 
+                if(name != null)
+                    dyn._jtran_name = name;
+
                 expando.SetParent();
             }
             else if(child is IList list)
@@ -137,7 +140,7 @@ namespace JTran.Extensions
                 var childIndex = 0;
 
                 foreach(var gchild in list)
-                    SetChild(gchild, child, parent, childIndex++);
+                    SetChild(gchild, child, parent, childIndex++, (childIndex - 1).ToString());
             }
 
             return;

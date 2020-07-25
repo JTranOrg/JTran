@@ -66,6 +66,8 @@ namespace JTran
             var containers = new List<object>();
 
             containers.Add(new BuiltinFunctions());
+            containers.Add(new DateTimeFunctions());
+            containers.Add(new AggregateFunctions());
 
             if(extensionFunctions != null)
                 foreach(var container in extensionFunctions)

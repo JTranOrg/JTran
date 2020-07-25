@@ -6,6 +6,15 @@
 ## Function Reference
    Functions are used in expressions to return a value or convert values in some way. All parameters to functions can be expressions.
 
+   <ul>
+       <li>[String Functions](#String-Functions)</li>
+       <li>[Aggregate/Array Functions](#Aggregate-Functions)</li>
+       <li>[Math Functions](#Math-Functions)</li>
+       <li>[Date/Time Functions](#Elements)</li>
+       <li>[General Purpose Functions](#General-Purpose-Functions)</li>
+       <li>[Document Function](#Document-Function)</li>
+   </ul>
+
 #### String Functions
 
 
@@ -140,6 +149,82 @@ Result is 5<br><br>
 #### Aggregate Functions
 
 These functions operate on a list of values
+
+##### avg(expr)
+
+The average of all the values
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(avg(Employees.Salary))
+
+Result is 950<br><br>
+
+##### max(expr)
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(max(Employees))
+
+Result is 1000<br><br>
+
+
+##### min(expr)
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(min(Employees))
+
+Result is 900<br><br>
+
 
 ##### count(expr)
 

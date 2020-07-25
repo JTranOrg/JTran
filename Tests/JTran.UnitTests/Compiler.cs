@@ -17,6 +17,7 @@ using System.Xml.Schema;
 namespace JTran.UnitTests
 {
     [TestClass]
+    [TestCategory("Expressions")]
     public class CompilerTests
     {
         [TestMethod]
@@ -279,7 +280,7 @@ namespace JTran.UnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[$WhichCar]");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), new TransformerContext { Arguments = new Dictionary<string, object> { {"WhichCar", 2}}});
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), "", new TransformerContext { Arguments = new Dictionary<string, object> { {"WhichCar", 2}}});
    
             Assert.IsNotNull(expression);
 
@@ -435,6 +436,30 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_lowercase_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("lowercase('ABcDeF')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("abcdef", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_uppercase_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("uppercase('ABcDeF')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("ABCDEF", expression.Evaluate(context));
+        }
+
+        [TestMethod]
         public void Compiler_function_string2_Success()
         {
             var parser     = new Parser();
@@ -518,6 +543,8 @@ namespace JTran.UnitTests
             Assert.AreEqual("elan", expression.Evaluate(context));
         }
 
+        #region Aggregate/Array Functions
+
         [TestMethod]
         public void Compiler_function_count_Success()
         {
@@ -541,7 +568,57 @@ namespace JTran.UnitTests
    
             Assert.AreEqual(3000M, expression.Evaluate(context));
         }
-         
+
+        [TestMethod]
+        public void Compiler_function_avg_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("avg(Cars.SaleAmount)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(2400M, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_avg2_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("avg(SaleAmount)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Model = "Chevy", SaleAmount = 1200M } ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(1200M, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_max_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("max(Cars.SaleAmount)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(4000M, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_min_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("min(Cars.SaleAmount)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(1200M, expression.Evaluate(context));
+        }
+
+        #endregion
+
         #endregion
 
         private static List<Automobile> _cars = new List<Automobile>

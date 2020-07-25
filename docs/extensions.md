@@ -24,7 +24,7 @@ To provide your extension functions as an instantiated object where the function
      }
 
 
-If your extension functions are in a static class and/or the funtions themselves are static you can pass the type of class:
+If your extension functions are in a static class and/or the functions themselves are static you can pass the type of class:
 
     public class JTranSample
     {
