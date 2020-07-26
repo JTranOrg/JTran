@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 using System;
+using JTran.Extensions;
 
 namespace JTran.Expressions
 {
@@ -133,6 +134,18 @@ namespace JTran.Expressions
         public int Month(object data)
         {
             return Component(data, (dt)=> dt.Month );
+        }
+
+        /*****************************************************************************/
+        public int DayOfWeek(object data)
+        {
+            return Component(data, (dt)=> (int)dt.DayOfWeek );
+        }
+
+        /*****************************************************************************/
+        public int DayOfWeekOccurrence(object data)
+        {
+            return Component(data, (dt)=> dt.DayOfWeekOccurrence() );
         }
 
         /*****************************************************************************/

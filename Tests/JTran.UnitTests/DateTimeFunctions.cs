@@ -167,6 +167,34 @@ namespace JTran.UnitTests
             Assert.AreEqual(11,   Compile($"second('2000-07-01T10:00:11')").Evaluate(context));
         }
 
+        [TestMethod]
+        public void DateTimeFunctions_dayofweekoccurrence_Success()
+        {
+            var context = CreateContext(new {Year = 2010} );
+   
+            Assert.AreEqual(1, Compile("dayofweekoccurrence('2020-07-07T10:00:00')").Evaluate(context));
+            Assert.AreEqual(2, Compile("dayofweekoccurrence('2020-07-14T10:00:00')").Evaluate(context));
+            Assert.AreEqual(3, Compile("dayofweekoccurrence('2020-07-21T10:00:00')").Evaluate(context));
+            Assert.AreEqual(4, Compile("dayofweekoccurrence('2020-07-28T10:00:00')").Evaluate(context));
+                                        
+            Assert.AreEqual(1, Compile("dayofweekoccurrence('2020-07-01T10:00:00')").Evaluate(context));
+            Assert.AreEqual(2, Compile("dayofweekoccurrence('2020-07-08T10:00:00')").Evaluate(context));
+            Assert.AreEqual(3, Compile("dayofweekoccurrence('2020-07-15T10:00:00')").Evaluate(context));
+            Assert.AreEqual(4, Compile("dayofweekoccurrence('2020-07-22T10:00:00')").Evaluate(context));
+            Assert.AreEqual(5, Compile("dayofweekoccurrence('2020-07-29T10:00:00')").Evaluate(context));
+                                        
+            Assert.AreEqual(1, Compile("dayofweekoccurrence('2020-03-01T10:00:00')").Evaluate(context));
+            Assert.AreEqual(2, Compile("dayofweekoccurrence('2020-03-08T10:00:00')").Evaluate(context));
+            Assert.AreEqual(3, Compile("dayofweekoccurrence('2020-03-15T10:00:00')").Evaluate(context));
+            Assert.AreEqual(4, Compile("dayofweekoccurrence('2020-03-22T10:00:00')").Evaluate(context));
+            Assert.AreEqual(5, Compile("dayofweekoccurrence('2020-03-29T10:00:00')").Evaluate(context));
+                                        
+            Assert.AreEqual(1, Compile("dayofweekoccurrence('2020-03-02T10:00:00')").Evaluate(context));
+            Assert.AreEqual(2, Compile("dayofweekoccurrence('2020-03-09T10:00:00')").Evaluate(context));
+            Assert.AreEqual(3, Compile("dayofweekoccurrence('2020-03-16T10:00:00')").Evaluate(context));
+            Assert.AreEqual(4, Compile("dayofweekoccurrence('2020-03-23T10:00:00')").Evaluate(context));
+        }
+
         private IExpression Compile(string expr)
         {
             var parser   = new Parser();
