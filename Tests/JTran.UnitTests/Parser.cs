@@ -11,6 +11,7 @@ using JTran.Expressions;
 namespace JTran.UnitTests
 {
     [TestClass]
+    [TestCategory("Expressions")]
     public class ParserTests
     {
         [TestMethod]

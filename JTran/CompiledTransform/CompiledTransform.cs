@@ -43,12 +43,13 @@ namespace JTran
         private readonly ExpressionContext                        _parent;
 
         /*****************************************************************************/
-        internal ExpressionContext(object data, TransformerContext transformerContext = null, IDictionary<string, Function> extensionFunctions = null)
+        internal ExpressionContext(object data, string name = "", TransformerContext transformerContext = null, IDictionary<string, Function> extensionFunctions = null)
         {
             _data            = data;
             _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
+            this.Name        = name;
 
             this.ExtensionFunctions = extensionFunctions;
         }
@@ -60,11 +61,13 @@ namespace JTran
             _variables       = new Dictionary<string, object>();
             _docRepositories = parentContext?._docRepositories;
             _parent          = parentContext;
+            this.Name        = parentContext?.Name ?? "";
 
             this.ExtensionFunctions = parentContext?.ExtensionFunctions;
         }
 
         internal object                        Data               => _data;
+        internal string                        Name               { get; }
         internal bool                          PreviousCondition  { get; set; }
         internal IDictionary<string, Function> ExtensionFunctions { get; }
 
@@ -164,7 +167,7 @@ namespace JTran
             var output  = JObject.Parse("{}");
             var expando = data.JsonToExpando();
 
-            this.Evaluate(output, new ExpressionContext(expando, context, extensionFunctions));
+            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions));
               
             return output.ToString();
         }

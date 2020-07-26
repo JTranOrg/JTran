@@ -196,6 +196,24 @@ namespace JTran.UnitTests
             Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
         }
 
+        #region name() function
+
+        [TestMethod]
+        public void CompiledTransform_Transform_Bind__name_Success()
+        {
+            var transformer = new JTran.Transformer(_transform6, new object[] { new ExtFunctions2() } );
+            var result      = transformer.Transform(_data6);
+
+            Assert.AreNotEqual(_transform6, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var driver = JsonConvert.DeserializeObject<Driver>(result);
+
+            Assert.AreEqual("Driver",      driver.FieldName);
+            Assert.AreEqual("Driver",      driver.Car.FieldName);
+        }
+
+        #endregion
         #region Private 
 
         private class ExtFunctions
@@ -325,6 +343,27 @@ namespace JTran.UnitTests
                     }
                 }
             }
+        }";
+
+        private static readonly string _transform6 =
+        @"{
+            '#bind(Driver)':
+            {
+               FieldName:             '#(name())',
+
+                Car:
+                {
+                    FieldName:        '#(name())',
+                    '#(MakeField)':   '#(Car.Make)',
+                    '#(ModelField)':  '#(Car.Model)',
+                    Year:             '#(Car.Year)',
+                    Color:            '#(Car.Color)',
+                    Engine:
+                    {
+                        Displacement:   375
+                    }
+                }
+             }
         }";
      
         #endregion
@@ -491,6 +530,24 @@ namespace JTran.UnitTests
 
         }";
 
+        private static readonly string _data6 =
+        @"{
+            Driver:
+            {
+                FirstName: 'John',
+                LastName:  'Smith',
+                Car:   
+                {
+                   Make:   'Chevy',
+                   Model:  'Corvette',
+                   Year:   1964,
+                   Color:  'Blue'
+                },
+                MakeField: 'Brand',
+                ModelField: 'Model'
+            }
+        }";
+
         #endregion
 
         #region Models
@@ -514,7 +571,24 @@ namespace JTran.UnitTests
         public class CustomerContainer
         {
             public List<Customer> Customers   { get; set; }
-        }        
+        }     
+        
+        public class Driver
+        {
+            public string       FieldName   { get; set; }
+            public string       FirstName   { get; set; }
+            public string       LastName    { get; set; }
+            public Automobile2  Car         { get; set; }
+        }
+        
+        public class Automobile2
+        {
+            public string        FieldName { get; set; }
+            public string        Brand     { get; set; }
+            public string        Model     { get; set; }
+            public int           Year      { get; set; }
+            public string        Color     { get; set; }
+        }
         
         #endregion
 

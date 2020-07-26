@@ -6,12 +6,12 @@
     <Description>A JSON to JSON transformer with similiar functionality to XSLT</Description>
     <Authors>Jim Lightfoot</Authors>
     <Copyright>© 2020 - Jim Lightfoot, All Rights Reserved</Copyright>
-    <Company>JTran</Company>
+    <Company>JTranOrg</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
