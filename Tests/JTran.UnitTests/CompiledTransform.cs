@@ -754,6 +754,7 @@ namespace JTran.UnitTests
 
         public class Driver
         {
+            public string       FieldName   { get; set; }
             public string       FirstName   { get; set; }
             public string       LastName    { get; set; }
             public Automobile2  Car         { get; set; }
@@ -786,13 +787,13 @@ namespace JTran.UnitTests
 
         public class Automobile2
         {
-            public string        Brand    { get; set; }
-            public string        Model    { get; set; }
-            public int           Year     { get; set; }
-            public string        Color    { get; set; }
-            public Engine        Engine   { get; set; }
-            public int?          Index    { get; set; }
-         //   public List<Service> Services { get; set; }
+            public string        FieldName { get; set; }
+            public string        Brand     { get; set; }
+            public string        Model     { get; set; }
+            public int           Year      { get; set; }
+            public string        Color     { get; set; }
+            public Engine        Engine    { get; set; }
+            public int?          Index     { get; set; }
         }
 
         public class Engine

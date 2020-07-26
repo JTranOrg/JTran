@@ -6,6 +6,15 @@
 ## Function Reference
    Functions are used in expressions to return a value or convert values in some way. All parameters to functions can be expressions.
 
+- [String Functions](#String-Functions)
+- [Aggregate/Array Functions](#Aggregate-Functions)
+- [Math Functions](#Math-Functions)
+- [Date/Time Functions](#Elements)
+- [General Purpose Functions](#General-Purpose-Functions)
+- [Document Function](#Document-Function)
+
+<br>
+
 #### String Functions
 
 
@@ -141,6 +150,82 @@ Result is 5<br><br>
 
 These functions operate on a list of values
 
+##### avg(expr)
+
+The average of all the values
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(avg(Employees.Salary))
+
+Result is 950<br><br>
+
+##### max(expr)
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(max(Employees))
+
+Result is 1000<br><br>
+
+
+##### min(expr)
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(min(Employees))
+
+Result is 900<br><br>
+
+
 ##### count(expr)
 
 Given this data:
@@ -175,6 +260,194 @@ Using the data from the previous example:
     #(sum(Employees.Salary))
 
 Result is 1900<br><br>
+
+
+#### Date/Time Functions
+
+
+##### currentdatetime()
+
+Returns the current date and time
+
+    "#(currentdatetime())"
+
+Result is "2020-06-10T11:30:00"<br>
+
+
+##### currentdate()
+
+Returns the current date
+
+    "#(currentdate())"
+
+Result is "2020-06-10"<br><br>
+
+
+##### currentdatetimeutc()
+
+Returns the current UTC date and time 
+
+    "#(currentdatetimeutc())"
+
+Result is "2020-06-10T19:30:00"<br><br>
+
+
+##### currentdateutc()
+
+Returns the current UTC date 
+
+    "#(currentdateutc())"
+
+Result is "2020-06-10"<br><br>
+
+
+##### date(expr)
+
+Returns the date portion of the given expression 
+
+    "#(date('2020-06-10T19:30:00'))"
+
+Result is "2020-06-10"<br><br>
+
+##### addyears(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(addyears('2020-06-10T11:30:00', 2))"
+
+Result is "2022-06-10T11:30:00"<br><br>
+
+##### addmonths(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(addmonths('2020-06-10T11:30:00', 3))"
+
+Result is "2020-09-10T11:30:00"<br><br>
+
+##### adddays(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(adddays('2020-06-10T11:30:00', 5))"
+
+Result is "2020-06-15T11:30:00"<br><br>
+
+
+##### addhours(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(addhours('2020-06-10T11:30:00', 7))"
+
+Result is "2020-06-15T18:30:00"<br><br>
+
+
+##### addminutes(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(addminutes('2020-06-10T11:30:00', 22))"
+
+Result is "2020-06-10T11:52:00"<br><br>
+
+
+##### addseconds(expr, amount)
+
+Returns the date portion of the given expression 
+
+    "#(addseconds('2020-06-10T11:30:00', 45))"
+
+Result is "2020-06-10T11:30:45"<br><br>
+
+
+##### formatdatetime(expr, format)
+
+Formats the given datetime using the format string. The format string uses the [standard formatting](https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) and the [custom formatting](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) defined in the .Net Framework
+
+    "#(formatdatetime('2020-06-10T11:30:00', 'MMM d, yyy'))"
+
+Result is "June 10, 2020"<br><br>
+
+
+##### daydex(expr)
+
+Returns the number of days since Jan 1, 1900
+
+    "#(daydex('2000-07-01T10:00:00'))"
+
+Result is 36706<br><br>
+
+
+##### year(expr)
+
+Returns the year component of the given date/time
+
+    "#(year('2020-06-10T11:30:00'))"
+
+Result is 2020<br><br>
+
+
+##### month(expr)
+
+Returns the month component of the given date/time
+
+    "#(month('2020-06-10T11:30:00'))"
+
+Result is 6<br><br>
+
+
+##### day(expr)
+
+Returns the day component of the given date/time
+
+    "#(day('2020-06-10T11:30:00'))"
+
+Result is 10<br><br>
+
+
+##### dayofweek(expr)
+
+Returns the day of week component of the given date/time where Sunday is 0, Monday is 1, etc
+
+    "#(dayofweek('2020-06-10T11:30:00'))"
+
+Result is 3<br><br>
+
+##### dayofweekoccurrence(expr)
+
+Returns the occurrence of day of week component of the given date/time where the first occurrence is 1
+
+    "#(dayofweekoccurrence('2020-06-10T11:30:00'))" 
+
+Result is 2 (June, 1, 2020 is 2nd Wednesday of the month)<br><br>
+
+
+##### hour(expr)
+
+Returns the hour component of the given date/time
+
+    "#(hour('2020-06-10T11:30:00'))"
+
+Result is 11<br><br>
+
+
+##### minute(expr)
+
+Returns the minute component of the given date/time
+
+    "#(minute('2020-06-10T11:30:00'))"
+
+Result is 30<br><br>
+
+
+##### second(expr)
+
+Returns the second component of the given date/time
+
+    "#(second('2020-06-10T11:30:45'))"
+
+Result is 45<br><br>
 
 
 #### General Purpose Functions

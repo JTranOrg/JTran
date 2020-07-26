@@ -84,6 +84,24 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public string lowercase(object val)
+        {
+            if(val == null)
+                return null;
+
+            return val?.ToString()?.ToLower();
+        }
+
+        /*****************************************************************************/
+        public string uppercase(object val)
+        {
+            if(val == null)
+                return null;
+
+            return val?.ToString()?.ToUpper();
+        }
+
+        /*****************************************************************************/
         public string substring(string val, int start, int? length = null)
         {
             if(length.HasValue)
@@ -167,45 +185,6 @@ namespace JTran.Expressions
 
         #endregion
 
-        #region Aggregate/Array Functions
-
-        /*****************************************************************************/
-        public int count(object val)
-        {
-            if(val is null)
-                return 0;
-
-            if(val is IList<object> list)
-                return list.Count;
-
-            return 1;
-        }
-
-        /*****************************************************************************/
-        public decimal sum(object val)
-        {
-            if(val is null)
-                return 0M;
-
-            if(val is IList<object> list)
-            { 
-                decimal sum = 0M;
-
-                foreach(var item in list)
-                    if(decimal.TryParse(item.ToString(), out decimal dval))
-                        sum += dval;
-
-                return sum;
-            }
-
-            if(decimal.TryParse(val.ToString(), out decimal dval2))
-                return dval2;
-
-            return 0M;
-        }
-
-        #endregion
-
         #region General Functions
 
         /*****************************************************************************/
@@ -239,8 +218,23 @@ namespace JTran.Expressions
             return context.GetDocument(repoName, docName);
         }
 
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public string name(ExpressionContext context)
+        {
+            try
+            { 
+                dynamic dyn      = context.Data;
+                string  name = dyn._jtran_name;
+
+                return name;
+            }
+            catch
+            {
+                return "";
+            }
+        }
 
         #endregion
-
     }
 }

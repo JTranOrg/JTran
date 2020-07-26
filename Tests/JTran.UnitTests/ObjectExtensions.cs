@@ -47,7 +47,7 @@ namespace JTran.UnitTests
         {
             var obj = _data1.JsonToExpando();
 
-            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator", new ExpressionContext(null, new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
+            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
         }
 
         [TestMethod]
@@ -55,7 +55,7 @@ namespace JTran.UnitTests
         {
             var obj = _data1.JsonToExpando();
 
-            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
+            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
         }
 
         #region Data
