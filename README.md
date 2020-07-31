@@ -114,7 +114,7 @@ If the expression inside the brackets does not evaluate to an integer then it is
         ]
     }
 
-Then the expression above would return only the first object in the array.
+Then the expression above would return the first two objects in the array.
 
 You can also combine both types of array indexers:
 
@@ -257,9 +257,9 @@ The only purpose of #bind is to change the scope:
 ###### Transform
 
     {
-        "#bind(Driver)"
-        {"
-            DriverName:   "#(Name)
+        "#bind(Driver)":
+        {
+            DriverName:   "#(Name)"
         }
     }
 
@@ -269,8 +269,8 @@ The only purpose of #bind is to change the scope:
         Car:
         {
            Make: "Chevy",
-           Model : "Corvette"
-        }
+           Model: "Corvette"
+        },
         Driver:
         {
            Name: "Joe Smith"
@@ -287,7 +287,7 @@ The result is that any instruction inside the #bind block will operate on the co
 ###### Transform
 
     {
-        "#foreach(Cars, Vehicles)"
+        "#foreach(Cars, Vehicles)":
         {
             Make:    "#(Make)",
             Model:   "#(Model)",
@@ -301,14 +301,14 @@ The result is that any instruction inside the #bind block will operate on the co
         Cars:
         [
             {
-               Make: "Chevy",
-               Model : "Corvette"
+               Make:  Chevy",
+               Model: "Corvette"
             },
             {
-               Make: "Pontiac",
-               Model : "Firebird"
+               Make:  "Pontiac",
+               Model: "Firebird"
             }
-        }
+        },
         Driver:
         {
            Name: "Joe Smith"
@@ -322,12 +322,12 @@ The result is that any instruction inside the #bind block will operate on the co
         [
             {
                Make: "Chevy",
-               Model : "Corvette",
+               Model: "Corvette",
                Driver: "Joe Smith"
             },
             {
                Make: "Pontiac",
-               Model : "Firebird",
+               Model: "Firebird",
                Driver: "Joe Smith"
             }
         }
@@ -338,7 +338,7 @@ If no array name is specified then no new array is created and contents are outp
 ###### Transform
 
     {
-        "#foreach(Cars)"
+        "#foreach(Cars)":
         {
             "#(Make)":
             {
@@ -354,14 +354,14 @@ If no array name is specified then no new array is created and contents are outp
         Cars:
         [
             {
-               Make: "Chevy",
-               Model : "Corvette"
+               Make:  "Chevy",
+               Model: "Corvette"
             },
             {
-               Make: "Pontiac",
-               Model : "Firebird"
+               Make:  "Pontiac",
+               Model: "Firebird"
             }
-        }
+        ],
         Driver:
         {
            Name: "Joe Smith"
@@ -373,12 +373,12 @@ If no array name is specified then no new array is created and contents are outp
     {
         Chevy:
         {
-            Model : "Corvette",
+            Model: "Corvette",
             Driver: "Joe Smith"
         },
         Pontiac:
         {
-            Model : "Firebird",
+            Model: "Firebird",
             Driver: "Joe Smith"
         }
     }
@@ -393,7 +393,7 @@ If no array name is specified then no new array is created and contents are outp
     {
         Driver:      "#(Driver.Name)",
 
-        "#if(Car.Make == 'Chevy')"
+        "#if(Car.Make == 'Chevy')":
         {
             Car:    "#('Chevy ' + Car.Make)"
         }
@@ -408,8 +408,8 @@ If no array name is specified then no new array is created and contents are outp
         },
         Car:
         {
-            Make: "Chevy",
-            Model : "Corvette"
+            Make:  "Chevy",
+            Model: "Corvette"
         }
     }
 
@@ -432,8 +432,8 @@ Using the same transform:
         },
         Car:
         {
-            Make: "Pontiac",
-            Model : "Firebird"
+            Make:  "Pontiac",
+            Model: "Firebird"
         }
     }
 
@@ -456,11 +456,11 @@ Would then output this:
     {
         Driver:      "#(Driver.Name)",
 
-        "#if(Car.Make == 'Chevy')"
+        "#if(Car.Make == 'Chevy')":
         {
             Car:    "#('Chevy ' + Car.Make)"
         },
-        "#elseif(Car.Make == 'Pontiac')"
+        "#elseif(Car.Make == 'Pontiac')":
         {
             Car:    "#('Pontiac ' + Car.Make)"
         }
@@ -476,7 +476,7 @@ Would then output this:
         Car:
         {
             Car: "Pontiac",
-            Model : "Firebird"
+            Model: "Firebird"
         }
     }
 
@@ -497,15 +497,15 @@ Would then output this:
     {
         Driver:      "#(Driver.Name)",
 
-        "#if(Car.Make == 'Chevy')"
+        "#if(Car.Make == 'Chevy')"v
         {
             Car:    "#('Chevy ' + Car.Make)"
         },
-        "#elseif(Car.Make == 'Pontiac')"
+        "#elseif(Car.Make == 'Pontiac')":
         {
             Car:    "#('Pontiac ' + Car.Make)"
         },
-        "#else
+        "#else":
         {
             Car:    "#(Car.Model + Car.Make)"
         }
@@ -521,7 +521,7 @@ Would then output this:
         Car:
         {
             Car: "Dodge",
-            Model : "Charger"
+            Model: "Charger"
         }
     }
 
@@ -543,7 +543,7 @@ Would then output this:
     {
         "#variable(Driver, Driver)",
 
-        "#foreach(Cars, Vehicles)"
+        "#foreach(Cars, Vehicles)":
         {
             Make:    "#(Make)",
             Model:   "#(Model)",
@@ -558,13 +558,13 @@ Would then output this:
         [
             {
                Make: "Chevy",
-               Model : "Corvette"
+               Model: "Corvette"
             },
             {
                Make: "Pontiac",
-               Model : "Firebird"
+               Model: "Firebird"
             }
-        }
+        ],
         Driver:
         {
            Name: "Joe Smith"
@@ -578,12 +578,12 @@ Would then output this:
         [
             {
                Make: "Chevy",
-               Model : "Corvette",
+               Model: "Corvette",
                Driver: "Joe Smith"
             },
             {
                Make: "Pontiac",
-               Model : "Firebird",
+               Model: "Firebird",
                Driver: "Joe Smith"
             }
         }
@@ -612,10 +612,10 @@ Would then output this:
         Car:
         {
             Make: "Chevy",
-            Model : "Corvette",
+            Model: "Corvette",
             Parts:
             {
-                Tires:  "BFR2000-S4"
+                Tires:  "BFR2000-S4",
                 Wheels: "Acme AC87-D49S"
             }
         }
@@ -627,7 +627,7 @@ Would then output this:
         Car:
         {
             Make: "Chevy",
-            Model : "Corvette",
+            Model: "Corvette",
             Drivetrain:
             {
                 Tires:  "BFR2000-S4"

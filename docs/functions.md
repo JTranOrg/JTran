@@ -9,7 +9,7 @@
 - [String Functions](#String-Functions)
 - [Aggregate/Array Functions](#Aggregate-Functions)
 - [Math Functions](#Math-Functions)
-- [Date/Time Functions](#Elements)
+- [Date/Time Functions](#DateTime-Functions)
 - [General Purpose Functions](#General-Purpose-Functions)
 - [Document Function](#Document-Function)
 
@@ -262,7 +262,7 @@ Using the data from the previous example:
 Result is 1900<br><br>
 
 
-#### Date/Time Functions
+#### DateTime Functions
 
 
 ##### currentdatetime()
@@ -452,6 +452,19 @@ Result is 45<br><br>
 
 #### General Purpose Functions
 
+
+##### name()
+
+Returns the name of the current object that is in scope
+
+    {
+        "#bind(Driver)":
+        {
+            DriverField:   "#(name())"
+        }
+    }
+
+The value of DriverField would be "Driver"<br><br>
 
 ##### not(expr)
 
