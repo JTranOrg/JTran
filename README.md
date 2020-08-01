@@ -536,12 +536,12 @@ Would then output this:
 
 #### #variable
 
-#variable allows you to specify a placeholder for data, A variable has two parameters. This first is the expressions specifying which data to store and 2nd is the name of the variable.
+#variable allows you to specify a placeholder for data, A variable has a single parameter that is the name of the variable.
 
 ###### Transform
 
     {
-        "#variable(Driver, Driver)",
+        "#variable(Driver)":    "#(Driver)",
 
         "#foreach(Cars, Vehicles)":
         {
