@@ -78,6 +78,19 @@ If the variable refers to an object then the "dot" syntax can be used:
 
 <br>
 
+##### Current Scope
+
+The current scope is the current object within the source document being evaluated. The '@' symbol refers to that scope
+
+    {
+        "#foreach(Cars, Vehicles)":
+        {
+            Car: "#copyof(@)"
+        }
+    }
+
+<br>
+
 ##### Array Indexers
 
 Indexers can be added to arrays. Note: if an expression expects an array and it evaluates to a single object then that single object is treated as an array with that one object in it. This is true everywhere in JTran:
@@ -536,12 +549,12 @@ Would then output this:
 
 #### #variable
 
-#variable allows you to specify a placeholder for data, A variable has two parameters. This first is the expressions specifying which data to store and 2nd is the name of the variable.
+#variable allows you to specify a placeholder for data, A variable has a single parameter that is the name of the variable. 
 
 ###### Transform
 
     {
-        "#variable(Driver, Driver)",
+        "#variable(Driver)":    "#(Driver)",
 
         "#foreach(Cars, Vehicles)":
         {
