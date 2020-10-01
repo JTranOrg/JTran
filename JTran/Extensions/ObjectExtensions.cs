@@ -43,6 +43,9 @@ namespace JTran.Extensions
         /****************************************************************************/
         internal static object GetValue(this object obj, string expression, ExpressionContext context)
         {
+            if(expression == "@")
+                return context.Data;
+
             // Resolve ancestors
             obj = obj.EvaluateAncestors(ref expression);
 
@@ -165,6 +168,9 @@ namespace JTran.Extensions
         /****************************************************************************/
         private static object GetPropertyValue(this object obj, string name)       
         {
+            if(obj == null)
+                return null;
+
             if(obj is ExpandoObject)
             {
                 var props = obj as IDictionary<string, object>;

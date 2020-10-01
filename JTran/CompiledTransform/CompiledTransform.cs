@@ -18,140 +18,22 @@
  ****************************************************************************/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Dynamic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Newtonsoft.Json.Linq;
 
 using JTran.Extensions;
 using JTran.Expressions;
-using System.Collections;
-using System.Dynamic;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran
 {
-    /*****************************************************************************/
-    /*****************************************************************************/
-    public class ExpressionContext
-    {
-        private readonly object                                   _data;
-        private readonly IDictionary<string, object>              _variables;
-        private readonly IDictionary<string, IDocumentRepository> _docRepositories;
-        private readonly ExpressionContext                        _parent;
-
-        /*****************************************************************************/
-        internal ExpressionContext(object data, string name = "", TransformerContext transformerContext = null, IDictionary<string, Function> extensionFunctions = null)
-        {
-            _data            = data;
-            _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
-            _docRepositories = transformerContext?.DocumentRepositories;
-            _parent          = null;
-            this.Name        = name;
-
-            this.ExtensionFunctions = extensionFunctions;
-        }
-
-        /*****************************************************************************/
-        internal ExpressionContext(object data, ExpressionContext parentContext)
-        {
-            _data            = data;
-            _variables       = new Dictionary<string, object>();
-            _docRepositories = parentContext?._docRepositories;
-            _parent          = parentContext;
-            this.Name        = parentContext?.Name ?? "";
-
-            this.ExtensionFunctions = parentContext?.ExtensionFunctions;
-        }
-
-        internal object                        Data               => _data;
-        internal string                        Name               { get; }
-        internal bool                          PreviousCondition  { get; set; }
-        internal IDictionary<string, Function> ExtensionFunctions { get; }
-
-        /*****************************************************************************/
-        internal object GetDocument(string repoName, string docName)
-        {
-            if(_docRepositories?.ContainsKey(repoName) ?? false)
-            { 
-                var doc = _docRepositories[repoName].GetDocument(docName);
-                    
-                return doc.JsonToExpando();
-            }
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        internal object GetVariable(string name)
-        {
-            if(_variables.ContainsKey(name))
-                return _variables[name];
-
-            if(_parent == null)
-                throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
-
-            return _parent.GetVariable(name);
-        }
-
-        /*****************************************************************************/
-        internal void SetVariable(string name, object val)
-        {
-            _variables.Add(name, val);
-        }
-
-        /*****************************************************************************/
-        internal object GetDataValue(string name)
-        { 
-            if(_data is IList<object> list)
-            {
-                var result = new List<object>();
-
-                foreach(var child in list)
-                { 
-                    var childResult = GetDataValue(child, name);
-
-                    if(childResult is IList<object> childList)
-                        result.AddRange(childList);
-                    else
-                        result.Add(childResult);
-                }
-
-                if(result.Count == 0)
-                    return null;
-
-                if(result.Count == 1)
-                    return result[0];
-
-                return result;
-            }
-
-            return GetDataValue(_data, name);
-        }
-
-        /*****************************************************************************/
-        private static object GetDataValue(object data, string name)
-        { 
-            var val = data.GetValue(name, null);
-
-            if(val == null)
-                return null;
-
-            if(!val.GetType().IsClass)
-            { 
-                // If it's any kind of number return it as a decimal
-                if(decimal.TryParse(val.ToString(), out decimal dVal))
-                    return dVal;
-
-                return val;
-            }
-
-            return data.GetValue(name, null);
-        }
-    }
-
     /****************************************************************************/
     /****************************************************************************/
     internal class CompiledTransform : TContainer
@@ -167,7 +49,7 @@ namespace JTran
             var output  = JObject.Parse("{}");
             var expando = data.JsonToExpando();
 
-            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions));
+            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions, templates: this.Templates));
               
             return output.ToString();
         }
@@ -215,8 +97,17 @@ namespace JTran
     /****************************************************************************/
     internal class TContainer : TToken
     {
-        internal List<TToken> Children { get; set; } = new List<TToken>();
+        internal List<TToken>                   Children    { get; }
+        internal IDictionary<string, TTemplate> Templates   { get; }
+
         private TToken _previous;
+
+        /****************************************************************************/
+        internal TContainer()
+        {
+            this.Children  = new List<TToken>();
+            this.Templates = new Dictionary<string, TTemplate>();
+        }
 
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
@@ -232,7 +123,8 @@ namespace JTran
             {
                 var newToken = CreateToken(child.Key, child.Value);
 
-                this.Children.Add(newToken);
+                if(newToken != null)
+                    this.Children.Add(newToken);
 
                 _previous = newToken;
             }
@@ -258,8 +150,19 @@ namespace JTran
 
             if(child is JObject obj)
             { 
+                if(name.StartsWith("#template"))
+                { 
+                    var template = new TTemplate(name, obj);
+
+                    this.Templates.Add(template.Name, template);
+                    return null;
+                }
+
                 if(name.StartsWith("#bind"))
                     return new TBind(name, obj);
+
+                if(name.StartsWith("#foreachgroup"))
+                    return new TForEachGroup(name, obj);
 
                 if(name.StartsWith("#foreach"))
                     return new TForEach(name, obj);
@@ -375,7 +278,7 @@ namespace JTran
         {
             var newScope = _expression.Evaluate(context);
 
-            base.Evaluate(output, new ExpressionContext(newScope, context));
+            base.Evaluate(output, new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates));
         }
     }
 
@@ -407,7 +310,7 @@ namespace JTran
             if(_expression.EvaluateToBool(context))
             { 
                 context.PreviousCondition = true;
-                base.Evaluate(output, new ExpressionContext(context.Data, context));
+                base.Evaluate(output, new ExpressionContext(context.Data, context, templates: this.Templates));
             }
         }
     }
@@ -500,7 +403,7 @@ namespace JTran
                 { 
                     var childOutput = JObject.Parse("{}");
 
-                    base.Evaluate(childOutput, new ExpressionContext(childScope, context));
+                    base.Evaluate(childOutput, new ExpressionContext(childScope, context, templates: this.Templates));
 
                     if(childOutput.Count > 0)
                     { 
@@ -520,7 +423,108 @@ namespace JTran
             else 
             {
                 // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context));
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates));
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TForEachGroup : TContainer
+    {
+        private readonly IExpression _expression;
+        private readonly IExpression _name;
+        private readonly IExpression _groupBy;
+
+        /****************************************************************************/
+        internal TForEachGroup(string name, JObject val) 
+        {
+            name = name.Substring("#foreachgroup(".Length);
+
+            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' }); // ??? Really need to parse this
+
+            _expression = Compiler.Compile(parms[0]);
+            _groupBy    = parms.Length > 1 ? new Value(parms[1]) : null;
+            _name       = parms.Length > 2 ? new Value(parms[2]) : null;
+
+            // Compile children
+            Compile(val);
+        }
+
+        /****************************************************************************/
+        internal protected TForEachGroup(string expression) 
+        {
+            _expression = Compiler.Compile(expression);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var result = _expression.Evaluate(context);
+
+            // If the result of the expression is an array
+            if(result is IList<object> list)
+            { 
+                JContainer arrayOutput;
+
+                // Checkto see if we're outputting to an array
+                if(_name != null)
+                {
+                    arrayOutput = JArray.Parse("[]");
+
+                    var arrayName = _name.Evaluate(context);
+                
+                    output.Add(new JProperty(arrayName.ToString().Trim(), arrayOutput));
+                }
+                else
+                    arrayOutput = output;
+
+                // Get the groups
+                var groupBy = _groupBy.Evaluate(context).ToString().Trim();
+
+                var groups = list.GroupBy
+                (
+                    (item)=> item.GetSingleValue(groupBy, null),
+                    (item)=> item,
+                    (groupValue, items) => { 
+                                                IDictionary<string, object> item = new ExpandoObject(); 
+                                                    
+                                                item[groupBy] = groupValue; 
+                                                item["__groupItems"] = items; 
+                                                    
+                                                return item as ExpandoObject; 
+                                            }
+                );
+
+                // Iterate thru the groups
+                foreach(var groupScope in groups)
+                {
+                    var groupOutput = JObject.Parse("{}");
+                    var newContext  = new ExpressionContext(groupScope, context, templates: this.Templates);
+
+                    newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
+
+                    base.Evaluate(groupOutput, newContext);
+
+                    if(groupOutput.Count > 0)
+                    { 
+                        var schild = groupOutput.ToString();
+
+                        if(_name == null)
+                        {
+                            foreach(var grandchild in groupOutput)
+                                if(grandchild is KeyValuePair<string, JToken> pair)
+                                    arrayOutput.Add(new JProperty(pair.Key, pair.Value));
+                        }
+                        else 
+                            arrayOutput.Add(groupOutput);
+                    }
+                }
+            }
+            else 
+            {
+                // Not an array. Just treat it as a bind
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates));
             }
         }
     }
@@ -542,7 +546,7 @@ namespace JTran
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
-            output.Add(new JProperty(this.Name.Evaluate(context).ToString(), this.Value.Evaluate(context)));
+            output.Add(new JProperty(this.Name?.Evaluate(context)?.ToString() ?? "", this.Value.Evaluate(context)));
         }
     }
 
@@ -563,6 +567,61 @@ namespace JTran
 
             context.SetVariable(name, val);
         }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TTemplate : TContainer
+    {
+        public List<string> Parameters { get; } = new List<string>();
+
+        /****************************************************************************/
+        internal TTemplate(string name, JObject val) 
+        {
+            name = name.Substring("#template(".Length);
+
+            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
+
+            this.Name = parms[0].ToLower();
+
+            this.Parameters.AddRange(parms);
+            this.Parameters.RemoveAt(0);
+
+            // Compile children
+            Compile(val);
+        }
+
+        internal string Name      { get; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var newContext = new ExpressionContext(context.Data, context);
+
+            base.Evaluate(output, newContext);
+        }    
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TCallTemplate : TContainer
+    {
+        /****************************************************************************/
+        internal TCallTemplate(string name, JObject val) 
+        {
+            // Compile children
+            Compile(val);
+        }
+
+        internal string Name      { get; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var newContext = new ExpressionContext(context.Data, context);
+
+            base.Evaluate(output, newContext);
+        }    
     }
 
     /****************************************************************************/
@@ -645,7 +704,7 @@ namespace JTran
         /****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var val = _expression.Evaluate(context);
+            var val = _expression?.Evaluate(context);
 
             if(val == null)
                 return null;

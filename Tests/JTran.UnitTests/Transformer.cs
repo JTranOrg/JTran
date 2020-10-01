@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace JTran.UnitTests
 {
@@ -57,7 +59,7 @@ namespace JTran.UnitTests
             var transformer = new JTran.Transformer(_transformForEach2, null);
             var result      = transformer.Transform(_data3);
    
-            Assert.AreNotEqual(_transformForEach1, _data3);
+            Assert.AreNotEqual(_transformForEach2, _data3);
 
             var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
 
@@ -106,38 +108,6 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Transformer_Transform_copyof_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEach2, null);
-            var result      = transformer.Transform(_data3);
-   
-            Assert.AreNotEqual(_transformForEach1, _data3);
-
-            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
-
-            Assert.AreEqual(4,               customers.Customers.Count);
-            Assert.AreEqual("John",          customers.Customers[0].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[0].LastName);
-            Assert.AreEqual(34,              customers.Customers[0].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[0].Address);
-                                             
-            Assert.AreEqual("Mary",          customers.Customers[1].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[1].LastName);
-            Assert.AreEqual(32,              customers.Customers[1].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[1].Address);
-                                             
-            Assert.AreEqual("Fred",          customers.Customers[2].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[2].LastName);
-            Assert.AreEqual(41,              customers.Customers[2].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[2].Address);
-                                             
-            Assert.AreEqual("Linda",         customers.Customers[3].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[3].LastName);
-            Assert.AreEqual(39,              customers.Customers[3].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[3].Address);
-        }
-
-        [TestMethod]
         public void Transformer_Transform_ForEach_noarray_Success()
         {
             var transformer = new JTran.Transformer(_transformForEachNoArray, null);
@@ -150,6 +120,24 @@ namespace JTran.UnitTests
             Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
             Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
             Assert.AreEqual("Charger", json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_null_data_Success()
+        {
+            var transformer = new JTran.Transformer(_transformForEachNoArray, null);
+            var result      = transformer.Transform(_dataNull);
+   
+            Assert.AreNotEqual(_transformForEachNoArray, _dataNull);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
+
+            var dodgeModel = json["Owner"]["Cars"]["Dodge"]["Model"];
+
+            Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
         }
 
         [TestMethod]
@@ -196,6 +184,83 @@ namespace JTran.UnitTests
             Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
         }
 
+        [TestMethod]
+        public void Transformer_Transform_null_reference_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformNullReference, null);
+            var result      = transformer.Transform(_dataNullReference);
+   
+            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_null_reference2_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformNullReference2, null);
+            var result      = transformer.Transform(_dataNullReference);
+   
+            Assert.AreNotEqual(_transformNullReference2, _dataNullReference);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_null_reference3_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformNullReference3, null);
+            var result      = transformer.Transform(_dataNullReference3);
+   
+            Assert.AreNotEqual(_transformNullReference3, _dataNullReference3);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+        }
+
+        #region ForEachGroup
+
+        [TestMethod]
+        public void Transformer_Transform_ForEachGroup_Success()
+        {
+            var transformer = new JTran.Transformer(_transformForEachGroup1, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformForEachGroup1, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
+        }
+
+        #endregion
+
+       #region Template
+
+        [TestMethod]
+        public void Transformer_Transform_Template_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplate1, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplate1, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Template2_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplate2, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplate2, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
+        }
+
+        #endregion
+
         #region name() function
 
         [TestMethod]
@@ -214,6 +279,7 @@ namespace JTran.UnitTests
         }
 
         #endregion
+
         #region Private 
 
         private class ExtFunctions
@@ -225,6 +291,11 @@ namespace JTran.UnitTests
         private class ExtFunctions2
         {
             public string CarModel(Automobile val)  { return val.Model; }
+        }
+
+        private static string ForComparison(string str)
+        {
+            return str.Replace("\"", "").Replace("'", "").Replace(" ", "").Replace("\r", "").Replace("\n", "");
         }
 
         #region Transforms 
@@ -327,6 +398,72 @@ namespace JTran.UnitTests
             }
         }";
 
+        private static readonly string _transformNullReference = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                'Cars':       
+                {
+                    '#if(State != null)':
+                    {
+                        '#foreach(Automobiles)':
+                        {
+                            '#(Make)':
+                            {
+                                Model: '#(CarModel(@))',
+                                Color:  '#(Color)'
+                            }
+                        }
+                    }
+                }
+            }
+        }";
+
+        private static readonly string _transformNullReference2 = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                'Cars':       
+                {
+                    '#if(Address.State != null)':
+                    {
+                        '#foreach(Automobiles)':
+                        {
+                            '#(Make)':
+                            {
+                                Model: '#(CarModel(@))',
+                                Color:  '#(Color)'
+                            }
+                        }
+                    }
+                }
+            }
+        }";
+
+        private static readonly string _transformNullReference3 = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                'Cars':       
+                {
+                    '#if(Address.State != null)':
+                    {
+                        '#foreach(Automobiles)':
+                        {
+                            '#(Make)':
+                            {
+                                Model: '#(CarModel(@))',
+                                Color:  '#(Color)'
+                            }
+                        }
+                    }
+                }
+            }
+        }";
+
         private static readonly string _transformEmail = 
         @"{
             'from':                 'noreply@noreply.com',
@@ -362,6 +499,58 @@ namespace JTran.UnitTests
                     {
                         Displacement:   375
                     }
+                }
+             }
+        }";
+     
+        private static readonly string _transformForEachGroup1 =
+        @"{
+            '#foreachgroup(Drivers, Make, Makes)':
+            {
+                Make:             '#(Make)',
+                '#foreach(currentgroup(), Drivers)':
+                {
+                    Name:  '#(Name)',
+                    Model: '#(Model)'
+                }
+             }
+        }";
+
+        private static readonly string _transformTemplate1 =
+        @"{
+             '#template(formatname, name)': 
+             {
+                '#()':  '#($name)'
+             },
+
+            '#foreachgroup(Drivers, Make, Makes)':
+            {
+                Make:             '#(Make)',
+                '#foreach(currentgroup(), Drivers)':
+                {
+                    Name:      '#(formatname(Name))',
+                    Model:     '#(Model)'
+                }
+             }
+        }";
+     
+        private static readonly string _transformTemplate2 =
+        @"{
+             '#template(DisplayName, name)': 
+             {
+                'Name':  '#($name)',
+                'Year':  '#(Year)'
+             },
+
+            '#foreachgroup(Drivers, Make, Makes)':
+            {
+                Make: '#(Make)',
+
+                '#foreach(currentgroup(), Drivers)':
+                {
+                    '#calltemplate': '#(DisplayName(Name))',
+
+                    Model: '#(Model)'
                 }
              }
         }";
@@ -510,6 +699,79 @@ namespace JTran.UnitTests
             ]
         }";
 
+        private static readonly string _dataNull = 
+        @"{
+            Owner:           'Bob Smith',   
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green'
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue'
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    null,  
+                    Color:    'Black'
+                }
+            ]
+        }";
+
+        private static readonly string _dataNullReference = 
+        @"{
+            Owner:           'Bob Smith',  
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green'
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue'
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    'Charger',  
+                    Color:    'Black'
+                }
+            ]
+        }";
+
+        private static readonly string _dataNullReference3 = 
+        @"{
+            Owner:           'Bob Smith',  
+            Address:
+            {   
+                State:       null,
+            },
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green'
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue'
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    'Charger',  
+                    Color:    'Black'
+                }
+            ]
+        }";
+
         private static readonly string _dataEmail = 
         @"{
               'Body':       '<html><body>Your library book is overdue</body></html>',
@@ -546,6 +808,76 @@ namespace JTran.UnitTests
                 MakeField: 'Brand',
                 ModelField: 'Model'
             }
+        }";
+
+        private static readonly string _dataForEachGroup1 = 
+        @"{
+            Drivers:
+            [
+                {
+                    Name:      'John Smith',
+                    Make:      'Chevy',
+                    Model:     'Corvette',
+                    Year:      1964,
+                    Color:     'Blue'
+                },
+                {
+                    Name:      'Fred Jones',
+                    Make:      'Pontiac',
+                    Model:     'Firebird',
+                    Year:      1964,
+                    Color:     'Blue'
+                },
+                {
+                    Name:      'Mary Anderson',
+                    Make:      'Chevy',
+                    Model:     'Camaro',
+                    Year:      1969,
+                    Color:     'Green'
+                },
+                {
+                    Name:      'Amanda Ramirez',
+                    Make:      'Pontiac',
+                    Model:     'GTO',
+                    Year:      1971,
+                    Color:     'Black'
+                },
+            ]
+        }";
+
+        private static readonly string _resultForEachGroup1 = 
+        @"{
+            Makes:
+            [
+                {
+                    Make:      'Chevy',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'John Smith',
+                            Model:     'Corvette',
+                        },
+                        {
+                            Name:      'Mary Anderson',
+                            Model:     'Camaro',
+                        }
+                    ]
+                },
+                {
+                    Make:      'Pontiac',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'Fred Jones',
+                            Model:     'Firebird',
+                        },
+                        {
+                            Name:      'Amanda Ramirez',
+                            Model:     'GTO',
+                        }
+                    ]
+                }
+            ]
         }";
 
         #endregion

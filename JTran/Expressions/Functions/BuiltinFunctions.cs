@@ -220,6 +220,13 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
+        public IList<object> currentgroup(ExpressionContext context)
+        {
+            return context.CurrentGroup;
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
         public string name(ExpressionContext context)
         {
             try
