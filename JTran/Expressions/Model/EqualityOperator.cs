@@ -43,7 +43,7 @@ namespace JTran.Expressions
             if(leftVal is decimal || rightVal is decimal)
                 return Convert.ToDecimal(leftVal).Equals(Convert.ToDecimal(rightVal));
 
-            return leftVal.Equals(rightVal);
+            return object.Equals(leftVal, rightVal);
         }    
     }
 
@@ -62,7 +62,10 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
-            return !left.Evaluate(context).Equals(right.Evaluate(context));
+            var leftVal = left.Evaluate(context);
+            var rightVal = right.Evaluate(context);
+
+            return !object.Equals(leftVal, rightVal);
         }
     }
 

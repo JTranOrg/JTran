@@ -292,6 +292,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void CompiledTransform_Transform_CopyOf2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOf2);
+            var result      = transformer.Transform(_dataCopyOf2, null, null);
+
+            Assert.AreNotEqual(_transformCopyOf2, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["Vehicles"]);
+            Assert.AreEqual("Chevy", jresult["Vehicles"][0]["Stuff"]["Make"]);
+        }
+
+        [TestMethod]
         public void CompiledTransform_Transform_function_position_Success()
         {
             var transformer = CompiledTransform.Compile(_transformForEach2);
@@ -636,6 +652,14 @@ namespace JTran.UnitTests
             Invoice: '#copyof(Service.Parts)'
         }";
 
+        private static readonly string _transformCopyOf2 =
+        @"{
+            '#foreach(Cars, Vehicles)':
+            {
+                Stuff: '#copyof(@)'
+            }
+        }";
+
         private static readonly string _transformDocument1 =
         @"{
             '#variable(Locations)':   '#(document(Locations, Default))',
@@ -738,6 +762,48 @@ namespace JTran.UnitTests
                     Solenoid:   77
                 }
              }
+        }";
+
+        private static readonly string _dataCopyOf2 =
+        @"{
+            Cars:
+            [
+                {
+                    Make:   'Chevy',
+                    Model:  'Corvette',
+                    Year:   1964,
+                    Parts:
+                    {
+                        Muffler:    945,
+                        Sparkplugs: 123,
+                        Solenoid:   77
+                    }
+                },
+                {
+                   Make:   'Pontiac',
+                   Model:  'Firebird',
+                   Year:   1969,
+                   Color:  'Green',
+                    Parts:
+                    {
+                        Muffler:    945,
+                        Sparkplugs: 123,
+                        Solenoid:   77
+                    }
+                },
+                {
+                   Make:   'Audi',
+                   Model:  'S8',
+                   Year:   2020,
+                   Color:  'Black',
+                    Parts:
+                    {
+                        Muffler:    945,
+                        Sparkplugs: 123,
+                        Solenoid:   77
+                    }
+                }
+            ],
         }";
 
         #endregion
