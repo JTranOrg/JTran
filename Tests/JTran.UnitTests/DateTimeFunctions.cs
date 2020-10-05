@@ -22,10 +22,11 @@ namespace JTran.UnitTests
         {
             var expression = Compile("currentdatetime()");
             var context    = CreateContext(new {Year = 2010} );
-            var dt         = DateTime.Now;
+            var dt         = DateTime.UtcNow;
             var result     = expression.Evaluate(context);
+            var dtResult   = DateTimeOffset.Parse(result.ToString()).UtcDateTime;
    
-            Assert.AreEqual(dt.ToString("s"), result);
+            Assert.IsTrue(dtResult < dt.AddSeconds(2) && dtResult >= dt);
         }
 
         [TestMethod]
@@ -46,8 +47,9 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var dt         = DateTime.UtcNow;
             var result     = expression.Evaluate(context);
-   
-            Assert.AreEqual(dt.ToString("s"), result);
+            var dtResult   = DateTimeOffset.Parse(result.ToString()).UtcDateTime;
+
+            Assert.IsTrue(dtResult < dt.AddSeconds(2) && dtResult >= dt);
         }
 
         [TestMethod]
@@ -73,10 +75,14 @@ namespace JTran.UnitTests
         [TestMethod]
         public void DateTimeFunctions_datetimeutc_Success()
         {
-            var context = CreateContext(new {Year = 2010} );
-            var dto = new DateTimeOffset(new DateTime(2010, 07, 26, 17, 0, 0), new TimeSpan(-7, 0, 0));
+            var context  = CreateContext(new {Year = 2010} );
+            var dto      = new DateTimeOffset(new DateTime(2010, 07, 26, 17, 0, 0), new TimeSpan(-7, 0, 0));
+            var utcNow   = dto.UtcDateTime;
+            var sDto     = dto.ToString();
+            var sResult  = Compile($"DateTimeUtc('{sDto}')").Evaluate(context).ToString();
+            var dtResult = new DateTimeOffset(DateTime.Parse(sResult)).UtcDateTime;
    
-            Assert.AreEqual("2010-07-27T00:00:00",  Compile($"DateTimeUtc('{dto.ToString()}')").Evaluate(context));
+            Assert.IsTrue(dtResult < utcNow.AddSeconds(2) && dtResult >= utcNow);
             Assert.AreEqual("bob",         Compile("date('bob')").Evaluate(context));
         }
 
@@ -88,7 +94,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2002-07-01T10:00:00", result);
+            Assert.AreEqual("2002-07-01T10:00:00.0000000", result);
         }
 
         [TestMethod]
@@ -99,7 +105,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2000-09-01T10:00:00", result);
+            Assert.AreEqual("2000-09-01T10:00:00.0000000", result);
         }
 
         [TestMethod]
@@ -110,7 +116,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2000-07-03T10:00:00", result);
+            Assert.AreEqual("2000-07-03T10:00:00.0000000", result);
         }
 
         [TestMethod]
@@ -121,7 +127,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2000-07-01T12:00:00", result);
+            Assert.AreEqual("2000-07-01T12:00:00.0000000", result);
         }
 
         [TestMethod]
@@ -132,7 +138,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2000-07-01T10:02:00", result);
+            Assert.AreEqual("2000-07-01T10:02:00.0000000", result);
         }
 
         [TestMethod]
@@ -143,7 +149,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("2000-07-01T10:00:02", result);
+            Assert.AreEqual("2000-07-01T10:00:02.0000000", result);
         }
 
         [TestMethod]
