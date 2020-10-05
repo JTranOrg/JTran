@@ -9,6 +9,7 @@ using JTran;
 using JTran.Expressions;
 using JTran.Extensions;
 using System;
+using System.Runtime;
 
 namespace JTran.UnitTests
 {
@@ -66,6 +67,16 @@ namespace JTran.UnitTests
             var context = CreateContext(new {Year = 2010} );
    
             Assert.AreEqual("2000-07-01",  Compile("date('2000-07-01T10:14:45')").Evaluate(context));
+            Assert.AreEqual("bob",         Compile("date('bob')").Evaluate(context));
+        }
+
+        [TestMethod]
+        public void DateTimeFunctions_datetimeutc_Success()
+        {
+            var context = CreateContext(new {Year = 2010} );
+            var dto = new DateTimeOffset(new DateTime(2010, 07, 26, 17, 0, 0), new TimeSpan(-7, 0, 0));
+   
+            Assert.AreEqual("2010-07-27T00:00:00",  Compile($"DateTimeUtc('{dto.ToString()}')").Evaluate(context));
             Assert.AreEqual("bob",         Compile("date('bob')").Evaluate(context));
         }
 
