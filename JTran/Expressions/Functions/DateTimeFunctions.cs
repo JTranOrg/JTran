@@ -31,7 +31,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public string CurrentDatetime()
         {
-            return DateTime.Now.ToString("s");
+            return DateTime.Now.ToString("o");
         }
 
         /*****************************************************************************/
@@ -43,7 +43,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public string CurrentDatetimeUTC()
         {
-            return DateTime.UtcNow.ToString("s");
+            return DateTime.UtcNow.ToString("o");
         }
 
         /*****************************************************************************/
@@ -76,11 +76,11 @@ namespace JTran.Expressions
 
             if(DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue))
             {
-                return dtoValue.UtcDateTime.ToString("s");
+                return dtoValue.UtcDateTime.ToString("o");
             }
 
             if(DateTime.TryParse(sdate, out DateTime dtValue))
-                return dtValue.ToString("s");
+                return dtValue.ToString("o");
 
             return sdate;
         }
@@ -204,7 +204,7 @@ namespace JTran.Expressions
             if(!DateTime.TryParse(sdate, out DateTime dtValue))
                 return sdate;
          
-            return fn(dtValue).ToString("s");
+            return fn(dtValue).ToString("o");
         }
 
         /*****************************************************************************/

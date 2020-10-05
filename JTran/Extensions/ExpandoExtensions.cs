@@ -111,6 +111,10 @@ namespace JTran.Extensions
                         sb.AppendLine(" " + lval.ToString() + comma);
                     else if(decimal.TryParse(kv.Value.ToString(), out decimal dval))
                         sb.AppendLine(" " + dval.ToString().ReplaceEnding(".0", "") + comma);
+                    else if(kv.Value is DateTime dtVal)
+                        sb.AppendLine(" \"" + dtVal.ToString("o") + "\"" + comma);
+                    else if(DateTime.TryParse(kv.Value.ToString(), out DateTime dtVal2))
+                        sb.AppendLine(" \"" + dtVal2.ToString("o") + "\"" + comma);
                     else
                         sb.AppendLine(" \"" + kv.Value.ToString() + "\"" + comma);
                 }
