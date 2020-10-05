@@ -70,6 +70,18 @@ namespace JTran.Expressions
             return decimal.Parse(val.ToString());
         }
 
+        /*****************************************************************************/
+        public bool isnumber(object val)
+        {
+            return decimal.TryParse(val.ToString(), out decimal result);
+        }
+
+        /*****************************************************************************/
+        public bool isinteger(object val)
+        {
+            return long.TryParse(val.ToString(), out long result);
+        }
+
         #endregion
 
         #region String Functions

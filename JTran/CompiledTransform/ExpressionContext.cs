@@ -50,7 +50,7 @@ namespace JTran
                                    IDictionary<string, TTemplate> templates          = null)
         {
             _data            = data;
-            _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
+            _variables       = transformerContext?.Arguments != null ? new Dictionary<string, object>(transformerContext?.Arguments) : new Dictionary<string, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -112,6 +112,8 @@ namespace JTran
         /*****************************************************************************/
         internal TTemplate GetTemplate(string name)
         {
+            name = name.ToLower();
+
             if(this.Templates != null && this.Templates.ContainsKey(name))
                 return this.Templates[name];
 

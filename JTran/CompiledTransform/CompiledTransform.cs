@@ -29,6 +29,7 @@ using Newtonsoft.Json.Linq;
 using JTran.Extensions;
 using JTran.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -158,6 +159,9 @@ namespace JTran
                     return null;
                 }
 
+                if(name.StartsWith("#calltemplate"))
+                    return new TCallTemplate(name, obj);
+
                 if(name.StartsWith("#bind"))
                     return new TBind(name, obj);
 
@@ -249,8 +253,11 @@ namespace JTran
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
             var newScope = context.Data.GetValue(_expression, context);
+            var name     = _name.Evaluate(context).ToString();
+            var json     = (newScope as ExpandoObject).ToJson();
+            var data     = JObject.Parse(json);
 
-            output.Add(new JProperty(_name.Evaluate(context).ToString(), JObject.Parse((newScope as ExpandoObject).ToJson()))); 
+            output.Add(new JProperty(name, data));
         }
     }
 
@@ -381,20 +388,22 @@ namespace JTran
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
-            var result = _expression.Evaluate(context);
+            var result    = _expression.Evaluate(context);
+            var arrayName = _name?.Evaluate(context)?.ToString()?.Trim();
+
+            if(!string.IsNullOrEmpty(arrayName) && !(result is IList))
+                result = new List<object> { result };
 
             // If the result of the expression is an array
             if(result is IList list)
             { 
                 JContainer arrayOutput;
                 
-                if(_name != null)
+                if(!string.IsNullOrEmpty(arrayName))
                 {
                     arrayOutput = JArray.Parse("[]");
-
-                    var arrayName = _name.Evaluate(context);
                 
-                    output.Add(new JProperty(arrayName.ToString().Trim(), arrayOutput));
+                    output.Add(new JProperty(arrayName, arrayOutput));
                 }
                 else
                     arrayOutput = output;
@@ -582,9 +591,9 @@ namespace JTran
 
             var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
 
-            this.Name = parms[0].ToLower();
+            this.Name = parms[0].ToLower().Trim();
 
-            this.Parameters.AddRange(parms);
+            this.Parameters.AddRange(parms.Select( s=> s.Trim()));
             this.Parameters.RemoveAt(0);
 
             // Compile children
@@ -606,21 +615,31 @@ namespace JTran
     /****************************************************************************/
     internal class TCallTemplate : TContainer
     {
+        private readonly string _templateName;
+
         /****************************************************************************/
         internal TCallTemplate(string name, JObject val) 
         {
+            _templateName = name.Substring("#calltemplate(".Length).ReplaceEnding(")", "");
+
             // Compile children
             Compile(val);
         }
-
-        internal string Name      { get; }
 
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
             var newContext = new ExpressionContext(context.Data, context);
+            var paramsOutput = JObject.Parse("{}");
 
-            base.Evaluate(output, newContext);
+            base.Evaluate(paramsOutput, newContext);
+
+            var template = context.GetTemplate(_templateName);
+
+            foreach(var paramName in template.Parameters)
+                context.SetVariable(paramName, paramsOutput.GetValue(paramName).ToString());
+
+            template.Evaluate(output, newContext);
         }    
     }
 

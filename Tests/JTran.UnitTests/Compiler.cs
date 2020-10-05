@@ -190,6 +190,19 @@ namespace JTran.UnitTests
             Assert.AreEqual("Coke", expression.Evaluate(context));
         }
 
+        [TestMethod]
+        public void Compiler_TertiaryOperator_Complex()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Name == 'bob' && Age >= 21 ? FirstName : LastName");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Name = "bob", Age = 35, FirstName = "Robert", LastName = "Jones" } ));
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("Robert", expression.Evaluate(context));
+        }
+
         #region Parenthesis
 
         [TestMethod]
