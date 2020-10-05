@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran;
 using JTran.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.UnitTests
 {
@@ -21,6 +23,25 @@ namespace JTran.UnitTests
             _data1 = _data1.Replace(" ", "").Replace("\r\n", "").Replace("'", "\"");
 
             Assert.AreEqual(_data1, json);
+        }
+
+        [TestMethod]
+        public void ExpandoExtensions_ToJson_date_Success()
+        {
+            var auto = new Automobile { Make = "Chevy", Model = "Camaro", Sold = DateTime.UtcNow.AddDays(-10).ToString("o") };
+            var json1 = JsonConvert.SerializeObject(auto);
+
+            var exp = json1.JsonToExpando() as ExpandoObject;
+            var json = exp.ToJson();
+
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(json1), JObject.Parse(json)));
+        }
+        
+        private class Automobile
+        {
+            public string Make  { get; set; }
+            public string Model { get; set; }
+            public string Sold  { get; set; }
         }
 
         private static string _data1 =
