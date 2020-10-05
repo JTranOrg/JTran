@@ -123,6 +123,42 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Transformer_Transform_ForEach_nested__Success()
+        {
+            var transformer = new JTran.Transformer(_transformNestedForEach, null);
+            var result      = transformer.Transform(_dataNested, null);
+   
+            Assert.AreNotEqual(_transformNestedForEach, _dataNested);
+
+            var roster = JsonConvert.DeserializeObject<Roster>(result);
+
+            Assert.AreEqual(3,               roster.Owner.Cars.Count);
+            Assert.AreEqual("Chevy",         roster.Owner.Cars[0].Make);
+            Assert.AreEqual("Camaro",        roster.Owner.Cars[0].Model);
+            Assert.AreEqual(3,               roster.Owner.Cars[0].Mechanics.Count);
+            Assert.AreEqual("Bob",           roster.Owner.Cars[0].Mechanics[0].FirstName);
+            Assert.AreEqual("Mendez",        roster.Owner.Cars[0].Mechanics[0].LastName);
+        }
+        
+        [TestMethod]
+        public void Transformer_Transform_ForEach_nested_single_innner__Success()
+        {
+            var transformer = new JTran.Transformer(_transformNestedForEach, null);
+            var result      = transformer.Transform(_dataNested2, null);
+   
+            Assert.AreNotEqual(_transformNestedForEach, _dataNested2);
+
+            var roster = JsonConvert.DeserializeObject<Roster>(result);
+
+            Assert.AreEqual(3,               roster.Owner.Cars.Count);
+            Assert.AreEqual("Chevy",         roster.Owner.Cars[0].Make);
+            Assert.AreEqual("Camaro",        roster.Owner.Cars[0].Model);
+            Assert.AreEqual(1,               roster.Owner.Cars[0].Mechanics.Count);
+            Assert.AreEqual("Bob",           roster.Owner.Cars[0].Mechanics[0].FirstName);
+            Assert.AreEqual("Mendez",        roster.Owner.Cars[0].Mechanics[0].LastName);
+        }
+        
+        [TestMethod]
         public void Transformer_Transform_null_data_Success()
         {
             var transformer = new JTran.Transformer(_transformForEachNoArray, null);
@@ -223,6 +259,46 @@ namespace JTran.UnitTests
             Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
         }
 
+        [TestMethod]
+        public void Transformer_Transform_bool_var_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformBool, null);
+            var result      = transformer.Transform(_dataBool);
+   
+            Assert.AreNotEqual(_transformBool, _dataBool);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+        }        
+        
+        [TestMethod]
+        public void Transformer_Transform_scope_symbol_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformScopeSymbol, null);
+            var result      = transformer.Transform(_dataNull);
+   
+            Assert.AreNotEqual(_transformScopeSymbol, _dataNull);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Camaro", json["Cars"][0]["Details"]["Model"].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_tertiary_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformTertiary, null);
+            var result      = transformer.Transform(_dataNull);
+   
+            Assert.AreNotEqual(_transformTertiary, _dataNull);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("abc", json["MyProp"].ToString());
+        }
+
+        
         #region ForEachGroup
 
         [TestMethod]
@@ -237,27 +313,31 @@ namespace JTran.UnitTests
 
         #endregion
 
-       #region Template
+        #region Template
 
         [TestMethod]
         public void Transformer_Transform_Template_Success()
-        {
-            var transformer = new JTran.Transformer(_transformTemplate1, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.AreNotEqual(_transformTemplate1, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        public void Transformer_Transform_Template2_Success()
         {
             var transformer = new JTran.Transformer(_transformTemplate2, null);
             var result      = transformer.Transform(_dataForEachGroup1);
    
             Assert.AreNotEqual(_transformTemplate2, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
         }
+
+        private static readonly string _transformTemplate2 =
+        @"{
+             '#template(DisplayName, name)': 
+             {
+                'FirstName':  '#($name)',
+                'Year':       1965
+             },
+
+            '#calltemplate(DisplayName)':
+            {
+                name: 'bob',
+            }
+        }"; 
 
         #endregion
 
@@ -355,6 +435,25 @@ namespace JTran.UnitTests
                             Model: '#(Model)',
                             Color:  '#(Color)'
                         }
+                    }
+                }
+            }
+        }";
+
+        private static readonly string _transformNestedForEach = 
+        @"{
+             'Owner':
+             {
+                'Name':        '#(Owner)',
+                '#foreach(Automobiles, Cars)':
+                {
+                    Make:  '#(Make)',
+                    Model:  '#(Model)',
+                    Color:  '#(Color)',
+                    '#foreach(Drivers, Mechanics)':
+                    {
+                        FirstName:  '#(FirstName)',
+                        LastName:  '#(LastName)'
                     }
                 }
             }
@@ -533,28 +632,50 @@ namespace JTran.UnitTests
                 }
              }
         }";
-     
-        private static readonly string _transformTemplate2 =
+
+        private static readonly string _transformBool = 
         @"{
-             '#template(DisplayName, name)': 
+            '#variable(isValidState)':  '#(Address.State != null)',
+
+             'Owner':
              {
-                'Name':  '#($name)',
-                'Year':  '#(Year)'
-             },
-
-            '#foreachgroup(Drivers, Make, Makes)':
-            {
-                Make: '#(Make)',
-
-                '#foreach(currentgroup(), Drivers)':
+                'Name':        '#(Owner)',
+                'Cars':       
                 {
-                    '#calltemplate': '#(DisplayName(Name))',
-
-                    Model: '#(Model)'
+                    '#if($isValidState)':
+                    {
+                        '#foreach(Automobiles)':
+                        {
+                            '#(Make)':
+                            {
+                                Model: '#(Model)',
+                                Color:  '#(Color)'
+                            }
+                        }
+                    }
                 }
-             }
+            }
         }";
-     
+
+        private static readonly string _transformScopeSymbol = 
+        @"{
+             '#foreach(Automobiles, Cars)':
+             {
+                '#variable(this)':   '#(@)',
+
+                'Owner':        '#(//Owner)',
+                'Details':      '#copyof($this)' 
+            }
+        }";
+
+        private static readonly string _transformTertiary = 
+        @"{
+            '#variable(var1)': 'abc',
+            '#variable(var2)': 'def',
+
+            MyProp: '#((0 < 1 && 1 == 1) ? $var1 : $var2)'
+          }";
+
         #endregion
 
         #region Data
@@ -699,6 +820,118 @@ namespace JTran.UnitTests
             ]
         }";
 
+        private static readonly string _dataNested = 
+        @"{
+            Owner:           'Bob Smith',   
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Bob',
+                            LastName:   'Mendez'
+                        },
+                        {   
+                            FirstName:  'Shirley',
+                            LastName:   'Jones'
+                        },
+                        {   
+                            FirstName:  'Jackie',
+                            LastName:   'Chan'
+                        }
+                    ]
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Jackie',
+                            LastName:   'Mendez'
+                        },
+                        {   
+                            FirstName:  'Bob',
+                            LastName:   'Jones'
+                        },
+                        {   
+                            FirstName:  'Bob',
+                            LastName:   'Chan'
+                        }
+                    ]
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    'Charger',  
+                    Color:    'Black',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Robert',
+                            LastName:   'Kawasaki'
+                        },
+                        {   
+                            FirstName:  'Muriel',
+                            LastName:   'Hernandez'
+                        },
+                        {   
+                            FirstName:  'Sergei',
+                            LastName:   'Korpoff'
+                        }
+                    ]
+                }
+            ]
+        }";
+
+        private static readonly string _dataNested2 = 
+        @"{
+            Owner:           'Bob Smith',   
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Bob',
+                            LastName:   'Mendez'
+                        }
+                    ]
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Jackie',
+                            LastName:   'Mendez'
+                        }
+                    ]
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    'Charger',  
+                    Color:    'Black',
+                    Drivers:
+                    [
+                        {   
+                            FirstName:  'Robert',
+                            LastName:   'Kawasaki'
+                        }
+                    ]
+                }
+            ]
+        }";
+
         private static readonly string _dataNull = 
         @"{
             Owner:           'Bob Smith',   
@@ -751,6 +984,33 @@ namespace JTran.UnitTests
             Address:
             {   
                 State:       null,
+            },
+            Automobiles:
+            [
+                {
+                    Make:     'Chevy',
+                    Model:    'Camaro',  
+                    Color:    'Green'
+                },
+                {
+                    Make:     'Pontiac',
+                    Model:    'Firebird',  
+                    Color:    'Blue'
+                },
+                {
+                    Make:     'Dodge',
+                    Model:    'Charger',  
+                    Color:    'Black'
+                }
+            ]
+        }";
+
+        private static readonly string _dataBool = 
+        @"{
+            Owner:           'Bob Smith',  
+            Address:
+            {   
+                State:       'Washington',
             },
             Automobiles:
             [
@@ -922,6 +1182,27 @@ namespace JTran.UnitTests
             public string        Color     { get; set; }
         }
         
+        public class Automobile3
+        {
+            public string        Make       { get; set; }
+            public string        Model      { get; set; }
+            public int           Year       { get; set; }
+            public string        Color      { get; set; }
+            public IList<Driver> Mechanics  { get; set; }
+        }
+
+        public class Owner
+        {
+            public string            Name  { get; set; }
+            public List<Automobile3> Cars   { get; set; }
+        }     
+
+
+        public class Roster
+        {
+            public Owner Owner  { get; set; }
+        }     
+
         #endregion
 
         #endregion

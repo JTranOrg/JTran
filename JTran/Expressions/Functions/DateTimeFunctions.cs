@@ -67,6 +67,25 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public string DateTimeUtc(object data)
+        {
+            if(data == null)
+                return "";
+
+            var sdate = data.ToString();
+
+            if(DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue))
+            {
+                return dtoValue.UtcDateTime.ToString("s");
+            }
+
+            if(DateTime.TryParse(sdate, out DateTime dtValue))
+                return dtValue.ToString("s");
+
+            return sdate;
+        }
+
+        /*****************************************************************************/
         public string AddYears(object data, int amount)
         {
             return Add(data, (dt)=> dt.AddYears(amount) );

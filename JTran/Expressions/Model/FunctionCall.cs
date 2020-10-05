@@ -47,28 +47,7 @@ namespace JTran.Expressions
                 return func.Evaluate(_parameters, context);
             }
 
-            var template = context.GetTemplate(_functionName);
-
-            if(template == null)
-                throw new Transformer.SyntaxException($"A function or template with that name was not found: {_functionName}");
-
-            var result     = JObject.Parse("{}");
-            var numParams  = _parameters.Count;
-            var newContext = numParams == 0 ? context : new ExpressionContext(context.Data, context);
-
-            for(var i = 0; i < numParams; ++i)
-            {
-                var name = template.Parameters[i].Trim();
-
-                newContext.SetVariable(name, _parameters[i].Evaluate(context));
-            }
-
-            template.Evaluate(result, newContext);
-
-            var firstChild = result.Children().First();
-            var val = (firstChild as JProperty).Value;
-
-            return val;
+            throw new Transformer.SyntaxException($"A function with that name was not found: {_functionName}");
         }
 
         /*****************************************************************************/

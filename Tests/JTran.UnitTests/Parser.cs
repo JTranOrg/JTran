@@ -75,6 +75,27 @@ namespace JTran.UnitTests
             Assert.AreEqual("FirstName",  tokens[2].Value);
             Assert.AreEqual(":",          tokens[3].Value);
             Assert.AreEqual("LastName",   tokens[4].Value);
+        }        
+        
+        [TestMethod]
+        public void Expression_Tertiary2_Success()
+        {
+            var parser = new Parser();
+            var tokens = parser.Parse("Name == Instructor && Age >= 21 ? FirstName : LastName");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(11,            tokens.Count);
+            Assert.AreEqual("Name",        tokens[0].Value);
+            Assert.AreEqual("==",          tokens[1].Value);
+            Assert.AreEqual("Instructor",  tokens[2].Value);
+            Assert.AreEqual("&&",          tokens[3].Value);
+            Assert.AreEqual("Age",         tokens[4].Value);
+            Assert.AreEqual(">=",          tokens[5].Value);
+            Assert.AreEqual("21",          tokens[6].Value);
+            Assert.AreEqual("?",           tokens[7].Value);
+            Assert.AreEqual("FirstName",   tokens[8].Value);
+            Assert.AreEqual(":",           tokens[9].Value);
+            Assert.AreEqual("LastName",    tokens[10].Value);
         }
 
         [TestMethod]

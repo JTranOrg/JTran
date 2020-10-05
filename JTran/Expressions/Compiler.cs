@@ -19,7 +19,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Net;
+using System.Runtime.InteropServices.ComTypes;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -50,9 +51,15 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public IExpression Compile(IReadOnlyList<Token> tokens)
         {
+            return InnerCompile(Precompiler.Precompile(tokens));
+        }
+        
+        /*****************************************************************************/
+        private IExpression InnerCompile(IEnumerable<Token> tokens)
+        {
             var stokens = new Stack<Token>(tokens.Reverse());
 
-            return CreateExpression(stokens, out string lastToken);
+            return CreateExpression(stokens, out string lastChar);
         }
         
         private const string _beginBoundary = @"[(";
@@ -72,8 +79,19 @@ namespace JTran.Expressions
                 var token = tokens.Pop();
                 IExpression expr = null;
 
+                lastToken = token.Value;
+
                 switch(token.Type)
                 {
+                    case Token.TokenType.Expression:
+                    {
+                        var expressionToken = token as ExpressionToken;
+
+                        expr = InnerCompile(expressionToken.Children);
+
+                        break;
+                    }
+
                     case Token.TokenType.Text:
                     {
                         if(tokens.Count > 0 && tokens.Peek().Value == "(")
@@ -138,7 +156,7 @@ namespace JTran.Expressions
                             var tertiary = new TertiaryExpression();
 
                             tertiary.Conditional = CreateExpression(left, op, right);
-                            tertiary.IfTrue = CreateExpression(tokens, out string lastToken2);
+                            tertiary.IfTrue      = CreateExpression(tokens, out string lastToken2);
 
                             if(lastToken2 != ":")
                                 throw new Transformer.SyntaxException("Missing ':' in tertiary expression");
@@ -189,6 +207,8 @@ namespace JTran.Expressions
             return CreateExpression(left, op, right);
         }
 
+        #region Private
+       
         /*****************************************************************************/
         private IExpression CreateExpression(IExpression left, IOperator op, IExpression right)
         {            
@@ -280,5 +300,7 @@ namespace JTran.Expressions
                     throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
             }
         }
+
+        #endregion
     }
 }

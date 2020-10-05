@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -29,11 +30,12 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class Token
     { 
+        /*****************************************************************************/
         public Token()
         {
-
         }
 
+        /*****************************************************************************/
         public Token(string val, TokenType tokenType = TokenType.Text)
         {
            this.Value = val;
@@ -52,8 +54,22 @@ namespace JTran.Expressions
             DLiteral,
             Number,
             Punctuation,
-            Operator
+            Operator,
+            Expression
         }    
+    }
+
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class ExpressionToken : Token
+    { 
+        /*****************************************************************************/
+        public ExpressionToken()
+        {
+            Type = TokenType.Expression;
+        }
+
+        public List<Token> Children  { get; set; } = new List<Token>();  
     }
 
     /*****************************************************************************/
@@ -204,5 +220,5 @@ namespace JTran.Expressions
         }
 
         #endregion
-    }
+     }
 }

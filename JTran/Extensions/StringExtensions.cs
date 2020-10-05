@@ -29,7 +29,7 @@ namespace JTran.Extensions
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal static class StringExtensions
+    public static class StringExtensions
     {
         /****************************************************************************/
         internal static bool IsSingleQuoted(this string s)
@@ -50,7 +50,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static object JsonToExpando(this string s)
+        public static object JsonToExpando(this string s)
         {
             var convertor = new ExpandoObjectConverter();
             

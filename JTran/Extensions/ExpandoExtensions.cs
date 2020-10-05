@@ -31,7 +31,7 @@ namespace JTran.Extensions
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal static class ExpandoExtensions
+    public static class ExpandoExtensions
     {
         /****************************************************************************/
         internal static ExpandoObject SetParent(this ExpandoObject obj)
@@ -55,7 +55,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static string ToJson(this ExpandoObject obj)
+        public static string ToJson(this ExpandoObject obj)
         {            
             var sb = new StringBuilder();
 
@@ -77,7 +77,13 @@ namespace JTran.Extensions
             {
                 sb.Append(kv.Key + ":");
 
-                if(kv.Value is IList list)
+                if(kv.Value == null)
+                {
+                    var comma = (index == numItems-1) ? "" : ",";
+
+                    sb.AppendLine(" null" + comma);
+                }
+                else if(kv.Value is IList list)
                 {
                     sb.AppendLine();
                     sb.AppendLine("[");
