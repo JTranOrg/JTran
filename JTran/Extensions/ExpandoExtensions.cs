@@ -107,7 +107,11 @@ namespace JTran.Extensions
                 {   
                     var comma = (index == numItems-1) ? "" : ",";
                     
-                    if(long.TryParse(kv.Value.ToString(), out long lval))
+                    if(kv.Value is bool)
+                        sb.AppendLine(" " + kv.Value.ToString().ToLower() + comma);
+                    else if(bool.TryParse(kv.Value.ToString(), out bool bval))
+                        sb.AppendLine(" " + bval.ToString().ToLower() + comma);
+                    else if(long.TryParse(kv.Value.ToString(), out long lval))
                         sb.AppendLine(" " + lval.ToString() + comma);
                     else if(decimal.TryParse(kv.Value.ToString(), out decimal dval))
                         sb.AppendLine(" " + dval.ToString().ReplaceEnding(".0", "") + comma);
