@@ -81,6 +81,20 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_complex_bool_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("$IsLicensed && Licensed && Age < 21"));
+            var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
+   
+            context.SetVariable("IsLicensed", true);
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
         public void Compiler_Addition_Success()
         {
             var parser     = new Parser();
@@ -201,6 +215,30 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
             Assert.AreEqual("Robert", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_Multple_Ands_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("$isactive && Type == $Type3 && $LicenseState != $CA && $LicenseState != $Unknown");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 42, Type = 2} ), "", 
+                                                                  new TransformerContext { Arguments = new Dictionary<string, object> 
+                                                                  { 
+                                                                    {"Type3", 2},
+                                                                    {"LicenseState", 7 },
+                                                                    {"CA", 1},
+                                                                    {"Unknown", 0},
+                                                                    {"isactive", true}
+                                                                  }});
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.EvaluateToBool(context);
+
+            Assert.IsTrue(result);
         }
 
         #region Parenthesis

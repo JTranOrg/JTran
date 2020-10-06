@@ -33,18 +33,29 @@ namespace JTran.Expressions
     internal static class Precompiler
     {
         private const string _beginBoundary = @"[(";
-        private const string _endBoundary   = @"]),";
+        private static IDictionary<string, bool> _endBoundary = new Dictionary<string, bool>
+        {
+            { "]", true },
+            { ")", true },
+            { ",", true }
+        };
+
+       private static IDictionary<string, bool> _conditionals = new Dictionary<string, bool>
+        {
+            { "&&", true },
+            { "||", true }
+        };
 
         /*****************************************************************************/
         internal static IList<Token> Precompile(IEnumerable<Token> tokens)
         {
-            return InnerPrecompile(new Queue<Token>(tokens), out Token last);
+            return InnerPrecompile(new Queue<Token>(tokens), false, out Token last);
         }
 
         #region Private 
 
         /*****************************************************************************/
-        private static List<Token> InnerPrecompile(Queue<Token> tokens, out Token last)
+        private static List<Token> InnerPrecompile(Queue<Token> tokens, bool conditional, out Token last)
         {
             var outputTokens = new List<Token>();
 
@@ -52,15 +63,22 @@ namespace JTran.Expressions
 
             while(tokens.Count > 0)
             {
-                var token = tokens.Dequeue();
+                var token = tokens.Peek();
 
                 last = token;
 
                 if(token.Value == "?")
                 {
-                    HandleTertiary(tokens, outputTokens, token);
+                    if(!conditional)
+                    {
+                        tokens.Dequeue();
+                        HandleTertiary(tokens, outputTokens, token);
+                    }
+
                     break;
                 }
+
+                tokens.Dequeue();
 
                 if(token.Value == ":")
                 {
@@ -71,7 +89,7 @@ namespace JTran.Expressions
                 {
                     var expressionToken = new ExpressionToken();
 
-                    expressionToken.Children = InnerPrecompile(tokens, out last);
+                    expressionToken.Children = InnerPrecompile(tokens, false, out last);
 
                     if(token.Value == "[")
                     {
@@ -79,17 +97,23 @@ namespace JTran.Expressions
                             throw new Transformer.SyntaxException("Missing \"]\" in array indexer expression");
 
                         outputTokens.Add(token);
-                        outputTokens.Add(expressionToken);
+                        outputTokens.Add(ExpressionOrSingle(expressionToken));
                         outputTokens.Add(last);
                     }
                     else
-                        outputTokens.Add(expressionToken);
+                        outputTokens.Add(ExpressionOrSingle(expressionToken));
 
                     continue;
                 }
 
-                if(_endBoundary.Contains(token.Value))
+                if(_endBoundary.ContainsKey(token.Value))
                     break;
+
+                if(_conditionals.ContainsKey(token.Value))
+                {
+                    PopExpression(tokens, outputTokens, token, true, out last);
+                    continue;
+                }
 
                 // Is it a function call?
                 if(token.Type == Token.TokenType.Text && tokens.Count > 0 && tokens.Peek().Value == "(")
@@ -103,7 +127,7 @@ namespace JTran.Expressions
                     { 
                         var expressionToken = new ExpressionToken();
 
-                        expressionToken.Children = InnerPrecompile(tokens, out last);
+                        expressionToken.Children = InnerPrecompile(tokens, false, out last);
 
                         outputTokens.Add(ExpressionOrSingle(expressionToken));
                         outputTokens.Add(last);
@@ -128,32 +152,47 @@ namespace JTran.Expressions
 
         private static Token ExpressionOrSingle(ExpressionToken expressionToken)
         {
-            return expressionToken.Children.Count == 1 ? expressionToken.Children[0] : expressionToken;
+            if(expressionToken.Children.Count == 1)
+            {
+                var result = expressionToken.Children[0];
+
+                if(result is ExpressionToken exprTokenInner)
+                    return ExpressionOrSingle(exprTokenInner);
+
+                return result;
+            }
+            return expressionToken;
+        }
+
+        /*****************************************************************************/
+        private static void PopExpression(Queue<Token> tokens, IList<Token> outputTokens, Token token, bool conditional, out Token last)
+        {
+            var expressionToken = new ExpressionToken() { Children = new List<Token>(outputTokens) };
+
+            outputTokens.Clear();
+            outputTokens.Add(ExpressionOrSingle(expressionToken));
+            outputTokens.Add(token);
+
+            expressionToken = new ExpressionToken();
+
+            expressionToken.Children = InnerPrecompile(tokens, conditional, out last);
+
+            outputTokens.Add(ExpressionOrSingle(expressionToken));
         }
 
         /*****************************************************************************/
         internal static void HandleTertiary(Queue<Token> tokens, IList<Token> outputTokens, Token token)
         {
-            var expressionToken = new ExpressionToken() { Children = new List<Token>(outputTokens) };
-
-            outputTokens.Clear();
-            outputTokens.Add(expressionToken);
-            outputTokens.Add(token);
-
-            expressionToken = new ExpressionToken();
-
-            expressionToken.Children = InnerPrecompile(tokens, out Token last);
-
-            outputTokens.Add(ExpressionOrSingle(expressionToken));
+            PopExpression(tokens, outputTokens, token, false, out Token last);
 
             if(last.Value != ":")
                 throw new Transformer.SyntaxException("Missing \":\" in tertiary expression");
 
             outputTokens.Add(last);
 
-            expressionToken = new ExpressionToken();
+            var expressionToken = new ExpressionToken();
 
-            expressionToken.Children = InnerPrecompile(tokens, out Token last2);
+            expressionToken.Children = InnerPrecompile(tokens, false, out Token last2);
 
             outputTokens.Add(ExpressionOrSingle(expressionToken));
 
