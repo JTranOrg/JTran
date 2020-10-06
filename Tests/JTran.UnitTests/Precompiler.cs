@@ -122,14 +122,23 @@ namespace JTran.UnitTests
             var tokens2 = Precompiler.Precompile(tokens);
 
             Assert.IsNotNull(tokens2);
-            Assert.AreEqual(7,               tokens2.Count);
-            Assert.AreEqual("Name",          tokens2[0].Value);
-            Assert.AreEqual("==",            tokens2[1].Value);
-            Assert.AreEqual("bob",           tokens2[2].Value);
-            Assert.AreEqual("&&",            tokens2[3].Value);
-            Assert.AreEqual("City",          tokens2[4].Value);
-            Assert.AreEqual("==",            tokens2[5].Value);
-            Assert.AreEqual("San Francisco", tokens2[6].Value);
+            Assert.AreEqual(3,               tokens2.Count);
+
+            Assert.AreEqual(Token.TokenType.Expression, tokens2[0].Type);
+            Assert.AreEqual("&&",                       tokens2[1].Value);
+            Assert.AreEqual(Token.TokenType.Expression, tokens2[2].Type);
+
+
+            var exprToken1 = tokens2[0] as ExpressionToken;
+            var exprToken2 = tokens2[2] as ExpressionToken;
+
+            Assert.AreEqual("Name",          exprToken1.Children[0].Value);
+            Assert.AreEqual("==",            exprToken1.Children[1].Value);
+            Assert.AreEqual("bob",           exprToken1.Children[2].Value);
+
+            Assert.AreEqual("City",          exprToken2.Children[0].Value);
+            Assert.AreEqual("==",            exprToken2.Children[1].Value);
+            Assert.AreEqual("San Francisco", exprToken2.Children[2].Value);
         }
 
         [TestMethod]
@@ -204,15 +213,71 @@ namespace JTran.UnitTests
 
             var exprToken1 = tokens2[0] as ExpressionToken;
 
-            Assert.AreEqual(7,   exprToken1.Children.Count);
+            Assert.AreEqual(3, exprToken1.Children.Count);
 
-            Assert.AreEqual("Name",          exprToken1.Children[0].Value);
-            Assert.AreEqual("==",            exprToken1.Children[1].Value);
-            Assert.AreEqual("bob",           exprToken1.Children[2].Value);
-            Assert.AreEqual("&&",            exprToken1.Children[3].Value);
-            Assert.AreEqual("City",          exprToken1.Children[4].Value);
-            Assert.AreEqual("==",            exprToken1.Children[5].Value);
-            Assert.AreEqual("Seattle",       exprToken1.Children[6].Value);
+            Assert.AreEqual(Token.TokenType.Expression, exprToken1.Children[0].Type);
+            Assert.AreEqual("&&",                       exprToken1.Children[1].Value);
+            Assert.AreEqual(Token.TokenType.Expression, exprToken1.Children[2].Type);
+
+            var exprToken3 = exprToken1.Children[0] as ExpressionToken;
+            var exprToken4 = exprToken1.Children[2] as ExpressionToken;
+
+            Assert.AreEqual("Name",          exprToken3.Children[0].Value);
+            Assert.AreEqual("==",            exprToken3.Children[1].Value);
+            Assert.AreEqual("bob",           exprToken3.Children[2].Value);
+
+            Assert.AreEqual("City",          exprToken4.Children[0].Value);
+            Assert.AreEqual("==",            exprToken4.Children[1].Value);
+            Assert.AreEqual("Seattle",       exprToken4.Children[2].Value);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_tertiary_double_and_expression()
+        {
+            var parser  = new Parser();
+            var tokens  = parser.Parse("Name == 'bob' && City == 'Seattle' && State == 'WA' ? 'Jones' : 'Anderson'");
+            var tokens2 = Precompiler.Precompile(tokens);
+
+            Assert.IsNotNull(tokens2);
+            Assert.AreEqual(5,               tokens2.Count);
+
+            Assert.AreEqual(Token.TokenType.Expression, tokens2[0].Type);
+            Assert.AreEqual("?",            tokens2[1].Value);
+            Assert.AreEqual("Jones",        tokens2[2].Value);
+            Assert.AreEqual(":",            tokens2[3].Value);
+            Assert.AreEqual("Anderson",     tokens2[4].Value);
+
+            var exprToken1 = tokens2[0] as ExpressionToken;
+
+            Assert.AreEqual(3, exprToken1.Children.Count);
+
+            Assert.AreEqual(Token.TokenType.Expression, exprToken1.Children[0].Type);
+            Assert.AreEqual("&&",                       exprToken1.Children[1].Value);
+            Assert.AreEqual(Token.TokenType.Expression, exprToken1.Children[2].Type);
+
+            var exprToken3 = exprToken1.Children[0] as ExpressionToken;
+
+            Assert.AreEqual("Name",          exprToken3.Children[0].Value);
+            Assert.AreEqual("==",            exprToken3.Children[1].Value);
+            Assert.AreEqual("bob",           exprToken3.Children[2].Value);
+
+            var exprToken4 = exprToken1.Children[2] as ExpressionToken;
+
+            Assert.AreEqual(3, exprToken4.Children.Count);
+            Assert.AreEqual(Token.TokenType.Expression, exprToken4.Children[0].Type);
+            Assert.AreEqual("&&",                       exprToken4.Children[1].Value);
+            Assert.AreEqual(Token.TokenType.Expression, exprToken4.Children[2].Type);
+
+            var exprToken5 = exprToken4.Children[0] as ExpressionToken;
+            var exprToken6 = exprToken4.Children[2] as ExpressionToken;
+
+            Assert.AreEqual("City",          exprToken5.Children[0].Value);
+            Assert.AreEqual("==",            exprToken5.Children[1].Value);
+            Assert.AreEqual("Seattle",       exprToken5.Children[2].Value);
+
+            Assert.AreEqual("State",          exprToken6.Children[0].Value);
+            Assert.AreEqual("==",             exprToken6.Children[1].Value);
+            Assert.AreEqual("WA",             exprToken6.Children[2].Value);
         }
 
         [TestMethod]
