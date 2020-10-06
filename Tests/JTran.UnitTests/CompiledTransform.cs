@@ -365,6 +365,58 @@ namespace JTran.UnitTests
           }";
 
         [TestMethod]
+
+        public void CompiledTransform_Transform_if_wbool_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformIfBool);
+            var result      = transformer.Transform(_dataIfBool, new TransformerContext { Arguments = new Dictionary<string, object> { {"Licensed", true }, {"YearsDriven", 10 }, {"LicenseState", 7 }} } , null);
+
+            Assert.AreNotEqual(_transformIfBool, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["CanDrive"]);
+            Assert.AreEqual("true", jresult["CanDrive"].ToString().ToLower());
+        }
+
+        private static readonly string _transformIfBool =
+        @"{
+            'name': 'bob',
+
+            '#variable(Local)': true,
+            '#variable(ShortHaul)': 2,
+            '#variable(LongHaul)': 3,
+            '#variable(MinYears)': 10,
+
+              '#variable(Type3)':       2,
+              
+              '#variable(Status_Published)':    0,
+              '#variable(Status_Active)':       1,
+              '#variable(Status_Expired)':      2,
+              
+              '#variable(CA)':  1,
+              '#variable(WA)':  2,
+              '#variable(Unknown)':  0,
+              '#variable(isactive)':  true,
+
+                 '#if($isactive && Type == $Type3 && $LicenseState != $CA && $LicenseState != $Unknown)':
+                {
+                    'CanDrive': true
+                }
+
+          }";
+
+        private static readonly string _dataIfBool =
+        @"{
+            
+                 'Age': 42,
+                 'Type': 2
+               
+          }";
+
+        [TestMethod]
         public void CompiledTransform_Transform_function_position_Success()
         {
             var transformer = CompiledTransform.Compile(_transformForEach2);
