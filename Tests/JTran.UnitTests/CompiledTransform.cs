@@ -1,9 +1,11 @@
+using System;
+using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json.Linq;
 
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 using JTran;
 using JTran.Expressions;
@@ -306,6 +308,61 @@ namespace JTran.UnitTests
             Assert.IsNotNull(jresult["Vehicles"]);
             Assert.AreEqual("Chevy", jresult["Vehicles"][0]["Stuff"]["Make"]);
         }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_CopyOf3_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOf3);
+            var result      = transformer.Transform(_dataCopyOf3, null, null);
+
+            Assert.AreNotEqual(_transformCopyOf3, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["output"]);
+
+            var val = jresult["output"]["modified"].Value<DateTime>();
+
+            Assert.AreEqual("2016-07-04T17:00:00.0000000-07:00", val.ToString("o"));
+        }
+
+        private static readonly string _transformCopyOf3 =
+        @"{
+            'output': '#copyof(Input)'
+          }";
+
+        private static readonly string _dataCopyOf3 =
+        @"{
+             'Input': { 'modified': '2016-07-04T17:00:00-07:00' }
+          }";
+
+        [TestMethod]
+        public void CompiledTransform_Transform_CopyOf4_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOf4);
+            var result      = transformer.Transform(_dataCopyOf4, null, null);
+
+            Assert.AreNotEqual(_transformCopyOf4, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["output"]);
+            Assert.AreEqual("true", jresult["output"]["modified"].ToString().ToLower());
+        }
+
+        private static readonly string _transformCopyOf4 =
+        @"{
+            'output': '#copyof(Input)'
+          }";
+
+        private static readonly string _dataCopyOf4 =
+        @"{
+             'Input': { 'modified': true }
+          }";
 
         [TestMethod]
         public void CompiledTransform_Transform_function_position_Success()
