@@ -108,7 +108,6 @@ namespace JTran.Expressions
 
             if(numParams > 0)
             { 
-
                 // Iterate thru all the method parameters 
                 for(int i = 0; i < numParams; ++i)
                 {
@@ -119,25 +118,28 @@ namespace JTran.Expressions
                     { 
                         var currentParam = parameters[i];
 
-                        // If the provided parameter value does not match the method parameter type then convert it
-                        if(!parmType.Equals(currentParam.GetType()) && parmType.Name != "Object")
+                        if(currentParam != null)
                         { 
-                            // If it's a nullable use the generic parameter type, e.g. int? ==> Nullable<int> ==> int
-                            if(parmType.Name.StartsWith("Nullable"))
-                                parmType = parmType.GenericTypeArguments[0];
-                            else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
-                            {
-                                if(currentParam is ExpandoObject exParam)
+                            // If the provided parameter value does not match the method parameter type then convert it
+                            if(!parmType.Equals(currentParam.GetType()) && parmType.Name != "Object")
+                            { 
+                                // If it's a nullable use the generic parameter type, e.g. int? ==> Nullable<int> ==> int
+                                if(parmType.Name.StartsWith("Nullable"))
+                                    parmType = parmType.GenericTypeArguments[0];
+                                else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
                                 {
-                                    var json = exParam.ToJson();
-                                    var typedParam = JsonConvert.DeserializeObject(json, parmType);
+                                    if(currentParam is ExpandoObject exParam)
+                                    {
+                                        var json = exParam.ToJson();
+                                        var typedParam = JsonConvert.DeserializeObject(json, parmType);
 
-                                    parameters[i] = typedParam;
-                                    continue;
+                                        parameters[i] = typedParam;
+                                        continue;
+                                    }
                                 }
-                            }
 
-                            parameters[i] = Convert.ChangeType(parameters[i], parmType);
+                                parameters[i] = Convert.ChangeType(parameters[i], parmType);
+                            }
                         }
                     }
                     // If no value provided but the parameter has a default value then use that
