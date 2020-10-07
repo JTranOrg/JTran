@@ -42,8 +42,11 @@ namespace JTran.Expressions
         /*****************************************************************************/
         protected int CompareTo(IExpression left, IExpression right, ExpressionContext context)
         {
-            var leftVal  = left.Evaluate(context).ToString(); 
-            var rightVal = right.Evaluate(context).ToString(); 
+            var leftVal  = left.Evaluate(context)?.ToString(); 
+            var rightVal = right.Evaluate(context)?.ToString(); 
+
+            if(leftVal == null && rightVal == null)
+                return 0;
 
             if(long.TryParse(leftVal, out long leftLong))
                 if(long.TryParse(rightVal, out long rightLong))
@@ -57,7 +60,10 @@ namespace JTran.Expressions
                 if(bool.TryParse(rightVal, out bool rightBool))
                     return leftBool.CompareTo(rightBool);
 
-            return leftVal.CompareTo(rightVal);
+            if(leftVal != null)
+                return leftVal.CompareTo(rightVal);
+
+            return -(rightVal.CompareTo(leftVal));
         }
     }
 

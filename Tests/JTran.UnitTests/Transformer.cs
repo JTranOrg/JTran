@@ -615,24 +615,6 @@ namespace JTran.UnitTests
              }
         }";
 
-        private static readonly string _transformTemplate1 =
-        @"{
-             '#template(formatname, name)': 
-             {
-                '#()':  '#($name)'
-             },
-
-            '#foreachgroup(Drivers, Make, Makes)':
-            {
-                Make:             '#(Make)',
-                '#foreach(currentgroup(), Drivers)':
-                {
-                    Name:      '#(formatname(Name))',
-                    Model:     '#(Model)'
-                }
-             }
-        }";
-
         private static readonly string _transformBool = 
         @"{
             '#variable(isValidState)':  '#(Address.State != null)',

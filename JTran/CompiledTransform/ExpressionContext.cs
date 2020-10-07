@@ -129,6 +129,47 @@ namespace JTran
         /*****************************************************************************/
         internal object GetDataValue(string name)
         { 
+            var otype = _data.GetType();
+
+            if(_data is ExpandoObject)
+                return GetDataValue(_data, name);
+
+            if(_data is ICollection<object> dict1)
+            { 
+                if(dict1.Count > 0 && dict1.First() is KeyValuePair<string, object>)
+                { 
+                    foreach(KeyValuePair<string, object> kv in dict1)
+                    {
+                        if(kv.Key == name)
+                            return kv.Value;
+                    }
+
+                    return null;
+                }
+            }
+
+            if(_data is ICollection<KeyValuePair<string, object>> dict2)
+            { 
+                foreach(var kv in dict2)
+                {
+                    if(kv.Key == name)
+                        return kv.Value;
+                }
+
+                return null;
+            }
+
+            if(_data is IDictionary dict)
+            { 
+                foreach(var key in dict.Keys)
+                {
+                    if(key.ToString() == name)
+                        return dict[name];
+                }
+
+                return null;
+            }
+
             if(_data is IList<object> list)
             {
                 var result = new List<object>();
