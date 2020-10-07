@@ -325,6 +325,39 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_Array_Indexer_Number_int_array_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Cars[0]");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Cars = new List<int> {21, 35, 62} } ));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(21m, decimal.Parse(result.ToString()));
+        }
+
+        [TestMethod]
+        public void Compiler_Array_Indexer_Number_int_array_as_var_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("$Indices[0]");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Model = "Chevy" } ));
+   
+            context.SetVariable("Indices", new List<int> {21, 35, 62} );
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(21m, decimal.Parse(result.ToString()));
+        }
+
+        [TestMethod]
         public void Compiler_Array_Indexer_Expression_Number_Success()
         {
             var parser     = new Parser();
@@ -332,6 +365,22 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("Cars[$WhichCar]");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), "", new TransformerContext { Arguments = new Dictionary<string, object> { {"WhichCar", 2}}});
+   
+            Assert.IsNotNull(expression);
+
+            dynamic result = expression.Evaluate(context);
+
+            Assert.AreEqual("Dodge", result.Make);
+        }
+
+        [TestMethod]
+        public void Compiler_Array_Indexer_Expression_Number_multilevel_var_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Cars[$Which.Car]");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), "", new TransformerContext { Arguments = new Dictionary<string, object> { {"Which", new Dictionary<string, object> { {"Car", 2}}}}});
    
             Assert.IsNotNull(expression);
 

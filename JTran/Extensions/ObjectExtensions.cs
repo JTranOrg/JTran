@@ -182,6 +182,29 @@ namespace JTran.Extensions
             }
 
             var otype = obj.GetType();
+
+            if(obj is ICollection<KeyValuePair<string, object>> dict1)
+            { 
+                foreach(var kv in dict1)
+                {
+                    if(kv.Key == name)
+                        return kv.Value;
+                }
+
+                return null;
+            }
+
+            if(obj is IDictionary dict)
+            { 
+                foreach(var key in dict.Keys)
+                {
+                    if(key.ToString() == name)
+                        return dict[name];
+                }
+
+                return null;
+            }
+
             var prop  = otype.GetProperty(name);
             
             return prop.GetValue(obj);

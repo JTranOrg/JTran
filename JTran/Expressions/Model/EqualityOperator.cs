@@ -24,48 +24,27 @@ namespace JTran.Expressions
 {
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class EqualOperator : IOperator
+    internal class EqualOperator : ComparisonOperarator
     {
-        public int Precedence => 9;
+        public override int Precedence => 9;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
-        {
-            var leftVal  = left.Evaluate(context);
-            var rightVal = right.Evaluate(context);
-
-            if(leftVal is decimal || rightVal is decimal)
-                return Convert.ToDecimal(leftVal).Equals(Convert.ToDecimal(rightVal));
-
-            return object.Equals(leftVal, rightVal);
+            return CompareTo(left, right, context) == 0;
         }    
     }
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class NotEqualOperator : IOperator
+    internal class NotEqualOperator : ComparisonOperarator
     {
-        public int Precedence => 8;
+        public override int Precedence => 8;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
-        {
-            var leftVal = left.Evaluate(context);
-            var rightVal = right.Evaluate(context);
-
-            return !object.Equals(leftVal, rightVal);
+            return CompareTo(left, right, context) != 0;
         }
     }
 

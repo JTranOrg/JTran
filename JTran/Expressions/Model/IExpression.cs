@@ -21,12 +21,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
-
-using Newtonsoft.Json.Linq;
-
-using JTran.Extensions;
+using System.Dynamic;
 
 namespace JTran.Expressions
 {
@@ -161,6 +156,15 @@ namespace JTran.Expressions
                 if(expr is IList<object> outList2)
                 { 
                     result.AddRange(outList2);
+                }
+                else if(expr is string || expr is ExpandoObject)
+                {
+                    result.Add(expr);
+                }
+                else if(expr is IEnumerable outEnumerable)
+                { 
+                    foreach(var item in outEnumerable)
+                        result.Add(item);
                 }
                 else
                     result.Add(expr);

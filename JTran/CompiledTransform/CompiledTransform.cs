@@ -555,7 +555,13 @@ namespace JTran
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
-            output.Add(new JProperty(this.Name?.Evaluate(context)?.ToString() ?? "", this.Value.Evaluate(context)));
+            var name = this.Name?.Evaluate(context)?.ToString() ?? "";
+            var val  = this.Value.Evaluate(context);
+
+            if(val is ExpandoObject)
+                val = val.ExpandoToObject<JObject>();
+
+            output.Add(new JProperty(name, val));
         }
     }
 
