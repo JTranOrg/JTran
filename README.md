@@ -35,6 +35,7 @@ JTran is made up of processing instructions. All processing instructions start w
     - <strong>[Function Reference](docs/functions.md)</strong> - Functions are called within expressions.
     - <strong>[Extension Functions](docs/extensions.md)</strong> - Adding custom Extension Functions.
 - <strong>[Elements](#Elements)</strong> - Elements are akin to programming constructs, e.g foreach and if. 
+- <strong>[Templates](#Templates)</strong> - Templates are reusable snippets of JTran code 
 
 <br>
 
@@ -226,7 +227,6 @@ If the final property in a "dot" list is a simple property then an array of thos
 
 The result would be string array with the names of all the theaters in every city that is in Washington state.
 
-
 ##### Ancestor Indicators
 
 Consider the following example source data:
@@ -291,7 +291,6 @@ The only purpose of #bind is to change the scope:
     }
 
 The result is that any instruction inside the #bind block will operate on the contents of the Driver object instead of the root object.<br><br>
-
 
 #### #foreach
 
@@ -396,6 +395,33 @@ If no array name is specified then no new array is created and contents are outp
         }
     }
 
+#### #include
+
+#include provides a way to include JTran code from external files. Templates are the only things that can be in included files.
+
+    {
+        "#include":     "mytemplates.json",  // The value cannot be an expression. It must be a hardcoded value
+
+        "#calltemplate(Automobile)":  {}  // Automobile would be a template defined in mytemplates.json
+    }
+
+You must specify how the included files are loaded when instantiating the transformer:
+
+
+    public class JTranSample
+    {
+        public string Transform(string transform, string source)
+        {
+            var transformer = new JTran.Transformer(transform1,
+                                                    null, 
+                                                    new Dictionary<string, string> { "mytemplates.json", "{ ... }"} ); // You can implement your own IDictionary to to do deferred loading, 
+                                                                                                                       //     loading from file or cloud storage, etc
+
+            var context = new TransformContext { Arguments = new Dictionary<string, object>() };
+
+            return transformer.Transform(source, context);
+        }
+    }
 
 #### #if
 
@@ -499,7 +525,6 @@ Would then output this:
         Driver: "Joe Smith",
         Car: "Pontiac Firebird"
     }
-
 
 #### #else
 
@@ -649,3 +674,95 @@ Would then output this:
         }
     }
 
+### Templates
+
+Templates are reusable snippets of JTran code that can be called by other JTran code.
+
+###### Transform
+
+    {
+        "#foreach(Cars, Vehicles)":
+        {
+            "#calltemplate(Automobile)":  {}  
+        }
+
+        // Templates must be defined in the root object but can be defined before or after it's use
+        "#template(Automobile)":
+        {
+            "Make":   "#(Make)",
+            "Model":  "#(Model)",
+            "Active":  true
+        }
+
+    }
+
+###### Source Document
+
+    {
+        Cars:
+        [
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Make:    "Chevy",
+               Model:   "Corvette",
+               Active:  true
+            },
+            {
+               Make:    "Pontiac",
+               Model:   "Firebird",
+               Active:  true
+           }
+        ]
+    }
+
+
+Templates can be included from external files (see #include):
+
+###### Transform
+
+    {
+        "#include":          "mytemplate.json",
+
+        "#foreach(Cars, Vehicles)":
+        {
+            "#calltemplate(Automobile)":  {}  
+        }
+    }
+
+You can pass parameters to a template
+
+###### Transform
+
+    {
+        "foreach(Cars, Vehicles)":
+        {
+            "#calltemplate(Automobile)":  
+            {
+                "Make":   "#(Make)"
+                "Model":   "#(Model)"
+            }  
+        }
+
+        // Templates must be defined in the root object but can be defined before or after it's use
+        "#template(Automobile, Make, Model)":
+        {
+            "Make":   "#($Make)",
+            "Model":  "#($Model)",
+            "Active":  true
+        }
+    }

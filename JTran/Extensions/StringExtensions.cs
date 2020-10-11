@@ -17,8 +17,10 @@
  *                                                                          
  ****************************************************************************/
 
-using System.Runtime.CompilerServices;
+using System;
 using System.Dynamic;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -79,6 +81,26 @@ namespace JTran.Extensions
         internal static T ExpandoToObject<T>(this object obj)
         {            
             return JsonConvert.DeserializeObject<T>((obj as ExpandoObject).ToJson());
+        }
+
+        /****************************************************************************/
+        internal static bool TryParseDateTime(this string sdate, out DateTime dtValue)
+        {
+            dtValue = DateTime.MinValue;
+
+            if(sdate == null)
+                return false;
+
+            if(sdate.EndsWith("Z"))
+            {
+                if(!DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue)) 
+                    return false;
+
+                dtValue = dtoValue.UtcDateTime;
+                return true;
+            }
+
+            return DateTime.TryParse(sdate, out dtValue);
         }
     }
 }

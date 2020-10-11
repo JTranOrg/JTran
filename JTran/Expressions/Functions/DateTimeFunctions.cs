@@ -60,7 +60,7 @@ namespace JTran.Expressions
 
             var sdate = data.ToString();
 
-            if(!DateTime.TryParse(sdate, out DateTime dtValue))
+            if(!sdate.TryParseDateTime(out DateTime dtValue))
                 return sdate;
 
             return dtValue.Date.ToString("yyyy-MM-dd");
@@ -201,7 +201,7 @@ namespace JTran.Expressions
 
             var sdate = data.ToString();
 
-            if(!DateTime.TryParse(sdate, out DateTime dtValue))
+            if(!sdate.TryParseDateTime(out DateTime dtValue))
                 return sdate;
          
             return fn(dtValue).ToString("o");
@@ -213,7 +213,7 @@ namespace JTran.Expressions
             if(data == null)
                 return 0;
 
-            if(!DateTime.TryParse(data.ToString(), out DateTime dtValue))
+            if(!data.ToString().TryParseDateTime(out DateTime dtValue))
                 return 0;
 
             if(zeroIfMin && dtValue == DateTime.MinValue)

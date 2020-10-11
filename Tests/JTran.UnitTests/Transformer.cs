@@ -21,6 +21,8 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transform1, _data1);
         }
 
+        #region ForEach
+
         [TestMethod]
         public void Transformer_Transform_ForEach_Success()
         {
@@ -176,6 +178,8 @@ namespace JTran.UnitTests
             Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
         }
 
+        #endregion
+
         [TestMethod]
         public void Transformer_Transform_Email_Fails()
         {
@@ -183,6 +187,8 @@ namespace JTran.UnitTests
 
              Assert.ThrowsException<Transformer.SyntaxException>( ()=> transformer.Transform(_dataEmail) );
         }
+
+        #region ExtensionFunction
 
         [TestMethod]
         public void Transformer_Transform_ExtensionFunction_Succeeds()
@@ -219,6 +225,8 @@ namespace JTran.UnitTests
             Assert.AreEqual("Blue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
             Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
         }
+
+        #endregion
 
         [TestMethod]
         public void Transformer_Transform_null_reference_Succeeds()
@@ -270,8 +278,10 @@ namespace JTran.UnitTests
             var json = JObject.Parse(result);
 
             Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-        }        
-        
+        }
+
+        #region Scope Symbol
+
         [TestMethod]
         public void Transformer_Transform_scope_symbol_Succeeds()
         {
@@ -285,6 +295,19 @@ namespace JTran.UnitTests
             Assert.AreEqual("Camaro", json["Cars"][0]["Details"]["Model"].ToString());
         }
 
+        private static readonly string _transformScopeSymbol = 
+        @"{
+             '#foreach(Automobiles, Cars)':
+             {
+                '#variable(this)':   '#(@)',
+
+                'Owner':        '#(//Owner)',
+                'Details':      '#copyof($this)' 
+            }
+        }";
+
+        #endregion
+
         [TestMethod]
         public void Transformer_Transform_tertiary_Succeeds()
         {
@@ -297,7 +320,6 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("abc", json["MyProp"].ToString());
         }
-
         
         #region ForEachGroup
 
@@ -325,6 +347,26 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Template_aftercall_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplate3, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplate3, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Template_scoped_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplate4, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplate4, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ inner: { FirstName: \"bob\", Year: 1965 } }"), JObject.Parse(result)));
+        }
+
         private static readonly string _transformTemplate2 =
         @"{
              '#template(DisplayName, name)': 
@@ -335,9 +377,226 @@ namespace JTran.UnitTests
 
             '#calltemplate(DisplayName)':
             {
-                name: 'bob',
+                name: 'bob'
             }
-        }"; 
+        }";
+
+        private static readonly string _transformTemplate3 =
+        @"{
+            '#calltemplate(DisplayName)':
+            {
+                name: 'bob',
+            },
+
+            '#template(DisplayName, name)': 
+            {
+                'FirstName':  '#($name)',
+                'Year':       1965
+            }
+        }";
+
+        private static readonly string _transformTemplate4 =
+        @"{
+            'inner':
+            {
+                '#calltemplate(DisplayName)':
+                {
+                    name: 'bob'
+                },
+            },
+
+            '#template(DisplayName, name)': 
+            {
+                'FirstName':  '#($name)',
+                'Year':       1965
+            }
+        }";
+
+        #endregion
+
+        #region Include
+
+        [TestMethod]
+        public void Transformer_Transform_Include_Success()
+        {
+            var transformer = new JTran.Transformer(_transformInclude, null, new Dictionary<string, string> { {"otherfile.json", _otherFile} });
+            var result      = transformer.Transform(_dataForEachGroup1, null);
+   
+            Assert.AreNotEqual(_transformInclude, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
+        }
+
+        private static readonly string _transformInclude =
+        @"{
+            '#include':      'otherfile.json',
+
+            '#calltemplate(DisplayName)':
+            {
+                name: 'bob'
+            }
+           
+        }";
+
+        private static readonly string _otherFile =
+        @"{
+             '#template(DisplayName, name)': 
+             {
+                'FirstName':  '#($name)',
+                'Year':       1965
+             }
+        }";
+
+        #endregion
+
+        #region Arrays
+
+        [TestMethod]
+        public void Transformer_Transform_Array_noexpressions_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayRaw, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArrayRaw, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_noexpressions2_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayRaw2, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArrayRaw2, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0]["Name"].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_noexpressions3_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayRaw3, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArrayRaw3, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_expressions_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArray, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArray, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_expressions2_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArray2, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArray2, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
+            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["Names"][1].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_expressions3_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformNamedArray, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformNamedArray, _data1);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["bob"][0].ToString());
+            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["bob"][1].ToString());
+        }
+
+        private static readonly string _transformArrayRaw =
+        @"{
+            'Customers':
+            [
+                'JohnSmith'
+            ]
+        }";
+
+        private static readonly string _transformArrayRaw2 =
+        @"{
+            'Customers':
+            [
+                {
+                    'Name': 'JohnSmith'
+                }
+            ]
+        }";
+
+        private static readonly string _transformArrayRaw3 =
+        @"{
+            'Customers':
+            [
+                {
+                    'Names': 
+                    [
+                        'John',
+                        'Smith'
+                    ]
+                }
+            ]
+        }";
+
+        private static readonly string _transformArray =
+        @"{
+            'Customers':
+            [
+                '#(FirstName + LastName)'
+            ]
+        }";
+
+        private static readonly string _transformArray2 =
+        @"{
+            'Customers':
+            [
+                {
+                    'Names': 
+                    [
+                        '#(FirstName)',
+                        '#(LastName)'
+                    ]
+                }
+            ]
+        }";
+
+        private static readonly string _transformNamedArray =
+        @"{
+            'Customers':
+            [
+                {
+                    '#(ArrayName)': 
+                    [
+                        '#(FirstName)',
+                        '#(LastName)'
+                    ]
+                }
+            ]
+        }";
 
         #endregion
 
@@ -639,17 +898,6 @@ namespace JTran.UnitTests
             }
         }";
 
-        private static readonly string _transformScopeSymbol = 
-        @"{
-             '#foreach(Automobiles, Cars)':
-             {
-                '#variable(this)':   '#(@)',
-
-                'Owner':        '#(//Owner)',
-                'Details':      '#copyof($this)' 
-            }
-        }";
-
         private static readonly string _transformTertiary = 
         @"{
             '#variable(var1)': 'abc',
@@ -665,7 +913,8 @@ namespace JTran.UnitTests
         private static readonly string _data1 =
         @"{
             FirstName: 'John',
-            LastName:  'Smith'
+            LastName:  'Smith',
+            ArrayName: 'bob'
         }";
 
         private static readonly string _data2 =
