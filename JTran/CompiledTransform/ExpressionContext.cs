@@ -129,6 +129,9 @@ namespace JTran
         /*****************************************************************************/
         internal object GetDataValue(string name)
         { 
+            if(_data == null)
+                return null;
+
             var otype = _data.GetType();
 
             if(_data is ExpandoObject)
@@ -209,11 +212,9 @@ namespace JTran
                 // If it's any kind of number return it as a decimal
                 if(decimal.TryParse(val.ToString(), out decimal dVal))
                     return dVal;
-
-                return val;
             }
 
-            return data.GetValue(name, null);
+            return val;
         }
     }
 

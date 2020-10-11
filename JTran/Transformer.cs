@@ -37,9 +37,9 @@ namespace JTran
         /// Construct a new Transformer
         /// </summary>
         /// <param name="transform">The JSON that defines the transform</param>
-        public Transformer(string transform, IEnumerable extensionFunctions)
+        public Transformer(string transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
         {
-            _transform = CompiledTransform.Compile(transform);
+            _transform = CompiledTransform.Compile(transform, includeSource);
             _extensionFunctions = CompileFunctions(extensionFunctions);
         }
 

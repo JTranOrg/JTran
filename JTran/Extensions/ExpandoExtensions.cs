@@ -67,6 +67,9 @@ namespace JTran.Extensions
         /****************************************************************************/
         private static void ToJson(this ExpandoObject obj, StringBuilder sb, bool last)
         {
+            if(obj == null)
+                return;
+
             sb.AppendLine("{");
 
             var dict     = (obj as IDictionary<string, object>).Where( kv=> !kv.Key.StartsWith("_jtran_") );
@@ -75,58 +78,64 @@ namespace JTran.Extensions
 
             foreach(var kv in dict)
             {
+                var comma = (index == numItems-1) ? "" : ",";
+
                 sb.Append(kv.Key + ":");
 
-                if(kv.Value == null)
-                {
-                    var comma = (index == numItems-1) ? "" : ",";
-
-                    sb.AppendLine(" null" + comma);
-                }
-                else if(kv.Value is IList list)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine("[");
-
-                    var childIndex = 0;
-                    var numChildItems = list.Count;
-
-                    foreach(var child in list)
-                    {
-                        (child as ExpandoObject).ToJson(sb, ++childIndex == numChildItems);
-                    }
-
-                    sb.AppendLine("]");
-                }
-                else if(!(kv.Value is string) && kv.Value.GetType().IsClass)
-                {
-                    sb.AppendLine();
-                    (kv.Value as ExpandoObject).ToJson(sb, index == numItems-1);                   
-                }
-                else
-                {   
-                    var comma = (index == numItems-1) ? "" : ",";
-                    
-                    if(kv.Value is bool)
-                        sb.AppendLine(" " + kv.Value.ToString().ToLower() + comma);
-                    else if(bool.TryParse(kv.Value.ToString(), out bool bval))
-                        sb.AppendLine(" " + bval.ToString().ToLower() + comma);
-                    else if(long.TryParse(kv.Value.ToString(), out long lval))
-                        sb.AppendLine(" " + lval.ToString() + comma);
-                    else if(decimal.TryParse(kv.Value.ToString(), out decimal dval))
-                        sb.AppendLine(" " + dval.ToString().ReplaceEnding(".0", "") + comma);
-                    else if(kv.Value is DateTime dtVal)
-                        sb.AppendLine(" \"" + dtVal.ToString("o") + "\"" + comma);
-                    else if(DateTime.TryParse(kv.Value.ToString(), out DateTime dtVal2))
-                        sb.AppendLine(" \"" + dtVal2.ToString("o") + "\"" + comma);
-                    else
-                        sb.AppendLine(" \"" + kv.Value.ToString() + "\"" + comma);
-                }
+                ToJson(kv.Value, sb, comma);
 
                 ++index;
             }
 
             sb.AppendLine("}" + (last ? "" : ","));
+        }
+
+        /****************************************************************************/
+        internal static void ToJson(object value, StringBuilder sb, string comma)
+        {
+            if(value == null)
+            {
+                sb.AppendLine(" null" + comma);
+            }
+            else if(value is IList list)
+            {
+                sb.AppendLine();
+                sb.AppendLine("[");
+
+                var childIndex = 0;
+                var numChildItems = list.Count;
+
+                foreach(var child in list)
+                {
+                    var childComma = (++childIndex == numChildItems) ? "" : ",";
+
+                    ToJson(child, sb, childComma);
+                }
+
+                sb.AppendLine("]" + comma);
+            }
+            else if(value is ExpandoObject expando)
+            {
+                sb.AppendLine();
+                expando.ToJson(sb, comma == "");                   
+            }
+            else
+            {                       
+                if(value is bool)
+                    sb.AppendLine(" " + value.ToString().ToLower() + comma);
+                else if(bool.TryParse(value.ToString(), out bool bval))
+                    sb.AppendLine(" " + bval.ToString().ToLower() + comma);
+                else if(long.TryParse(value.ToString(), out long lval))
+                    sb.AppendLine(" " + lval.ToString() + comma);
+                else if(decimal.TryParse(value.ToString(), out decimal dval))
+                    sb.AppendLine(" " + dval.ToString().ReplaceEnding(".0", "") + comma);
+                else if(value is DateTime dtVal)
+                    sb.AppendLine(" \"" + dtVal.ToString("o") + "\"" + comma);
+                else if(DateTime.TryParse(value.ToString(), out DateTime dtVal2))
+                    sb.AppendLine(" \"" + dtVal2.ToString("o") + "\"" + comma);
+                else
+                    sb.AppendLine(" \"" + value.ToString() + "\"" + comma);
+            }
         }
 
         /****************************************************************************/
