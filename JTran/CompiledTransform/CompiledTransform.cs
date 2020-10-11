@@ -30,6 +30,7 @@ using JTran.Extensions;
 using JTran.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -39,9 +40,13 @@ namespace JTran
     /****************************************************************************/
     internal class CompiledTransform : TContainer
     {
+        private readonly IDictionary<string, bool> _loadedIncludes = new Dictionary<string, bool>();
+        private readonly IDictionary<string, string> _includeSource;
+
         /****************************************************************************/
-        internal protected CompiledTransform()
+        internal protected CompiledTransform(IDictionary<string, string> includeSource)
         {
+            _includeSource = includeSource;
         }
 
         /****************************************************************************/
@@ -56,13 +61,34 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal static CompiledTransform Compile(string source)
+        internal static CompiledTransform Compile(string source, IDictionary<string, string> includeSource = null)
         {
-            var transform = new CompiledTransform();
+            var transform = new CompiledTransform(includeSource);
 
-            transform.Compile(JObject.Parse(source));
+            transform.Compile(transform, JObject.Parse(source));
 
             return transform;
+        }
+
+        /*****************************************************************************/
+        internal void LoadInclude(string fileName)
+        {
+            if(_includeSource != null)
+            { 
+                fileName = fileName.ToLower();
+
+                if(!_loadedIncludes.ContainsKey(fileName))
+                {
+                    if(!_includeSource.ContainsKey(fileName))   
+                        throw new Transformer.SyntaxException($"include file not found: {fileName}");
+
+                    var include = _includeSource[fileName];
+
+                    Compile(this, JObject.Parse(include));
+
+                    _loadedIncludes.Add(fileName, true);
+                }
+            }
         }
     }
 
@@ -75,14 +101,18 @@ namespace JTran
         /****************************************************************************/
         internal protected IValue CreateValue(JToken value)
         {
-            var sval = value.ToString();
+            return CreateValue(value.ToString());
+        }   
 
+        /****************************************************************************/
+        private IValue CreateValue(string sval)
+        {
             if(!sval.StartsWith("#("))
             { 
-                if(decimal.TryParse(value.ToString(), out decimal val))
+                if(decimal.TryParse(sval, out decimal val))
                     return new NumberValue(val);
 
-                return new SimpleValue(value);
+                return new SimpleValue(sval);
             }
 
             if(!sval.EndsWith(")"))
@@ -118,11 +148,11 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected void Compile(JObject source)
+        internal protected void Compile(CompiledTransform transform, JObject source)
         {   
             foreach(var child in source)
             {
-                var newToken = CreateToken(child.Key, child.Value);
+                var newToken = CreateToken(transform, child.Key, child.Value);
 
                 if(newToken != null)
                     this.Children.Add(newToken);
@@ -132,12 +162,18 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private TToken CreateToken(string name, JToken child)
+        private TToken CreateToken(CompiledTransform transform, string name, JToken child)
         {   
             var t = child.GetType().ToString();
 
             if(child is JValue val)
             { 
+                if(name.StartsWith("#include"))
+                { 
+                    transform.LoadInclude(val.Value.ToString());
+                    return null;
+                }
+
                 if(name.StartsWith("#variable"))
                     return new TVariable(name, val);
 
@@ -192,6 +228,9 @@ namespace JTran
 
                 return new TObject(name, obj);
             }
+            
+            if(child is JArray array)
+                return new TArray(name, array);
 
             return null;
         }    
@@ -206,7 +245,7 @@ namespace JTran
         {
             this.Name = CreateValue(name);
 
-            Compile(val);
+            Compile(null, val);
         }
 
         internal IValue Name  { get; set; }
@@ -231,7 +270,71 @@ namespace JTran
                 jarray.Add(child);
         }
     }
+    
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TArray : TContainer
+    {
+        /****************************************************************************/
+        internal TArray(string name, JArray array)
+        {
+            this.Name = CreateValue(name);
 
+            foreach(var item in array.Children())
+            {
+                if(item is JValue val)
+                   this.Children.Add(new TArrayItem(val));
+                else if(item is JObject obj)
+                   this.Children.Add(new TObject(null, obj)); 
+            }
+        }
+
+        internal IValue Name  { get; set; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var array = JArray.Parse("[]");
+
+            foreach(var item in this.Children)
+                item.Evaluate(array, context);
+
+            if(output is JObject joutput)
+            { 
+                var name = this.Name.Evaluate(context)?.ToString();
+
+                if(string.IsNullOrWhiteSpace(name))
+                    throw new Transformer.SyntaxException("Array name evaluates to null or empty string");
+
+                joutput.Add(name, array);
+            }
+            else if(output is JArray jarray)
+                jarray.Add(array);
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TArrayItem : TToken
+    {
+        private readonly IValue _val;
+
+        /****************************************************************************/
+        internal TArrayItem(JValue val) 
+        {
+            _val = CreateValue(val);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var value = _val.Evaluate(context);
+            var array = output as JArray;
+
+            array.Add(value);
+        }
+    }    
+    
     /****************************************************************************/
     /****************************************************************************/
     internal class TCopyOf : TToken
@@ -254,10 +357,18 @@ namespace JTran
         {
             var newScope = context.Data.GetValue(_expression, context);
             var name     = _name.Evaluate(context).ToString();
-            var json     = (newScope as ExpandoObject).ToJson();
-            var data     = JObject.Parse(json);
 
-            output.Add(new JProperty(name, data));
+            if(newScope is ExpandoObject expObject)
+            { 
+                var json = expObject.ToJson();
+                var data = JObject.Parse(json);
+
+                output.Add(new JProperty(name, data));
+            }
+            else if(newScope is IEnumerable list)
+            { 
+                output.Add(new JProperty(name, list.ToJArray()));
+            }
         }
     }
 
@@ -277,7 +388,7 @@ namespace JTran
             _expression = Compiler.Compile(parms[0]);
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
@@ -308,7 +419,7 @@ namespace JTran
             _expression = Compiler.Compile(name.Substring(0, name.Length - 1));
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
@@ -347,7 +458,7 @@ namespace JTran
         internal TElse(string name, JObject val) 
         {
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
@@ -376,7 +487,7 @@ namespace JTran
             _name       = parms.Length > 1 ? new Value(parms[1]) : null;
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
@@ -457,7 +568,7 @@ namespace JTran
             _name       = parms.Length > 2 ? new Value(parms[2]) : null;
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
@@ -603,7 +714,7 @@ namespace JTran
             this.Parameters.RemoveAt(0);
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         internal string Name      { get; }
@@ -629,18 +740,21 @@ namespace JTran
             _templateName = name.Substring("#calltemplate(".Length).ReplaceEnding(")", "");
 
             // Compile children
-            Compile(val);
+            Compile(null, val);
         }
 
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
+            var template = context.GetTemplate(_templateName);
+
+            if(template == null)
+                throw new Transformer.SyntaxException($"A template with that name was not found: {_templateName}");
+
             var newContext = new ExpressionContext(context.Data, context);
             var paramsOutput = JObject.Parse("{}");
 
             base.Evaluate(paramsOutput, newContext);
-
-            var template = context.GetTemplate(_templateName);
 
             foreach(var paramName in template.Parameters)
                 context.SetVariable(paramName, paramsOutput.GetValue(paramName).ToString());

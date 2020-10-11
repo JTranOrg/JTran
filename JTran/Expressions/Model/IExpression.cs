@@ -23,6 +23,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 
+using JTran.Extensions;
+
 namespace JTran.Expressions
 {
     /*****************************************************************************/
@@ -151,6 +153,13 @@ namespace JTran.Expressions
             {
                 var expr = _parts[i].Evaluate(new ExpressionContext(data, context));
 
+                if(expr == null)
+                {
+                    data = expr;
+                    result.Add(expr);
+                    continue;
+                }
+
                 result.Clear();
 
                 if(expr is IList<object> outList2)
@@ -160,6 +169,12 @@ namespace JTran.Expressions
                 else if(expr is string || expr is ExpandoObject)
                 {
                     result.Add(expr);
+                }
+                else if(expr.IsDictionary())
+                {
+                    data = expr;
+                    result.Add(expr);
+                    continue;
                 }
                 else if(expr is IEnumerable outEnumerable)
                 { 

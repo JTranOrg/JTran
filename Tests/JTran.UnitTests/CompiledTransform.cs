@@ -275,6 +275,8 @@ namespace JTran.UnitTests
             Assert.AreEqual("Boulder", driver.Driver.LastName);
         }
 
+        #region CopyOf
+
         [TestMethod]
         public void CompiledTransform_Transform_CopyOf_Success()
         {
@@ -354,6 +356,40 @@ namespace JTran.UnitTests
             Assert.AreEqual("true", jresult["output"]["modified"].ToString().ToLower());
         }
 
+        [TestMethod]
+        public void CompiledTransform_Transform_CopyOf_array_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOf4);
+            var result      = transformer.Transform(_dataCopyOf5, null, null);
+
+            Assert.AreNotEqual(_transformCopyOf4, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["output"]);
+            Assert.IsTrue(jresult["output"] is JArray);
+            Assert.AreEqual("red", (jresult["output"] as JArray)[0].ToString());
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_CopyOf_array2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOf4);
+            var result      = transformer.Transform(_dataCopyOf6, null, null);
+
+            Assert.AreNotEqual(_transformCopyOf4, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+            Assert.IsNotNull(jresult["output"]);
+            Assert.IsTrue(jresult["output"] is JArray);
+            Assert.AreEqual("Tomato", ((jresult["output"] as JArray)[0]["RedShades"] as JArray)[2].ToString());
+        }
+
         private static readonly string _transformCopyOf4 =
         @"{
             'output': '#copyof(Input)'
@@ -364,8 +400,50 @@ namespace JTran.UnitTests
              'Input': { 'modified': true }
           }";
 
-        [TestMethod]
+        private static readonly string _dataCopyOf5 =
+        @"{
+             'Input': 
+             [
+                'red',
+                'green',
+                'blue'
+             ]
+          }";
 
+        private static readonly string _dataCopyOf6 =
+        @"{
+             'Input': 
+             [
+                {
+                    'RedShades': 
+                    [
+                        'Pink',
+                        'Bisque',
+                        'Tomato'
+                    ]
+                 },
+                {
+                    'GreenShades': 
+                    [
+                        'Light Green',
+                        'Lime',
+                        'Hunter'
+                    ]
+                 },
+                {
+                    'BlueShades': 
+                    [
+                        'Turqoise',
+                        'Light Blue',
+                        'Slate'
+                    ]
+                 },
+                
+             ]
+          }";
+        #endregion
+
+        [TestMethod]
         public void CompiledTransform_Transform_if_wbool_Success()
         {
             var transformer = CompiledTransform.Compile(_transformIfBool);
