@@ -87,6 +87,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void DateTimeFunctions_datetimeutc_alreadyutc_Success()
+        {
+            var dto      = new DateTimeOffset(new DateTime(2010, 07, 26, 17, 0, 0), new TimeSpan(-7, 0, 0));
+            var utcNow   = dto.UtcDateTime;
+            var sDto     = utcNow.ToString("o");
+            var context  = CreateContext(new {Year = 2010, Now = utcNow} );
+            var sResult  = Compile($"DateTimeUtc(Now)").Evaluate(context).ToString();
+   
+            Assert.AreEqual(sDto, sResult);
+        }
+
+        [TestMethod]
         public void DateTimeFunctions_addyears_Success()
         {
             var dt         = DateTime.Now;
