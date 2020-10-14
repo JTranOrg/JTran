@@ -220,9 +220,19 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
+            if(context.Data == null)
+                return null;
+
             var result = new List<object>();
 
-            if(context.Data is IList<object> list)
+            if(context.Data.IsDictionary())
+            {
+                var indexVal = _expr.Evaluate(context).ToString();
+                var rtnVal   = context.Data.GetPropertyValue(indexVal);
+
+                return rtnVal;
+            }
+            else if(context.Data is IList<object> list)
             { 
                 // If expression result is integer then return nth value of array
                 try
@@ -264,11 +274,13 @@ namespace JTran.Expressions
             _name = name;
         }
 
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
             return context.GetVariable(_name);
         }
 
+        /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
         {
             object val = context.GetVariable(_name);
@@ -294,6 +306,7 @@ namespace JTran.Expressions
         public IOperator   Operator     { get; set; }
         public IExpression Right        { get; set; }
 
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
             if(this.Operator == null)
@@ -302,6 +315,7 @@ namespace JTran.Expressions
             return this.Operator.Evaluate(this.Left, this.Right, context);
         }
 
+        /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
         {
             if(this.Operator == null)

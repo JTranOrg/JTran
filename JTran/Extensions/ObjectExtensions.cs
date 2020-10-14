@@ -172,7 +172,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        private static object GetPropertyValue(this object obj, string name)       
+        internal static object GetPropertyValue(this object obj, string name)       
         {
             if(obj == null)
                 return null;

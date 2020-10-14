@@ -195,6 +195,9 @@ namespace JTran
                     return null;
                 }
 
+                if(name.StartsWith("#variable"))
+                    return new TVariable(name, obj);
+
                 if(name.StartsWith("#calltemplate"))
                     return new TCallTemplate(name, obj);
 
@@ -230,7 +233,7 @@ namespace JTran
             }
             
             if(child is JArray array)
-                return new TArray(name, array);
+                return new TExplicitArray(name, array);
 
             return null;
         }    
@@ -273,10 +276,10 @@ namespace JTran
     
     /****************************************************************************/
     /****************************************************************************/
-    internal class TArray : TContainer
+    internal class TExplicitArray : TContainer
     {
         /****************************************************************************/
-        internal TArray(string name, JArray array)
+        internal TExplicitArray(string name, JArray array)
         {
             this.Name = CreateValue(name);
 
