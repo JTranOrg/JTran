@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 
 namespace JTran.Expressions
@@ -33,10 +34,19 @@ namespace JTran.Expressions
             if(val is null)
                 return 0;
 
+            if(val is ExpandoObject)
+                return 1;
+
             if(val is IList<object> list)
                 return list.Count;
 
             return 1;
+        }
+
+        /*****************************************************************************/
+        public bool any(object val)
+        {
+            return count(val) > 0;
         }
 
         /*****************************************************************************/

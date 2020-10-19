@@ -50,7 +50,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal string Transform(string data, TransformerContext context, IDictionary<string, Function> extensionFunctions)
+        internal string Transform(string data, TransformerContext context, ExtensionFunctions extensionFunctions)
         {
             var output  = JObject.Parse("{}");
             var expando = data.JsonToExpando();
@@ -196,7 +196,7 @@ namespace JTran
                 }
 
                 if(name.StartsWith("#variable"))
-                    return new TVariable(name, obj);
+                    return new TVariableObject(name, obj);
 
                 if(name.StartsWith("#calltemplate"))
                     return new TCallTemplate(name, obj);
@@ -209,6 +209,12 @@ namespace JTran
 
                 if(name.StartsWith("#foreach"))
                     return new TForEach(name, obj);
+
+                if(name.StartsWith("#arrayitem"))
+                    return new TObject(name, obj);
+
+                if(name.StartsWith("#array"))
+                    return new TArray(name, obj);
 
                 if(name.StartsWith("#if"))
                     return new TIf(name, obj);
@@ -286,7 +292,7 @@ namespace JTran
             foreach(var item in array.Children())
             {
                 if(item is JValue val)
-                   this.Children.Add(new TArrayItem(val));
+                   this.Children.Add(new TSimpleArrayItem(val));
                 else if(item is JObject obj)
                    this.Children.Add(new TObject(null, obj)); 
             }
@@ -318,12 +324,12 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class TArrayItem : TToken
+    internal class TSimpleArrayItem : TToken
     {
         private readonly IValue _val;
 
         /****************************************************************************/
-        internal TArrayItem(JValue val) 
+        internal TSimpleArrayItem(JValue val) 
         {
             _val = CreateValue(val);
         }
@@ -335,6 +341,32 @@ namespace JTran
             var array = output as JArray;
 
             array.Add(value);
+        }
+    }    
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TArray : TContainer
+    {
+        internal TArray(string name, JObject val)
+        { 
+           name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
+
+           this.Name = CreateValue(name);
+
+            Compile(null, val);
+        }
+
+        internal IValue Name  { get; set; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var array = JArray.Parse("[]");
+
+            base.Evaluate(array, context);
+
+            output.Add(new JProperty(this.Name.Evaluate(context).ToString(), array));
         }
     }    
     
@@ -513,7 +545,11 @@ namespace JTran
             { 
                 JContainer arrayOutput;
                 
-                if(!string.IsNullOrEmpty(arrayName))
+                if(arrayName == "{}")
+                {
+                    arrayOutput = output;
+                }
+                else if(!string.IsNullOrEmpty(arrayName))
                 {
                     arrayOutput = JArray.Parse("[]");
                 
@@ -695,6 +731,33 @@ namespace JTran
             var val  = this.Value.Evaluate(context);
 
             context.SetVariable(name, val);
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TVariableObject : TContainer
+    {    
+        /****************************************************************************/
+        internal TVariableObject(string name, JObject val) 
+        {
+            this.Name = name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1);
+
+            // Compile children
+            Compile(null, val);
+        }
+
+        internal string Name      { get; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var newContext = new ExpressionContext(context.Data, context);
+            var varOutput  = JObject.Parse("{}");
+
+            base.Evaluate(varOutput, newContext);
+
+            context.SetVariable(this.Name, varOutput.ToString().JsonToExpando());
         }
     }
 

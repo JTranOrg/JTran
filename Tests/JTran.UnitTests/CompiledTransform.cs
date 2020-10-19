@@ -220,17 +220,52 @@ namespace JTran.UnitTests
             Assert.AreEqual("RodrigoGuiterrez", json["Driver"]["Name"].ToString());
         }
 
+        [TestMethod]
+        [TestCategory("Variable")]
+        public void CompiledTransform_Transform_Variable_Object2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformVariableObj2);
+            var result      = transformer.Transform("{ }", null, null);
+
+            Assert.AreNotEqual(_transformVariableObj2, result);
+
+            var json = JObject.Parse(result);
+
+            Assert.IsNotNull(json);
+
+            Assert.AreEqual("RodrigoGuiterrez", json["Driver"]["Name"].ToString());
+        }
+
         private static readonly string _transformVariableObj =
         @"{
            '#variable(Customer)':   
            {
-                FirstName:  'Rodrigo'
-                LastName:   'Guiterrez'
+                FirstName:  'Rodrigo',
+                LastName:   'Guiterrez',
            },
 
             Driver:  
             {
                 'Name':      '#($Customer.FirstName + $Customer.LastName)'
+            }
+        }";
+
+        private static readonly string _transformVariableObj2 =
+        @"{
+           '#variable(Customer)':   
+           {
+                Drivers:
+                [
+                    {
+                        FirstName:  'Rodrigo',
+                        LastName:   'Guiterrez'
+                    }
+                ]
+           },
+
+            Driver:  
+            {
+                'Name':      '#($Customer.Drivers[0].FirstName + $Customer.Drivers[0].LastName)'
             }
         }";
 

@@ -40,14 +40,12 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            if(context.ExtensionFunctions?.ContainsKey(_functionName) ?? false)
-            { 
-                var func = context.ExtensionFunctions[_functionName];
+            var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
 
+            if(func != null)
                 return func.Evaluate(_parameters, context);
-            }
 
-            throw new Transformer.SyntaxException($"A function with that name was not found: {_functionName}");
+            throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
         }
 
         /*****************************************************************************/

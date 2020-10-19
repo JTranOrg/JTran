@@ -320,5 +320,46 @@ namespace JTran.UnitTests
             Assert.AreEqual("Chicago",       exprToken3.Children[2].Value);
 
         }
+
+        [TestMethod]
+        public void Precompiler_Precompile_multipart_expression()
+        {
+            var parser  = new Parser();
+            var tokens  = parser.Parse("Customer.Name.Last");
+            var tokens2 = Precompiler.Precompile(tokens);
+
+            Assert.IsNotNull(tokens2);
+            Assert.AreEqual(1,                     tokens2.Count);
+            Assert.AreEqual("Customer.Name.Last",  tokens2[0].Value);
+
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_multipart2_expression()
+        {
+            var parser  = new Parser();
+            var tokens  = parser.Parse("$Customer.Name.Last");
+            var tokens2 = Precompiler.Precompile(tokens);
+
+            Assert.IsNotNull(tokens2);
+            Assert.AreEqual(1,                     tokens2.Count);
+            Assert.AreEqual("$Customer.Name.Last",  tokens2[0].Value);
+
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_multipart3_expression()
+        {
+            var parser  = new Parser();
+            var tokens  = parser.Parse("$Customer.FirstName + $Customer.LastName");
+            var tokens2 = Precompiler.Precompile(tokens);
+
+            Assert.IsNotNull(tokens2);
+            Assert.AreEqual(3,                      tokens2.Count);
+            Assert.AreEqual("$Customer.FirstName",  tokens2[0].Value);
+            Assert.AreEqual("+",                    tokens2[1].Value);
+            Assert.AreEqual("$Customer.LastName",   tokens2[2].Value);
+
+        }
     }
 }

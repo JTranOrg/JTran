@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -65,9 +66,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public decimal number(object val)
+        public decimal? number(object val)
         {
-            return decimal.Parse(val.ToString());
+            if(val != null)
+                if(decimal.TryParse(val.ToString(), out decimal result))
+                    return result;
+
+            return null;
         }
 
         /*****************************************************************************/
@@ -80,6 +85,46 @@ namespace JTran.Expressions
         public bool isinteger(object val)
         {
             return long.TryParse(val.ToString(), out long result);
+        }
+
+        /*****************************************************************************/
+        public object max(object val1, object val2)
+        {
+            var result = val1.CompareTo(val2, out Type type) == 1 ? val1 : val2;
+            
+            return Convert(result, type);
+        }
+
+        /*****************************************************************************/
+        public object min(object val1, object val2)
+        {
+            var result = val1.CompareTo(val2, out Type type) == -1 ? val1 : val2;
+            
+            return Convert(result, type);
+        }
+        
+        /*****************************************************************************/
+        private object Convert(object result, Type type)
+        {
+            switch(type.Name)
+            {
+                case "Long":      return long.Parse(result.ToString());
+                case "Decimal":   return decimal.Parse(result.ToString());
+                case "Boolean":   return bool.Parse(result.ToString());
+                case "String":    return result.ToString();
+
+                case "DateTime":  
+                { 
+                    result.TryParseDateTime(out DateTime? dtValue);
+                    if(dtValue.HasValue)
+                        return dtValue.Value.ToString("o");
+
+                    return null;
+                }
+
+                default:          
+                return result;
+            }
         }
 
         #endregion
@@ -114,11 +159,14 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string substring(string val, int start, int? length = null)
+        public string substring(string val, int start, int length)
         {
-            if(length.HasValue)
-                return val.Substring(start, length.Value);
+            return val.Substring(start, length);
+        }
 
+        /*****************************************************************************/
+        public string substring(string val, int start)
+        {
             return val.Substring(start);
         }
 
@@ -202,7 +250,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public bool not(object val)
         {
-            return !Convert.ToBoolean(val);
+            return !System.Convert.ToBoolean(val);
         }
 
         /*****************************************************************************/

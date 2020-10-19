@@ -155,9 +155,7 @@ namespace JTran.Expressions
 
                 if(expr == null)
                 {
-                    data = expr;
-                    result.Add(expr);
-                    continue;
+                    return null;
                 }
 
                 result.Clear();

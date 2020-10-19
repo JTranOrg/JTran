@@ -17,8 +17,18 @@
 
 #### String Functions
 
+- [contains](#contains)
+- [endswith](#endswith)
+- [indexof](#indexof)
+- [normalizespace](#normalizespace)
+- [string](#string)
+- [stringlength](#stringlength)
+- [startswith](#startswith)
+- [substring](#substring)
+- [substringafter](#substringafter)
+- [substringbefore](#substringbefore)
 
-##### contains(expr, substr)
+##### <a id="contains">contains</a>(expr, substr)
 
 Returns true if the given string contains the given substring.
 
@@ -27,7 +37,7 @@ Returns true if the given string contains the given substring.
 Result is true<br><br>
 
 
-##### endswith(expr, substr)
+##### <a id="endswith">endswith</a>(expr, substr)
 
 Returns true if the given string ends with the given substring.
 
@@ -36,7 +46,7 @@ Returns true if the given string ends with the given substring.
 Result is true<br><br>
 
 
-##### indexof(expr, substr)
+##### <a id="indexof">indexof</a>(expr, substr)
 
 Returns the index of the first instance of the given substr. If the given substring does not exist the result will be -1.
     
@@ -45,7 +55,7 @@ Returns the index of the first instance of the given substr. If the given substr
 Result is 2<br><br>
 
 
-##### normalizespace(expr)
+##### <a id="normalizespace">normalizespace</a>(expr)
 
 Trims spaces off of the beginning and end and converts multiple instances of spaces into a single space.
     
@@ -54,7 +64,7 @@ Trims spaces off of the beginning and end and converts multiple instances of spa
 Result is "ab c d"<br><br>
 
 
-##### string(expr)
+##### <a id="string">string</a>(expr)
 
 Converts value to string. Most places on JTran will interpret a json value as a number even if it's quoted. USe the function to treat the value as a string.
 
@@ -63,7 +73,7 @@ Converts value to string. Most places on JTran will interpret a json value as a 
 Result is "123"<br><br>
 
 
-##### stringlength(expr)
+##### <a id="stringlength">stringlength</a>(expr)
 
 Returns the length of the given string.
 
@@ -72,7 +82,7 @@ Returns the length of the given string.
 Result is 6<br><br>
 
 
-##### startswith(expr, substr)
+##### <a id="startswith">startswith</a>(expr, substr)
 
 Returns true if the given string starts with the given substring.
 
@@ -81,7 +91,7 @@ Returns true if the given string starts with the given substring.
 Result is true<br><br>
 
 
-##### substring(expr, start, length)
+##### <a id="substring">substring</a>(expr, start, length)
 
 Returns a portion of the given string starting at given location and returns "length" number of characters. If "length" is omitted it will return the remaining string.
 
@@ -94,7 +104,7 @@ Result is "12"
 Result is "123"<br><br>
 
 
-##### substringafter(expr, substr)
+##### <a id="substringafter">substringafter</a>(expr, substr)
 
 Returns a portion of the given string found after the given substring.
 
@@ -103,7 +113,7 @@ Returns a portion of the given string found after the given substring.
 Result is "123"<br><br>
 
 
-##### substringbefore(expr, substr)
+##### <a id="substringbefore">substringbefore</a>(expr, substr)
 
 Returns a portion of the given string found before the given substring.
 
@@ -114,8 +124,12 @@ Result is "abc"<br><br>
 
 #### Math Functions
 
+- [ceiling](#ceiling)
+- [floor](#floor)
+- [round](#round)
 
-##### ceiling(expr)
+
+##### <a id="ceiling">ceiling</a>(expr)
 
 Rounds up the given val
 
@@ -124,7 +138,7 @@ Rounds up the given val
 Result is 5<br><br>
 
 
-##### floor(expr)
+##### <a id="floor">floor</a>(expr)
 
 Rounds down the given val
 
@@ -133,7 +147,7 @@ Rounds down the given val
 Result is 4<br><br>
 
 
-##### round(expr)
+##### <a id="round">round</a>(expr)
 
 Rounds off the given val
 
@@ -150,7 +164,38 @@ Result is 5<br><br>
 
 These functions operate on a list of values
 
-##### avg(expr)
+- [any](#any)
+- [avg](#avg)
+- [count](#count)
+- [min](#min)
+- [min](#min)
+- [sum](#sum)
+
+##### <a id="any">any</a>(expr)
+
+Returns true if the given expression is a non-empty list (or a single object). Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Bob",
+                Salary: 1000
+            },
+            { 
+                Name: "Fred",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(any(Employees))
+
+Result is true<br><br>
+
+##### <a id="avg">avg</a>(expr)
 
 The average of all the values
 
@@ -176,7 +221,7 @@ Then this expression:
 
 Result is 950<br><br>
 
-##### max(expr)
+##### <a id="max">max</a>(expr)
 
 Given this data:
 
@@ -200,8 +245,7 @@ Then this expression:
 
 Result is 1000<br><br>
 
-
-##### min(expr)
+##### <a id="min">min</a>(expr)
 
 Given this data:
 
@@ -225,8 +269,7 @@ Then this expression:
 
 Result is 900<br><br>
 
-
-##### count(expr)
+##### <a id="count">count</a>(expr)
 
 Given this data:
 
@@ -250,8 +293,7 @@ Then this expression:
 
 Result is 2<br><br>
 
-
-##### sum(expr)
+##### <a id="sum">sum</a>(expr)
 
 The sum of all the values
 
@@ -264,17 +306,41 @@ Result is 1900<br><br>
 
 #### DateTime Functions
 
+- Current DateTime
+  - [currentdatetime](#currentdatetime)
+  - [currentdatetimeutc](#currentdatetimeutc)
+  - [currentdateutc](#currentdateutc)
+  - [daydex](#daydex)
+ - [date](#date)
+- Date Arithmetic
+  - [addyears](#addyears)
+  - [addmonths](#addmonths)
+  - [adddays](#adddays)
+  - [addhours](#addhours)
+  - [addhours](#addhours)
+  - [addminutes](#addminutes)
+  - [addseconds](#addseconds)
+- [formatdatetime](#formatdatetime)
+- Date Components
+    - [day](#day)
+    - [dayofweek](#dayofweek)
+    - [dayofweekoccurrence](#dayofweekoccurrence)
+    - [hour](#dayofweekoccurrence)
+    - [minute](#minute)
+    - [month](#month)
+    - [second](#second)
+    - [year](#year)
+<br><br>
 
-##### currentdatetime()
+##### <a id="currentdatetime">currentdatetime</a>()
 
 Returns the current date and time
 
     "#(currentdatetime())"
 
-Result is "2020-06-10T11:30:00"<br>
+Result is "2020-06-10T11:30:00"<br><br>
 
-
-##### currentdate()
+##### <a id="currentdate">currentdate</a>()
 
 Returns the current date
 
@@ -282,8 +348,7 @@ Returns the current date
 
 Result is "2020-06-10"<br><br>
 
-
-##### currentdatetimeutc()
+##### <a id="currentdatetimeutc">currentdatetimeutc</a>()
 
 Returns the current UTC date and time 
 
@@ -291,8 +356,7 @@ Returns the current UTC date and time
 
 Result is "2020-06-10T19:30:00"<br><br>
 
-
-##### currentdateutc()
+##### <a id="currentdateutc">currentdateutc</a>()
 
 Returns the current UTC date 
 
@@ -300,8 +364,7 @@ Returns the current UTC date
 
 Result is "2020-06-10"<br><br>
 
-
-##### date(expr)
+##### <a id="date">date</a>(expr)
 
 Returns the date portion of the given expression 
 
@@ -309,7 +372,7 @@ Returns the date portion of the given expression
 
 Result is "2020-06-10"<br><br>
 
-##### addyears(expr, amount)
+##### <a id="addyears">addyears</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -317,7 +380,7 @@ Returns the date portion of the given expression
 
 Result is "2022-06-10T11:30:00"<br><br>
 
-##### addmonths(expr, amount)
+##### <a id="addmonths">addmonths</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -325,7 +388,7 @@ Returns the date portion of the given expression
 
 Result is "2020-09-10T11:30:00"<br><br>
 
-##### adddays(expr, amount)
+##### <a id="adddays">adddays</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -333,8 +396,7 @@ Returns the date portion of the given expression
 
 Result is "2020-06-15T11:30:00"<br><br>
 
-
-##### addhours(expr, amount)
+##### <a id="addhours">addhours</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -342,8 +404,7 @@ Returns the date portion of the given expression
 
 Result is "2020-06-15T18:30:00"<br><br>
 
-
-##### addminutes(expr, amount)
+##### <a id="addminutes">addminutes</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -351,8 +412,7 @@ Returns the date portion of the given expression
 
 Result is "2020-06-10T11:52:00"<br><br>
 
-
-##### addseconds(expr, amount)
+##### <a id="addseconds">addseconds</a>(expr, amount)
 
 Returns the date portion of the given expression 
 
@@ -360,8 +420,7 @@ Returns the date portion of the given expression
 
 Result is "2020-06-10T11:30:45"<br><br>
 
-
-##### formatdatetime(expr, format)
+##### <a id="formatdatetime">formatdatetime</a>(expr, format)
 
 Formats the given datetime using the format string. The format string uses the [standard formatting](https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) and the [custom formatting](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) defined in the .Net Framework
 
@@ -369,8 +428,7 @@ Formats the given datetime using the format string. The format string uses the [
 
 Result is "June 10, 2020"<br><br>
 
-
-##### daydex(expr)
+##### <a id="daydex">daydex</a>(expr)
 
 Returns the number of days since Jan 1, 1900
 
@@ -378,8 +436,7 @@ Returns the number of days since Jan 1, 1900
 
 Result is 36706<br><br>
 
-
-##### year(expr)
+##### <a id="year">year</a>(expr)
 
 Returns the year component of the given date/time
 
@@ -387,8 +444,7 @@ Returns the year component of the given date/time
 
 Result is 2020<br><br>
 
-
-##### month(expr)
+##### <a id="month">month</a>(expr)
 
 Returns the month component of the given date/time
 
@@ -396,8 +452,7 @@ Returns the month component of the given date/time
 
 Result is 6<br><br>
 
-
-##### day(expr)
+##### <a id="day">day</a>(expr)
 
 Returns the day component of the given date/time
 
@@ -405,8 +460,7 @@ Returns the day component of the given date/time
 
 Result is 10<br><br>
 
-
-##### dayofweek(expr)
+##### <a id="dayofweek">dayofweek</a>(expr)
 
 Returns the day of week component of the given date/time where Sunday is 0, Monday is 1, etc
 
@@ -414,7 +468,7 @@ Returns the day of week component of the given date/time where Sunday is 0, Mond
 
 Result is 3<br><br>
 
-##### dayofweekoccurrence(expr)
+##### <a id="dayofweekoccurrence">dayofweekoccurrence</a>(expr)
 
 Returns the occurrence of day of week component of the given date/time where the first occurrence is 1
 
@@ -422,8 +476,7 @@ Returns the occurrence of day of week component of the given date/time where the
 
 Result is 2 (June, 1, 2020 is 2nd Wednesday of the month)<br><br>
 
-
-##### hour(expr)
+##### <a id="hour">hour</a>(expr)
 
 Returns the hour component of the given date/time
 
@@ -431,8 +484,7 @@ Returns the hour component of the given date/time
 
 Result is 11<br><br>
 
-
-##### minute(expr)
+##### <a id="minute">minute</a>(expr)
 
 Returns the minute component of the given date/time
 
@@ -440,8 +492,7 @@ Returns the minute component of the given date/time
 
 Result is 30<br><br>
 
-
-##### second(expr)
+##### <a id="second">second</a>(expr)
 
 Returns the second component of the given date/time
 
@@ -449,11 +500,16 @@ Returns the second component of the given date/time
 
 Result is 45<br><br>
 
-
 #### General Purpose Functions
 
+  - [document](#document)
+  - [name](#name)
+  - [not](#not)
+  - [number](#number)
+  - [position](#position)
+<br><br>
 
-##### name()
+##### <a id="name">name</a>()
 
 Returns the name of the current object that is in scope
 
@@ -466,7 +522,7 @@ Returns the name of the current object that is in scope
 
 The value of DriverField would be "Driver"<br><br>
 
-##### not(expr)
+##### <a id="not">not</a>(expr)
 
 Returns opposite of a bool expression
 
@@ -475,7 +531,7 @@ Returns opposite of a bool expression
 Result is false<br><br>
 
 
-##### number(expr)
+##### <a id="number">number</a>(expr)
 
 Converts expression to number
 
@@ -484,7 +540,7 @@ Converts expression to number
 Result is 55<br><br>
 
 
-##### position()
+##### <a id="position">position</a>()
 
 Returns the index of the object within an array. Indices are always zero based. If this function is not called in the context of #foreach it will always return a zero:
 
@@ -495,9 +551,9 @@ Returns the index of the object within an array. Indices are always zero based. 
 
 #### Document Function
 
-##### document(repoName, docName)
+##### <a id="document">document</a>(repoName, docName)
 
-This function returns an external document. The first parameter is the name of the document respository and second parameter is the name of the document. Note that these parameters are not expressions but literal values. this function can only be used to set the value of a variable:
+This function returns an external document. The first parameter is the name of the document repository and second parameter is the name of the document. Note that these parameters are not expressions but literal values. this function can only be used to set the value of a variable:
 
     '#variable(Products)':   '#(document(MyDocs, Products))'
 

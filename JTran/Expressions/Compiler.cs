@@ -70,6 +70,7 @@ namespace JTran.Expressions
         {
             IExpression left  = null;
             IExpression right = null;
+            object      last  = null;
             IOperator   op    = null;
 
             lastToken = null;
@@ -101,7 +102,7 @@ namespace JTran.Expressions
 
                         var current = right ?? left;
 
-                        if(current is MultiPartDataValue multiPart)
+                        if(!(last is IOperator) && current is MultiPartDataValue multiPart)
                         { 
                             multiPart.AddPart(expr);
                             continue;
@@ -175,6 +176,7 @@ namespace JTran.Expressions
                         if(op == null)
                         { 
                             op = newOp;
+                            last = op;
                             continue;
                         }
 
@@ -200,6 +202,8 @@ namespace JTran.Expressions
                     left = expr;
                 else if(right == null)
                     right = expr;
+
+                last = expr;
             }
 
           BreakOut:

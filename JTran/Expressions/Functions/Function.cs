@@ -31,7 +31,6 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class Function
     {
-        private int                 _numParams;
         private readonly MethodInfo _method;
         private readonly object     _container;
         private readonly bool       _literals;
@@ -57,9 +56,9 @@ namespace JTran.Expressions
             this.Name = name;
 
             if(method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(IgnoreParameterCount)))?.Any() ?? false)
-                _numParams = 0;
+                this.NumParams = 0;
             else
-                _numParams = method.GetParameters().Where( p=> !p.HasDefaultValue ).Count();
+                this.NumParams = method.GetParameters().Where( p=> !p.HasDefaultValue ).Count();
 
            _method    = method;
            _container = container;
@@ -97,12 +96,13 @@ namespace JTran.Expressions
             return list;
         }
 
-        internal string Name { get; }
+        internal string Name      { get; }
+        internal int    NumParams { get; }
 
         /*****************************************************************************/
         public object Evaluate(List<IExpression> inputParameters, ExpressionContext context)
         {
-            var parameters   = EvaluateParameters(inputParameters, context, _literals).AssertNumParams(_numParams, this.Name);
+            var parameters   = EvaluateParameters(inputParameters, context, _literals).AssertNumParams(this.NumParams, this.Name);
             var methodParams = _method.GetParameters();
             var numParams    = methodParams.Length;
 

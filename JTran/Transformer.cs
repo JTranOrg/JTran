@@ -30,7 +30,7 @@ namespace JTran
     public class Transformer
     {
         private readonly CompiledTransform _transform;
-        private readonly IDictionary<string, Function> _extensionFunctions;
+        private readonly ExtensionFunctions _extensionFunctions;
 
         /****************************************************************************/
         /// <summary>
@@ -60,7 +60,7 @@ namespace JTran
         #region Private
 
         /****************************************************************************/
-        internal static IDictionary<string, Function> CompileFunctions(IEnumerable extensionFunctions)
+        internal static ExtensionFunctions CompileFunctions(IEnumerable extensionFunctions)
         {
             var result = new Dictionary<string, Function>();
             var containers = new List<object>();
@@ -73,18 +73,7 @@ namespace JTran
                 foreach(var container in extensionFunctions)
                     containers.Add(container);
 
-            foreach(var container in containers)
-            {
-                var list = Function.Extract(container);
-
-                foreach(var func in list)
-                {
-                    if(!result.ContainsKey(func.Name))
-                        result.Add(func.Name, func);
-                }
-            }
-
-            return result;
+            return new ExtensionFunctions(containers);
         }
 
         #endregion
