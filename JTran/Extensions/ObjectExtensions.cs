@@ -21,7 +21,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
+using System.Text;
 using System.Transactions;
 
 namespace JTran.Extensions
@@ -184,6 +184,23 @@ namespace JTran.Extensions
                     
             type = typeof(string);
             return leftValStr.CompareTo(rightValStr);
+        }
+
+        internal static string ToJson(this object obj)
+        {
+            if(obj is ExpandoObject exp)
+                return exp.ToJson();
+
+            if(obj is IList list)
+            {
+                var sb = new StringBuilder();
+
+                ExpandoExtensions.ToJson(obj, sb, "");
+
+                return sb.ToString();
+            }
+
+            return obj.ToString();
         }
 
         #region Private

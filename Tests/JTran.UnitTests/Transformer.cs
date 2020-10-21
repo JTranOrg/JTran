@@ -640,6 +640,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Transformer_Transform_ArrayItem2_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayItem2, null);
+            var result      = transformer.Transform(_data1);
+   
+            Assert.AreNotEqual(_transformArrayItem2, _data1);
+
+            var json = JObject.Parse(result);
+            var array = json["Customers"] as JArray;
+
+            Assert.AreEqual(2,      array.Count());
+            Assert.AreEqual("Fred", array[0]);
+            Assert.AreEqual("John",array[1]);
+        }
+
+        [TestMethod]
         public void Transformer_Transform_Array_foreach_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayForEach, null);
@@ -666,8 +682,45 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformArray2dim, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Drivers"]  as JArray;
+            var array2 = array[0] as JArray;
 
+            Assert.AreEqual(4, array2.Count);
+            Assert.AreEqual("John", array2[0]["Name"].ToString());
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_2dim2_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArray2dim2, null);
+            var context     = new TransformerContext { };
+            var result      = transformer.Transform(_data2dim2, context);
+   
+            Assert.AreNotEqual(_transformArray2dim, _data2dim2);
+
+            var json  = JObject.Parse(result);
+            var array = json["Cells"]  as JArray;
+            var array2 = array[0] as JArray;
+
+            Assert.AreEqual(3, array2.Count);
+            Assert.AreEqual(1, array2[0]);
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Array_2dim_foreach_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArray2dimforeach, null);
+            var context     = new TransformerContext { };
+            var result      = transformer.Transform(_data2dimforeach, context);
+   
+            Assert.AreNotEqual(_transformArray2dimforeach, _data2dimforeach);
+
+            var json  = JObject.Parse(result);
+            var array = json["Cells"]  as JArray;
+            var array2 = array[0] as JArray;
+
+            Assert.AreEqual(3, array2.Count);
+            Assert.AreEqual(1, array2[0]);
         }
 
         private static readonly string _transformArrayItem =
@@ -682,6 +735,15 @@ namespace JTran.UnitTests
                 {
                    'Name': 'fred'
                 }
+            }
+        }";
+
+        private static readonly string _transformArrayItem2 =
+        @"{
+            '#array(Customers)':
+            {
+                '#arrayitem(1)':    'Fred',
+                '#arrayitem(2)':    '#(FirstName)'
             }
         }";
 
@@ -714,10 +776,44 @@ namespace JTran.UnitTests
         @"{
             'Drivers':
             [
-                '#copyof(Customers)',
+                '#(Customers)',
                 '#($Fred)'
             ]
         }";
+
+       private static readonly string _transformArray2dim2 =
+        @"{
+            '#array(Cells)':
+            {
+                '#arrayitem':    '#(Columns)'
+            }
+        }";
+
+       private static readonly string _transformArray2dimforeach =
+        @"{
+            '#array(Cells)':
+            {
+                '#foreach(Rows)':
+                {
+                    '#arrayitem':    '#(@)'
+                }
+            }
+        }";
+
+        private static readonly string _data2dim2 =
+        @"{
+            Columns:  [1, 2, 3]
+          }";
+
+        private static readonly string _data2dimforeach =
+        @"{
+            Rows: 
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+           ]
+          }";
 
         #endregion
 
