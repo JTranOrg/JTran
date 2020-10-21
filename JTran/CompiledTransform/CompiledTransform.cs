@@ -219,6 +219,9 @@ namespace JTran
 
                 var sval = val.ToString();
 
+                if(name.StartsWith("#arrayitem"))
+                    return new TSimpleArrayItem(val);
+
                 if(sval.StartsWith("#copyof"))
                     return new TCopyOf(name, sval);
 
@@ -380,7 +383,10 @@ namespace JTran
             var value = _val.Evaluate(context);
             var array = output as JArray;
 
-            array.Add(value);
+            if(value is IList<object>)
+                array.Add(JArray.Parse(value.ToJson()));
+            else
+                array.Add(value);
         }
     }    
 
@@ -601,21 +607,20 @@ namespace JTran
 
                 foreach(var childScope in list)
                 { 
-                    var childOutput = JObject.Parse("{}");
+                    var parentArray = output is JArray && string.IsNullOrEmpty(arrayName);
+                    var childOutput = parentArray ? output : JObject.Parse("{}");
 
                     base.Evaluate(childOutput, new ExpressionContext(childScope, context, templates: this.Templates));
 
                     if(childOutput.Count > 0)
                     { 
-                        var schild = childOutput.ToString();
-
-                        if(_name == null)
+                        if(arrayName == null && childOutput is JObject jchildObject)
                         {
-                            foreach(var grandchild in childOutput)
+                            foreach(var grandchild in jchildObject)
                                 if(grandchild is KeyValuePair<string, JToken> pair)
                                     arrayOutput.Add(new JProperty(pair.Key, pair.Value));
                         }
-                        else 
+                        else if(!parentArray)
                             arrayOutput.Add(childOutput);
                     }
                 }
