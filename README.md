@@ -381,6 +381,62 @@ Because json doesn't allow more than one property with the same name if you need
 
 This gets around the json constraint by making each "property" name be unique. Note that the value of the parameter is ignored.
 
+You can output single values. e.g. strings, numbers:
+
+###### Transform
+
+    {
+        "#array(Cars)":
+        {
+            "#arrayitem(1)":  "#(Automobiles[0].Make)",
+            "#arrayitem(2)":  "#(Automobiles[1].Make)",
+            "#arrayitem(3)":  "#(Automobiles[2].Make)"
+        }
+    }
+
+You can also output single values using a foreach
+
+###### Transform
+
+    {
+        "#array(Cars)":
+        {
+            "#foreach(Vehicles)":
+            {
+                "#arrayitem(1)":  "#(Make)",
+                "#arrayitem(2)":  "#(Model)"
+            }
+        }
+    }
+###### Source
+
+    {
+        Vehices:
+        [
+            {
+               Make:  Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            }
+        }
+    }
+
+###### Output
+
+    {
+        Cars:
+        [
+            "Chevy",
+            "Corvette",
+            "Pontiac",
+            "Firebird"
+        }
+    }
+
+
 #### #bind
 
 The only purpose of #bind is to change the scope:
