@@ -588,7 +588,7 @@ You must specify how the included files are loaded when instantiating the transf
         {
             var transformer = new JTran.Transformer(transform1,
                                                     null, 
-                                                    new Dictionary<string, string> { "mytemplates.json", "{ ... }"} ); // You can implement your own IDictionary to to do deferred loading, 
+                                                    new Dictionary<string, string> { "mytemplates.json", "{ ... }"} ); // You can implement your own IDictionary to do deferred loading, 
                                                                                                                        //     loading from file or cloud storage, etc
 
             var context = new TransformContext { Arguments = new Dictionary<string, object>() };
