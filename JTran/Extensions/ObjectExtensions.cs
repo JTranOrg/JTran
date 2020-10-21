@@ -222,7 +222,7 @@ namespace JTran.Extensions
             if(val == null)
                 return;
 
-            if(val is IList list)
+            if(!val.IsDictionary() && val is IList list)
             { 
                 isList = true;
 

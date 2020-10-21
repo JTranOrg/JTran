@@ -72,7 +72,17 @@ namespace JTran.Expressions
             if(data == null)
                 return "";
 
-            var sdate = data.ToString();
+            var sdate = "";
+
+            if(data is DateTime dtValue1)
+            {
+                sdate = dtValue1.ToString("o");
+
+                if(dtValue1.Kind == DateTimeKind.Utc)
+                    return sdate;
+            }
+            else
+                sdate = data.ToString();
 
             if(DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue))
             {
