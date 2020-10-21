@@ -137,6 +137,28 @@ namespace JTran.UnitTests
             Assert.AreEqual("Blue",     driver.Driver.Vehicles[0].Color);
         }
 
+        private static readonly string _transformForEach1 =
+        @"{
+            Driver:
+            {
+                FirstName: 'Bob',
+                LastName:  'Jones',
+                '#foreach(Cars, Vehicles)':
+                {
+                    Brand:   '#(Make)',
+                    Model:   '#(Model)',
+                    Year:    '#(Year)',
+                    Color:   '#(Color)',
+                    Engine:
+                    {
+                        Displacement:   375
+                    }
+                }
+            }
+        }";
+
+
+
         [TestMethod]
         public void CompiledTransform_Transform_If_Success()
         {
@@ -537,6 +559,31 @@ namespace JTran.UnitTests
             Assert.AreEqual("true", jresult["CanDrive"].ToString().ToLower());
         }
 
+
+        #region ParseElementParams
+
+        [TestMethod]
+        public void CompiledTransform_ParseElementParams_Success()
+        {
+            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(Customers, Persons)", new List<bool> {false, true} );
+
+            Assert.AreEqual(2,           parms.Count);
+            Assert.IsTrue(parms[0] is DataValue);
+            Assert.AreEqual("Persons",   parms[1].Evaluate(null).ToString());
+        }   
+
+        [TestMethod]
+        public void CompiledTransform_ParseElementParams_wFunction_Success()
+        {
+            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(sort(Customers, Name), Persons)", new List<bool> {false, true} );
+
+            Assert.AreEqual(2,                       parms.Count);
+            Assert.IsTrue(parms[0] is IExpression);
+            Assert.AreEqual("Persons",               parms[1].Evaluate(null).ToString());
+        }   
+
+        #endregion
+
         private static readonly string _transformIfBool =
         @"{
             'name': 'bob',
@@ -722,26 +769,6 @@ namespace JTran.UnitTests
                     }
                 }
              }
-        }";
-
-        private static readonly string _transformForEach1 =
-        @"{
-            Driver:
-            {
-                FirstName: 'Bob',
-                LastName:  'Jones',
-                '#foreach(Cars, Vehicles)':
-                {
-                    Brand:   '#(Make)',
-                    Model:   '#(Model)',
-                    Year:    '#(Year)',
-                    Color:   '#(Color)',
-                    Engine:
-                    {
-                        Displacement:   375
-                    }
-                }
-            }
         }";
 
         private static readonly string _transformForEach2 =

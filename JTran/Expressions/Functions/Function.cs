@@ -100,47 +100,59 @@ namespace JTran.Expressions
         internal int    NumParams { get; }
 
         /*****************************************************************************/
+        private IList<(ParameterInfo, Type)> GetMethodParameters(int numPassedIn, out int indexOfParams, out Type paramsType)
+        {
+            var methodParams = _method.GetParameters();
+            var numParams    = methodParams.Length;
+            var result       = new List<(ParameterInfo, Type)>();
+            var soFar        = 0;
+
+            indexOfParams = -1;
+            paramsType = null;
+
+            foreach(var parm in methodParams)
+            {
+                if(Attribute.IsDefined(parm, typeof(ParamArrayAttribute)))
+                {
+                    var type = parm.ParameterType.GetElementType();
+
+                    paramsType = type;
+                    indexOfParams = soFar;
+
+                    for(var i = soFar; i < numPassedIn; ++i)
+                        result.Add((parm, type));
+                }
+                else
+                { 
+                    result.Add((parm, parm.ParameterType));
+                    ++soFar;
+                }
+            }
+
+            return result;
+        }
+
+        /*****************************************************************************/
         public object Evaluate(List<IExpression> inputParameters, ExpressionContext context)
         {
             var parameters   = EvaluateParameters(inputParameters, context, _literals).AssertNumParams(this.NumParams, this.Name);
-            var methodParams = _method.GetParameters();
-            var numParams    = methodParams.Length;
+            var methodParams = GetMethodParameters(inputParameters.Count, out int indexOfParams, out Type paramsType);
+            var numParams    = methodParams.Count;
 
             if(numParams > 0)
             { 
                 // Iterate thru all the method parameters 
                 for(int i = 0; i < numParams; ++i)
                 {
-                    var parm = methodParams[i];
-                    var parmType = parm.ParameterType;
+                    var parm     = methodParams[i].Item1;
+                    var parmType = methodParams[i].Item2;
 
                     if(i < parameters.Count)
                     { 
                         var currentParam = parameters[i];
 
                         if(currentParam != null)
-                        { 
-                            // If the provided parameter value does not match the method parameter type then convert it
-                            if(!parmType.Equals(currentParam.GetType()) && parmType.Name != "Object")
-                            { 
-                                // If it's a nullable use the generic parameter type, e.g. int? ==> Nullable<int> ==> int
-                                if(parmType.Name.StartsWith("Nullable"))
-                                    parmType = parmType.GenericTypeArguments[0];
-                                else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
-                                {
-                                    if(currentParam is ExpandoObject exParam)
-                                    {
-                                        var json = exParam.ToJson();
-                                        var typedParam = JsonConvert.DeserializeObject(json, parmType);
-
-                                        parameters[i] = typedParam;
-                                        continue;
-                                    }
-                                }
-
-                                parameters[i] = Convert.ChangeType(parameters[i], parmType);
-                            }
-                        }
+                            parameters[i] = ConvertParameter(currentParam, parmType);
                     }
                     // If no value provided but the parameter has a default value then use that
                     else if(parm.HasDefaultValue)
@@ -152,13 +164,67 @@ namespace JTran.Expressions
                 }
             }
 
+            if(indexOfParams != -1)
+            {
+                var paramsParms = new List<object>();
+
+                paramsParms.AddRange(parameters.GetRange(indexOfParams, parameters.Count - indexOfParams));
+                parameters.RemoveRange(indexOfParams, parameters.Count - indexOfParams);
+
+                parameters.Add(CreateTypedArray(paramsType, paramsParms));
+            }
+
             return _method.Invoke(_container, parameters.ToArray());
         }
 
         #region Private
 
         /*****************************************************************************/
-        private IList<object> EvaluateParameters(List<IExpression> inputParameters, ExpressionContext context, bool literals = false)
+        private object CreateTypedArray(Type elementType, IList<object> values)
+        {
+            if(elementType.Name == "String")
+                return (new List<string>(values.Select( v=> v.ToString()))).ToArray();
+
+            if(elementType.Name == "Decimal")
+                return (new List<decimal>(values.Select( v=> decimal.Parse(v.ToString())))).ToArray();
+
+            if(elementType.Name == "Long")
+                return (new List<long>(values.Select( v=> long.Parse(v.ToString())))).ToArray();
+
+            if(elementType.Name == "Integer")
+                return (new List<int>(values.Select( v=> int.Parse(v.ToString())))).ToArray();
+
+            return values.ToArray();
+        }
+
+        /*****************************************************************************/
+        private object ConvertParameter(object currentParam, Type parmType)
+        {
+            // If the provided parameter value does not match the method parameter type then convert it
+            if(!parmType.Equals(currentParam.GetType()) && parmType.Name != "Object")
+            { 
+                // If it's a nullable use the generic parameter type, e.g. int? ==> Nullable<int> ==> int
+                if(parmType.Name.StartsWith("Nullable"))
+                    parmType = parmType.GenericTypeArguments[0];
+                else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
+                {
+                    if(currentParam is ExpandoObject exParam)
+                    {
+                        var json = exParam.ToJson();
+                        var typedParam = JsonConvert.DeserializeObject(json, parmType);
+
+                        return typedParam;
+                    }
+                }
+
+                return Convert.ChangeType(currentParam, parmType);
+            }
+
+            return currentParam;
+        }
+
+        /*****************************************************************************/
+        private List<object> EvaluateParameters(List<IExpression> inputParameters, ExpressionContext context, bool literals = false)
         {
             var parameters = new List<object>();
 
@@ -176,7 +242,7 @@ namespace JTran.Expressions
     internal static class Assertions
     { 
         /*****************************************************************************/
-        internal static IList<object> AssertNumParams(this IList<object> parameters, int min, string functionName)
+        internal static List<object> AssertNumParams(this List<object> parameters, int min, string functionName)
         {
             if(parameters.Count < min)
                 throw new Transformer.SyntaxException($"{functionName} has incorrect number of parameters");

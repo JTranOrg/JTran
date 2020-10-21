@@ -761,6 +761,38 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_pow_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("pow(10, 2)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(100M, result);
+        }
+
+        [TestMethod]
+        public void Compiler_function_sqrt_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sqrt(100)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(10M, result);
+        }
+
+        [TestMethod]
         public void Compiler_function_not_Success()
         {
             var parser     = new Parser();
@@ -967,6 +999,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_contains_str_Success()
+        {   
+            Assert.IsTrue(EvaluateToBool("contains('batman', 'bat')"));
+            Assert.IsTrue(EvaluateToBool("contains('batman', 'tma')"));
+            Assert.IsFalse(EvaluateToBool("contains('batman', 'fred')"));
+        }
+
+        [TestMethod]
+        public void Compiler_function_contains_list_Success()
+        {   
+            //Assert.IsTrue(EvaluateToBool("contains(list, 'bat')", new List<object> { "man", "bat" }));
+            //Assert.IsTrue(EvaluateToBool("contains(list, 45)", new List<object> { 72, 85.5, 45.0 }));
+            Assert.IsTrue(EvaluateToBool("contains(list, true)", new List<object> { false, true }));
+        }
+
+        [TestMethod]
         public void Compiler_function_sum_Success()
         {
             var parser     = new Parser();
@@ -1032,6 +1080,8 @@ namespace JTran.UnitTests
 
         #endregion
 
+        #region Private
+
         private static List<Automobile> _cars = new List<Automobile>
         {
             new Automobile { Make = "Chevy",   Model = "Camaro" },
@@ -1083,9 +1133,33 @@ namespace JTran.UnitTests
             public decimal Amount    { get; set; }
         }
 
-        private object CreateTestData(object obj)
+        private static object CreateTestData(object obj)
         {
             return JObject.FromObject(obj).ToString().JsonToExpando();
         }
+
+        private static bool EvaluateToBool(string sExpr)
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(sExpr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            return expression.EvaluateToBool(context);
+        }
+
+        private static bool EvaluateToBool(string sExpr, IList<object> list)
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(sExpr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { list = list } ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            return expression.EvaluateToBool(context);
+        }
+
+        #endregion
     }
 }

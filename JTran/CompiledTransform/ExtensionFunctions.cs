@@ -42,7 +42,7 @@ namespace JTran
         /*****************************************************************************/
         private string CreateKey(string name, int numParams)
         {
-            if(name == "document")
+            if(name == "document" || name == "sort")
                 return name;
 
             return name + "_" + numParams;

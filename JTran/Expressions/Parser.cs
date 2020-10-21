@@ -46,6 +46,12 @@ namespace JTran.Expressions
         public TokenType Type  { get; set; } = TokenType.Text;
 
         /*****************************************************************************/
+        public override string ToString()
+        {
+            return this.Value;
+        }
+
+        /*****************************************************************************/
         public enum TokenType
         {
             NoToken,

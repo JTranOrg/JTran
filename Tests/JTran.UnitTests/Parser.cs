@@ -206,5 +206,26 @@ namespace JTran.UnitTests
             Assert.AreEqual("4",   tokens[6].Value);
             Assert.AreEqual(")",   tokens[7].Value);
         }
+
+        [TestMethod]
+        public void Expression_sortforeach_Success()
+        {
+            var parser = new Parser();
+            var tokens = parser.Parse("#foreach(sort(Customers, Name), {})");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(11,            tokens.Count);
+            Assert.AreEqual("#foreach",    tokens[0].Value);
+            Assert.AreEqual("(",           tokens[1].Value);
+            Assert.AreEqual("sort",        tokens[2].Value);
+            Assert.AreEqual("(",           tokens[3].Value);
+            Assert.AreEqual("Customers",   tokens[4].Value);
+            Assert.AreEqual(",",           tokens[5].Value);
+            Assert.AreEqual("Name",        tokens[6].Value);
+            Assert.AreEqual(")",           tokens[7].Value);
+            Assert.AreEqual(",",           tokens[8].Value);
+            Assert.AreEqual("{}",          tokens[9].Value);
+            Assert.AreEqual(")",           tokens[10].Value);
+        }
     }
 }

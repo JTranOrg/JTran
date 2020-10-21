@@ -698,6 +698,76 @@ namespace JTran.UnitTests
 
         #endregion
 
+        #region Sort
+
+        [TestMethod]
+        public void Transformer_Transform_Sort_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformSort, null);
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_data4, context);
+   
+            Assert.AreNotEqual(_transformSort, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual("FredAnderson",     array[0]["Name"]);
+            Assert.AreEqual("JohnSmith",        array[1]["Name"]);
+            Assert.AreEqual("LindaAnderson",    array[2]["Name"]);
+            Assert.AreEqual("MarySmith",        array[3]["Name"]);
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Sort_desc_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformSortDesc, null);
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_data4, context);
+   
+            Assert.AreNotEqual(_transformSortDesc, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual("FredAnderson",     array[3]["Name"]);
+            Assert.AreEqual("JohnSmith",        array[2]["Name"]);
+            Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
+            Assert.AreEqual("MarySmith",        array[0]["Name"]);
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_Sort_2fields_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformSort2fields, null);
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_data4, context);
+   
+            Assert.AreNotEqual(_transformSort2fields, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual("FredAnderson",     array[0]["Name"]);
+            Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
+            Assert.AreEqual("JohnSmith",        array[2]["Name"]);
+            Assert.AreEqual("MarySmith",        array[3]["Name"]);
+        }
+
+        private static readonly string _transformSort =
+        "{ '#foreach(sort(Customers, \"Name\"), Persons)': { 'Name': '#(Name + Surname)' }  }";
+
+        private static readonly string _transformSortDesc =
+        "{ '#foreach(sort(Customers, \"Name\", \"desc\"), Persons)': { 'Name': '#(Name + Surname)' }  }";
+
+        private static readonly string _transformSort2fields =
+        "{ '#foreach(sort(Customers, \"Surname\", \"asc\", \"Name\", \"asc\"), Persons)': { 'Name': '#(Name + Surname)' }  }";
+
+        #endregion
+
         #region name() function
 
         [TestMethod]

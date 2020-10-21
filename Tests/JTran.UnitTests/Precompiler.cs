@@ -359,7 +359,37 @@ namespace JTran.UnitTests
             Assert.AreEqual("$Customer.FirstName",  tokens2[0].Value);
             Assert.AreEqual("+",                    tokens2[1].Value);
             Assert.AreEqual("$Customer.LastName",   tokens2[2].Value);
+        }
+
+        
+        [TestMethod]
+        public void Precompiler_Precompile_sortforeach_Success()
+        {
+            var parser = new Parser();
+            var tokens = parser.Parse("#foreach(sort(Customers, Name), {})");
+            var tokens2 = Precompiler.Precompile(tokens);
+   
+            Assert.IsNotNull(tokens2);
+            Assert.AreEqual(6,                  tokens2.Count);
+            Assert.AreEqual("#foreach",         tokens2[0].Value);
+            Assert.AreEqual("(",                tokens2[1].Value);
+
+            Assert.AreEqual(",",                tokens2[3].Value);
+            Assert.AreEqual("{}",               tokens2[4].Value);
+            Assert.AreEqual(")",                tokens2[5].Value);
+
+            var exprToken = tokens2[2] as ExpressionToken;
+         
+            Assert.IsNotNull(               exprToken);
+            Assert.AreEqual(6,              exprToken.Children.Count);
+            Assert.AreEqual("sort",         exprToken.Children[0].Value);
+            Assert.AreEqual("(",            exprToken.Children[1].Value);
+            Assert.AreEqual("Customers",    exprToken.Children[2].Value);
+            Assert.AreEqual(",",            exprToken.Children[3].Value);
+            Assert.AreEqual("Name",         exprToken.Children[4].Value);
+            Assert.AreEqual(")",            exprToken.Children[5].Value);
 
         }
+
     }
 }

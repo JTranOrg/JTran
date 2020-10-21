@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -28,6 +29,8 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class AggregateFunctions
     {
+    private readonly IDictionary<string, IComparer<object>> _sortComparers = new Dictionary<string, IComparer<object>>();
+
         /*****************************************************************************/
         public int count(object val)
         {
@@ -90,7 +93,88 @@ namespace JTran.Expressions
             return new String(val.ToString().Reverse().ToArray());
         }
 
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public object sort(object expr, params string[] sortFields)
+        {
+            if(expr is null)
+                return null;
+
+            if(expr is List<object> list)
+            {
+                if(list.Count == 1 || sortFields.Length == 0)
+                    return list;
+
+                var copy = new List<object>(list);
+
+                copy.Sort(GetComparer(sortFields));
+
+                return copy;
+            }
+
+            return expr;
+        }
+
         #region Private Methods
+
+        /*****************************************************************************/
+        /*****************************************************************************/
+        private class SortComparer : IComparer<object>
+        {
+            private readonly IList<SortField> _sortFields = new List<SortField>();
+
+            /*****************************************************************************/
+            internal SortComparer(string[] sortFields)
+            {
+                for(var i = 0; i < sortFields.Length; i += 2)
+                {
+                    var field = new SortField { Name = sortFields[i] };
+
+                    if(sortFields.Length-1 > i)
+                        field.Ascending = sortFields[i+1].ToLower() == "asc";
+
+                    _sortFields.Add(field);
+                }
+            }
+
+            /*****************************************************************************/
+            public int Compare(object x, object y)
+            {
+                foreach(var sortField in _sortFields)
+                {
+                    var xVal   = x.GetPropertyValue(sortField.Name);
+                    var yVal   = y.GetPropertyValue(sortField.Name);
+                    var result = sortField.Ascending ? xVal.CompareTo(yVal, out Type type) : yVal.CompareTo(xVal, out Type type2);
+
+                    if(result != 0)
+                        return result;
+                }
+
+                return 0;
+            }
+
+            /*****************************************************************************/
+            private class SortField
+            {
+                internal string Name      { get; set; }
+                internal bool   Ascending { get; set; } = true;
+            }
+        }
+
+        /*****************************************************************************/
+        private IComparer<object> GetComparer(string[] sortFields)
+        {
+            var key = string.Join("", sortFields);
+
+            if(_sortComparers.ContainsKey(key))
+                return _sortComparers[key];
+
+            var comparer = new SortComparer(sortFields);
+
+            _sortComparers.Add(key, comparer);
+
+            return comparer;
+        }
 
         /*****************************************************************************/
         private static decimal aggregate(object val, Func<decimal, decimal, decimal> fn, decimal startVal, out int count)

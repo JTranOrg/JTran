@@ -126,7 +126,19 @@ Result is "abc"<br><br>
 
 - [ceiling](#ceiling)
 - [floor](#floor)
+- [pi](#pi)
+- [pow](#pow)
 - [round](#round)
+- [sqrt](#sqrt)
+- Trigonometric Functions
+  - [acos](#acos)
+  - [asin](#asin)
+  - [atan](#atan)
+  - [atan2](#atan2)
+  - [cos](#cos)
+  - [cosh](#cosh)
+  - [sin](#sin)
+  - [sinh](#sinh)
 
 
 ##### <a id="ceiling">ceiling</a>(expr)
@@ -137,7 +149,6 @@ Rounds up the given val
 
 Result is 5<br><br>
 
-
 ##### <a id="floor">floor</a>(expr)
 
 Rounds down the given val
@@ -146,6 +157,9 @@ Rounds down the given val
 
 Result is 4<br><br>
 
+##### <a id="pi">pi</a>(expr)
+
+Returns the value of pi
 
 ##### <a id="round">round</a>(expr)
 
@@ -160,15 +174,17 @@ Result is 4
 Result is 5<br><br>
 
 
-#### Aggregate Functions
+#### Aggregate/Array Functions
 
 These functions operate on a list of values
 
 - [any](#any)
 - [avg](#avg)
+- [contains](#contains_list)
 - [count](#count)
 - [min](#min)
 - [min](#min)
+- [sort](#sort)
 - [sum](#sum)
 
 ##### <a id="any">any</a>(expr)
@@ -269,6 +285,24 @@ Then this expression:
 
 Result is 900<br><br>
 
+##### <a id="contains_list">contains</a>(expr)
+
+Given this data:
+
+    {
+        Employees
+        [
+            "Bob",
+            "Fred"
+        ]
+    }
+
+Then this expression:
+
+    #(contains(Employees, "Fred"))
+
+Result is true<br><br>
+
 ##### <a id="count">count</a>(expr)
 
 Given this data:
@@ -292,6 +326,78 @@ Then this expression:
     #(count(Employees))
 
 Result is 2<br><br>
+
+##### <a id="sort">sort</a>(expr)
+
+Sorts the array
+
+Given this data:
+
+    {
+        Employees
+        [
+            { 
+                Name: "Zelda",
+                Salary: 900
+            },
+            { 
+                Name: "Fred",
+                Salary: 1000
+            },
+            { 
+                Name: "Alan",
+                Salary: 900
+            }
+        ]
+    }
+
+Then this expression:
+
+    #(sort(Employees, 'Name', 'asc'))
+
+Result is:
+
+        [
+            { 
+                Name: "Alan",
+                Salary: 900
+            },
+            { 
+                Name: "Fred",
+                Salary: 1000
+            },
+            { 
+                Name: "Zelda",
+                Salary: 900
+            }
+        ]
+
+Sort on multiple properties:
+
+    #(sort(Employees, 'Salary', 'desc', 'Name', 'asc'))
+
+Result is:
+
+        [
+            { 
+                Name: "Fred",
+                Salary: 1000
+            },
+            { 
+                Name: "Alan",
+                Salary: 900
+            },
+            { 
+                Name: "Zelda",
+                Salary: 900
+            }
+        ]
+
+Note that the last sort field can omit the 'asc' or 'desc', in which case it will default to 'asc':
+
+    #(sort(Employees, 'Name'))
+
+<br>
 
 ##### <a id="sum">sum</a>(expr)
 
