@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,6 +55,18 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(expression);
             Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+        
+        [TestMethod]
+        public void Compiler_NumberGreaterThan_val_is_null()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Age > 21"));
+            var context    = new ExpressionContext(CreateTestData(new {} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsFalse(expression.EvaluateToBool(context));
         }
         
         [TestMethod]
@@ -140,6 +153,44 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(expression);
             Assert.AreEqual("Bob32Fred", expression.Evaluate(context));
+        }        
+        
+        [TestMethod]
+        public void Compiler_Addition_multipart_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Customer.FirstName + Customer.LastName"));
+            var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("BobJones", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_Addition_multipart2_Success()
+        {
+            var expression = Compile("$Customer.FirstName + $Customer.LastName");
+
+            var tContext = new TransformerContext { Arguments = new Dictionary<string, object> 
+                                                                  { 
+                                                                    {"Customer", new { FirstName = "Bob", LastName = "Jones"} }
+                                                                  }
+                                                  };
+
+            var context    = new ExpressionContext(CreateTestData(new {} ), "", tContext);
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("BobJones", expression.Evaluate(context));
+        }
+
+        private IExpression Compile(string expression)
+        {        
+            var parser      = new Parser();
+            var tokens      = parser.Parse("$Customer.FirstName + $Customer.LastName");
+            var compiler    = new Compiler();
+
+            return compiler.Compile(tokens);
         }
 
         [TestMethod]
@@ -240,6 +291,216 @@ namespace JTran.UnitTests
 
             Assert.IsTrue(result);
         }
+
+        #region DateTime
+
+        #region Actual DateTime values
+
+        [TestMethod]
+        public void Compiler_DateTime_use_DateTime_GreaterThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1980, 4, 5) },
+                                                                        Wife    = new { Birthdate = new DateTime(1984, 7, 22) }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_DateTime_GreaterThan_false()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1986, 4, 5) },
+                                                                        Wife    = new { Birthdate = new DateTime(1984, 7, 22) }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsFalse(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_DateTime_LessThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1980, 4, 5) },
+                                                                        Wife    = new { Birthdate = new DateTime(1984, 7, 22) }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_DateTime_LessThan_false()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1986, 4, 5) },
+                                                                        Wife    = new { Birthdate = new DateTime(1984, 7, 22) }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsFalse(expression.EvaluateToBool(context));
+        }
+
+        #endregion
+
+        #region String values
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_GreaterThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_1_is_null_GreaterThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate > Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = (String)null }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_1_is_missing_GreaterThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate > Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
+                                                                        Wife    = new { }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_GreaterThan_false()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsFalse(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_LessThan_true()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_use_string_LessThan_false()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }} ));
+
+            Assert.IsNotNull(expression);
+            Assert.IsFalse(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_max()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("max(Husband.Birthdate, Wife.Birthdate)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("1986-04-05T10:00:00.0000000", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_DateTime_min()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("min(Husband.Birthdate, Wife.Birthdate)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
+                                                                        Wife    = new { Birthdate = "1984-10-22T10:00:00" }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("1984-10-22T10:00:00.0000000", expression.Evaluate(context));
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Multipart
+
+        [TestMethod]
+        public void Compiler_Multipart_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
+            var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = new { Cylinders = 8 } }  } ));
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(8m, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_Multipart_missing_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
+            var context    = new ExpressionContext(CreateTestData(new { Car = new { Tires = new { Tread = .5 } }  } ));
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(null, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_Multipart_null_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
+            var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = (Automobile)null, Tires = new { Tread = .5 } }  } ));
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(null, expression.Evaluate(context));
+        }
+
+        #endregion
 
         #region Parenthesis
 
@@ -500,6 +761,38 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_pow_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("pow(10, 2)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(100M, result);
+        }
+
+        [TestMethod]
+        public void Compiler_function_sqrt_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sqrt(100)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(10M, result);
+        }
+
+        [TestMethod]
         public void Compiler_function_not_Success()
         {
             var parser     = new Parser();
@@ -557,6 +850,54 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("ABCDEF", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_number_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Age < number(MaxAge)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 8, MaxAge = "10"} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_number_null_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Age < number(MaxAge)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {MaxAge = "10"} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_number_notnumber_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Age > number(MaxAge)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 8, MaxAge = "bob"} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_isnumber_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("Age < (isnumber(MaxAge) ? MaxAge : 10000)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 8, MaxAge = "bob"} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsTrue(expression.EvaluateToBool(context));
         }
 
         [TestMethod]
@@ -658,6 +999,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_contains_str_Success()
+        {   
+            Assert.IsTrue(EvaluateToBool("contains('batman', 'bat')"));
+            Assert.IsTrue(EvaluateToBool("contains('batman', 'tma')"));
+            Assert.IsFalse(EvaluateToBool("contains('batman', 'fred')"));
+        }
+
+        [TestMethod]
+        public void Compiler_function_contains_list_Success()
+        {   
+            //Assert.IsTrue(EvaluateToBool("contains(list, 'bat')", new List<object> { "man", "bat" }));
+            //Assert.IsTrue(EvaluateToBool("contains(list, 45)", new List<object> { 72, 85.5, 45.0 }));
+            Assert.IsTrue(EvaluateToBool("contains(list, true)", new List<object> { false, true }));
+        }
+
+        [TestMethod]
         public void Compiler_function_sum_Success()
         {
             var parser     = new Parser();
@@ -700,7 +1057,9 @@ namespace JTran.UnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("max(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy",    SaleAmount = 1200M }, 
+                                                                                                  new { Model = "Pontiac",  SaleAmount = 2000M},  
+                                                                                                  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual(4000M, expression.Evaluate(context));
         }
@@ -720,6 +1079,8 @@ namespace JTran.UnitTests
         #endregion
 
         #endregion
+
+        #region Private
 
         private static List<Automobile> _cars = new List<Automobile>
         {
@@ -772,9 +1133,33 @@ namespace JTran.UnitTests
             public decimal Amount    { get; set; }
         }
 
-        private object CreateTestData(object obj)
+        private static object CreateTestData(object obj)
         {
             return JObject.FromObject(obj).ToString().JsonToExpando();
         }
+
+        private static bool EvaluateToBool(string sExpr)
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(sExpr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            return expression.EvaluateToBool(context);
+        }
+
+        private static bool EvaluateToBool(string sExpr, IList<object> list)
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(sExpr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { list = list } ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            return expression.EvaluateToBool(context);
+        }
+
+        #endregion
     }
 }

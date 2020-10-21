@@ -137,6 +137,28 @@ namespace JTran.UnitTests
             Assert.AreEqual("Blue",     driver.Driver.Vehicles[0].Color);
         }
 
+        private static readonly string _transformForEach1 =
+        @"{
+            Driver:
+            {
+                FirstName: 'Bob',
+                LastName:  'Jones',
+                '#foreach(Cars, Vehicles)':
+                {
+                    Brand:   '#(Make)',
+                    Model:   '#(Model)',
+                    Year:    '#(Year)',
+                    Color:   '#(Color)',
+                    Engine:
+                    {
+                        Displacement:   375
+                    }
+                }
+            }
+        }";
+
+
+
         [TestMethod]
         public void CompiledTransform_Transform_If_Success()
         {
@@ -170,7 +192,10 @@ namespace JTran.UnitTests
             Assert.AreEqual("Flintstone", driver.Driver.LastName);
         }
 
+        #region Variable
+
         [TestMethod]
+        [TestCategory("Variable")]
         public void CompiledTransform_Transform_Variable_Success()
         {
             var transformer = CompiledTransform.Compile(_transformVariable);
@@ -186,6 +211,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Variable")]
         public void CompiledTransform_Transform_Variable2_Success()
         {
             var transformer = CompiledTransform.Compile(_transformVariable2);
@@ -199,6 +225,73 @@ namespace JTran.UnitTests
             Assert.AreEqual("Fred",       driver.Driver.FirstName);
             Assert.AreEqual("Flintstone", driver.Driver.LastName);
         }
+
+        [TestMethod]
+        [TestCategory("Variable")]
+        public void CompiledTransform_Transform_Variable_Object_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformVariableObj);
+            var result      = transformer.Transform("{ Region: 'WA', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
+
+            Assert.AreNotEqual(_transformVariableObj, result);
+
+            var json = JObject.Parse(result);
+
+            Assert.IsNotNull(json);
+
+            Assert.AreEqual("RodrigoGuiterrez", json["Driver"]["Name"].ToString());
+        }
+
+        [TestMethod]
+        [TestCategory("Variable")]
+        public void CompiledTransform_Transform_Variable_Object2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformVariableObj2);
+            var result      = transformer.Transform("{ }", null, null);
+
+            Assert.AreNotEqual(_transformVariableObj2, result);
+
+            var json = JObject.Parse(result);
+
+            Assert.IsNotNull(json);
+
+            Assert.AreEqual("RodrigoGuiterrez", json["Driver"]["Name"].ToString());
+        }
+
+        private static readonly string _transformVariableObj =
+        @"{
+           '#variable(Customer)':   
+           {
+                FirstName:  'Rodrigo',
+                LastName:   'Guiterrez',
+           },
+
+            Driver:  
+            {
+                'Name':      '#($Customer.FirstName + $Customer.LastName)'
+            }
+        }";
+
+        private static readonly string _transformVariableObj2 =
+        @"{
+           '#variable(Customer)':   
+           {
+                Drivers:
+                [
+                    {
+                        FirstName:  'Rodrigo',
+                        LastName:   'Guiterrez'
+                    }
+                ]
+           },
+
+            Driver:  
+            {
+                'Name':      '#($Customer.Drivers[0].FirstName + $Customer.Drivers[0].LastName)'
+            }
+        }";
+
+        #endregion
 
         [TestMethod]
         public void CompiledTransform_Transform_IfElsifElse2_Success()
@@ -278,6 +371,7 @@ namespace JTran.UnitTests
         #region CopyOf
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf1);
@@ -296,6 +390,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf2_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf2);
@@ -312,6 +407,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf3_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf3);
@@ -341,6 +437,7 @@ namespace JTran.UnitTests
           }";
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf4_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf4);
@@ -357,6 +454,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf_array_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf4);
@@ -374,6 +472,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf_array2_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOf4);
@@ -441,6 +540,7 @@ namespace JTran.UnitTests
                 
              ]
           }";
+
         #endregion
 
         [TestMethod]
@@ -458,6 +558,31 @@ namespace JTran.UnitTests
             Assert.IsNotNull(jresult["CanDrive"]);
             Assert.AreEqual("true", jresult["CanDrive"].ToString().ToLower());
         }
+
+
+        #region ParseElementParams
+
+        [TestMethod]
+        public void CompiledTransform_ParseElementParams_Success()
+        {
+            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(Customers, Persons)", new List<bool> {false, true} );
+
+            Assert.AreEqual(2,           parms.Count);
+            Assert.IsTrue(parms[0] is DataValue);
+            Assert.AreEqual("Persons",   parms[1].Evaluate(null).ToString());
+        }   
+
+        [TestMethod]
+        public void CompiledTransform_ParseElementParams_wFunction_Success()
+        {
+            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(sort(Customers, Name), Persons)", new List<bool> {false, true} );
+
+            Assert.AreEqual(2,                       parms.Count);
+            Assert.IsTrue(parms[0] is IExpression);
+            Assert.AreEqual("Persons",               parms[1].Evaluate(null).ToString());
+        }   
+
+        #endregion
 
         private static readonly string _transformIfBool =
         @"{
@@ -644,26 +769,6 @@ namespace JTran.UnitTests
                     }
                 }
              }
-        }";
-
-        private static readonly string _transformForEach1 =
-        @"{
-            Driver:
-            {
-                FirstName: 'Bob',
-                LastName:  'Jones',
-                '#foreach(Cars, Vehicles)':
-                {
-                    Brand:   '#(Make)',
-                    Model:   '#(Model)',
-                    Year:    '#(Year)',
-                    Color:   '#(Color)',
-                    Engine:
-                    {
-                        Displacement:   375
-                    }
-                }
-            }
         }";
 
         private static readonly string _transformForEach2 =

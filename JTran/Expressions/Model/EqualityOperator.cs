@@ -24,7 +24,7 @@ namespace JTran.Expressions
 {
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class EqualOperator : ComparisonOperarator
+    internal class EqualOperator : ComparisonOperator
     {
         public override int Precedence => 9;
 
@@ -37,7 +37,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class NotEqualOperator : ComparisonOperarator
+    internal class NotEqualOperator : ComparisonOperator
     {
         public override int Precedence => 8;
 

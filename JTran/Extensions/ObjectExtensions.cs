@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Transactions;
 
 namespace JTran.Extensions
 {
@@ -86,6 +87,103 @@ namespace JTran.Extensions
         internal static bool IsDictionary(this object obj)
         {
             return obj is IEnumerable && obj.GetType().Name.Contains("Dictionary");
+        }
+
+        /****************************************************************************/
+        internal static bool TryParseDateTime(this object data, out DateTime? dtValue)
+        {
+            dtValue = null;
+
+            if(data == null)
+                return false;
+
+            if(data is DateTime dtValue2)
+            {
+                dtValue = dtValue2;
+                return true;
+            }
+
+            if(data is DateTimeOffset dtValue3)
+            {
+                dtValue = dtValue3.DateTime;
+                return true;
+            }
+
+            var sdate = data.ToString();
+
+            if(sdate.EndsWith("Z"))
+            {
+                if(!DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue)) 
+                    return false;
+
+                dtValue = dtoValue.UtcDateTime;
+                return true;
+            }
+
+            if(DateTime.TryParse(sdate, out DateTime dtValue4))
+            {
+                dtValue = dtValue4;
+                return true;
+            }
+
+            return false;
+        }
+
+        /*****************************************************************************/
+        internal static int CompareTo(this object leftVal, object rightVal, out Type type)
+        {
+            type = typeof(object);
+
+            if(leftVal == null && rightVal == null)
+                return 0;
+
+            if(rightVal == null)
+                return 1;
+
+            if(leftVal == null)
+                return -1;
+
+            var leftValStr  = leftVal?.ToString(); 
+            var rightValStr = rightVal?.ToString(); 
+
+            if(long.TryParse(leftValStr, out long leftLong))
+            { 
+                if(long.TryParse(rightValStr, out long rightLong))
+                { 
+                    type = typeof(long);
+                    return leftLong.CompareTo(rightLong);
+                }
+            }
+
+            if(decimal.TryParse(leftValStr, out decimal leftDecimal))
+            { 
+                if(decimal.TryParse(rightValStr, out decimal rightDecimal))
+                { 
+                    type = typeof(decimal);
+                    return leftDecimal.CompareTo(rightDecimal);
+                }
+            }
+
+            if(bool.TryParse(leftValStr, out bool leftBool))
+            { 
+                if(bool.TryParse(rightValStr, out bool rightBool))
+                { 
+                    type = typeof(bool);
+                    return leftBool.CompareTo(rightBool);
+                }
+            }
+
+            if(leftVal.TryParseDateTime(out DateTime? dtLeft))
+            { 
+                if(rightVal.TryParseDateTime(out DateTime? dtRight))
+                { 
+                    type = typeof(DateTime);
+                    return DateTime.Compare(dtLeft.Value, dtRight.Value);
+                }
+            }
+                    
+            type = typeof(string);
+            return leftValStr.CompareTo(rightValStr);
         }
 
         #region Private
@@ -172,7 +270,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        private static object GetPropertyValue(this object obj, string name)       
+        internal static object GetPropertyValue(this object obj, string name)       
         {
             if(obj == null)
                 return null;

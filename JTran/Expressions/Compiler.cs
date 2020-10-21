@@ -40,7 +40,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public static IExpression Compile(string expr)
+        internal static IExpression Compile(string expr)
         {
             var parser   = new Parser();
             var compiler = new Compiler();
@@ -49,13 +49,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public IExpression Compile(IReadOnlyList<Token> tokens)
+        internal IExpression Compile(IReadOnlyList<Token> tokens)
         {
             return InnerCompile(Precompiler.Precompile(tokens));
         }
         
         /*****************************************************************************/
-        private IExpression InnerCompile(IEnumerable<Token> tokens)
+        internal IExpression InnerCompile(IEnumerable<Token> tokens)
         {
             var stokens = new Stack<Token>(tokens.Reverse());
 
@@ -70,6 +70,7 @@ namespace JTran.Expressions
         {
             IExpression left  = null;
             IExpression right = null;
+            object      last  = null;
             IOperator   op    = null;
 
             lastToken = null;
@@ -101,7 +102,7 @@ namespace JTran.Expressions
 
                         var current = right ?? left;
 
-                        if(current is MultiPartDataValue multiPart)
+                        if(!(last is IOperator) && current is MultiPartDataValue multiPart)
                         { 
                             multiPart.AddPart(expr);
                             continue;
@@ -175,6 +176,7 @@ namespace JTran.Expressions
                         if(op == null)
                         { 
                             op = newOp;
+                            last = op;
                             continue;
                         }
 
@@ -200,6 +202,8 @@ namespace JTran.Expressions
                     left = expr;
                 else if(right == null)
                     right = expr;
+
+                last = expr;
             }
 
           BreakOut:
@@ -253,6 +257,14 @@ namespace JTran.Expressions
 
                 case Token.TokenType.Text:
                 { 
+                    var lval = token.Value.ToLower();
+
+                    if(lval == "true")
+                        return new Value(true);
+
+                    if(lval == "false")
+                        return new Value(false);
+
                     if(token.Value.StartsWith("$"))
                     { 
                         if(token.Value.Contains("."))

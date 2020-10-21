@@ -18,6 +18,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,7 +27,7 @@ namespace JTran.Expressions
 {
     /*****************************************************************************/
     /*****************************************************************************/
-    internal abstract class ComparisonOperarator : IOperator
+    internal abstract class ComparisonOperator : IOperator
     {
         public abstract int Precedence { get; }
 
@@ -42,34 +43,16 @@ namespace JTran.Expressions
         /*****************************************************************************/
         protected int CompareTo(IExpression left, IExpression right, ExpressionContext context)
         {
-            var leftVal  = left.Evaluate(context)?.ToString(); 
-            var rightVal = right.Evaluate(context)?.ToString(); 
+            var leftVal  = left.Evaluate(context);
+            var rightVal = right.Evaluate(context);
 
-            if(leftVal == null && rightVal == null)
-                return 0;
-
-            if(long.TryParse(leftVal, out long leftLong))
-                if(long.TryParse(rightVal, out long rightLong))
-                    return leftLong.CompareTo(rightLong);
-
-            if(decimal.TryParse(leftVal, out decimal leftDecimal))
-                if(decimal.TryParse(rightVal, out decimal rightDecimal))
-                    return leftDecimal.CompareTo(rightDecimal);
-
-            if(bool.TryParse(leftVal, out bool leftBool))
-                if(bool.TryParse(rightVal, out bool rightBool))
-                    return leftBool.CompareTo(rightBool);
-
-            if(leftVal != null)
-                return leftVal.CompareTo(rightVal);
-
-            return -(rightVal.CompareTo(leftVal));
+            return leftVal.CompareTo(rightVal, out Type type);
         }
     }
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class GreaterThanOperator : ComparisonOperarator
+    internal class GreaterThanOperator : ComparisonOperator
     {
         public override int Precedence => 11;
 
@@ -82,7 +65,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class GreaterThanEqualOperator : ComparisonOperarator
+    internal class GreaterThanEqualOperator : ComparisonOperator
     {
         public override int Precedence => 11;
 
@@ -95,7 +78,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class LessThanOperator : ComparisonOperarator
+    internal class LessThanOperator : ComparisonOperator
     {
         public override int Precedence => 11;
 
@@ -108,7 +91,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class LessThanEqualOperator : ComparisonOperarator
+    internal class LessThanEqualOperator : ComparisonOperator
     {
         public override int Precedence => 11;
 

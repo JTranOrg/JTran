@@ -36,17 +36,5 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("ran", result);
         }
-
-        [TestMethod]
-        public void Function_Evaluate_defaultParams_Success()
-        {
-            var func       = new Function(new BuiltinFunctions(), "substring");
-            var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.Value("frank"), new JTran.Expressions.NumberValue(1M) };
-
-            var result = func.Evaluate(parameters, context);
-
-            Assert.AreEqual("rank", result);
-        }
     }
 }

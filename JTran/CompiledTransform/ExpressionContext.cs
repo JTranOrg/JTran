@@ -46,7 +46,7 @@ namespace JTran
         internal ExpressionContext(object                         data, 
                                    string                         name = "", 
                                    TransformerContext             transformerContext = null, 
-                                   IDictionary<string, Function>  extensionFunctions = null,
+                                   ExtensionFunctions             extensionFunctions = null,
                                    IDictionary<string, TTemplate> templates          = null)
         {
             _data            = data;
@@ -80,7 +80,7 @@ namespace JTran
         internal object                         Data               => _data;
         internal string                         Name               { get; }
         internal bool                           PreviousCondition  { get; set; }
-        internal IDictionary<string, Function>  ExtensionFunctions { get; }
+        internal ExtensionFunctions             ExtensionFunctions { get; }
         internal IDictionary<string, TTemplate> Templates          { get; }
         internal IList<object>                  CurrentGroup       { get; set; }
 
