@@ -656,6 +656,20 @@ namespace JTran.UnitTests
             Assert.AreEqual("King Jalusa",  array[4]["Name"]);
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Array_2dim_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArray2dim, null);
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_data4, context);
+   
+            Assert.AreNotEqual(_transformArray2dim, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+        }
+
         private static readonly string _transformArrayItem =
         @"{
             '#array(Customers)':
@@ -694,6 +708,15 @@ namespace JTran.UnitTests
                     }
                 }
             }
+        }";
+
+       private static readonly string _transformArray2dim =
+        @"{
+            'Drivers':
+            [
+                '#copyof(Customers)',
+                '#($Fred)'
+            ]
         }";
 
         #endregion
