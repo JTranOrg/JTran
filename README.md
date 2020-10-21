@@ -65,8 +65,6 @@ Any bare text in the expression refers to an object within the scope:
 
 This example shows the "dot" syntax that refers to a child object.<br><br>
 
-
-
 ##### Variables
 
 A dollar sign "$" refers to a variable (see below) or argument passed into the Transform function (see [Getting Started] above).
@@ -262,6 +260,126 @@ More than one slash can be specified. Each slash refers to one level up the pare
 ### Elements
 
 Elements are akin to programming constructs, e.g foreach and if. <br><br>
+
+- <strong>[array](#array)</strong> - Outputs an array 
+- <strong>[arrayitem](#arrayitem)</strong> - Outputs an array item
+- <strong>[bind](#bind)</strong> - Changes the scope to a new object
+- <strong>[calltemplate](#Templates)</strong> - Calls a template
+- <strong>[copyof](#copyof)</strong> - Copies on object as-is
+- <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
+- <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
+- <strong>[foreach](#foreach)</strong> - Iterates over an array 
+- <strong>[if](#if)</strong> - Conditionally evaluates it's children 
+- <strong>[include](#include)</strong> - Loads an external file 
+- <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
+- <strong>[variable](#variable)</strong> - Creates a variable 
+
+#### array
+
+Outputs an array. This element allows you to create arrays and use JTran elements within it. You can, of course, output an array using simple json syntax but that would not allow you to use elements like #foreach, and #if/#else
+
+###### Transform
+
+    {
+        "#array(Cars)":
+        {
+            "#arrayitem"
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            }
+        }
+    }
+
+###### Output
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette",
+            }
+        }
+    }
+
+Using #foreach
+
+###### Transform
+
+    {
+        "#array(Cars)":
+        {
+            "#foreach(Vehicles, {})" // The "{}" tells foreach to output an object. This is only works within #array
+            {
+               Make:  "#(Make)",
+               Model: "#(Model)"
+            }
+        }
+    }
+
+###### Source
+
+    {
+        Vehices:
+        [
+            {
+               Make:  Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            }
+        }
+    }
+
+###### Output
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette",
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            }
+        }
+    }
+
+#### arrayitem
+
+Outputs an arrayitem within an #array element. See samples above.
+
+Because json doesn't allow more than one property with the same name if you needed to output more than #arrayitem you can add dummy parameters. 
+
+###### Transform
+
+    {
+        "#array(Cars)":
+        {
+            "#arrayitem(1)":
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            }
+            "#arrayitem(2)":
+            {
+               Make:  "Ford",
+               Model: "Cobra"
+            }
+            "#arrayitem(3)":
+            {
+               Make:  "Dodge",
+               Model: "Challenger"
+            }
+        }
+    }
+
+This gets around the json constraint by making each "property" name be unique. Note that the value of the parameter is ignored.
 
 #### #bind
 
@@ -570,6 +688,28 @@ Would then output this:
         Car: "Dodge Charger"
     }
 
+Because json doesn't allow more than one property with the same name if you needed to output more than #if/#else in the same scope you can simply use #elseif with a different condition that evaluates to true. 
+
+###### Transform
+    {
+        "#if(Car.Make == 'Chevy')":
+        {
+            Car:    "#('Chevy ' + Car.Make)"
+        },
+        "#else": 
+        {
+            Car:    "#(Car.Model + Car.Make)"
+        },
+
+        "#if(Car.Make == 'Audi')":
+        {
+            Car:    "#('Audi ' + Car.Make)"
+        },
+        "#elseif(1==1)": // If this was simply #else and then it would clash with the #else above and it would be invalid json
+        {
+            Car:    "#(Car.Model + Car.Make)"
+        }
+    }
 <br>
 
 #### #variable

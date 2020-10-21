@@ -26,7 +26,7 @@ namespace JTran.Expressions
 {
     /*****************************************************************************/
     /*****************************************************************************/
-    internal abstract class MathematicalOperarator : IOperator
+    internal abstract class MathematicalOperator : IOperator
     {
         public abstract int Precedence { get; }
 
@@ -35,8 +35,8 @@ namespace JTran.Expressions
         {
             var leftVal     = left.Evaluate(context);
             var rightVal    = right.Evaluate(context);
-            var leftValStr  = leftVal.ToString(); 
-            var rightValStr = rightVal.ToString(); 
+            var leftValStr  = leftVal?.ToString(); 
+            var rightValStr = rightVal?.ToString(); 
 
             if(!(leftVal is StringValue || rightVal is StringValue))
             { 
@@ -85,7 +85,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class AdditionOperator : MathematicalOperarator
+    internal class AdditionOperator : MathematicalOperator
     {
         public override int Precedence => 13;
 
@@ -97,7 +97,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class SubtractionOperator : MathematicalOperarator
+    internal class SubtractionOperator : MathematicalOperator
     {
         public override int Precedence => 12;
 
@@ -109,7 +109,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class MultiplyOperator : MathematicalOperarator
+    internal class MultiplyOperator : MathematicalOperator
     {
         public override int Precedence => 15;
 
@@ -121,7 +121,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class DivisionOperator : MathematicalOperarator
+    internal class DivisionOperator : MathematicalOperator
     {
         public override int Precedence => 14;
 
@@ -133,7 +133,7 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class ModulusOperator : MathematicalOperarator
+    internal class ModulusOperator : MathematicalOperator
     {
         public override int Precedence => 13;
 
