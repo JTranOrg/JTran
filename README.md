@@ -310,7 +310,7 @@ Using #foreach
     {
         "#array(Cars)":
         {
-            "#foreach(Vehicles, {})" // The "{}" tells foreach to output an object. This is only works within #array
+            "#foreach(Vehicles, {})" // The "{}" tells foreach to output a nameless object. This is only works within #array
             {
                Make:  "#(Make)",
                Model: "#(Model)"
