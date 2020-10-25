@@ -31,6 +31,8 @@ using JTran.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Data;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -55,7 +57,7 @@ namespace JTran
             var output  = JObject.Parse("{}");
             var expando = data.JsonToExpando();
 
-            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions, templates: this.Templates));
+            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions));
               
             return output.ToString();
         }
@@ -102,7 +104,16 @@ namespace JTran
             if(tokens2[0].Value != ("#" + elementName))
                 throw new Transformer.SyntaxException("Error in parsing element parameters");
 
-            for(var i = 2; i < tokens2.Count-1; i += 2)
+            var start = 1;
+            var end   = tokens2.Count;
+
+            if(tokens2.Count > 1 && tokens2[1].Value == "(")
+            {
+                ++start;
+                --end;
+            }
+
+            for(var i = start; i < end; i += 2)
             {
                 var token = tokens2[i];
                 var compiler = new Compiler();
@@ -170,6 +181,7 @@ namespace JTran
     {
         internal List<TToken>                   Children    { get; }
         internal IDictionary<string, TTemplate> Templates   { get; }
+        internal IDictionary<string, TFunction> Functions   { get; }
 
         private TToken _previous;
 
@@ -178,6 +190,7 @@ namespace JTran
         {
             this.Children  = new List<TToken>();
             this.Templates = new Dictionary<string, TTemplate>();
+            this.Functions = new Dictionary<string, TFunction>();
         }
 
         /****************************************************************************/
@@ -214,8 +227,17 @@ namespace JTran
                     return null;
                 }
 
+                if(name.StartsWith("#break"))
+                    return new TBreak();
+
                 if(name.StartsWith("#variable"))
                     return new TVariable(name, val);
+
+                if(name.StartsWith("#message"))
+                    return new TMessage(val);
+
+                if(name.StartsWith("#throw"))
+                    return new TThrow(name, val);
 
                 var sval = val.ToString();
 
@@ -235,6 +257,14 @@ namespace JTran
                     var template = new TTemplate(name, obj);
 
                     this.Templates.Add(template.Name, template);
+                    return null;
+                }
+
+                if(name.StartsWith("#function"))
+                { 
+                    var function = new TFunction(name, obj);
+
+                    this.Functions.Add(function.Name, function);
                     return null;
                 }
 
@@ -258,6 +288,20 @@ namespace JTran
 
                 if(name.StartsWith("#array"))
                     return new TArray(name, obj);
+
+                if(name.StartsWith("#if"))
+                    return new TIf(name, obj);
+
+                if(name.StartsWith("#try"))
+                    return new TTry(obj);
+
+                if(name.StartsWith("#catch"))
+                { 
+                    if(_previous is TTry || _previous is TCatch)
+                        return new TCatch(name, obj);
+
+                    throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
+                }
 
                 if(name.StartsWith("#if"))
                     return new TIf(name, obj);
@@ -323,6 +367,152 @@ namespace JTran
         }
     }
     
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TMessage : TToken
+    {
+        private IValue _message;
+
+        /****************************************************************************/
+        internal TMessage(JValue val)
+        {
+            _message = CreateValue(val);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var msg = _message.Evaluate(context);
+
+            Console.WriteLine(msg);
+            Debug.WriteLine(msg);
+        }
+    }
+
+    #region Control
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TThrow: TToken
+    {
+        private IExpression _code;
+        private IValue _message;
+
+        /****************************************************************************/
+        internal TThrow(string name, JValue val)
+        {
+            var parms = CompiledTransform.ParseElementParams("throw", name, new List<bool> {false, true} );
+
+            _code = parms.Count > 0 ? parms[0] : null;
+
+            _message = CreateValue(val);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var msg = _message.Evaluate(context);
+
+            if(_code != null)
+                throw new Transformer.UserError(_code.Evaluate(context).ToString(), msg.ToString());
+
+            throw new Transformer.UserError(msg.ToString());
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TBreak: TToken
+    {
+        /****************************************************************************/
+        internal TBreak()
+        {
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            throw new Break();
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class Break : Exception
+    { 
+        internal Break() { }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TTry : TContainer
+    {
+        /****************************************************************************/
+        internal TTry(JObject val) 
+        {
+            // Compile children
+            Compile(null, val);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            try
+            { 
+                var newOutput = JObject.Parse("{}");
+
+                base.Evaluate(newOutput, context);
+
+                foreach(var child in newOutput.Children())
+                    output.Add(child);
+
+                context.PreviousCondition = true;
+            }
+            catch(Transformer.UserError ex)
+            {
+                context.UserError = ex;
+
+                // Do nothing
+                int i = 0;
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TCatch : TContainer
+    {
+        private readonly IExpression _expression;
+
+        /****************************************************************************/
+        internal TCatch(string name, JObject val) 
+        {
+            var parms = CompiledTransform.ParseElementParams("catch", name, new List<bool> {false, true} );
+
+            _expression = parms.Count > 0 ? parms[0] : null;
+
+            // Compile children
+            Compile(null, val);
+        }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            if(!context.PreviousCondition)
+            { 
+                if(_expression == null || _expression.EvaluateToBool(context))
+                { 
+                    base.Evaluate(output, context);
+                    context.PreviousCondition = true;
+                }
+            }
+        }
+    }
+
+    #endregion
+
+    #region Arrays
+
     /****************************************************************************/
     /****************************************************************************/
     internal class TExplicitArray : TContainer
@@ -414,8 +604,10 @@ namespace JTran
 
             output.Add(new JProperty(this.Name.Evaluate(context).ToString(), array));
         }
-    }    
-    
+    }
+
+    #endregion
+
     /****************************************************************************/
     /****************************************************************************/
     internal class TCopyOf : TToken
@@ -462,11 +654,9 @@ namespace JTran
         /****************************************************************************/
         internal TBind(string name, JObject val) 
         {
-            name = name.Substring("#bind(".Length);
+            var parms = CompiledTransform.ParseElementParams("bind", name, new List<bool> {false} );
 
-            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
-
-            _expression = Compiler.Compile(parms[0]);
+            _expression = parms[0];
 
             // Compile children
             Compile(null, val);
@@ -477,9 +667,11 @@ namespace JTran
         {
             var newScope = _expression.Evaluate(context);
 
-            base.Evaluate(output, new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates));
+            base.Evaluate(output, new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions));
         }
     }
+
+    #region if/else
 
     /****************************************************************************/
     /****************************************************************************/
@@ -509,7 +701,7 @@ namespace JTran
             if(_expression.EvaluateToBool(context))
             { 
                 context.PreviousCondition = true;
-                base.Evaluate(output, new ExpressionContext(context.Data, context, templates: this.Templates));
+                base.Evaluate(output, new ExpressionContext(context.Data, context, templates: this.Templates, functions: this.Functions));
             }
         }
     }
@@ -549,6 +741,8 @@ namespace JTran
                 base.Evaluate(output, context);
         }
     }
+
+    #endregion
 
     /****************************************************************************/
     /****************************************************************************/
@@ -605,12 +799,21 @@ namespace JTran
                 else
                     arrayOutput = output;
 
+                var bBreak = false;
+
                 foreach(var childScope in list)
                 { 
                     var parentArray = output is JArray && string.IsNullOrEmpty(arrayName);
                     var childOutput = parentArray ? output : JObject.Parse("{}");
 
-                    base.Evaluate(childOutput, new ExpressionContext(childScope, context, templates: this.Templates));
+                    try
+                    { 
+                        base.Evaluate(childOutput, new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions));
+                    }
+                    catch(Break)
+                    {
+                        bBreak = true;
+                    }
 
                     if(childOutput.Count > 0)
                     { 
@@ -623,12 +826,15 @@ namespace JTran
                         else if(!parentArray)
                             arrayOutput.Add(childOutput);
                     }
+
+                    if(bBreak)
+                        break;
                 }
             }
             else 
             {
                 // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates));
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions));
             }
         }
     }
@@ -705,7 +911,7 @@ namespace JTran
                 foreach(var groupScope in groups)
                 {
                     var groupOutput = JObject.Parse("{}");
-                    var newContext  = new ExpressionContext(groupScope, context, templates: this.Templates);
+                    var newContext  = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
 
                     newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
 
@@ -729,7 +935,7 @@ namespace JTran
             else 
             {
                 // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates));
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions));
             }
         }
     }
@@ -842,6 +1048,39 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
+    internal class TFunction : TContainer
+    {
+        public List<string> Parameters { get; } = new List<string>();
+
+        /****************************************************************************/
+        internal TFunction(string name, JObject val) 
+        {
+            name = name.Substring("#function(".Length);
+
+            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
+
+            this.Name = parms[0].ToLower().Trim();
+
+            this.Parameters.AddRange(parms.Select( s=> s.Trim()));
+            this.Parameters.RemoveAt(0);
+
+            // Compile children
+            Compile(null, val);
+        }
+
+        internal string Name      { get; }
+
+        /****************************************************************************/
+        internal override void Evaluate(JContainer output, ExpressionContext context)
+        {
+            var newContext = new ExpressionContext(context.Data, context);
+
+            base.Evaluate(output, newContext);
+        }    
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
     internal class TCallTemplate : TContainer
     {
         private readonly string _templateName;
@@ -874,6 +1113,8 @@ namespace JTran
             template.Evaluate(output, newContext);
         }    
     }
+
+    #region Values
 
     /****************************************************************************/
     /****************************************************************************/
@@ -971,4 +1212,6 @@ namespace JTran
             return val;
         }
     }
+
+    #endregion
 }

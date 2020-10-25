@@ -26,6 +26,7 @@ namespace JTran.UnitTests
         #region ForEach
 
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_Success()
         {
             var transformer = new JTran.Transformer(_transformForEach1, null);
@@ -58,6 +59,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach2_Success()
         {
             var transformer = new JTran.Transformer(_transformForEach2, null);
@@ -90,6 +92,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach3_Success()
         {
             var transformer = new JTran.Transformer(_transformForEach3, null);
@@ -112,6 +115,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_noarray_Success()
         {
             var transformer = new JTran.Transformer(_transformForEachNoArray, null);
@@ -127,6 +131,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_nested__Success()
         {
             var transformer = new JTran.Transformer(_transformNestedForEach, null);
@@ -145,6 +150,7 @@ namespace JTran.UnitTests
         }
         
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_nested_single_innner__Success()
         {
             var transformer = new JTran.Transformer(_transformNestedForEach, null);
@@ -163,6 +169,7 @@ namespace JTran.UnitTests
         }
         
         [TestMethod]
+        [TestCategory("ForEach")]
         public void Transformer_Transform_null_data_Success()
         {
             var transformer = new JTran.Transformer(_transformForEachNoArray, null);
@@ -179,6 +186,34 @@ namespace JTran.UnitTests
 
             Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
         }
+
+        [TestMethod]
+        [TestCategory("ForEach")]
+        public void Transformer_Transform_ForEach_break_Success()
+        {
+            var transformer = new JTran.Transformer(_transformForEachBreak, null);
+            var result      = transformer.Transform(_data4, null);
+   
+            Assert.AreNotEqual(_transformForEachBreak, _data4);
+
+            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
+
+            Assert.AreEqual(1,       customers.Customers.Count);
+            Assert.AreEqual("John",  customers.Customers[0].FirstName);
+            Assert.AreEqual("Smith", customers.Customers[0].LastName);
+        }
+
+        private static readonly string _transformForEachBreak =
+        "{" + 
+         "    '#foreach(Customers, Customers)':" + 
+         "    {" + 
+         "        LastName:    '#(Surname)'," + 
+         "        FirstName:   '#(Name)'," + 
+         "        Age:         '#(Age)'," + 
+         "        Address:     '#(Address)'," + 
+         "        '#break':     ''" + 
+         "    }" + 
+         "}";
 
         #endregion
 
@@ -340,6 +375,7 @@ namespace JTran.UnitTests
         #region Template
 
         [TestMethod]
+        [TestCategory("Template")]
         public void Transformer_Transform_Template_Success()
         {
             var transformer = new JTran.Transformer(_transformTemplate2, null);
@@ -350,6 +386,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Template")]
         public void Transformer_Transform_Template_aftercall_Success()
         {
             var transformer = new JTran.Transformer(_transformTemplate3, null);
@@ -360,6 +397,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Template")]
         public void Transformer_Transform_Template_scoped_Success()
         {
             var transformer = new JTran.Transformer(_transformTemplate4, null);
@@ -416,6 +454,96 @@ namespace JTran.UnitTests
 
         #endregion
 
+       #region Function
+
+        [TestMethod]
+        [TestCategory("Function")]
+        public void Transformer_Transform_Function_Success()
+        {
+            var transformer = new JTran.Transformer(_transformFunction, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformFunction, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1964 }"), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        [TestCategory("Function")]
+        public void Transformer_Transform_Function_after__Success()
+        {
+            var transformer = new JTran.Transformer(_transformFunctionAfter, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformFunctionAfter, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1964 }"), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        [TestCategory("Function")]
+        public void Transformer_Transform_Function2_Success()
+        {
+            var transformer = new JTran.Transformer(_transformFunction2, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplate2, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Car: { Make: 'Chevy', Model: 'Corvette', Year: 1964 } }"), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        [TestCategory("Function")]
+        public void Transformer_Transform_Function_wparams_Success()
+        {
+            var transformer = new JTran.Transformer(_transformFunctionParams, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformFunctionParams, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1967 }"), JObject.Parse(result)));
+        }
+
+        private static readonly string _transformFunction =
+        @"{
+             '#function(BestYear)': 
+             {
+                return:       1964
+             },
+
+             Year: '#(BestYear(3))'
+        }";
+
+        private static readonly string _transformFunctionAfter =
+        @"{
+             Year: '#(BestYear(3))',
+
+             '#function(BestYear)': 
+             {
+                return:       1964
+             }
+        }";
+
+        private static readonly string _transformFunctionParams =
+        @"{
+             '#function(BestYear, add)': 
+             {
+                return:       '#(1964 + $add)'
+             },
+
+             Year: '#(BestYear(3))'
+        }";
+
+        private static readonly string _transformFunction2 =
+        @"{
+             '#function(BestCar)': 
+             {  
+                Make:   'Chevy',
+                Model:  'Corvette',
+                Year:   1964
+             },
+
+             Car:       '#(BestCar())'
+        }";
+
+        #endregion
+
         #region Include
 
         [TestMethod]
@@ -428,6 +556,16 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Include_function_Success()
+        {
+            var transformer = new JTran.Transformer(_transformIncludeFunction, null, new Dictionary<string, string> { {"otherfile.json", _otherFile} });
+            var result      = transformer.Transform(_dataForEachGroup1, null);
+   
+            Assert.AreNotEqual(_transformIncludeFunction, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ name: \"BobJones\" }"), JObject.Parse(result)));
+        }
+
         private static readonly string _transformInclude =
         @"{
             '#include':      'otherfile.json',
@@ -436,7 +574,18 @@ namespace JTran.UnitTests
             {
                 name: 'bob'
             }
-           
+        }";
+
+        private static readonly string _transformIncludeFunction =
+        @"{
+            '#include':      'otherfile.json',
+             '#variable(person)':
+             {
+                FirstName: 'Bob',
+                LastName: 'Jones'
+             },
+
+             name: '#(DisplayName($person))'
         }";
 
         private static readonly string _otherFile =
@@ -445,6 +594,11 @@ namespace JTran.UnitTests
              {
                 'FirstName':  '#($name)',
                 'Year':       1965
+             },
+
+             '#function(DisplayName, person2)':
+             {
+                return:  '#($person2.FirstName + $person2.LastName)'
              }
         }";
 
@@ -453,6 +607,7 @@ namespace JTran.UnitTests
         #region Arrays
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_noexpressions_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayRaw, null);
@@ -466,6 +621,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_noexpressions2_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayRaw2, null);
@@ -479,6 +635,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_noexpressions3_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayRaw3, null);
@@ -492,6 +649,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_expressions_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray, null);
@@ -505,6 +663,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_expressions2_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2, null);
@@ -519,6 +678,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_expressions3_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformNamedArray, null);
@@ -605,6 +765,7 @@ namespace JTran.UnitTests
         #region Array Element
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_element_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformEmptyArray, null);
@@ -625,6 +786,7 @@ namespace JTran.UnitTests
         }";
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_ArrayItem_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayItem, null);
@@ -640,6 +802,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_ArrayItem2_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayItem2, null);
@@ -656,6 +819,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_foreach_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayForEach, null);
@@ -673,6 +837,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_2dim_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2dim, null);
@@ -690,6 +855,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_2dim2_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2dim2, null);
@@ -707,6 +873,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_2dim_foreach_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2dimforeach, null);
@@ -721,6 +888,27 @@ namespace JTran.UnitTests
 
             Assert.AreEqual(3, array2.Count);
             Assert.AreEqual(1, array2[0]);
+        }
+
+        [TestMethod]
+        [TestCategory("Array")]
+        public void Transformer_Transform_Array_foreach_sequence_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayForEachSequence, null);
+            var context     = new TransformerContext { Arguments = (new { prefix = "item", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_data4, context);
+   
+            Assert.AreNotEqual(_transformArrayForEachSequence, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Items"]  as JArray;
+
+            Assert.AreEqual(5,        array.Count());
+            Assert.AreEqual("item1",  array[0]);
+            Assert.AreEqual("item2",  array[1]);
+            Assert.AreEqual("item3",  array[2]);
+            Assert.AreEqual("item4",  array[3]);
+            Assert.AreEqual("item5",  array[4]);
         }
 
         private static readonly string _transformArrayItem =
@@ -768,6 +956,17 @@ namespace JTran.UnitTests
                     {
                         'Name': 'King Krakatoa'
                     }
+                }
+            }
+        }";
+
+        private static readonly string _transformArrayForEachSequence =
+        @"{
+            '#array(Items)':
+            {
+                '#foreach(sequence(1, 5))':
+                {
+                   '#arrayitem':    '#($prefix + @)'
                 }
             }
         }";
@@ -876,6 +1075,26 @@ namespace JTran.UnitTests
             Assert.AreEqual("MarySmith",        array[3]["Name"]);
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Sort_3fields_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformSort3fields, null);
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var result      = transformer.Transform(_dataSort3fields, context);
+   
+            Assert.AreNotEqual(_transformSort3fields, _dataSort3fields);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(5,                  array.Count());
+            Assert.AreEqual("FredAnderson41",     array[0]["Name"]);
+            Assert.AreEqual("LindaAnderson39",    array[1]["Name"]);
+            Assert.AreEqual("JohnSmith34",        array[2]["Name"]);
+            Assert.AreEqual("MarySmith32",        array[3]["Name"]);
+            Assert.AreEqual("MarySmith51",        array[4]["Name"]);
+        }
+
         private static readonly string _transformSort =
         "{ '#foreach(sort(Customers, \"Name\"), Persons)': { 'Name': '#(Name + Surname)' }  }";
 
@@ -884,6 +1103,9 @@ namespace JTran.UnitTests
 
         private static readonly string _transformSort2fields =
         "{ '#foreach(sort(Customers, \"Surname\", \"asc\", \"Name\", \"asc\"), Persons)': { 'Name': '#(Name + Surname)' }  }";
+
+        private static readonly string _transformSort3fields =
+        "{ '#foreach(sort(Customers, \"Surname\", \"asc\", \"Name\", \"asc\", \"Age\", \"asc\"), Persons)': { 'Name': '#(Name + Surname + Age)' }  }";
 
         #endregion
 
@@ -1288,6 +1510,43 @@ namespace JTran.UnitTests
         @"{
             Customers:
             [
+                {
+                    Surname:     'Smith',
+                    Address:     '123 Elm St', 
+                    Name:   'John',
+                    Age:     34
+                },
+                {
+                    Surname:     'Smith',
+                    Address:     '123 Elm St', 
+                    Name:   'Mary',
+                    Age:     32
+                },
+                {
+                    Surname:     'Anderson',
+                    Address:     '375 Maple Ave',   
+                    Name:   'Fred',
+                    Age:     41
+                },
+                {
+                    Surname:     'Anderson',
+                    Address:     '375 Maple Ave',   
+                    Name:   'Linda',
+                    Age:     39
+                }
+            ]
+        }";
+
+        private static readonly string _dataSort3fields =
+        @"{
+            Customers:
+            [
+                {
+                    Surname:     'Smith',
+                    Address:     '4892 Acorn Ave', 
+                    Name:   'Mary',
+                    Age:     51
+                },
                 {
                     Surname:     'Smith',
                     Address:     '123 Elm St', 
