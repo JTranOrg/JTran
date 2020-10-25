@@ -24,6 +24,7 @@ A transform is a JSON file that contains JTran processing instructions. To trans
         }
     }
 
+Note: The transformer would benefit from caching so creating the transformer each time would be inefficient.
     
 <br>
 
@@ -265,13 +266,18 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[arrayitem](#arrayitem)</strong> - Outputs an array item
 - <strong>[bind](#bind)</strong> - Changes the scope to a new object
 - <strong>[calltemplate](#Templates)</strong> - Calls a template
+- <strong>[catch](#trycatch)</strong> - Part of a try/catch block
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
 - <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
+- <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
+- <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
+- <strong>[throw](#throw)</strong> - Throws an exception
+- <strong>[try](#trycatch)</strong> - Part of a try/catch block
 - <strong>[variable](#variable)</strong> - Creates a variable 
 
 #### array
@@ -408,6 +414,7 @@ You can also output single values using a foreach
             }
         }
     }
+
 ###### Source
 
     {
@@ -768,6 +775,191 @@ Because json doesn't allow more than one property with the same name if you need
     }
 <br>
 
+#### #copyof
+
+#copyof copies the contents of the specified object.
+
+###### Transform
+
+    {
+        Car:
+        {
+            Make:       "#(Make)",
+            Model:      "#(Model)",
+            Drivetrain: "#copyof(Parts)"
+        }
+    }
+
+###### Source
+
+    {
+        Car:
+        {
+            Make: "Chevy",
+            Model: "Corvette",
+            Parts:
+            {
+                Tires:  "BFR2000-S4",
+                Wheels: "Acme AC87-D49S"
+            }
+        }
+    }
+
+###### Output
+
+    {
+        Car:
+        {
+            Make: "Chevy",
+            Model: "Corvette",
+            Drivetrain:
+            {
+                Tires:  "BFR2000-S4"
+                Wheels: "Acme AC87-D49S"
+            }
+        }
+    }
+
+#### <a id="function">#function</a>
+
+#function creates a function using JTran that can be called from any expression.
+
+###### Transform
+
+    {
+        "#function(DisplayName, person)": // First parameter is name of function, the rest are the parameters to the function
+        {
+            // To return a single value, e.g. string, number, etc, create a property named "return"
+
+            return:   "#($person.FirstName + ' ' + $person.LastName)"  // Access parameters using the same syntax as variables
+        },
+        "Driver":
+        {
+            Name: "#(DisplayName(Drivers[Winning][0]))"
+        },
+    }
+
+If no "return" property is created then the whole object is returned
+
+    {
+        "#function(DriverInfo, person)": 
+        {
+            Name:    "#($person.FirstName + ' ' + $person.LastName)",
+            Make:    "#($person.Car.Make)",
+            Model:   "#($person.Car.Model)"
+        },
+
+        "FirstPlace":    "#(DriverInfo(Drivers[Placement == 1])"   
+        "SecondPlace":   "#(DriverInfo(Drivers[Placement == 2])"   
+        "ThirdPlace":    "#(DriverInfo(Drivers[Placement == 3])"   
+    }
+
+###### Output
+
+    {
+        FirstPlace:
+        {
+            Name:   "Bob Jones"
+            Make:   "Pontiac"
+            Model:  "Firebird"
+        },
+        SecondPlace:
+        {
+            Name:   "Mary Kelly"
+            Make:   "Chevy"
+            Model:  "Camaro"
+        },
+        ThirdPlace:
+        {
+            Name:   "Frank Anderson"
+            Make:   "Dodge"
+            Model:  "Challenger"
+        }
+    }
+
+#functions can also be placed in #include files. As with #templates #functions are scoped.
+
+#### <a id="throw">#throw</a>
+
+#throw throws an exception (error). When you throw an exception any processing innstructions from the last #try are thrown away. If there is no #try/#catch (see below) then the exception is propagated to your .Net code. An exception of Transformer.UserError will be thrown.
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw":                "This is an error message"                // No Error code
+            "throw(123)":           "This is an error message"                // 123 is an error code.
+            "throw(ErrorCodes[0])": "#(ErrorMessage[code == ErrorCodes[0]])"  // Use expressions for the message and/or the error code.
+        },
+        "#catch":
+        {
+            Make: "Pontiac"
+        },
+    }
+
+#### <a id="trycatch">#try and #catch</a>
+
+A try/catch is a way to test for exception. If while processing a try block and an exception is thrown then the entire output of the try is throw away and the catch is processed instead. You can have more than one cath and you specifiy conditions on the cacth.
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw(123)": "This is an error message"  // The parameter to the throw is an error code. It is optional.
+        },
+        "#catch":
+        {
+            Make: "Pontiac"
+        },
+    }
+
+
+###### Output
+
+    {
+        Make:    "Pontiac"
+    }
+
+Use conditions with more than one #catch
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw(123)": "Chevy has been disqualified"  // The parameter to #throw is an error code. It is optional.
+        },
+        "#catch(errorcode() == 456)":
+        {
+            Make: "Pontiac",
+        },
+        "#catch(errorcode() == 123)": // the errorcode() function returns the error code passed into the #throw
+        {
+            Make: "Dodge",
+            Reason: "#(errormessage())"
+        },
+        "#catch":
+        {
+            Make: "Lincoln",
+        }
+    }
+
+
+###### Output
+
+    {
+        Make:    "Dodge"
+        Reason:   "Chevy has been disqualified"
+    }
+
 #### #variable
 
 #variable allows you to specify a placeholder for data, A variable has a single parameter that is the name of the variable. 
@@ -825,51 +1017,6 @@ Because json doesn't allow more than one property with the same name if you need
 
 <br>
 
-#### #copyof
-
-#copyof copies the contents of the specified object.
-
-###### Transform
-
-    {
-        Car:
-        {
-            Make:       "#(Make)",
-            Model:      "#(Model)",
-            Drivetrain: "#copyof(Parts)"
-        }
-    }
-
-###### Source
-
-    {
-        Car:
-        {
-            Make: "Chevy",
-            Model: "Corvette",
-            Parts:
-            {
-                Tires:  "BFR2000-S4",
-                Wheels: "Acme AC87-D49S"
-            }
-        }
-    }
-
-###### Output
-
-    {
-        Car:
-        {
-            Make: "Chevy",
-            Model: "Corvette",
-            Drivetrain:
-            {
-                Tires:  "BFR2000-S4"
-                Wheels: "Acme AC87-D49S"
-            }
-        }
-    }
-
 ### Templates
 
 Templates are reusable snippets of JTran code that can be called by other JTran code.
@@ -889,7 +1036,6 @@ Templates are reusable snippets of JTran code that can be called by other JTran 
             "Model":  "#(Model)",
             "Active":  true
         }
-
     }
 
 ###### Source Document
@@ -932,7 +1078,7 @@ Templates can be included from external files (see #include):
 ###### Transform
 
     {
-        "#include":          "mytemplate.json",
+        "#include":  "mytemplate.json",
 
         "#foreach(Cars, Vehicles)":
         {

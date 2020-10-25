@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Extensions;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,30 @@ namespace JTran.Expressions
 
             if(func != null)
                 return func.Evaluate(_parameters, context);
+
+            var tfunc = context.GetFunction(_functionName);
+            
+            if(tfunc != null)
+            {
+                var output      = JObject.Parse("{}");
+                var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
+                var index       = 0;
+                
+                foreach(var argName in tfunc.Parameters)
+                {
+                    if(index >= _parameters.Count)
+                        break;
+
+                    funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
+                }
+
+                tfunc.Evaluate(output, funcContext);
+
+                if(output["return"] != null)
+                    return output["return"];
+
+                return output.ToString().JsonToExpando();
+            }
 
             throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
         }

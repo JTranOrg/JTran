@@ -466,6 +466,34 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
+        public string errormessage(ExpressionContext context)
+        {
+            try
+            { 
+                return context.UserError?.Message;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public string errorcode(ExpressionContext context)
+        {
+            try
+            { 
+                return context.UserError?.ErrorCode;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
         [LiteralParameters]
         public object document(string repoName, string docName, ExpressionContext context)
         {
@@ -494,6 +522,42 @@ namespace JTran.Expressions
             {
                 return "";
             }
+        }
+
+        /*****************************************************************************/
+        public IList<object> sequence(object from, object to)
+        {
+            return sequence(from, to, 1m);
+        }
+
+        /*****************************************************************************/
+        public IList<object> sequence(object from, object to, object increment)
+        {
+            if(!decimal.TryParse(from.ToString(), out decimal dFrom))
+                return new List<object>();
+
+            if(!decimal.TryParse(to.ToString(), out decimal dTo))
+                return new List<object>();
+
+            decimal dIncrement = 1m;
+
+            if(decimal.TryParse(increment.ToString(), out decimal dIncr) && dIncr != 0m)
+                dIncrement = dIncr;
+
+            var list = new List<object>();
+
+            if(dIncrement > 0)
+            { 
+                for(decimal d = dFrom; d <= dTo; d += dIncrement)
+                    list.Add(d);
+            }
+            else
+            { 
+                for(decimal d = dFrom; d >= dTo; d += dIncrement)
+                    list.Add(d);
+            }
+             
+            return list;
         }
 
         #endregion

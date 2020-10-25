@@ -47,7 +47,8 @@ namespace JTran
                                    string                         name = "", 
                                    TransformerContext             transformerContext = null, 
                                    ExtensionFunctions             extensionFunctions = null,
-                                   IDictionary<string, TTemplate> templates          = null)
+                                   IDictionary<string, TTemplate> templates          = null,
+                                   IDictionary<string, TFunction> functions          = null)
         {
             _data            = data;
             _variables       = transformerContext?.Arguments != null ? new Dictionary<string, object>(transformerContext?.Arguments) : new Dictionary<string, object>();
@@ -56,6 +57,7 @@ namespace JTran
 
             this.Name        = name;
             this.Templates   = templates;
+            this.Functions   = functions;
 
             this.ExtensionFunctions = extensionFunctions;
         }
@@ -63,7 +65,8 @@ namespace JTran
         /*****************************************************************************/
         internal ExpressionContext(object data, 
                                    ExpressionContext              parentContext,
-                                   IDictionary<string, TTemplate> templates = null)
+                                   IDictionary<string, TTemplate> templates = null,
+                                   IDictionary<string, TFunction> functions = null)
         {
             _data             = data;
             _variables        = new Dictionary<string, object>();
@@ -71,7 +74,8 @@ namespace JTran
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;
             this.Name         = parentContext?.Name ?? "";
-            this.Templates    = templates;
+            this.Templates    = templates ?? parentContext?.Templates;
+            this.Functions    = functions ?? parentContext?.Functions;
 
             this.ExtensionFunctions = parentContext?.ExtensionFunctions;
         }
@@ -82,7 +86,9 @@ namespace JTran
         internal bool                           PreviousCondition  { get; set; }
         internal ExtensionFunctions             ExtensionFunctions { get; }
         internal IDictionary<string, TTemplate> Templates          { get; }
+        internal IDictionary<string, TFunction> Functions          { get; }
         internal IList<object>                  CurrentGroup       { get; set; }
+        internal Transformer.UserError          UserError          { get; set; }
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
@@ -118,6 +124,17 @@ namespace JTran
                 return this.Templates[name];
 
             return _parent?.GetTemplate(name);
+        }
+
+        /*****************************************************************************/
+        internal TFunction GetFunction(string name)
+        {
+            name = name.ToLower();
+
+            if(this.Functions != null && this.Functions.ContainsKey(name))
+                return this.Functions[name];
+
+            return _parent?.GetFunction(name);
         }
 
         /*****************************************************************************/

@@ -157,8 +157,6 @@ namespace JTran.UnitTests
             }
         }";
 
-
-
         [TestMethod]
         public void CompiledTransform_Transform_If_Success()
         {
@@ -618,6 +616,253 @@ namespace JTran.UnitTests
                  'Type': 2
                
           }";
+
+
+        #region Message
+
+        [TestMethod]
+        [TestCategory("Message")]
+        public void CompiledTransform_Transform_Message_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformMessage);
+            var result      = transformer.Transform("{ Message: 'Hello, I am a message!', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
+
+            Assert.AreNotEqual(_transformMessage, result);
+            Assert.IsNotNull(JObject.Parse(result));
+        }
+
+        private static readonly string _transformMessage =
+        @"{
+            Driver:  
+            {
+                '#message':    '#(Message)'
+            }
+        }";
+
+        #endregion
+
+        #region Throw
+
+        [TestMethod]
+        [TestCategory("Throw")]
+        public void CompiledTransform_Transform_Throw_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformThrow);
+
+            try
+            { 
+                transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
+
+                Assert.Fail("Test method did not throw expected exception JTran.Transformer+UserError.");
+            }
+            catch(Transformer.UserError ex)
+            {
+                Assert.AreEqual("Hello, I am an error!", ex.Message);
+            }
+            catch
+            {
+                Assert.Fail("Test method threw exception but it was not the expected typed of JTran.Transformer+UserError.");
+            }
+        }
+
+        private static readonly string _transformThrow =
+        @"{
+            Driver:  
+            {
+                '#throw':    '#(Message)'
+            }
+        }";
+
+        #endregion
+
+        #region Try/Catch
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatch);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Pontiac", json["Driver"]["Make"]);
+        }
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_no_throw_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatchNoThrow);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, null);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Chevy", json["Driver"]["Make"]);
+        }
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_wCondition_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatchwCondition);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, Transformer.CompileFunctions(null));
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Pontiac", json["Driver"]["Make"]);
+        }
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_2catchs_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatch2catches);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, Transformer.CompileFunctions(null));
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Audi", json["Driver"]["Make"]);
+        }
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_errorcode_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatch_errorcode);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, Transformer.CompileFunctions(null));
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Audi", json["Driver"]["Make"]);
+        }
+
+        [TestMethod]
+        [TestCategory("TryCatch")]
+        public void CompiledTransform_Transform_TryCatch_errorcode2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformTryCatch_errorcode2);
+            
+            var result = transformer.Transform("{ Message: 'Hello, I am an error!', PastRegion: 'OR', FutureRegion: 'CA' }", null, Transformer.CompileFunctions(null));
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("Pontiac", json["Driver"]["Make"]);
+        }
+
+        private static readonly string _transformTryCatch =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                    '#throw':    '#(Message)'
+                },
+                '#catch':
+                {
+                    Make:        'Pontiac'
+                }
+            }
+        }";        
+        
+        private static readonly string _transformTryCatchwCondition =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                    '#throw':    '#(Message)'
+                },
+                '#catch(errormessage() == Message)':
+                {
+                    Make:        'Pontiac'
+                }
+            }
+        }";
+
+        private static readonly string _transformTryCatch2catches =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                    '#throw':    '#(Message)'
+                },
+                '#catch(errormessage() != Message)':
+                {
+                    Make:        'Pontiac'
+                },
+                '#catch':
+                {
+                    Make:        'Audi'
+                }
+            }
+        }";
+
+        private static readonly string _transformTryCatch_errorcode =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                    '#throw(125)':    '#(Message)'
+                },
+                '#catch(errorcode() == 745)':
+                {
+                    Make:        'Pontiac'
+                },
+                '#catch':
+                {
+                    Make:        'Audi'
+                }
+            }
+        }";
+
+        private static readonly string _transformTryCatch_errorcode2 =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                    '#throw(125)':    '#(Message)'
+                },
+                '#catch(errorcode() == 125)':
+                {
+                    Make:        'Pontiac'
+                },
+                '#catch':
+                {
+                    Make:        'Audi'
+                }
+            }
+        }";
+
+        private static readonly string _transformTryCatchNoThrow =
+        @"{
+            Driver:  
+            {
+                '#try':
+                {
+                    Make:        'Chevy',
+                },
+                '#catch':
+                {
+                    Make:        'Pontiac'
+                }
+            }
+        }";
+
+        #endregion
 
         [TestMethod]
         public void CompiledTransform_Transform_function_position_Success()
