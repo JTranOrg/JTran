@@ -902,7 +902,7 @@ If no "return" property is created then the whole object is returned
 
 #### <a id="trycatch">#try and #catch</a>
 
-A try/catch is a way to test for exception. If while processing a try block and an exception is thrown then the entire output of the try is throw away and the catch is processed instead. You can have more than one cath and you specifiy conditions on the cacth.
+A #try/#catch is a way to test for exception. If while processing a #try block and an exception is thrown then the entire output of the #try is throw away and the #catch is processed instead. You can have more than one #catch and you can specify conditions on the #catch.
 
 ###### Transform
 
