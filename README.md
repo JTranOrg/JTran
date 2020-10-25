@@ -273,6 +273,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
+- <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
 - <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
@@ -774,63 +775,6 @@ Because json doesn't allow more than one property with the same name if you need
     }
 <br>
 
-#### #variable
-
-#variable allows you to specify a placeholder for data, A variable has a single parameter that is the name of the variable. 
-
-###### Transform
-
-    {
-        "#variable(Driver)":    "#(Driver)",
-
-        "#foreach(Cars, Vehicles)":
-        {
-            Make:    "#(Make)",
-            Model:   "#(Model)",
-            Driver:  "#($Driver.Name)"
-        }
-    }
-
-###### Source
-
-    {
-        Cars:
-        [
-            {
-               Make: "Chevy",
-               Model: "Corvette"
-            },
-            {
-               Make: "Pontiac",
-               Model: "Firebird"
-            }
-        ],
-        Driver:
-        {
-           Name: "Joe Smith"
-        }
-    }
-
-###### Output
-
-    {
-        Vehicles:
-        [
-            {
-               Make: "Chevy",
-               Model: "Corvette",
-               Driver: "Joe Smith"
-            },
-            {
-               Make: "Pontiac",
-               Model: "Firebird",
-               Driver: "Joe Smith"
-            }
-        }
-    }
-
-<br>
-
 #### #copyof
 
 #copyof copies the contents of the specified object.
@@ -876,7 +820,66 @@ Because json doesn't allow more than one property with the same name if you need
         }
     }
 
-#### <a id="trycatch">#throw</a>
+#### <a id="function">#function</a>
+
+#function creates a function using JTran that can be called from any expression.
+
+###### Transform
+
+    {
+        "#function(DisplayName, person)": // First parameter is name of function, the rest are the parameters to the function
+        {
+            // To return a single value, e.g. string, number, etc, create a property named "return"
+
+            return:   "#($person.FirstName + ' ' + $person.LastName)"  // Access parameters using the same syntax as variables
+        },
+        "Driver":
+        {
+            Name: "#(DisplayName(Drivers[Winning][0]))"
+        },
+    }
+
+If no "return" property is created then the whole object is returned
+
+    {
+        "#function(DriverInfo, person)": 
+        {
+            Name:    "#($person.FirstName + ' ' + $person.LastName)",
+            Make:    "#($person.Car.Make)",
+            Model:   "#($person.Car.Model)"
+        },
+
+        "FirstPlace":    "#(DriverInfo(Drivers[Placement == 1])"   
+        "SecondPlace":   "#(DriverInfo(Drivers[Placement == 2])"   
+        "ThirdPlace":    "#(DriverInfo(Drivers[Placement == 3])"   
+    }
+
+###### Output
+
+    {
+        FirstPlace:
+        {
+            Name:   "Bob Jones"
+            Make:   "Pontiac"
+            Model:  "Firebird"
+        },
+        SecondPlace:
+        {
+            Name:   "Mary Kelly"
+            Make:   "Chevy"
+            Model:  "Camaro"
+        },
+        ThirdPlace:
+        {
+            Name:   "Frank Anderson"
+            Make:   "Dodge"
+            Model:  "Challenger"
+        }
+    }
+
+#functions can also be placed in #include files. As with #templates #functions are scoped.
+
+#### <a id="throw">#throw</a>
 
 #throw throws an exception (error). When you throw an exception any processing innstructions from the last #try are thrown away. If there is no #try/#catch (see below) then the exception is propagated to your .Net code. An exception of Transformer.UserError will be thrown.
 
@@ -956,6 +959,63 @@ Use conditions with more than one #catch
         Make:    "Dodge"
         Reason:   "Chevy has been disqualified"
     }
+
+#### #variable
+
+#variable allows you to specify a placeholder for data, A variable has a single parameter that is the name of the variable. 
+
+###### Transform
+
+    {
+        "#variable(Driver)":    "#(Driver)",
+
+        "#foreach(Cars, Vehicles)":
+        {
+            Make:    "#(Make)",
+            Model:   "#(Model)",
+            Driver:  "#($Driver.Name)"
+        }
+    }
+
+###### Source
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird"
+            }
+        ],
+        Driver:
+        {
+           Name: "Joe Smith"
+        }
+    }
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette",
+               Driver: "Joe Smith"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird",
+               Driver: "Joe Smith"
+            }
+        }
+    }
+
+<br>
 
 ### Templates
 
