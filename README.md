@@ -24,6 +24,7 @@ A transform is a JSON file that contains JTran processing instructions. To trans
         }
     }
 
+Note: The transformer would benefit from caching so creating the transformer each time would be inefficient.
     
 <br>
 
@@ -265,13 +266,17 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[arrayitem](#arrayitem)</strong> - Outputs an array item
 - <strong>[bind](#bind)</strong> - Changes the scope to a new object
 - <strong>[calltemplate](#Templates)</strong> - Calls a template
+- <strong>[catch](#trycatch)</strong> - Part of a try/catch block
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
 - <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
+- <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
+- <strong>[throw](#throw)</strong> - Throws an exception
+- <strong>[try](#trycatch)</strong> - Part of a try/catch block
 - <strong>[variable](#variable)</strong> - Creates a variable 
 
 #### array
@@ -408,6 +413,7 @@ You can also output single values using a foreach
             }
         }
     }
+
 ###### Source
 
     {
@@ -870,6 +876,87 @@ Because json doesn't allow more than one property with the same name if you need
         }
     }
 
+#### <a id="trycatch">#throw</a>
+
+#throw throws an exception (error). When you throw an exception any processing innstructions from the last #try are thrown away. If there is no #try/#catch (see below) then the exception is propagated to your .Net code. An exception of Transformer.UserError will be thrown.
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw":                "This is an error message"                // No Error code
+            "throw(123)":           "This is an error message"                // 123 is an error code.
+            "throw(ErrorCodes[0])": "#(ErrorMessage[code == ErrorCodes[0]])"  // Use expressions for the message and/or the error code.
+        },
+        "#catch":
+        {
+            Make: "Pontiac"
+        },
+    }
+
+#### <a id="trycatch">#try and #catch</a>
+
+A try/catch is a way to test for exception. If while processing a try block and an exception is thrown then the entire output of the try is throw away and the catch is processed instead. You can have more than one cath and you specifiy conditions on the cacth.
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw(123)": "This is an error message"  // The parameter to the throw is an error code. It is optional.
+        },
+        "#catch":
+        {
+            Make: "Pontiac"
+        },
+    }
+
+
+###### Output
+
+    {
+        Make:    "Pontiac"
+    }
+
+Use conditions with more than one #catch
+
+###### Transform
+
+    {
+        "#try":
+        {
+            Make: "Chevy",
+              
+            "throw(123)": "Chevy has been disqualified"  // The parameter to #throw is an error code. It is optional.
+        },
+        "#catch(errorcode() == 456)":
+        {
+            Make: "Pontiac",
+        },
+        "#catch(errorcode() == 123)": // the errorcode() function returns the error code passed into the #throw
+        {
+            Make: "Dodge",
+            Reason: "#(errormessage())"
+        },
+        "#catch":
+        {
+            Make: "Lincoln",
+        }
+    }
+
+
+###### Output
+
+    {
+        Make:    "Dodge"
+        Reason:   "Chevy has been disqualified"
+    }
+
 ### Templates
 
 Templates are reusable snippets of JTran code that can be called by other JTran code.
@@ -889,7 +976,6 @@ Templates are reusable snippets of JTran code that can be called by other JTran 
             "Model":  "#(Model)",
             "Active":  true
         }
-
     }
 
 ###### Source Document
@@ -932,7 +1018,7 @@ Templates can be included from external files (see #include):
 ###### Transform
 
     {
-        "#include":          "mytemplate.json",
+        "#include":  "mytemplate.json",
 
         "#foreach(Cars, Vehicles)":
         {

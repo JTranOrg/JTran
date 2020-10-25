@@ -829,6 +829,59 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_sequence_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sequence(1, 5)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+   
+            Assert.AreEqual(1m, list[0]);
+            Assert.AreEqual(2m, list[1]);
+            Assert.AreEqual(3m, list[2]);
+            Assert.AreEqual(4m, list[3]);
+            Assert.AreEqual(5m, list[4]);
+        }
+
+        [TestMethod]
+        public void Compiler_function_sequence_increment_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sequence(2, 10, 2)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+   
+            Assert.AreEqual(5,  list.Count);
+            Assert.AreEqual(2m, list[0]);
+            Assert.AreEqual(4m, list[1]);
+            Assert.AreEqual(6m, list[2]);
+            Assert.AreEqual(8m, list[3]);
+            Assert.AreEqual(10m, list[4]);
+        }
+
+        [TestMethod]
+        public void Compiler_function_sequence_backwards_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sequence(10, 2, -2)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+   
+            Assert.AreEqual(5,  list.Count);
+            Assert.AreEqual(10m, list[0]);
+            Assert.AreEqual(8m, list[1]);
+            Assert.AreEqual(6m, list[2]);
+            Assert.AreEqual(4m, list[3]);
+            Assert.AreEqual(2m, list[4]);
+        }
+
+        [TestMethod]
         public void Compiler_function_lowercase_Success()
         {
             var parser     = new Parser();
@@ -1009,8 +1062,8 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_contains_list_Success()
         {   
-            //Assert.IsTrue(EvaluateToBool("contains(list, 'bat')", new List<object> { "man", "bat" }));
-            //Assert.IsTrue(EvaluateToBool("contains(list, 45)", new List<object> { 72, 85.5, 45.0 }));
+            Assert.IsTrue(EvaluateToBool("contains(list, 'bat')", new List<object> { "man", "bat" }));
+            Assert.IsTrue(EvaluateToBool("contains(list, 45)", new List<object> { 72, 85.5, 45.0 }));
             Assert.IsTrue(EvaluateToBool("contains(list, true)", new List<object> { false, true }));
         }
 

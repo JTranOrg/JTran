@@ -409,7 +409,6 @@ Using the data from the previous example:
 
 Result is 1900<br><br>
 
-
 #### DateTime Functions
 
 - Current DateTime
