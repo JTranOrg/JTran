@@ -407,6 +407,20 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ inner: { FirstName: \"bob\", Year: 1965 } }"), JObject.Parse(result)));
         }
 
+        [TestMethod]
+        [TestCategory("Template")]
+        public void Transformer_Transform_Template_twice_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplateTwice, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.AreNotEqual(_transformTemplateTwice, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ First: { FirstName: \"bob\", Year: 1965 },  Second: { FirstName: \"fred\", Year: 1965 } }"), JObject.Parse(result)));
+        }
+
+        
+
+
         private static readonly string _transformTemplate2 =
         @"{
              '#template(DisplayName, name)': 
@@ -451,6 +465,32 @@ namespace JTran.UnitTests
                 'Year':       1965
             }
         }";
+
+        private static readonly string _transformTemplateTwice =
+        @"{
+             '#template(DisplayName, name)': 
+             {
+                'FirstName':  '#($name)',
+                'Year':       1965
+             },
+
+             First:
+             {
+                '#calltemplate(DisplayName)':
+                {
+                    name: 'bob'
+                }
+             },
+
+             Second:
+             {
+                '#calltemplate(DisplayName)':
+                {
+                    name: 'fred'
+                }
+             }
+        }";
+
 
         #endregion
 

@@ -1,0 +1,10 @@
+{
+  "IncludePath":    "C:\\Development\\Projects\\JTran\\JTran.Console\\Samples\\Includes",
+  "DocumentSources": 
+  [
+    {
+      "Name":   "race",
+      "Path":   "C:\\Development\\Projects\\JTran\\JTran.Console\\Samples\\Documents"
+    }
+  ]
+}

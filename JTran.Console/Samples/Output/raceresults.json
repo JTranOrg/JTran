@@ -1,0 +1,49 @@
+{
+  "RaceNumber": 12387,
+  "Location": "San Antonio Raceway, San Antonio, TX",
+  "DateTime": "Jun 14, 2020 2:30PM",
+  "Results": {
+    "FirstPlace": {
+      "Time": "1:47:36",
+      "Car": {
+        "CarNumber": 7282,
+        "Make": "Chevrolet",
+        "Model": "Corvette",
+        "Year": 1964
+      },
+      "Driver": {
+        "Name": "Bob Jones",
+        "Age": 38,
+        "Team": "Tasmanian Devils"
+      }
+    },
+    "SecondPlace": {
+      "Time": "1:47:38",
+      "Car": {
+        "CarNumber": 3551,
+        "Make": "Pontiac",
+        "Model": "GTO",
+        "Year": 1968
+      },
+      "Driver": {
+        "Name": "Linda Smith",
+        "Age": 33,
+        "Team": "Tornado Daemons"
+      }
+    },
+    "ThirdPlace": {
+      "Time": "1:48:14",
+      "Car": {
+        "CarNumber": 4189,
+        "Make": "Dodge",
+        "Model": "Challenger",
+        "Year": 1969
+      },
+      "Driver": {
+        "Name": "Alex Ramirez",
+        "Age": 27,
+        "Team": "Tasmanian Devils"
+      }
+    }
+  }
+}

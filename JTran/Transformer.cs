@@ -55,6 +55,10 @@ namespace JTran
             public SyntaxException(string error) : base(error)
             {
             }
+
+            public SyntaxException(string error, Exception inner) : base(error, inner)
+            {
+            }
         }
 
         /****************************************************************************/
