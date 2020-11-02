@@ -1,0 +1,31 @@
+{
+  "RaceNumber":     12387,
+
+  "Races": 
+  [
+    {
+      "RaceNumber": 12387,
+      "Location":   "San Antonio Raceway, San Antonio, TX",
+      "DateTime":   "Jun 14, 2020 2:30PM",
+
+      "Results": 
+      [
+        {
+          "CarNumber":    7282,
+          "Placement":    1,
+          "Time":         "1:47:36"
+        },
+        {
+          "CarNumber":    3551,
+          "Placement":    2,
+          "Time":         "1:47:38"
+        },
+        {
+          "CarNumber":    4189,
+          "Placement":    3,
+          "Time":         "1:48:14"
+        }
+      ]
+    }
+  ]
+}

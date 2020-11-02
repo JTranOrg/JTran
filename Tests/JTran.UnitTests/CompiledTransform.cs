@@ -387,6 +387,17 @@ namespace JTran.UnitTests
             Assert.AreEqual(77,  jresult["Invoice"]["Solenoid"]);
         }
 
+        private static readonly string _transformCopyOf1 =
+        @"{
+            Brand:   '#(Make)',
+            Model:   '#(Model)',
+            Year:    '#(Year)',
+            Color:   '#(Color)',
+            Invoice: '#copyof(Service.Parts)'
+        }";
+
+
+
         [TestMethod]
         [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf2_Success()
@@ -424,14 +435,58 @@ namespace JTran.UnitTests
             Assert.AreEqual("2016-07-04T17:00:00.0000000-07:00", val.ToString("o"));
         }
 
+        [TestMethod]
+        [TestCategory("CopyOf")]
+        public void CompiledTransform_Transform_CopyOf_expr_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCopyOfExpr);
+            var result      = transformer.Transform(_dataCopyOfExpr, null, null);
+
+            Assert.AreNotEqual(_transformCopyOfExpr, result);
+
+            var jresult = JObject.Parse(result);
+
+            Assert.IsNotNull(jresult);
+
+           var cars = jresult["Cars"] as JArray;
+
+            Assert.IsNotNull(cars);
+            Assert.AreEqual(2, cars.Count);
+        }
+
         private static readonly string _transformCopyOf3 =
         @"{
             'output': '#copyof(Input)'
           }";
 
+        private static readonly string _transformCopyOfExpr =
+        "{ 'Cars': '#copyof(Cars[Make == \"Chevy\"])' }";
+
         private static readonly string _dataCopyOf3 =
         @"{
              'Input': { 'modified': '2016-07-04T17:00:00-07:00' }
+          }";
+
+        private static readonly string _dataCopyOfExpr =
+        @"{
+             'Cars': 
+             [
+                {
+                    'Make':     'Chevy',
+                    'Model':    'Corvette',
+                    'Year':     1964
+                },
+                {
+                    'Make':     'Pontiac',
+                    'Model':    'GTO',
+                    'Year':     1967
+                },
+                {
+                    'Make':     'Chevy',
+                    'Model':    'Camaro',
+                    'Year':     1969
+                }
+             ]
           }";
 
         [TestMethod]
@@ -1178,15 +1233,6 @@ namespace JTran.UnitTests
                     LastName:    'Sands'
                 }
             }
-        }";
-
-        private static readonly string _transformCopyOf1 =
-        @"{
-            Brand:   '#(Make)',
-            Model:   '#(Model)',
-            Year:    '#(Year)',
-            Color:   '#(Color)',
-            Invoice: '#copyof(Service.Parts)'
         }";
 
         private static readonly string _transformCopyOf2 =

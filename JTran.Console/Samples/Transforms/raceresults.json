@@ -1,0 +1,50 @@
+{
+  "#include":               "racetemplates.json",
+
+  "#variable(RaceNumber)":  "#(RaceNumber)",
+  "#variable(race)":        "#(Races[RaceNumber == $RaceNumber])",
+
+  "RaceNumber":             "#($RaceNumber)",
+  "Location":               "#($race.Location)",
+  "DateTime":               "#($race.DateTime)",
+
+  "Results":
+  {
+    "FirstPlace": 
+    {
+      "#calltemplate(Placement)":   
+      {
+        "Placement":  1
+      }
+    },
+
+    "SecondPlace": 
+    {
+      "#calltemplate(Placement)":   
+      {
+        "Placement":  2
+      }
+    }, 
+
+    "ThirdPlace": 
+    {
+      "#calltemplate(Placement)":   
+      {
+        "Placement":  3
+      }
+    }
+  },
+
+  "#template(Placement, Placement)":
+  {  
+      "#bind($race.Results[Placement == $Placement])": 
+      {
+         "Time":     "#(Time)",
+
+        "#calltemplate(Car)": 
+        {
+          "CarNumber":  "#(CarNumber)"
+        }
+      }
+  }
+}

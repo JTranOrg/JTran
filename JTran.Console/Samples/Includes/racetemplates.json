@@ -1,0 +1,29 @@
+{
+  "#variable(cars)":        "#(document(race, Cars))",
+  "#variable(drivers)":     "#(document(race, Drivers))",
+
+  "#template(Car, CarNumber)":
+  {
+      "#variable(Car)":        "#($cars.Cars[CarNumber == $CarNumber])",
+      "#variable(DriverId)":   "#($Car.Driver)",
+      "#variable(Driver)":     "#($drivers.Drivers[id == $DriverId])",
+
+      "Car": 
+      {
+        "CarNumber":  "#($CarNumber)",
+        "Make":       "#($Car.Make)",
+        "Model":      "#($Car.Model)",
+        "Year":       "#($Car.Year)"
+      },
+
+      "#bind($drivers.Drivers[id == $DriverId])": 
+      {
+        "Driver": 
+        {
+          "Name": "#(FirstName + ' ' + LastName)",
+          "Age":  "#(Age)",
+          "Team": "#(Team)"
+        }
+      }
+  }
+}
