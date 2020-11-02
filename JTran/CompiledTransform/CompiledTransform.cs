@@ -612,7 +612,7 @@ namespace JTran
     /****************************************************************************/
     internal class TCopyOf : TToken
     {
-        private readonly string _expression;
+        private readonly IExpression _expression;
         private readonly IValue _name;
 
         /****************************************************************************/
@@ -620,15 +620,18 @@ namespace JTran
         {
             _name = CreateValue(name);
 
-            val = val.Substring("#copyof(".Length);
+            var parms = CompiledTransform.ParseElementParams("copyof", val, new List<bool> {false} );
 
-            _expression = val.Substring(0, val.Length - 1);
+            if(parms.Count == 0)
+                throw new Transformer.SyntaxException("Missing expression for #copyof");
+
+            _expression = parms[0];
         }
 
         /****************************************************************************/
         internal override void Evaluate(JContainer output, ExpressionContext context)
         {
-            var newScope = context.Data.GetValue(_expression, context);
+            var newScope = _expression.Evaluate(context);
             var name     = _name.Evaluate(context).ToString();
 
             if(newScope is ExpandoObject expObject)
@@ -1108,7 +1111,7 @@ namespace JTran
             base.Evaluate(paramsOutput, newContext);
 
             foreach(var paramName in template.Parameters)
-                context.SetVariable(paramName, paramsOutput.GetValue(paramName).ToString());
+                newContext.SetVariable(paramName, paramsOutput.GetValue(paramName).ToString());
 
             template.Evaluate(output, newContext);
         }    

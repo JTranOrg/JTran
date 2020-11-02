@@ -140,6 +140,9 @@ namespace JTran
         /*****************************************************************************/
         internal void SetVariable(string name, object val)
         {
+            if(_variables.ContainsKey(name))
+                throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");
+
             _variables.Add(name, val);
         }
 

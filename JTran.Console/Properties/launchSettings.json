@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JTran.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "/c config.json /t C:\\Development\\Projects\\JTran\\JTran.Console\\Samples\\Transforms\\raceresults.json /s C:\\Development\\Projects\\JTran\\JTran.Console\\Samples\\Source\\races.json /o C:\\Development\\Projects\\JTran\\JTran.Console\\Samples\\Output\\raceresults.json  "
+    }
+  }
+}

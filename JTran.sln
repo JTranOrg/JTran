@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{561FB096-0
 		docs\functions.md = docs\functions.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JTran.Console", "JTran.Console\JTran.Console.csproj", "{0D1587AA-D9A1-4579-A1DD-39DB972CE722}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{AAD38C3A-C69C-46E9-87D2-CEB2C622A854}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAD38C3A-C69C-46E9-87D2-CEB2C622A854}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAD38C3A-C69C-46E9-87D2-CEB2C622A854}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D1587AA-D9A1-4579-A1DD-39DB972CE722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D1587AA-D9A1-4579-A1DD-39DB972CE722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D1587AA-D9A1-4579-A1DD-39DB972CE722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D1587AA-D9A1-4579-A1DD-39DB972CE722}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

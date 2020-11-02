@@ -147,7 +147,9 @@ namespace JTran.Expressions
                     var parm     = methodParams[i].Item1;
                     var parmType = methodParams[i].Item2;
 
-                    if(i < parameters.Count)
+                    if(parmType.Equals(typeof(ExpressionContext)))
+                        parameters.Add(context);
+                    else if(i < parameters.Count)
                     { 
                         var currentParam = parameters[i];
 
@@ -157,8 +159,6 @@ namespace JTran.Expressions
                     // If no value provided but the parameter has a default value then use that
                     else if(parm.HasDefaultValue)
                         parameters.Add(parm.DefaultValue);
-                    else if(parmType.Equals(typeof(ExpressionContext)))
-                        parameters.Add(context);
 
                     // else let the invoke throw it's own exception
                 }
@@ -174,7 +174,14 @@ namespace JTran.Expressions
                 parameters.Add(CreateTypedArray(paramsType, paramsParms));
             }
 
-            return _method.Invoke(_container, parameters.ToArray());
+            try
+            { 
+                return _method.Invoke(_container, parameters.ToArray());
+            }
+            catch(TargetParameterCountException ex) 
+            {
+                throw new Transformer.SyntaxException($"Function called with incorrect number of parameters: {this.Name}", ex);
+            }
         }
 
         #region Private
