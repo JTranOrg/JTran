@@ -1,5 +1,5 @@
 # jtrancmd (console app)
-   jtran.exe is a console app for doing json to json transformations using the [JTran](../readme.md) language
+   jtrancmd.exe is a console app for doing json to json transformations using the [JTran](../readme.md) language
 
 Sample call
 
