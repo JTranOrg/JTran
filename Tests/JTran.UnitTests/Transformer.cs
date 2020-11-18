@@ -266,6 +266,28 @@ namespace JTran.UnitTests
         #endregion
 
         [TestMethod]
+        public void Transformer_Transform_datetimeformat_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_datetimeformat, null);
+            var result      = transformer.Transform(_datetimeformatData);
+   
+            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
+        }
+
+        private static readonly string _datetimeformat =
+        "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";
+
+        private static readonly string _datetimeformatData =
+        @"{
+             Time: '2020-11-12T01:48:52.00000'
+        }";
+
+
+        [TestMethod]
         public void Transformer_Transform_null_reference_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformNullReference, null);
