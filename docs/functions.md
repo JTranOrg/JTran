@@ -20,13 +20,24 @@
 - [contains](#contains)
 - [endswith](#endswith)
 - [indexof](#indexof)
+- [lowercase](#lowercase)
 - [normalizespace](#normalizespace)
+- [remove](#remove)
+- [removeany](#removeany)
+- [removeanyending](#removeanyending)
+- [removeending](#removeending)
+- [replace](#replace)
+- [replaceending](#replaceending)
 - [string](#string)
 - [stringlength](#stringlength)
 - [startswith](#startswith)
 - [substring](#substring)
 - [substringafter](#substringafter)
 - [substringbefore](#substringbefore)
+- [trim](#trim)
+- [trimend](#trimend)
+- [trimstart](#trimstart)
+- [uppercase](#uppercase)
 
 ##### <a id="contains">contains</a>(expr, substr)
 
@@ -54,6 +65,14 @@ Returns the index of the first instance of the given substr. If the given substr
 
 Result is 2<br><br>
 
+##### <a id="lowercase">lowercase</a>(expr)
+
+Converts a string to all lowercase appropriate to the current language.
+    
+    #(lowercase('BOB'))
+
+Result is 'bob'<br><br>
+
 
 ##### <a id="normalizespace">normalizespace</a>(expr)
 
@@ -62,6 +81,72 @@ Trims spaces off of the beginning and end and converts multiple instances of spa
     #(normalizespace('  ab   c    d  '))
 
 Result is "ab c d"<br><br>
+
+##### <a id="remove">remove</a>(expr)
+
+Searches for all instances of a substring and removes them
+    
+    #(remove('123abc456', 'abc'))
+
+Result is "123456"<br><br>
+
+##### <a id="removeany">removeany</a>(expr)
+
+Searches for all instances of substrings in a list and removes them
+    
+    #variable(lists):
+    {   
+        keywords:
+        [
+            'abc',
+            'cde'
+        ]
+    }
+
+    #(removeany('123abc456cde789', lists.keywords))
+
+Result is "123456789"<br><br>
+
+##### <a id="removeanyending">removeanyending</a>(expr)
+
+Searches for all instances of substrings in a list tht occur at the end of the string and removes them
+    
+    #variable(lists):
+    {   
+        keywords:
+        [
+            'abc',
+            'cde'
+        ]
+    }
+
+    #(removeanyending('123abc', lists.keywords))
+
+Result is "123"<br><br>
+
+##### <a id="removeending">removeending</a>(expr)
+
+Searches for all instances of a substring if the occur at the end of the string and removes them
+    
+    #(removeending('123abc', 'abc'))
+
+Result is "123"<br><br>
+
+##### <a id="replace">replace</a>(expr)
+
+Searches for all instances of a substring and replaces them with another string
+    
+    #(replace('123abc456', 'xyz'))
+
+Result is "123xyz456"<br><br>
+
+##### <a id="replaceending">replaceending</a>(expr)
+
+Searches for all instances of a substring if the occur at the end of the string and replaces them with another string
+    
+    #(replaceending('123abc', 'abc', 'xyz'))
+
+Result is "123xyz"<br><br>
 
 
 ##### <a id="string">string</a>(expr)
@@ -121,6 +206,37 @@ Returns a portion of the given string found before the given substring.
 
 Result is "abc"<br><br>
 
+##### <a id="trim">trim</a>(expr)
+
+Removes all white space from the beginning and end of a strig
+
+    #(trim('  abc  '))
+
+Result is "abc"<br><br>
+
+##### <a id="trimend">trimend</a>(expr)
+
+Removes all white space from the end of a strig
+
+    #(trimend('  abc  '))
+
+Result is "   abc"<br><br>
+
+##### <a id="trimstart">trimstart</a>(expr)
+
+Removes all white space from the beginning and end of a strig
+
+    #(trimstart('  abc  '))
+
+Result is "abc   "<br><br>
+
+##### <a id="uppercase">uppercase</a>(expr)
+
+Converts a string to all uppercase appropriate to the current language.
+    
+    #(uppercase('BOB'))
+
+Result is 'bob'<br><br>
 
 #### Math Functions
 
@@ -608,11 +724,21 @@ Result is 45<br><br>
 #### General Purpose Functions
 
   - [document](#document)
+  - [errorcode](#errorcode)
+  - [errormessage](#errormessage)
   - [name](#name)
   - [not](#not)
   - [number](#number)
   - [position](#position)
 <br><br>
+
+##### <a id="errorcode">errorcode</a>()
+
+Returns the error code thrown from a [#throw](reference.md#throw) directive
+
+##### <a id="errormessage">errormessage</a>()
+
+Returns the error message thrown from a [#throw](reference.md#throw) directive
 
 ##### <a id="name">name</a>()
 

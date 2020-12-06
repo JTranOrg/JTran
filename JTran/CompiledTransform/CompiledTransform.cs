@@ -1058,13 +1058,12 @@ namespace JTran
         /****************************************************************************/
         internal TFunction(string name, JObject val) 
         {
-            name = name.Substring("#function(".Length);
+            var parms   = CompiledTransform.ParseElementParams("function", name, new List<bool> {true} );
+            var context = new ExpressionContext(new {});
 
-            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
+            this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim();
 
-            this.Name = parms[0].ToLower().Trim();
-
-            this.Parameters.AddRange(parms.Select( s=> s.Trim()));
+            this.Parameters.AddRange(parms.Select( s=> s.Evaluate(context).ToString().Trim()));
             this.Parameters.RemoveAt(0);
 
             // Compile children

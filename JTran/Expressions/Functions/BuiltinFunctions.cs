@@ -426,6 +426,76 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public string trim(string val)
+        {
+            return val?.Trim();
+        }
+
+        /*****************************************************************************/
+        public string trimend(string val)
+        {
+            return val?.TrimEnd();
+        }
+
+        /*****************************************************************************/
+        public string trimstart(string val)
+        {
+            return val?.TrimStart();
+        }
+        
+        /*****************************************************************************/
+        public string replace(string val, string r1, string r2)
+        {
+            return val?.Replace(r1, r2);
+        }
+
+        /*****************************************************************************/
+        public string replaceending(string val, string r1, string r2)
+        {
+            return val?.ReplaceEnding(r1, r2);
+        }
+
+        /*****************************************************************************/
+        public string remove(string val, string r1)
+        {
+            return val?.Replace(r1, "");
+        }
+
+        /*****************************************************************************/
+        public string removeany(string val, IList<object> list)
+        {
+            foreach(var r1 in list)
+            { 
+                var newVal = val?.Replace(r1.ToString(), "");
+
+                if(newVal != val)
+                    return newVal;
+            }
+
+            return val;
+        }
+
+        /*****************************************************************************/
+        public string removeending(string val, string r1)
+        {
+            return val?.ReplaceEnding(r1, "");
+        }
+
+        /*****************************************************************************/
+        public string removeanyending(string val, object list)
+        {
+            foreach(var r1 in list as IEnumerable<object>)
+            { 
+                var newVal = val?.ReplaceEnding(r1.ToString(), "");
+
+                if(newVal != val)
+                    return newVal;
+            }
+
+            return val;
+        }
+
+        /*****************************************************************************/
         public int stringlength(string val)
         {
             return val?.Length ?? 0;

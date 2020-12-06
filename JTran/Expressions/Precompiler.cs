@@ -85,34 +85,37 @@ namespace JTran.Expressions
                     break;
                 }
 
-                if(_beginBoundary.Contains(token.Value))
+                if(token.Value.Length > 0 && token.Type != Token.TokenType.Literal)
                 {
-                    var expressionToken = new ExpressionToken();
-
-                    expressionToken.Children = InnerPrecompile(tokens, false, out last);
-
-                    if(token.Value == "[")
+                    if(_beginBoundary.Contains(token.Value))
                     {
-                        if(last.Value != "]")
-                            throw new Transformer.SyntaxException("Missing \"]\" in array indexer expression");
+                        var expressionToken = new ExpressionToken();
 
-                        outputTokens.Add(token);
-                        outputTokens.Add(ExpressionOrSingle(expressionToken));
-                        outputTokens.Add(last);
+                        expressionToken.Children = InnerPrecompile(tokens, false, out last);
+
+                        if(token.Value == "[")
+                        {
+                            if(last.Value != "]")
+                                throw new Transformer.SyntaxException("Missing \"]\" in array indexer expression");
+
+                            outputTokens.Add(token);
+                            outputTokens.Add(ExpressionOrSingle(expressionToken));
+                            outputTokens.Add(last);
+                        }
+                        else
+                            outputTokens.Add(ExpressionOrSingle(expressionToken));
+
+                        continue;
                     }
-                    else
-                        outputTokens.Add(ExpressionOrSingle(expressionToken));
 
-                    continue;
-                }
+                    if(_endBoundary.ContainsKey(token.Value))
+                        break;
 
-                if(_endBoundary.ContainsKey(token.Value))
-                    break;
-
-                if(_conditionals.ContainsKey(token.Value))
-                {
-                    PopExpression(tokens, outputTokens, token, true, out last);
-                    continue;
+                    if(_conditionals.ContainsKey(token.Value))
+                    {
+                        PopExpression(tokens, outputTokens, token, true, out last);
+                        continue;
+                    }
                 }
 
                 // Is it a function call?
