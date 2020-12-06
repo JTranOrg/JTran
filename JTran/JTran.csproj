@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>A JSON to JSON transformer with similiar functionality to XSLT</Description>
+    <Description>A JSON to JSON transformer</Description>
     <Authors>JTranOrg</Authors>
     <Copyright>© 2020 - Jim Lightfoot, All Rights Reserved</Copyright>
     <Company>JTranOrg</Company>
@@ -11,7 +11,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>2.3.1</Version>
+    <Version>2.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
