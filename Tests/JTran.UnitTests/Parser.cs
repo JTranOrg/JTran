@@ -227,5 +227,36 @@ namespace JTran.UnitTests
             Assert.AreEqual("{}",          tokens[9].Value);
             Assert.AreEqual(")",           tokens[10].Value);
         }
+
+        [TestMethod]
+        public void Expression_blank_string_Success()
+        {
+            var parser = new Parser();
+            var tokens = parser.Parse("#('')");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(4,     tokens.Count);
+            Assert.AreEqual("#",   tokens[0].Value);
+            Assert.AreEqual("(",   tokens[1].Value);
+            Assert.AreEqual("",    tokens[2].Value);
+            Assert.AreEqual(")",   tokens[3].Value);
+        }
+
+        [TestMethod]
+        public void Expression_blank_string2_Success()
+        {
+            var parser = new Parser();
+            var tokens = parser.Parse("#(somefunc(''))");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(7,          tokens.Count);
+            Assert.AreEqual("#",        tokens[0].Value);
+            Assert.AreEqual("(",        tokens[1].Value);
+            Assert.AreEqual("somefunc", tokens[2].Value);
+            Assert.AreEqual("(",        tokens[3].Value);
+            Assert.AreEqual("",         tokens[4].Value);
+            Assert.AreEqual(")",        tokens[5].Value);
+            Assert.AreEqual(")",        tokens[6].Value);
+        }
     }
 }

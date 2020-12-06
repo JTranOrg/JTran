@@ -181,6 +181,7 @@ namespace JTran.UnitTests
    
             Assert.AreEqual("July 1, 2000", Compile($"formatdatetime('2000-07-01T10:00:00', 'MMMM d, yyyy')").Evaluate(context));
             Assert.AreEqual("bob", Compile($"formatdatetime('bob', 'MMMM d, yyyy')").Evaluate(context));
+            Assert.AreEqual("01:48:14.0000", Compile($"formatdatetime('2020-11-15T01:48:14.0000000', 'hh:mm:ss.ffff')").Evaluate(context));
         }
 
         [TestMethod]

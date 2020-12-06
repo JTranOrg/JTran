@@ -1037,6 +1037,18 @@ namespace JTran.UnitTests
             Assert.AreEqual("elan", expression.Evaluate(context));
         }
 
+        [TestMethod]
+        public void Compiler_blank_string_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("'bob' + '' + ' jones'");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("bob jones", expression.Evaluate(context));
+        }
+
         #region Aggregate/Array Functions
 
         [TestMethod]

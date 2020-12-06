@@ -1,6 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -266,6 +268,28 @@ namespace JTran.UnitTests
         #endregion
 
         [TestMethod]
+        public void Transformer_Transform_datetimeformat_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_datetimeformat, null);
+            var result      = transformer.Transform(_datetimeformatData);
+   
+            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
+        }
+
+        private static readonly string _datetimeformat =
+        "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";
+
+        private static readonly string _datetimeformatData =
+        @"{
+             Time: '2020-11-12T01:48:52.00000'
+        }";
+
+
+        [TestMethod]
         public void Transformer_Transform_null_reference_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformNullReference, null);
@@ -494,7 +518,7 @@ namespace JTran.UnitTests
 
         #endregion
 
-       #region Function
+        #region Function
 
         [TestMethod]
         [TestCategory("Function")]
@@ -539,6 +563,35 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformFunctionParams, _dataForEachGroup1);
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1967 }"), JObject.Parse(result)));
         }
+
+        [TestMethod]
+        [TestCategory("Function")]
+        public void Transformer_Transform_Function_nested_Success()
+        {
+            var transformSource = LoadTransform("nestedfunction");
+            var transformer     = new JTran.Transformer(transformSource, null);
+            var result          = transformer.Transform(_dataProducts);
+            var json            = JObject.Parse(result);
+   
+            Assert.AreNotEqual(transformSource, _dataProducts);
+            Assert.AreEqual("Topsoil", json["Products"][0]["Name"].ToString());
+            Assert.AreEqual("Paint",   json["Products"][1]["Name"].ToString());
+        }
+
+        private static readonly string _dataProducts =
+        @"{
+	        'Products':
+	        [
+   		        {
+       		        'Name':   'Topsoil (yards)',
+       		        'UOM':    'yard'
+     	        },
+   		        {
+       		        'Name':   'Paint (gallons)',
+       		        'UOM':    'gallon'
+     	        }
+            ]
+        }";
 
         private static readonly string _transformFunction =
         @"{
@@ -1423,6 +1476,43 @@ namespace JTran.UnitTests
              }
         }";
 
+        private static readonly string _resultForEachGroup1 = 
+        @"{
+            Makes:
+            [
+                {
+                    Make:      'Chevy',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'John Smith',
+                            Model:     'Corvette',
+                        },
+                        {
+                            Name:      'Mary Anderson',
+                            Model:     'Camaro',
+                        }
+                    ]
+                },
+                {
+                    Make:      'Pontiac',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'Fred Jones',
+                            Model:     'Firebird',
+                        },
+                        {
+                            Name:      'Amanda Ramirez',
+                            Model:     'GTO',
+                        }
+                    ]
+                }
+            ]
+        }";
+
+
+
         private static readonly string _transformBool = 
         @"{
             '#variable(isValidState)':  '#(Address.State != null)',
@@ -1922,41 +2012,6 @@ namespace JTran.UnitTests
             ]
         }";
 
-        private static readonly string _resultForEachGroup1 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'John Smith',
-                            Model:     'Corvette',
-                        },
-                        {
-                            Name:      'Mary Anderson',
-                            Model:     'Camaro',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Pontiac',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'Fred Jones',
-                            Model:     'Firebird',
-                        },
-                        {
-                            Name:      'Amanda Ramirez',
-                            Model:     'GTO',
-                        }
-                    ]
-                }
-            ]
-        }";
-
         #endregion
 
         #region Models
@@ -2018,10 +2073,36 @@ namespace JTran.UnitTests
         public class Roster
         {
             public Owner Owner  { get; set; }
-        }     
+        }
+
+        #endregion
+
+        #region Helpers
+
+        public static string LoadTransform(string name)
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests)).Location).SubstringBefore("\\bin");
+            var path = Path.Combine(assemblyPath, "Transforms", name + ".jtran");
+
+            return File.ReadAllText(path);
+        }
 
         #endregion
 
         #endregion
+   
     }
+
+    internal static class Extensions
+    {
+        internal static string SubstringBefore(this string str, string find)
+        {
+            var index = str.IndexOf(find);
+
+            if(index == -1)
+                return str;
+
+            return str.Substring(0, index);
+        }
+    } 
 }
