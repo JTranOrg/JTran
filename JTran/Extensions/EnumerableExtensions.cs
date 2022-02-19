@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -59,6 +59,18 @@ namespace JTran.Extensions
             }
 
             return array;
+        }
+
+        /****************************************************************************/
+        internal static bool Empty(this ICollection list)
+        {
+            return (list?.Count ?? 0) == 0;
+        }
+
+        /****************************************************************************/
+        internal static bool Empty<T>(this ICollection<T> list)
+        {
+            return (list?.Count ?? 0) == 0;
         }
     }
 }

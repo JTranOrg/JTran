@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -20,6 +20,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+
 using JTran.Expressions;
 using Newtonsoft.Json.Linq;
 
@@ -47,6 +50,18 @@ namespace JTran
         public string Transform(string data, TransformerContext context = null)
         {
             return _transform.Transform(data, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public void Transform(Stream input, Stream output, TransformerContext context = null)
+        {
+             _transform.Transform(input, output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public void Transform(IEnumerable list, string listName, Stream output, TransformerContext context = null)
+        {
+             _transform.Transform(list, listName, output, context, _extensionFunctions);
         }
 
         /****************************************************************************/

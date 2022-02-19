@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -413,7 +413,7 @@ namespace JTran.Expressions
                 return found != null;
             }
 
-            if(val is IList<object> list)
+            if(val is IEnumerable<object> list)
                 return list.Any( i=> i.CompareTo(searchFor, out Type type) == 0 );
 
             return false;
@@ -462,7 +462,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string removeany(string val, IList<object> list)
+        public string removeany(string val, IEnumerable<object> list)
         {
             foreach(var r1 in list)
             { 

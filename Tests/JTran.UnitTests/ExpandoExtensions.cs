@@ -18,11 +18,9 @@ namespace JTran.UnitTests
         public void ExpandoExtensions_ToJson_Success()
         {
             var exp = _data1.JsonToExpando() as ExpandoObject;
-            var json = exp.ToJson().Replace(" ", "").Replace("\r\n", "");
-
-            _data1 = _data1.Replace(" ", "").Replace("\r\n", "").Replace("'", "\"");
-
-            Assert.AreEqual(_data1, json);
+            var json = exp.ToJson();
+            
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(json), JObject.Parse(_data1)));
         }
 
         [TestMethod]

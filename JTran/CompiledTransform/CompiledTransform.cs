@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: CompiledTransform.cs					    		        
@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                                                                                                 
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -21,18 +21,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json.Linq;
 
 using JTran.Extensions;
 using JTran.Expressions;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
+
+using MondoCore.Common;
+
 using System.Diagnostics;
-using System.Data;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -52,15 +54,66 @@ namespace JTran
         }
 
         /****************************************************************************/
+        internal void Transform(Stream input, Stream output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
+            var data = input.ReadString();
+            
+            using(var writer = new JsonStreamWriter(output))
+            { 
+                Transform(data, writer, context, extensionFunctions);
+            }
+
+            return;
+        }            
+        
+        /****************************************************************************/
         internal string Transform(string data, TransformerContext context, ExtensionFunctions extensionFunctions)
         {
-            var output  = JObject.Parse("{}");
+            var output = new JsonStringWriter();
+
+            Transform(data, output, context, extensionFunctions);
+    
+            var result = output.ToString();
+
+            return result;
+        }
+
+        /****************************************************************************/
+        internal void Transform(IEnumerable list, string listName, Stream output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
+            IDictionary<string, object> expando = new ExpandoObject();
+
+            expando[listName] = list;
+
+            using(var writer = new JsonStreamWriter(output))
+            { 
+                TransformObject(expando, writer, context, extensionFunctions);
+            }
+    
+            return;
+        }
+
+        /****************************************************************************/
+        private void Transform(string data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
             var expando = data.JsonToExpando();
 
-            this.Evaluate(output, new ExpressionContext(expando, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions));
-              
-            return output.ToString();
-        }
+            TransformObject(expando, output, context, extensionFunctions);
+    
+            return;
+        }                
+
+        /****************************************************************************/
+        private void TransformObject(object data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
+            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
+
+            output.StartObject();
+            this.Evaluate(output, newContext, f=> f());
+            output.EndObject();
+    
+            return;
+        }        
 
         /****************************************************************************/
         internal static CompiledTransform Compile(string source, IDictionary<string, string> includeSource = null)
@@ -147,7 +200,7 @@ namespace JTran
     /****************************************************************************/
     internal abstract class TToken
     {
-        internal abstract void Evaluate(JContainer output, ExpressionContext context);
+        internal abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
         /****************************************************************************/
         internal protected IValue CreateValue(JToken value)
@@ -194,10 +247,20 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            foreach(var child in this.Children)
-                child.Evaluate(output, context);
+            var numChildren = this.Children.Count;
+
+            wrap( ()=>
+            {
+                foreach(var child in this.Children)
+                { 
+                    child.Evaluate(output, context, (cb)=>
+                    {                  
+                        cb();
+                    });
+                }
+            });
         }
 
         /****************************************************************************/
@@ -284,7 +347,7 @@ namespace JTran
                     return new TForEach(name, obj);
 
                 if(name.StartsWith("#arrayitem"))
-                    return new TObject(name, obj);
+                    return new TArrayItem(name, obj);
 
                 if(name.StartsWith("#array"))
                     return new TArray(name, obj);
@@ -334,6 +397,16 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
+    internal class TArrayItem : TObject
+    {
+        /****************************************************************************/
+        internal TArrayItem(string name, JObject val) : base(name, val)
+        {
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
     internal class TObject : TContainer
     {
         /****************************************************************************/
@@ -347,23 +420,27 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var child = JObject.Parse("{}");
+            var name = this.Name.Evaluate(context)?.ToString();
 
-            base.Evaluate(child, context);
+           if(output.InObject && string.IsNullOrWhiteSpace(name))
+               throw new Transformer.SyntaxException("Property name evaluates to null or empty string");
 
-            if(output is JObject joutput)
+            wrap( ()=>
             { 
-                var name = this.Name.Evaluate(context)?.ToString();
+                base.Evaluate(output, context, f=> 
+                {
+                    if(output.InObject)
+                    { 
+                        output.WriteContainerName(name);
+                    }
 
-                if(string.IsNullOrWhiteSpace(name))
-                    throw new Transformer.SyntaxException("Property name evaluates to null or empty string");
-
-                joutput.Add(name, child);
-            }
-            else if(output is JArray jarray)
-                jarray.Add(child);
+                    output.StartObject();
+                    f();
+                    output.EndObject();
+                });
+            });
         }
     }
     
@@ -380,7 +457,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var msg = _message.Evaluate(context);
 
@@ -409,7 +486,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var msg = _message.Evaluate(context);
 
@@ -422,7 +499,7 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class TBreak: TToken
+    internal class TBreak : TToken
     {
         /****************************************************************************/
         internal TBreak()
@@ -430,7 +507,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             throw new Break();
         }
@@ -455,16 +532,15 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             try
             { 
-                var newOutput = JObject.Parse("{}");
+                var newOutput = new JsonStringWriter();
 
-                base.Evaluate(newOutput, context);
+                base.Evaluate(newOutput, context, (fnc)=> fnc());
 
-                foreach(var child in newOutput.Children())
-                    output.Add(child);
+                wrap( ()=> output.WriteRaw(newOutput.ToString()));
 
                 context.PreviousCondition = true;
             }
@@ -473,7 +549,6 @@ namespace JTran
                 context.UserError = ex;
 
                 // Do nothing
-                int i = 0;
             }
         }
     }
@@ -496,13 +571,13 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
             { 
                 if(_expression == null || _expression.EvaluateToBool(context))
                 { 
-                    base.Evaluate(output, context);
+                    base.Evaluate(output, context, wrap);
                     context.PreviousCondition = true;
                 }
             }
@@ -534,24 +609,27 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var array = JArray.Parse("[]");
+            base.Evaluate(output, context, (fnc)=>
+            {
+                wrap( ()=>
+                { 
+                    if(output.InObject)
+                    { 
+                        var name = this.Name.Evaluate(context)?.ToString();
 
-            foreach(var item in this.Children)
-                item.Evaluate(array, context);
+                        if(string.IsNullOrWhiteSpace(name))
+                            throw new Transformer.SyntaxException("Array name evaluates to null or empty string");
+            
+                        output.WriteContainerName(name);
+                    }
 
-            if(output is JObject joutput)
-            { 
-                var name = this.Name.Evaluate(context)?.ToString();
-
-                if(string.IsNullOrWhiteSpace(name))
-                    throw new Transformer.SyntaxException("Array name evaluates to null or empty string");
-
-                joutput.Add(name, array);
-            }
-            else if(output is JArray jarray)
-                jarray.Add(array);
+                    output.StartArray();
+                    fnc();
+                    output.EndArray();
+                });
+            });
         }
     }
 
@@ -568,15 +646,24 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var value = _val.Evaluate(context);
-            var array = output as JArray;
 
-            if(value is IList<object>)
-                array.Add(JArray.Parse(value.ToJson()));
+            if(value is IEnumerable<object> list)
+            {
+                var numItems = list.Count();
+
+                if(numItems > 0)
+                { 
+                    output.StartChild(); 
+
+                    wrap( ()=> output.WriteList(list));
+                    output.EndChild();
+                }
+            }
             else
-                array.Add(value);
+                wrap( ()=> output.WriteSimpleArrayItem(value));
         }
     }    
 
@@ -596,13 +683,20 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var array = JArray.Parse("[]");
+            base.Evaluate(output, context, (fnc)=>
+            {
+                wrap( ()=>
+                { 
+                    output.WriteContainerName(this.Name.Evaluate(context).ToString());
+                    output.StartArray();
 
-            base.Evaluate(array, context);
+                    fnc();
 
-            output.Add(new JProperty(this.Name.Evaluate(context).ToString(), array));
+                    output.EndArray();
+                });
+            });
         }
     }
 
@@ -629,22 +723,24 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
             var newScope = _expression.Evaluate(context);
             var name     = _name.Evaluate(context).ToString();
 
-            if(newScope is ExpandoObject expObject)
+            wrap( ()=>
             { 
-                var json = expObject.ToJson();
-                var data = JObject.Parse(json);
+                writer.WriteContainerName(name);
 
-                output.Add(new JProperty(name, data));
-            }
-            else if(newScope is IEnumerable list)
-            { 
-                output.Add(new JProperty(name, list.ToJArray()));
-            }
+                if(newScope is ExpandoObject expObject)
+                { 
+                    writer.WriteItem(expObject);
+                }
+                else if(newScope is IEnumerable<object> list)
+                { 
+                    writer.WriteList(list);
+                }
+            });
         }
     }
 
@@ -666,11 +762,12 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var newScope = _expression.Evaluate(context);
+            var newScope   = _expression.Evaluate(context);
+            var newContext = new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
 
-            base.Evaluate(output, new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions));
+            base.Evaluate(output, newContext, wrap);
         }
     }
 
@@ -699,12 +796,12 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(_expression.EvaluateToBool(context))
             { 
                 context.PreviousCondition = true;
-                base.Evaluate(output, new ExpressionContext(context.Data, context, templates: this.Templates, functions: this.Functions));
+                base.Evaluate(output, new ExpressionContext(context.Data, context, templates: this.Templates, functions: this.Functions), wrap);
             }
         }
     }
@@ -719,10 +816,10 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
-                base.Evaluate(output, context);
+                base.Evaluate(output, context, wrap);
         }
     }
 
@@ -738,10 +835,10 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
-                base.Evaluate(output, context);
+                base.Evaluate(output, context, wrap);
         }
     }
 
@@ -776,68 +873,159 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var result    = _expression.Evaluate(context);
-            var arrayName = _name?.Evaluate(context)?.ToString()?.Trim();
+            var result = _expression.Evaluate(context);
 
-            if(!string.IsNullOrEmpty(arrayName) && !(result is IList))
+            if(result == null)
+                return;
+
+            var arrayName = _name == null ? null : _name.Evaluate(context)?.ToString()?.Trim();
+            
+            arrayName = string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
+
+            if(arrayName != null && !(result is IEnumerable<object>))
                 result = new List<object> { result };
 
             // If the result of the expression is an array
-            if(result is IList list)
+            if(result is IEnumerable<object> list && list.Any())
+            {                 
+                wrap( ()=> 
+                { 
+                    if(arrayName != null && arrayName != "{}")
+                        output.WriteContainerName(arrayName);
+
+                    if(arrayName != null && arrayName != "{}")
+                        output.StartArray();
+                
+                    EvaluateChildren(output, arrayName, list, context);
+
+                    if(arrayName != null && arrayName != "{}")
+                        output.EndArray();
+                });
+            }
+            else 
+            {
+                // Not an array. Just treat it as a bind
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions), wrap);
+            }
+        }
+
+        /****************************************************************************/
+        private void EvaluateChildren(IJsonWriter output, string arrayName, IEnumerable<object> list, ExpressionContext context)
+        {
+            try
             { 
-                JContainer arrayOutput;
-                
-                if(arrayName == "{}")
-                {
-                    arrayOutput = output;
-                }
-                else if(!string.IsNullOrEmpty(arrayName))
-                {
-                    arrayOutput = JArray.Parse("[]");
-                
-                    output.Add(new JProperty(arrayName, arrayOutput));
-                }
-                else
-                    arrayOutput = output;
-
-                var bBreak = false;
-
                 foreach(var childScope in list)
                 { 
-                    var parentArray = output is JArray && string.IsNullOrEmpty(arrayName);
-                    var childOutput = parentArray ? output : JObject.Parse("{}");
+                    if(EvaluateChild(output, arrayName, childScope, context))
+                        break;
+                }
+            }
+            catch(AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        /****************************************************************************/
+        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context)
+        {
+            var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions);
+            var bBreak = false;
+
+            try
+            { 
+                // First test if the child will ever write anything at all
+                base.Evaluate(new JsonTestWriter(), newContext, (fnc)=> fnc());
+                    
+                // Will never write anything, move on to next child
+                return false;
+            }
+            catch(JsonTestWriter.HaveOutput)
+            {
+                // Will write, continue with output below
+            }
+
+            // Clear out any variables created during test run above
+            newContext.ClearVariables();
+
+            base.Evaluate(output, newContext, (fnc)=> 
+            {
+                if(arrayName != null)
+                    output.StartObject();
+
+                try
+                { 
+                    fnc();
+                }
+                catch(Break)
+                {
+                    bBreak = true;
+                }
+
+                if(arrayName != null)
+                    output.EndObject();
+            }); 
+
+            return bBreak;
+        }
+
+        /****************************************************************************/
+        private void EvaluateChildren_old(IJsonWriter output, string arrayName, ICollection list, ExpressionContext context)
+        {
+            var bBreak = false;
+            var numChildren = list.Count;
+
+          #if DEBUG
+            var index = 0;
+          #endif
+
+            foreach(var childScope in list)
+            { 
+                var parentArray = output.InArray && arrayName != null;
+                var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions);
+
+              #if DEBUG
+                ++index;
+              #endif
+
+                try
+                { 
+                    // First test if the child will ever write anything at all
+                    base.Evaluate(new JsonTestWriter(), newContext, (fnc)=> fnc());
+                    
+                    // Will never write anything, move on to next child
+                    continue;
+                }
+                catch(JsonTestWriter.HaveOutput)
+                {
+                    // Will write, continue with output below
+                }
+
+                // Clear out any variables created during test run above
+                newContext.ClearVariables();
+
+                base.Evaluate(output, newContext, (fnc)=> 
+                {
+                    if(arrayName != null)
+                        output.StartObject();
 
                     try
                     { 
-                        base.Evaluate(childOutput, new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions));
+                        fnc();
                     }
                     catch(Break)
                     {
                         bBreak = true;
                     }
 
-                    if(childOutput.Count > 0)
-                    { 
-                        if(arrayName == null && childOutput is JObject jchildObject)
-                        {
-                            foreach(var grandchild in jchildObject)
-                                if(grandchild is KeyValuePair<string, JToken> pair)
-                                    arrayOutput.Add(new JProperty(pair.Key, pair.Value));
-                        }
-                        else if(!parentArray)
-                            arrayOutput.Add(childOutput);
-                    }
+                    if(arrayName != null)
+                        output.EndObject();
+                }); 
 
-                    if(bBreak)
-                        break;
-                }
-            }
-            else 
-            {
-                // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions));
+                if(bBreak)
+                    break;
             }
         }
     }
@@ -872,27 +1060,13 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var result = _expression.Evaluate(context);
 
             // If the result of the expression is an array
-            if(result is IList<object> list)
+            if(result is IEnumerable<object> list)
             { 
-                JContainer arrayOutput;
-
-                // Checkto see if we're outputting to an array
-                if(_name != null)
-                {
-                    arrayOutput = JArray.Parse("[]");
-
-                    var arrayName = _name.Evaluate(context);
-                
-                    output.Add(new JProperty(arrayName.ToString().Trim(), arrayOutput));
-                }
-                else
-                    arrayOutput = output;
-
                 // Get the groups
                 var groupBy = _groupBy.Evaluate(context).ToString().Trim();
 
@@ -910,38 +1084,56 @@ namespace JTran
                                             }
                 );
 
-                // Iterate thru the groups
-                foreach(var groupScope in groups)
-                {
-                    var groupOutput = JObject.Parse("{}");
-                    var newContext  = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
+                var numGroups = groups.Count();
 
-                    newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
+                if(numGroups == 0)
+                    return;
 
-                    base.Evaluate(groupOutput, newContext);
-
-                    if(groupOutput.Count > 0)
-                    { 
-                        var schild = groupOutput.ToString();
-
-                        if(_name == null)
-                        {
-                            foreach(var grandchild in groupOutput)
-                                if(grandchild is KeyValuePair<string, JToken> pair)
-                                    arrayOutput.Add(new JProperty(pair.Key, pair.Value));
-                        }
-                        else 
-                            arrayOutput.Add(groupOutput);
+                wrap( ()=>
+                { 
+                    // Check to see if we're outputting to an array
+                    if(_name != null)
+                    {
+                        var arrayName = _name.Evaluate(context).ToString().Trim();
+                
+                        output.WriteContainerName(arrayName);
+                        output.StartArray();
                     }
-                }
+
+                    // Iterate thru the groups
+                    foreach(var groupScope in groups)
+                    {
+                        var newContext = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
+
+                        newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
+
+                        base.Evaluate(output, newContext, (fnc)=>
+                        {
+                            output.StartChild();
+                            output.StartObject();
+                        
+                            fnc();
+
+                            output.EndObject();
+                            output.EndChild();
+                       });
+
+                    }
+
+                    if(_name != null)
+                    { 
+                        output.EndArray();
+                        output.WriteRaw("\r\n");
+                    }                    
+                });
             }
             else 
             {
                 // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions));
+                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions), wrap);
             }
         }
-    }
+   }
 
     /****************************************************************************/
     /****************************************************************************/
@@ -958,15 +1150,12 @@ namespace JTran
         internal IValue Value { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name?.Evaluate(context)?.ToString() ?? "";
             var val  = this.Value.Evaluate(context);
 
-            if(val is ExpandoObject)
-                val = val.ExpandoToObject<JObject>();
-
-            output.Add(new JProperty(name, val));
+            wrap( ()=> output.WriteProperty(name, val));
         }
     }
 
@@ -980,7 +1169,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name.Evaluate(context).ToString();
             var val  = this.Value.Evaluate(context);
@@ -1005,14 +1194,18 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
-            var varOutput  = JObject.Parse("{}");
+            var varOutput  = new JsonStringWriter();
 
-            base.Evaluate(varOutput, newContext);
+            varOutput.StartObject();
+            base.Evaluate(varOutput, newContext, (fnc)=> fnc());
+            varOutput.EndObject();
 
-            context.SetVariable(this.Name, varOutput.ToString().JsonToExpando());
+            var result = varOutput.ToString();
+
+            context.SetVariable(this.Name, result.JsonToExpando());
         }
     }
 
@@ -1041,11 +1234,11 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
 
-            base.Evaluate(output, newContext);
+            base.Evaluate(output, newContext, wrap);
         }    
     }
 
@@ -1073,11 +1266,11 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
 
-            base.Evaluate(output, newContext);
+            base.Evaluate(output, newContext, (fnc)=> fnc());
         }    
     }
 
@@ -1097,7 +1290,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(JContainer output, ExpressionContext context)
+        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var template = context.GetTemplate(_templateName);
 
@@ -1105,14 +1298,18 @@ namespace JTran
                 throw new Transformer.SyntaxException($"A template with that name was not found: {_templateName}");
 
             var newContext = new ExpressionContext(context.Data, context);
-            var paramsOutput = JObject.Parse("{}");
+            var paramsOutput = new JsonStringWriter();
 
-            base.Evaluate(paramsOutput, newContext);
+            paramsOutput.StartObject();
+            base.Evaluate(paramsOutput, newContext, (fnc)=> fnc()); 
+            paramsOutput.EndObject();
+
+            var jsonParams = JObject.Parse(paramsOutput.ToString());
 
             foreach(var paramName in template.Parameters)
-                newContext.SetVariable(paramName, paramsOutput.GetValue(paramName).ToString());
+                newContext.SetVariable(paramName, jsonParams.GetValue(paramName).ToString());
 
-            template.Evaluate(output, newContext);
+            template.Evaluate(output, newContext, wrap);
         }    
     }
 
@@ -1137,8 +1334,8 @@ namespace JTran
             _value = value.ToString();
         }
 
-        /****************************************************************************/
-        object IValue.Evaluate(ExpressionContext context)
+        /*****************************************************************************/
+        public object Evaluate(ExpressionContext context)
         {
             return _value;
         }
