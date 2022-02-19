@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -152,7 +152,7 @@ namespace JTran.Console
         /****************************************************************************/
         private static void TransformFile(JTran.Transformer transformer, string sourceFile, string output, TransformerContext context)
         {        
-            var result =  transformer.Transform(sourceFile, context);
+            var result = transformer.Transform(sourceFile, context);
             var path   = output;
 
             if(string.IsNullOrWhiteSpace(Path.GetExtension(output)))

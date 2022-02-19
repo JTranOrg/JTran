@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -57,84 +57,51 @@ namespace JTran.Extensions
         /****************************************************************************/
         public static string ToJson(this ExpandoObject obj)
         {            
-            var sb = new StringBuilder();
+            var writer = new JsonStringWriter();
 
-            obj.ToJson(sb, true);
+            obj.ToJson(writer);
 
-            return sb.ToString();
+            return writer.ToString();
         }
 
         /****************************************************************************/
-        private static void ToJson(this ExpandoObject obj, StringBuilder sb, bool last)
+        internal static void ToJson(this ExpandoObject obj, IJsonWriter writer)
         {
             if(obj == null)
                 return;
 
-            sb.AppendLine("{");
+            writer.StartObject();
 
             var dict     = (obj as IDictionary<string, object>).Where( kv=> !kv.Key.StartsWith("_jtran_") );
-            var index    = 0;
             var numItems = dict.Count();
 
             foreach(var kv in dict)
             {
-                var comma = (index == numItems-1) ? "" : ",";
-
-                sb.Append(kv.Key + ":");
-
-                ToJson(kv.Value, sb, comma);
-
-                ++index;
+                writer.StartChild();
+                ToJson(kv.Key, kv.Value, writer);
+                writer.EndChild();
             }
 
-            sb.AppendLine("}" + (last ? "" : ","));
+            writer.EndObject();
         }
 
         /****************************************************************************/
-        internal static void ToJson(object value, StringBuilder sb, string comma)
+        internal static void ToJson(string key, object value, IJsonWriter writer)
         {
-            if(value == null)
+            if(value is IEnumerable<object> list)
             {
-                sb.AppendLine(" null" + comma);
-            }
-            else if(value is IList list)
-            {
-                sb.AppendLine();
-                sb.AppendLine("[");
+                writer.WriteContainerName(key);
 
-                var childIndex = 0;
-                var numChildItems = list.Count;
-
-                foreach(var child in list)
-                {
-                    var childComma = (++childIndex == numChildItems) ? "" : ",";
-
-                    ToJson(child, sb, childComma);
-                }
-
-                sb.AppendLine("]" + comma);
+                writer.WriteList(list);
             }
             else if(value is ExpandoObject expando)
             {
-                sb.AppendLine();
-                expando.ToJson(sb, comma == "");                   
+                writer.WriteContainerName(key);
+               expando.ToJson(writer);                   
             }
             else
             {                       
-                if(value is bool)
-                    sb.AppendLine(" " + value.ToString().ToLower() + comma);
-                else if(bool.TryParse(value.ToString(), out bool bval))
-                    sb.AppendLine(" " + bval.ToString().ToLower() + comma);
-                else if(long.TryParse(value.ToString(), out long lval))
-                    sb.AppendLine(" " + lval.ToString() + comma);
-                else if(decimal.TryParse(value.ToString(), out decimal dval))
-                    sb.AppendLine(" " + dval.ToString().ReplaceEnding(".0", "") + comma);
-                else if(value is DateTime dtVal)
-                    sb.AppendLine(" \"" + dtVal.ToString("o") + "\"" + comma);
-                else if(DateTime.TryParse(value.ToString(), out DateTime dtVal2))
-                    sb.AppendLine(" \"" + dtVal2.ToString("o") + "\"" + comma);
-                else
-                    sb.AppendLine(" \"" + value.ToString() + "\"" + comma);
+                writer.WriteProperty(key, value);
             }
         }
 

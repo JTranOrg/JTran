@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -160,7 +160,7 @@ namespace JTran.Expressions
 
                 result.Clear();
 
-                if(expr is IList<object> outList2)
+                if(expr is IEnumerable<object> outList2)
                 { 
                     result.AddRange(outList2);
                 }

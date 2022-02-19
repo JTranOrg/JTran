@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -19,6 +19,7 @@
 
 using JTran.Extensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -40,7 +41,10 @@ namespace JTran.Expressions
             if(val is ExpandoObject)
                 return 1;
 
-            if(val is IList<object> list)
+            if(val is ICollection coll)
+                return coll.Count;
+
+            if(val is ICollection<object> list)
                 return list.Count;
 
             return 1;
@@ -87,7 +91,7 @@ namespace JTran.Expressions
             if(val is null)
                 return null;
 
-            if(val is IList<object> list)
+            if(val is IEnumerable<object> list)
                 return list.Reverse().ToList();
 
             return new String(val.ToString().Reverse().ToArray());
@@ -100,9 +104,9 @@ namespace JTran.Expressions
             if(expr is null)
                 return null;
 
-            if(expr is List<object> list)
+            if(expr is IEnumerable<object> list)
             {
-                if(list.Count == 1 || sortFields.Length == 0)
+                if(list.Count() == 1 || sortFields.Length == 0)
                     return list;
 
                 var copy = new List<object>(list);
@@ -184,7 +188,7 @@ namespace JTran.Expressions
             if(val is null)
                 return 0M;
 
-            if(val is IList<object> list)
+            if(val is IEnumerable<object> list)
             { 
                 decimal result = startVal;
 
@@ -192,7 +196,7 @@ namespace JTran.Expressions
                     if(decimal.TryParse(item.ToString(), out decimal dval))
                         result = fn(result, dval);
 
-                count = list.Count;
+                count = list.Count();
 
                 return result;
             }

@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                                                                                                 
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -104,6 +104,12 @@ namespace JTran
         }
 
         /*****************************************************************************/
+        internal void ClearVariables()
+        {
+            _variables.Clear();
+        }
+
+        /*****************************************************************************/
         internal object GetVariable(string name)
         {
             if(_variables.ContainsKey(name))
@@ -193,7 +199,7 @@ namespace JTran
                 return null;
             }
 
-            if(_data is IList<object> list)
+            if(_data is IEnumerable<object> list)
             {
                 var result = new List<object>();
 
@@ -201,7 +207,7 @@ namespace JTran
                 { 
                     var childResult = GetDataValue(child, name);
 
-                    if(childResult is IList<object> childList)
+                    if(childResult is IEnumerable<object> childList)
                         result.AddRange(childList);
                     else
                         result.Add(childResult);

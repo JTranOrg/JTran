@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -186,21 +186,31 @@ namespace JTran.Extensions
             return leftValStr.CompareTo(rightValStr);
         }
 
-        internal static string ToJson(this object obj)
+        /*****************************************************************************/
+        internal static string FormatForOutput(this object value, bool forceString = false)
         {
-            if(obj is ExpandoObject exp)
-                return exp.ToJson();
+            if(value == null)
+                return "null";
 
-            if(obj is IList list)
-            {
-                var sb = new StringBuilder();
+            if(!forceString)
+            { 
+                if(value is bool)
+                    return value.ToString().ToLower();
 
-                ExpandoExtensions.ToJson(obj, sb, "");
+                if(bool.TryParse(value.ToString(), out bool bval))
+                    return bval.ToString().ToLower();
 
-                return sb.ToString();
+                if(long.TryParse(value.ToString(), out long lval))
+                    return lval.ToString();
+
+                if(decimal.TryParse(value.ToString(), out decimal dval))
+                    return dval.ToString().ReplaceEnding(".0", "");
+
+                if(value is DateTime dtVal)
+                    return "\"" + dtVal.ToString("o") + "\"";
             }
 
-            return obj.ToString();
+            return "\"" + value.ToString() + "\"";
         }
 
         #region Private

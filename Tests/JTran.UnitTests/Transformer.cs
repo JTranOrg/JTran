@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Threading.Tasks;
 
 using MondoCore.Common;
 
@@ -23,6 +24,16 @@ namespace JTran.UnitTests
             var result      = transformer.Transform(_data1, null);
    
             Assert.AreNotEqual(_transform1, _data1);
+        }       
+        
+        [TestMethod]
+        public void Transformer_Transform_Issue_58()
+        {
+            var transformer = new JTran.Transformer(_transform58, new object[] {});
+            var context     = new TransformerContext { Arguments = new Dictionary<string, object>() };
+            var result      = transformer.Transform(_source58, context);
+   
+            Assert.AreNotEqual(_transform58, _source58);
         }
 
         #region ForEach
@@ -203,6 +214,126 @@ namespace JTran.UnitTests
             Assert.AreEqual(1,       customers.Customers.Count);
             Assert.AreEqual("John",  customers.Customers[0].FirstName);
             Assert.AreEqual("Smith", customers.Customers[0].LastName);
+        }
+
+        [TestMethod]
+        [TestCategory("ForEach")]
+        public async Task Transformer_Transform_ForEach_list_Success()
+        {
+            var list = new List<Automobile>
+            {
+                new Automobile
+                {
+                    Make  = "Chevrolet",
+                    Model = "Corvette",
+                    Year  = 1956,
+                    Color = "Blue",
+                },
+                new Automobile
+                {
+                    Make  = "Pontiac",
+                    Model = "Firebird",
+                    Year  = 1969,
+                    Color = "Green",
+                },
+                new Automobile
+                {
+                    Make  = "Chevrolet",
+                    Model = "Camaro",
+                    Year  = 1970,
+                    Color = "Black",
+                }
+            };
+
+            var transformer = new JTran.Transformer(_transformList, null);
+            var result = "";
+
+            using(var output = new MemoryStream())
+            { 
+                transformer.Transform(list, "Automobiles", output);
+
+                result = await output.ReadStringAsync();
+            }
+
+            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+
+            Assert.IsNotNull(owner);
+            Assert.IsNotNull(owner.Cars);
+            Assert.AreEqual(3, owner.Cars.Count);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
+            Assert.AreEqual("Corvette",  owner.Cars[0].Model);
+            Assert.AreEqual(1956,        owner.Cars[0].Year);
+
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
+            Assert.AreEqual("Firebird",  owner.Cars[1].Model);
+            Assert.AreEqual(1969,        owner.Cars[1].Year);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
+            Assert.AreEqual("Camaro",    owner.Cars[2].Model);
+            Assert.AreEqual(1970,        owner.Cars[2].Year);
+        }
+
+        private IEnumerable<Automobile> GetList()
+        {
+            yield return new Automobile
+            {
+                Make  = "Chevrolet",
+                Model = "Corvette",
+                Year  = 1956,
+                Color = "Blue",
+            };
+
+            yield return new Automobile
+            {
+                Make  = "Pontiac",
+                Model = "Firebird",
+                Year  = 1969,
+                Color = "Green",
+            };
+
+            yield return new Automobile
+            {
+                Make  = "Chevrolet",
+                Model = "Camaro",
+                Year  = 1970,
+                Color = "Black",
+            };
+        }
+
+        [TestMethod]
+        [TestCategory("ForEach")]
+        public async Task Transformer_Transform_ForEach_yielded_list_Success()
+        {
+            var list = GetList();
+
+            var transformer = new JTran.Transformer(_transformList, null);
+            var result = "";
+
+            using(var output = new MemoryStream())
+            { 
+                transformer.Transform(list, "Automobiles", output);
+
+                result = await output.ReadStringAsync();
+            }
+
+            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+
+            Assert.IsNotNull(owner);
+            Assert.IsNotNull(owner.Cars);
+            Assert.AreEqual(3, owner.Cars.Count);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
+            Assert.AreEqual("Corvette",  owner.Cars[0].Model);
+            Assert.AreEqual(1956,        owner.Cars[0].Year);
+
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
+            Assert.AreEqual("Firebird",  owner.Cars[1].Model);
+            Assert.AreEqual(1969,        owner.Cars[1].Year);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
+            Assert.AreEqual("Camaro",    owner.Cars[2].Model);
+            Assert.AreEqual(1970,        owner.Cars[2].Year);
         }
 
         private static readonly string _transformForEachBreak =
@@ -1247,6 +1378,20 @@ namespace JTran.UnitTests
             Model:  'Corvette',
             Year:   1964,
             Color:  'Blue'
+        }";       
+        
+        private static readonly string _source58 =
+        @"{
+            Car:
+            {
+              Make:   'Chevy',
+              Model:   'Corvette'
+            }
+        }";       
+        
+        private static readonly string _transform58 =
+        @"{
+                Make: '#(Car.Make)'
         }";
 
        private static readonly string _transformForEach1 =
@@ -1282,6 +1427,18 @@ namespace JTran.UnitTests
          "    }" + 
          "}";
 
+      private static readonly string _transformList = 
+        @"{
+            'Name':        'Fred',
+            '#foreach(Automobiles, Cars)':
+            {
+                Brand:    '#(Make)',
+                Model:    '#(Model)',
+                Year:     '#(Year)',
+                Color:    '#(Color)',
+                Sponsor:  'Jimbo'
+            }
+        }";
         private static readonly string _transformForEachNoArray = 
         @"{
              'Owner':
@@ -2065,10 +2222,15 @@ namespace JTran.UnitTests
 
         public class Owner
         {
-            public string            Name  { get; set; }
+            public string            Name   { get; set; }
             public List<Automobile3> Cars   { get; set; }
         }     
 
+        public class Owner2
+        {
+            public string            Name   { get; set; }
+            public List<Automobile2> Cars   { get; set; }
+        }     
 
         public class Roster
         {

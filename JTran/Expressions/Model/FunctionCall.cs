@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -50,7 +50,7 @@ namespace JTran.Expressions
             
             if(tfunc != null)
             {
-                var output      = JObject.Parse("{}");
+                var output      = new JsonStringWriter();
                 var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
                 var index       = 0;
                 
@@ -62,10 +62,14 @@ namespace JTran.Expressions
                     funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
                 }
 
-                tfunc.Evaluate(output, funcContext);
+                output.StartObject();
+                tfunc.Evaluate(output, funcContext, (f)=> f());
+                output.EndObject();
 
-                if(output["return"] != null)
-                    return output["return"];
+                var jobject = JObject.Parse(output.ToString());
+
+                if(jobject["return"] != null)
+                    return jobject["return"];
 
                 return output.ToString().JsonToExpando();
             }
