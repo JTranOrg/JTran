@@ -20,9 +20,8 @@
 using System;
 using System.Text;
 using System.IO;
-using System.Threading.Tasks;
 
-using MondoCore.Common;
+using JTran.Extensions;
 
 namespace JTran
 {
