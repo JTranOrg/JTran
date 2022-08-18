@@ -1,0 +1,35 @@
+{
+  "#variable(keywords)": 
+  {
+    "keywords":
+    [
+        "yards",
+        "gallons"
+    ]
+  },
+
+  "#foreach(Products, Products)":
+  {
+    "Name": "#(CleanProductName(Name))",
+    "UOM": "#(UOM)"
+  },
+
+  "#function(CleanProductName, name)":
+  {
+    "return": "#(normalizespace(RemoveEnding(RemoveAnyEnding(RemoveEnding($name, ')'), $keywords.keywords), '(')))"
+  },
+
+  "#function(replace2, str, r1, r2)":
+  {
+    "#variable(io)": "#(indexof($str, $r1))",
+
+    "#if($io == -1)":
+    {
+      "return": "#($str)"
+    },
+    "#else":
+    {
+      "return": "#(substring($str, 0, $io) + $r2 + substring($str, $io + stringlength($r1)))"
+    }
+  }
+}

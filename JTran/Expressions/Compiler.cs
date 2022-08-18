@@ -294,19 +294,21 @@ namespace JTran.Expressions
         {
             switch(op)
             {
-                case "==": return new EqualOperator();
-                case "!=": return new NotEqualOperator();
-                case ">":  return new GreaterThanOperator();
-                case ">=": return new GreaterThanEqualOperator();
-                case "<":  return new LessThanOperator();
-                case "<=": return new LessThanEqualOperator();
-                case "+":  return new AdditionOperator();
-                case "-":  return new SubtractionOperator();
-                case "*":  return new MultiplyOperator();
-                case "/":  return new DivisionOperator();
-                case "%":  return new ModulusOperator();
-                case "&&": return new AndOperator();
-                case "||": return new OrOperator();
+                case "==":  return new EqualOperator();
+                case "!=":  return new NotEqualOperator();
+                case ">":   return new GreaterThanOperator();
+                case ">=":  return new GreaterThanEqualOperator();
+                case "<":   return new LessThanOperator();
+                case "<=":  return new LessThanEqualOperator();
+                case "+":   return new AdditionOperator();
+                case "-":   return new SubtractionOperator();
+                case "*":   return new MultiplyOperator();
+                case "/":   return new DivisionOperator();
+                case "%":   return new ModulusOperator();
+                case "&&":  return new AndOperator();
+                case "and": return new AndOperator();
+                case "||":  return new OrOperator();
+                case "or":  return new OrOperator();
 
                 default:
                     throw new Transformer.SyntaxException($"'{op}' is an invalid operator");

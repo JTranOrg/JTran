@@ -358,6 +358,12 @@ namespace JTran.UnitTests
              Assert.ThrowsException<Transformer.SyntaxException>( ()=> transformer.Transform(_dataEmail) );
         }
 
+        [TestMethod]
+        public void Transformer_Transform_Map_Fails()
+        {
+             Assert.ThrowsException<Transformer.SyntaxException>( ()=> new JTran.Transformer(_mapError, null) );
+        }
+
         #region ExtensionFunction
 
         [TestMethod]
@@ -1212,7 +1218,7 @@ namespace JTran.UnitTests
             }
         }";
 
-       private static readonly string _transformArray2dimforeach =
+        private static readonly string _transformArray2dimforeach =
         @"{
             '#array(Cells)':
             {
@@ -1352,6 +1358,77 @@ namespace JTran.UnitTests
 
         #endregion
 
+        #region Content transforms
+        
+        [TestMethod]
+        [TestCategory("Content")]
+        [DataRow("CA", "West")]
+        [DataRow("WA", "PNW")]
+        [DataRow("OR", "PNW")]
+        [DataRow("NY", "East")]
+        [DataRow("MO", "Midwest")]
+        [DataRow("AR", "South")]
+        public void Transformer_Transform_variable_content_if(string state, string region)
+        {
+            var transformSource = LoadTransform("variablecontent");
+            var transformer     = new JTran.Transformer(transformSource, null);
+            var result          = transformer.Transform(_address.Replace("{0}", state));
+            var json            = JObject.Parse(result);
+   
+            Assert.AreNotEqual(transformSource, _dataProducts);
+            Assert.AreEqual(region, json["Region"].ToString());
+        }        
+        
+        [TestMethod]
+        [TestCategory("Content")]
+        [DataRow("CA", "West")]
+        [DataRow("WA", "PNW")]
+        [DataRow("OR", "PNW")]
+        [DataRow("NY", "East")]
+        [DataRow("MO", "Midwest")]
+        [DataRow("AR", "South")]
+        public void Transformer_Transform_variable_content_map(string state, string region)
+        {
+            var transformSource = LoadTransform("map");
+            var transformer     = new JTran.Transformer(transformSource, null);
+            var result          = transformer.Transform(_address.Replace("{0}", state));
+            var json            = JObject.Parse(result);
+   
+            Assert.AreNotEqual(transformSource, _dataProducts);
+            Assert.AreEqual(region, json["Region"].ToString());
+        }
+
+        [TestMethod]
+        [TestCategory("Content")]
+        [DataRow("CA", "West", "map_expressions")]
+        [DataRow("WA", "Puget Sound", "map_expressions")]
+        [DataRow("OR", "PNW", "map_expressions")]
+        [DataRow("NY", "East", "map_expressions")]
+        [DataRow("MO", "Midwest", "map_expressions")]
+        [DataRow("AR", "South", "map_expressions")]
+
+        [DataRow("CA", "West", "map_expressions2")]
+        [DataRow("WA", "Puget Sound", "map_expressions2")]
+        [DataRow("OR", "PNW", "map_expressions2")]
+        [DataRow("NY", "East", "map_expressions2")]
+        [DataRow("MO", "Midwest", "map_expressions2")]
+        [DataRow("AR", "South", "map_expressions2")]
+
+        [DataRow("WA", "Puget Sound", "map_property")]
+        public void Transformer_Transform_variable_content_map_wExpressions(string state, string region, string transform)
+        {
+            var transformSource = LoadTransform(transform);
+            var transformer     = new JTran.Transformer(transformSource, null);
+            var data            = _address.Replace("{0}", state);
+            var result          = transformer.Transform(data);
+            var json            = JObject.Parse(result);
+   
+            Assert.AreNotEqual(result, transformSource);
+            Assert.AreEqual(region, json["Region"].ToString());
+        }
+
+        #endregion
+
         #region Private 
 
         private class ExtFunctions
@@ -1427,7 +1504,7 @@ namespace JTran.UnitTests
          "    }" + 
          "}";
 
-      private static readonly string _transformList = 
+        private static readonly string _transformList = 
         @"{
             'Name':        'Fred',
             '#foreach(Automobiles, Cars)':
@@ -1439,6 +1516,7 @@ namespace JTran.UnitTests
                 Sponsor:  'Jimbo'
             }
         }";
+
         private static readonly string _transformForEachNoArray = 
         @"{
              'Owner':
@@ -1581,6 +1659,18 @@ namespace JTran.UnitTests
             }
         }";
 
+        
+        private static readonly string _mapError = 
+        @"{
+            'from':                 'noreply@noreply.com',
+            'subject':              '#(Subject)',
+            'body':                 '#(Body)',
+            'Recipients':        
+            {
+                '#mapitem($dude)': 'bob'
+            }
+        }";
+
         private static readonly string _transformEmail = 
         @"{
             'from':                 'noreply@noreply.com',
@@ -1667,8 +1757,6 @@ namespace JTran.UnitTests
                 }
             ]
         }";
-
-
 
         private static readonly string _transformBool = 
         @"{
@@ -2069,7 +2157,16 @@ namespace JTran.UnitTests
             ]
         }";
 
-        private static readonly string _dataBool = 
+        private static readonly string _address = 
+        @"{
+            Owner:           'Bob Smith',  
+            Address:
+            {   
+                State:       '{0}',
+            },
+          }";
+
+         private static readonly string _dataBool = 
         @"{
             Owner:           'Bob Smith',  
             Address:

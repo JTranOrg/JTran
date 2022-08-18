@@ -7,7 +7,7 @@
    Functions are used in expressions to return a value or convert values in some way. All parameters to functions can be expressions.
 
 - [String Functions](#String-Functions)
-- [Aggregate/Array Functions](#Aggregate-Functions)
+- [Aggregate/Array Functions](#Aggregate-and-Array-Functions)
 - [Math Functions](#Math-Functions)
 - [Date/Time Functions](#DateTime-Functions)
 - [General Purpose Functions](#General-Purpose-Functions)
@@ -43,7 +43,7 @@
 
 Returns true if the given string contains the given substring.
 
-    #(endswith('abc123', 'bc1'))
+    #(contains('abc123', 'bc1'))
 
 Result is true<br><br>
 
@@ -290,7 +290,7 @@ Result is 4
 Result is 5<br><br>
 
 
-#### Aggregate/Array Functions
+#### Aggregate and Array Functions
 
 These functions operate on a list of values
 

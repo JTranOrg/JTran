@@ -966,6 +966,30 @@ namespace JTran.UnitTests
             Assert.AreEqual("Bedrock",       person.Region);
         }
 
+        [TestMethod]
+        public void CompiledTransform_Transform_document_array_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformDocument2);
+            var context     = new TransformerContext();
+            var environments   = "{ available: [ { name: 'Development', shortname: 'dev' }, { name: 'Test', shortname: 'tst' } ]  }";
+            var repo        = new DocumentRepository();
+
+            repo.Documents.Add("Default", environments);
+
+            context.DocumentRepositories.Add("Environments", repo);
+
+            var result      = transformer.Transform("{ FirstName: 'Fred', LastName: 'Flintstone' }", context, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformDocument2, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var person = JsonConvert.DeserializeObject<Person>(result);
+
+            Assert.AreEqual("Fred",          person.FirstName);
+            Assert.AreEqual("Flintstone",    person.LastName);
+            Assert.AreEqual("Development", person.EnvironmentName);
+        }
+
         public class DocumentRepository : IDocumentRepository
         { 
             public DocumentRepository()
@@ -1253,6 +1277,18 @@ namespace JTran.UnitTests
             Region:     '#($Locations.Region)'
         }";
 
+
+        private static readonly string _transformDocument2 =
+        @"{
+            '#variable(envparam)':   'dev',
+            '#variable(myEnvironments)':   '#(document(Environments, Default))',
+            '#variable(environment)':   '#($myEnvironments.available[shortname == $envparam])',
+
+            EnvironmentName:  '#($environment.name)',
+             FirstName:  '#(FirstName)',
+            LastName:   '#(LastName)'
+       }";
+
         #endregion
 
         #region Data
@@ -1415,6 +1451,7 @@ namespace JTran.UnitTests
             public string  LastName    { get; set; }
             public string  City        { get; set; }
             public string  Region      { get; set; }
+            public string  EnvironmentName  { get; set; }
         }
 
         public class Driver2

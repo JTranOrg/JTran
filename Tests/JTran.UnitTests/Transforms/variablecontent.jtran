@@ -1,0 +1,12 @@
+{
+  "#variable(Region)": 
+  {
+    "#if(Address.State == 'CA')":     "West",
+    "#elseif(Address.State == 'WA' or Address.State == 'OR')": "PNW",
+    "#elseif(Address.State == 'NY')": "East",
+    "#elseif(Address.State == 'MO')": "Midwest",
+    "#else":                          "South"
+  },
+
+  "Region":  "#($Region)"
+}

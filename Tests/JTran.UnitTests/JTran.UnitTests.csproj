@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="MondoCore.Common" Version="1.5.2" />
     <PackageReference Include="Moq" Version="4.16.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
@@ -23,6 +24,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Include\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Sources\" />
   </ItemGroup>
 
 </Project>

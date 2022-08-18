@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 using JTran;
+using JTranProject = JTran.Project.Project;
 using System.Reflection;
 
 namespace JTran.Console
 {
     /****************************************************************************/
     /****************************************************************************/
-    class Program
+    public class Program
     {
         /****************************************************************************/
         static void Main(string[] args)
@@ -23,21 +24,22 @@ namespace JTran.Console
                 ShowHelp();
             else
             { 
-                var index     = 0;
-                var transform = "";
-                var source    = "";
-                var output    = "";
-                var includes = "";
-                var documents = "";
-                var config    = "";
+                var index         = 0;
+                var transform     = "";
+                var source        = "";
+                var output        = "";
+                var includes      = "";
+                var documents     = "";
+                JTranProject project   = null;
+                var projectPath   = "";
 
                 // Set up all the paths
                 while((index+1) < args.Length)
                 {
                     var arg = args[index];
 
-                    if(arg == "/c" || arg == "-c")
-                        config = args[++index];
+                    if(arg == "/p" || arg == "-p")
+                        projectPath = args[++index];
 
                     if(arg == "/t" || arg == "-t")
                         transform = args[++index];
@@ -57,80 +59,123 @@ namespace JTran.Console
                     ++index;
                 }
 
-                if(string.IsNullOrWhiteSpace(transform))
+                if(!string.IsNullOrWhiteSpace(projectPath))
                 { 
-                    System.Console.WriteLine("No transform file specified.");
+                    if(!File.Exists(projectPath))
+                    { 
+                        WriteError("No transform file specified.");
+                        return;
+                    }
+
+                    var json = File.ReadAllText(projectPath);
+
+                    try
+                    { 
+                        project = JsonConvert.DeserializeObject<JTranProject>(json);
+                    }
+                    catch(Newtonsoft.Json.JsonSerializationException)
+                    {
+                        WriteError("Project file is not a valid json file");
+                        return;
+                    }
+
+                    if(string.IsNullOrWhiteSpace(transform))
+                        transform = project.TransformPath;
+
+                    if(string.IsNullOrWhiteSpace(source))
+                        source = project.SourcePath;
+
+                    if(string.IsNullOrWhiteSpace(output))
+                        output = project.DestinationPath;
+                }
+                else
+                    project = new JTranProject();
+
+                if(!string.IsNullOrWhiteSpace(transform))
+                    project.TransformPath = transform;
+
+                if(!string.IsNullOrWhiteSpace(source))
+                    project.SourcePath = source;
+
+                if(!string.IsNullOrWhiteSpace(output))
+                    project.DestinationPath = output;
+
+                if(!string.IsNullOrWhiteSpace(documents))
+                    project.DocumentPaths.Add("", documents);
+
+                if(!string.IsNullOrWhiteSpace(includes))
+                    project.IncludePaths.Add("", includes);
+
+                if(string.IsNullOrWhiteSpace(project.TransformPath))
+                { 
+                    WriteError("No transform file specified.");
                     return;
                 }
 
-                if(string.IsNullOrWhiteSpace(source))
+                if(string.IsNullOrWhiteSpace(project.SourcePath))
                 { 
-                    System.Console.WriteLine("No source file(s) specified.");
+                    WriteError("No source file(s) specified.");
                     return;
                 }
 
-                if(string.IsNullOrWhiteSpace(output))
+                if(string.IsNullOrWhiteSpace(project.DestinationPath))
                 { 
-                    System.Console.WriteLine("No output path specified.");
+                    WriteError("No output path specified.");
                     return;
                 }
 
-                TransformFiles(config, transform, source, output, includes, documents);
+                TransformFiles(project);
              }
         }
 
         #region Private 
 
+        private static string NormalizePath(string path)
+        {
+            if(string.IsNullOrWhiteSpace(path))
+                return null;
+
+            // Probably a full path
+            if(path.Contains(":"))
+                return path;
+
+            var location = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin");
+
+            return Path.Combine(location, path);
+        }
+
+        private static Dictionary<string, string> NormalizePaths(Dictionary<string, string> paths)
+        {
+            foreach(var kv in paths)
+                paths[kv.Key] = NormalizePath(kv.Value);
+
+            return paths;
+        }
+
         /****************************************************************************/
-        private static void TransformFiles(string configPath, string transform, string source, string output, string includes, string documents)
+        private static void TransformFiles(JTranProject project)
         {        
-            var      sTransform  = "";
-            string[] sourceFiles = null;
-            Config   config      = null;
-
-            if(!string.IsNullOrWhiteSpace(configPath))
-            {
-                try
-                {
-                    if(!configPath.Contains(Path.DirectorySeparatorChar))
-                        configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), configPath);
-
-                    var configSource = File.ReadAllText(configPath);
-
-                    config = JsonConvert.DeserializeObject<Config>(configSource);
-
-                    if(!string.IsNullOrWhiteSpace(includes))
-                        config.IncludePath = includes;
-                }
-                catch(Exception ex)
-                {
-                    System.Console.WriteLine("Specified config file does not exist or is invalid: " + ex.Message);
-                }            
-            }
+            project.DestinationPath = NormalizePath(project.DestinationPath);
+            project.SourcePath      = NormalizePath(project.SourcePath);
+            project.TransformPath   = NormalizePath(project.TransformPath);
+            project.IncludePaths    = NormalizePaths(project.IncludePaths);
+            project.DocumentPaths   = NormalizePaths(project.DocumentPaths);
 
             try
             {
-                sTransform = File.ReadAllText(transform);
-            }
-            catch(Exception ex)
-            {
-                System.Console.WriteLine(ex.Message);
-                return;
-            }
-
-            try
-            {
-                var transformer  = new JTran.Transformer(sTransform, includeSource: config.IncludeRepository);
-                var context      = config.ToContext(documents);
+                var transformer  = new JTran.Transformer(project);
 
                 // Single file
-                if(!string.IsNullOrWhiteSpace(Path.GetExtension(source)))
+                if(!string.IsNullOrWhiteSpace(Path.GetExtension(project.SourcePath)))
                 {
-                    TransformFile(transformer, File.ReadAllText(source), output, context);
+                    var source = File.ReadAllText(project.SourcePath);
+                    var result = transformer.Transform(source, project);
+
+                    WriteFile(project, source, result);
                     return;
                 }
 
-                sourceFiles = Directory.GetFiles(source);
+                var sourceFiles = Directory.GetFiles(project.SourcePath);
 
                 System.Console.WriteLine($"{sourceFiles.Length} source files found");
 
@@ -139,7 +184,10 @@ namespace JTran.Console
 
                 foreach(var sourceFile in sourceFiles)
                 {
-                    TransformFile(transformer, File.ReadAllText(sourceFile), output, context);
+                    var source = File.ReadAllText(sourceFile);
+                    var result = transformer.Transform(sourceFile, project);
+
+                    WriteFile(project, source, result);
                 }
             }
             catch(Exception ex2)
@@ -150,15 +198,14 @@ namespace JTran.Console
         }
 
         /****************************************************************************/
-        private static void TransformFile(JTran.Transformer transformer, string sourceFile, string output, TransformerContext context)
+        private static void WriteFile(Project project, string sourcePath, string result)
         {        
-            var result = transformer.Transform(sourceFile, context);
-            var path   = output;
+            var dest = project.DestinationPath;
 
-            if(string.IsNullOrWhiteSpace(Path.GetExtension(output)))
-                path = Path.Combine(output, Path.GetFileName(sourceFile));
+            if(string.IsNullOrWhiteSpace(Path.GetExtension(dest)))
+                dest = Path.Combine(dest, Path.GetFileName(sourcePath));
 
-            File.WriteAllText(path, result);
+            File.WriteAllText(dest, result);
         }
 
         /****************************************************************************/
@@ -174,149 +221,38 @@ namespace JTran.Console
             System.Console.WriteLine("/include -- Specify an include folder.");
             System.Console.WriteLine("/d -- Specify a documents folder.");
         }
-        
-        /****************************************************************************/
-        /****************************************************************************/
-        private class FileDocumentRepository : IDocumentRepository
+
+        private static void WriteError(string text)
         {
-            private readonly string _path;
-
-            /****************************************************************************/
-            internal FileDocumentRepository(string path)
-            {
-                _path = path;
-            }
-
-            /****************************************************************************/
-            public string GetDocument(string name)
-            {
-                var fullPath = Path.Combine(_path, name + ".json");
-
-                return File.ReadAllText(fullPath);
-            }
-        }
-        
-        /****************************************************************************/
-        /****************************************************************************/
-        private class FileIncludeRepository : IDictionary<string, string>
-        {
-            private readonly string _path;
-
-            /****************************************************************************/
-            internal FileIncludeRepository(string path)
-            {
-                _path = path;
-            }
-
-            public string this[string key] 
-            { 
-                get { return File.ReadAllText(Path.Combine(_path, key)); }
-                set { throw new NotSupportedException(); } 
-             }
-
-            public bool IsReadOnly => true;
-
-            public bool ContainsKey(string key)
-            {
-                var path = Path.Combine(_path, key);
-
-                return File.Exists(path);
-            }
-
-            #region NotSupported
-
-            public ICollection<string> Keys => throw new NotSupportedException();
-
-            public ICollection<string> Values => throw new NotSupportedException();
-
-            public int Count => throw new NotSupportedException();
-
-
-            public void Add(string key, string value)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void Add(KeyValuePair<string, string> item)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void Clear()
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool Contains(KeyValuePair<string, string> item)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
-            {
-                throw new NotSupportedException();
-            }
-
-            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool Remove(string key)
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool Remove(KeyValuePair<string, string> item)
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool TryGetValue(string key, [MaybeNullWhen(false)] out string value)
-            {
-                throw new NotSupportedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotSupportedException();
-            }
-
-            #endregion
+            System.Console.WriteLine(text, ConsoleColor.Red);
         }
 
-        /****************************************************************************/
-        /****************************************************************************/
-        private class Config
+        private static void WriteLine(string text, ConsoleColor clr)
         {
-            public string               IncludePath      { get; set; }
-            public List<DocumentSource> DocumentSources  { get; set; } = new List<DocumentSource>();
+            var defaultColor = System.Console.ForegroundColor;
 
-            public class DocumentSource
-            {
-                public string Name   { get; set; }
-                public string Path   { get; set; }
-            }
-
-            public IDictionary<string, string> IncludeRepository => string.IsNullOrWhiteSpace(IncludePath) ? null : new FileIncludeRepository(IncludePath);
-
-            public TransformerContext ToContext(string docPath)
-            {
-                if(!string.IsNullOrWhiteSpace(docPath))
-                    this.DocumentSources.Add(new DocumentSource { Name = "all", Path = docPath } );
-
-                if(this.DocumentSources.Count == 0 && string.IsNullOrWhiteSpace(docPath))
-                    return null;
-
-                var context = new TransformerContext();
-
-                foreach(var docSource in this.DocumentSources)
-                    context.DocumentRepositories[docSource.Name] = new FileDocumentRepository(docSource.Path);
-
-                return context;
-            }
+            System.Console.ForegroundColor = clr;
+            System.Console.WriteLine(text);
+            System.Console.ForegroundColor = defaultColor;
         }
 
         #endregion
     }
+
+    #region Extensions
+
+    internal static class Extensions
+    {
+        internal static string SubstringBefore(this string val, string before)
+        {
+            var index = val.IndexOf(before);
+
+            if(index == -1)
+                return val;
+
+            return val.Substring(0, index);
+        }    
+    }
+
+    #endregion
 }

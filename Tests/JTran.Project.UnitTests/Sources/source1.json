@@ -1,0 +1,13 @@
+{
+   "Products": 
+   [
+      {
+        "Name":  "Ajax Cleanser",
+        "UOM":   "bottle"
+      },
+      {
+        "Name":  "Acme Lowfat Milk",
+        "UOM":   "gallon"
+      }
+   ]
+}
