@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JTran\JTran.csproj" />
+    <PackageReference Include="JTran" Version="3.0.0" />
   </ItemGroup>
 
 </Project>
