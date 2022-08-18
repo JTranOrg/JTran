@@ -57,8 +57,9 @@ namespace JTran.Extensions
         public static object JsonToExpando(this string s)
         {
             var convertor = new ExpandoObjectConverter();
+            var xObject =  JsonConvert.DeserializeObject<ExpandoObject>(s, convertor);
             
-            return JsonConvert.DeserializeObject<ExpandoObject>(s, convertor).SetParent();
+            return xObject.SetParent();
         }
 
         /****************************************************************************/

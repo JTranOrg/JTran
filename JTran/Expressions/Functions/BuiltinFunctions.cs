@@ -601,6 +601,12 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public object coalesce(object primary, object secondary, object tertiary)
+        {
+            return primary != null ? primary : (secondary != null ? secondary : tertiary);
+        }
+
+        /*****************************************************************************/
         public IList<object> sequence(object from, object to, object increment)
         {
             if(!decimal.TryParse(from.ToString(), out decimal dFrom))

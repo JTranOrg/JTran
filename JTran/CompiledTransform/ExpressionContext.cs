@@ -51,7 +51,7 @@ namespace JTran
                                    IDictionary<string, TFunction> functions          = null)
         {
             _data            = data;
-            _variables       = transformerContext?.Arguments != null ? new Dictionary<string, object>(transformerContext?.Arguments) : new Dictionary<string, object>();
+            _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -158,6 +158,9 @@ namespace JTran
             if(_data == null)
                 return null;
 
+            if(name == "@")
+                return _data;
+
             var otype = _data.GetType();
 
             if(_data is ExpandoObject)
@@ -226,9 +229,9 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        private static object GetDataValue(object data, string name)
+        private object GetDataValue(object data, string name)
         { 
-            var val = data.GetValue(name, null);
+            var val = data.GetValue(name, this);
 
             if(val == null)
                 return null;

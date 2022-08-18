@@ -200,7 +200,7 @@ If the final property in a "dot" list is a simple property then an array of thos
 
     #(States[Region == "Northwest"].Cities.Theaters.Name)
 
-The result would be string array with the names of all the theaters in every city that is in Washington state.
+The result would be string array with the names of all the theaters in every city that is in the Northwest region.
 
 ##### Ancestor Indicators
 
@@ -231,6 +231,7 @@ More than one slash can be specified. Each slash refers to one level up the pare
 
     #(///Driver.Name)
 
+Note that if the current scope is an array item then the parent is the array itself.
 
 <br>
 
@@ -250,6 +251,8 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
+- <strong>[map](#map)</strong> - Maps a set of a keys or expressions to a single output value 
+- <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
 - <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
@@ -303,7 +306,7 @@ Using #foreach
 ###### Source
 
     {
-        Vehices:
+        Vehicles:
         [
             {
                Make:  Chevy",
@@ -363,7 +366,7 @@ Because json doesn't allow more than one property with the same name if you need
 
 This gets around the json constraint by making each "property" name be unique. Note that the value of the parameter is ignored.
 
-You can output single values. e.g. strings, numbers:
+You can output single values, e.g. strings, numbers:
 
 ###### Transform
 
@@ -376,7 +379,7 @@ You can output single values. e.g. strings, numbers:
         }
     }
 
-You can also output single values using a foreach
+You can also output single values using a foreach:
 
 ###### Transform
 
@@ -394,7 +397,7 @@ You can also output single values using a foreach
 ###### Source
 
     {
-        Vehices:
+        Vehicles:
         [
             {
                Make:  Chevy",
@@ -991,8 +994,279 @@ Use conditions with more than one #catch
         }
     }
 
+#variable can also be an object 
+
+###### Transform
+
+    {
+        "#variable(Driver)":    
+        {
+            "Name": #(Driver.Name),
+            "Sponsor": "Mt Dew"
+        }
+
+        "#foreach(Cars, Vehicles)":
+        {
+            Make:    "#(Make)",
+            Model:   "#(Model)",
+            Driver:  "#($Driver.Name)"
+            Sponsor: "#($Driver.Sponsor)"
+        }
+    }
+
+###### Source
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird"
+            }
+        ],
+        Driver:
+        {
+           Name: "Joe Smith"
+        }
+    }
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette",
+               Driver: "Joe Smith",
+               Sponsor: "Mt Dew"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird",
+               Driver: "Joe Smith",
+               Sponsor: "Mt Dew"
+            }
+        }
+    }
+
+#variable can also be an object that evaluates to a single property. The only children where this works are #if/elseif/else and [#map](#map).
+
+###### Transform
+
+    {
+        "#variable(Driver)":    
+        {
+            "#if($DOW == 'Saturday)": #(AlternateDriver.Name),
+            "#else": #(Driver.Name),
+        }
+
+        "#foreach(Cars, Vehicles)":
+        {
+            Make:    "#(Make)",
+            Model:   "#(Model)",
+            Driver:  "#($Driver)"
+        }
+    }
+
+###### Source
+
+    {
+        Cars:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird"
+            }
+        ],
+        Driver:
+        {
+           Name: "Joe Smith"
+        },
+        AlternateDriver:
+        {
+           Name: "Elena Martinez"
+        }
+    }
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Make: "Chevy",
+               Model: "Corvette",
+               Driver: "Joe Smith"
+            },
+            {
+               Make: "Pontiac",
+               Model: "Firebird",
+               Driver: "Joe Smith"
+            }
+        }
+    }
+
+
 <br>
 
+#### #map
+
+Maps an input value to an output value. #map can only be used inside a #variable or for a property value.
+
+###### Transform
+
+    {
+        "#foreach(Addresses, Addresses)":
+        {
+            #variable(Region):     
+            {   
+                #map(State):
+                {
+                    "#mapitem('CA')": "West",
+                    "#mapitem('WA')": "PNW",
+                    "#mapitem('OR')": "PNW",
+                    "#mapitem('NH')": "New England",
+                    "#mapitem('NY')": "East",
+                    "#mapitem('MO')": "Midwest",
+                    "#mapitem":       "South"
+                }
+            },
+
+            "Street": "#(Street)
+            "City":   "#(City)
+            "State":  "#(State)
+            "Region": "#($region)
+            "Region2": 
+            {   
+                #map(State):
+                {
+                    "#mapitem('CA')": "West",
+                    "#mapitem('WA')": "PNW",
+                    "#mapitem('OR')": "PNW",
+                    "#mapitem('NH')": "New England",
+                    "#mapitem('NY')": "East",
+                    "#mapitem('MO')": "Midwest",
+                    "#mapitem":       "South"
+                }
+            }
+        }
+    }
+
+###### Source
+
+    {
+        Addresses:
+        [
+            {
+               Street: "123 Elm St"
+               City:   "Seattle"
+               State:  "WA"
+            },
+            {
+               Street: "123 Maple Ave"
+               City:   "Concorde"
+               State:  "NH"
+            }
+        ]   
+    }
+
+###### Output
+
+    {
+        Addresses:
+        [
+            {
+               Street:  "123 Elm St"
+               City:    "Seattle"
+               State:   "WA",
+               Region:  "PNW",
+               Region2: "PNW"
+            },
+            {
+               Street:  "123 Maple Ave"
+               City:    "Concorde"
+               State:   "NH",
+               Region:  "New England",
+               Region2: "New England"
+            }
+        ]   
+    }
+
+You can also use expressions in the #mapitem but then you'll need to use the scope operator to access the value being mapped. Note that a #mapitem with no key or expression is used as the fallback (if all other keys or expressions fail).
+
+###### Transform
+
+    {
+        "#foreach(Addresses, Addresses)":
+        {
+            #variable(Region):     
+            {   
+                #map(State):
+                {
+                  "#mapitem('CA')": "West",
+                  "#mapitem(@ == 'WA' && $City == 'Seattle')": "Puget Sound",
+                  "#mapitem('WA')": "PNW",
+                  "#mapitem('OR')": "PNW",
+                  "#mapitem('NH')": "New England",
+                  "#mapitem('NY')": "East",
+                  "#mapitem('MO')": "Midwest",
+                  "#mapitem":       "South"
+                }
+            }
+
+            "Street": "#(Street)
+            "City":   "#(City)
+            "State":  "#(State)
+            "Region": "#($region)
+        }
+    }
+
+###### Source
+
+    {
+        Addresses:
+        [
+            {
+               Street: "123 Elm St"
+               City:   "Seattle"
+               State:  "WA"
+            },
+            {
+               Street: "123 Maple Ave"
+               City:   "Concorde"
+               State:  "NH"
+            }
+        ]   
+    }
+
+###### Output
+
+    {
+        Addresses:
+        [
+            {
+               Street: "123 Elm St"
+               City:   "Seattle"
+               State:  "WA",
+               Region:  "Puget Sound"
+            },
+            {
+               Street: "123 Maple Ave"
+               City:   "Concorde"
+               State:  "NH"
+               Region: "New England"
+            }
+        ]   
+    }
 ### Templates
 
 Templates are reusable snippets of JTran code that can be called by other JTran code.

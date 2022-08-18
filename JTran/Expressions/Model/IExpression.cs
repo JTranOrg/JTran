@@ -110,9 +110,6 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            if(this.Name == "@")
-                return context.Data;
-
             return context.GetDataValue(this.Name);
         }
 

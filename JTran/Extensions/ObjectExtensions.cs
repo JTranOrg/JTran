@@ -21,8 +21,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Text;
-using System.Transactions;
 
 namespace JTran.Extensions
 {
@@ -44,11 +42,25 @@ namespace JTran.Extensions
         /****************************************************************************/
         internal static object GetValue(this object obj, string expression, ExpressionContext context)
         {
-            if(expression == "@")
-                return context.Data;
+            if(expression.StartsWith("@"))
+            {
+                obj = context.Data;
+                 
+                if(expression.StartsWith("@."))
+                { 
+                    expression = expression.Substring(2);
+                }
+                else
+                    expression = "";
 
-            // Resolve ancestors
-            obj = obj.EvaluateAncestors(ref expression);
+                if(expression == "")
+                    return obj;
+           }
+            else
+            {
+                // Resolve ancestors
+                obj = obj.EvaluateAncestors(ref expression);
+            }
 
             if(expression.StartsWith("$"))
             {

@@ -1,0 +1,23 @@
+{
+  "#variable(City)":
+  {
+    "Name":  "Seattle",
+    "Mayor": "Brown"
+  },
+
+  "#variable(Region)": 
+  {
+    "#map(Address)":
+    {
+      "#mapitem(@.State == 'CA')": "West",
+      "#mapitem(@.State == 'WA' && $City.Name == 'Seattle')": "Puget Sound",
+      "#mapitem(@.State == 'WA')": "PNW",
+      "#mapitem(@.State == 'OR')": "PNW",
+      "#mapitem(@.State == 'NY')": "East",
+      "#mapitem(@.State == 'MO')": "Midwest",
+      "#mapitem":       "South"
+    }
+  },
+
+  "Region":  "#($Region)"
+}

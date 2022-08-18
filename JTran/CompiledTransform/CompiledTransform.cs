@@ -24,8 +24,6 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Newtonsoft.Json.Linq;
 
@@ -200,7 +198,7 @@ namespace JTran
     /****************************************************************************/
     internal abstract class TToken
     {
-        internal abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
+        public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
         /****************************************************************************/
         internal protected IValue CreateValue(JToken value)
@@ -247,7 +245,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var numChildren = this.Children.Count;
 
@@ -264,11 +262,11 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected void Compile(CompiledTransform transform, JObject source)
+        internal protected void Compile(CompiledTransform transform, JObject source, TContainer parent = null)
         {   
             foreach(var child in source)
             {
-                var newToken = CreateToken(transform, child.Key, child.Value);
+                var newToken = CreateToken(transform, child.Key, child.Value, parent);
 
                 if(newToken != null)
                     this.Children.Add(newToken);
@@ -278,7 +276,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private TToken CreateToken(CompiledTransform transform, string name, JToken child)
+        private TToken CreateToken(CompiledTransform transform, string name, JToken child, TContainer parent)
         {   
             var t = child.GetType().ToString();
 
@@ -304,13 +302,40 @@ namespace JTran
 
                 var sval = val.ToString();
 
+                if(name.StartsWith("#mapitem"))
+                {                
+                    if(parent is TMap && (_previous is TMapItem || _previous == null))
+                        return new TMapItem(name, val);
+
+                    throw new Transformer.SyntaxException("#mapitem must be a child of #map");
+                }
+
                 if(name.StartsWith("#arrayitem"))
                     return new TSimpleArrayItem(val);
 
                 if(sval.StartsWith("#copyof"))
                     return new TCopyOf(name, sval);
 
-               return new TProperty(name, val);
+                if(name.StartsWith("#if"))
+                    return new TPropertyIf(name, val);
+
+                if(name.StartsWith("#elseif"))
+                { 
+                    if(_previous is TPropertyIf || _previous is TElseIf)
+                        return new TPropertyElseIf(name, val);
+
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
+                }
+
+                if(name.StartsWith("#else"))
+                { 
+                    if(_previous is TPropertyIf || _previous is TPropertyElseIf)
+                        return new TPropertyElse(name, val);
+
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+                }                
+                
+                return new TProperty(name, val);
             }
 
             if(child is JObject obj)
@@ -334,7 +359,10 @@ namespace JTran
                 if(name.StartsWith("#variable"))
                     return new TVariableObject(name, obj);
 
-                if(name.StartsWith("#calltemplate"))
+                if(name.StartsWith("#map("))
+                    return new TMap(name, obj);
+
+                 if(name.StartsWith("#calltemplate"))
                     return new TCallTemplate(name, obj);
 
                 if(name.StartsWith("#bind"))
@@ -351,9 +379,6 @@ namespace JTran
 
                 if(name.StartsWith("#array"))
                     return new TArray(name, obj);
-
-                if(name.StartsWith("#if"))
-                    return new TIf(name, obj);
 
                 if(name.StartsWith("#try"))
                     return new TTry(obj);
@@ -420,27 +445,41 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name.Evaluate(context)?.ToString();
 
            if(output.InObject && string.IsNullOrWhiteSpace(name))
                throw new Transformer.SyntaxException("Property name evaluates to null or empty string");
 
-            wrap( ()=>
-            { 
-                base.Evaluate(output, context, f=> 
+            if(this.Children[0] is IPropertyCondition)
+            {
+                if(this.Children.EvaluateConditionals(context, out object result))
                 {
-                    if(output.InObject)
-                    { 
-                        output.WriteContainerName(name);
-                    }
+                    wrap( ()=> output.WriteProperty(name, result));
+                }
+                else
+                {
+                    wrap( ()=> output.WriteProperty(name, null));
+                }
+            }
+            else
+            { 
+                wrap( ()=>
+                { 
+                    base.Evaluate(output, context, f=> 
+                    {
+                        if(output.InObject)
+                        { 
+                            output.WriteContainerName(name);
+                        }
 
-                    output.StartObject();
-                    f();
-                    output.EndObject();
+                        output.StartObject();
+                        f();
+                        output.EndObject();
+                    });
                 });
-            });
+            }
         }
     }
     
@@ -457,7 +496,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var msg = _message.Evaluate(context);
 
@@ -486,7 +525,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var msg = _message.Evaluate(context);
 
@@ -507,7 +546,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             throw new Break();
         }
@@ -532,7 +571,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             try
             { 
@@ -571,7 +610,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
             { 
@@ -609,7 +648,7 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             base.Evaluate(output, context, (fnc)=>
             {
@@ -646,7 +685,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var value = _val.Evaluate(context);
 
@@ -683,7 +722,7 @@ namespace JTran
         internal IValue Name  { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             base.Evaluate(output, context, (fnc)=>
             {
@@ -723,7 +762,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
             var newScope = _expression.Evaluate(context);
             var name     = _name.Evaluate(context).ToString();
@@ -762,7 +801,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newScope   = _expression.Evaluate(context);
             var newContext = new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
@@ -796,7 +835,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(_expression.EvaluateToBool(context))
             { 
@@ -816,7 +855,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
                 base.Evaluate(output, context, wrap);
@@ -835,10 +874,191 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             if(!context.PreviousCondition)
                 base.Evaluate(output, context, wrap);
+        }
+    }
+
+    #endregion
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal interface IPropertyCondition
+    {
+        object EvaluatedValue { get; }
+        bool   If             { get; }
+        void   Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
+    }    
+      
+    #region map
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TMap : TContainer, IPropertyCondition
+    {
+        private readonly IExpression _expression;
+
+        /****************************************************************************/
+        internal TMap(string name, JObject val) : this(name, val, "#map(") 
+        {
+            // Compile children
+            Compile(null, val, this);
+        }
+
+        public object EvaluatedValue { get; set; }
+        public bool   If             => true;
+
+        /****************************************************************************/
+        internal protected TMap(string name, JObject val, string elementName) 
+        {
+            name = name.Substring(elementName.Length);
+
+            _expression = Compiler.Compile(name.Substring(0, name.Length - 1));
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            var val = _expression.Evaluate(context);
+            var newContext = new ExpressionContext(val, context);
+
+            foreach(IPropertyCondition mapItem in this.Children)
+            {
+                mapItem.Evaluate(null, newContext, null);
+
+                if(mapItem.If)
+                {
+                    this.EvaluatedValue = mapItem.EvaluatedValue;
+                    break;
+                }
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TMapItem : TProperty, IPropertyCondition
+    {
+        private readonly IExpression _expression;
+
+        /****************************************************************************/
+        internal TMapItem(string name, JValue val) : this(name, val, "#mapitem") 
+        {
+        }
+
+        /****************************************************************************/
+        internal protected TMapItem(string name, JValue val, string elementName) : base(name, val)  
+        {
+            name = name.Substring(elementName.Length);
+
+            if(!string.IsNullOrWhiteSpace(name))
+                _expression = Compiler.Compile(name.Substring(1, name.Length - 2));
+        }
+
+        public object EvaluatedValue { get; set; }
+        public bool   If             { get; set; } = false;
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            this.If = false;
+
+            if(_expression != null)
+            {
+                var val = _expression.Evaluate(context);
+
+                if(val is bool bVal)
+                {   
+                    if(!bVal)
+                        return;
+                }
+                else if(context.Data.CompareTo(val, out _) != 0)
+                    return;
+            }
+
+            this.EvaluatedValue = this.Value.Evaluate(context);
+            this.If = true;
+        }
+    }
+
+    #endregion
+
+    #region Property if/else
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TPropertyIf : TProperty, IPropertyCondition
+    {
+        private readonly IExpression _expression;
+
+        /****************************************************************************/
+        internal TPropertyIf(string name, JValue val) : this(name, val, "#if(") 
+        {
+        }
+
+        public object EvaluatedValue { get; set; }
+        public bool   If             { get; set; } = false;
+
+        /****************************************************************************/
+        internal protected TPropertyIf(string name, JValue val, string elementName) : base(name, val) 
+        {
+            name = name.Substring(elementName.Length);
+
+            _expression = Compiler.Compile(name.Substring(0, name.Length - 1));
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            if(_expression.EvaluateToBool(context))
+            { 
+                this.If = true;
+                this.EvaluatedValue = this.Value.Evaluate(context);
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TPropertyElseIf : TPropertyIf
+    {
+        /****************************************************************************/
+        internal TPropertyElseIf(string name, JValue val) : base(name, val, "#elseif(")
+        {
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            if(!context.PreviousCondition)
+            { 
+                base.Evaluate(output, context, wrap);
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TPropertyElse : TProperty, IPropertyCondition
+    {
+        /****************************************************************************/
+        internal TPropertyElse(string name, JValue val)  : base(name, val)
+        {
+        }
+
+        public object EvaluatedValue { get; set; }
+        public bool   If             { get; set; } = false;
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            if(!context.PreviousCondition)
+            { 
+                this.If = true;
+                this.EvaluatedValue = this.Value.Evaluate(context);
+            }
         }
     }
 
@@ -873,7 +1093,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var result = _expression.Evaluate(context);
 
@@ -1060,7 +1280,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var result = _expression.Evaluate(context);
 
@@ -1150,7 +1370,7 @@ namespace JTran
         internal IValue Value { get; set; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name?.Evaluate(context)?.ToString() ?? "";
             var val  = this.Value.Evaluate(context);
@@ -1169,7 +1389,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name.Evaluate(context).ToString();
             var val  = this.Value.Evaluate(context);
@@ -1194,18 +1414,51 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
-            var varOutput  = new JsonStringWriter();
 
-            varOutput.StartObject();
-            base.Evaluate(varOutput, newContext, (fnc)=> fnc());
-            varOutput.EndObject();
+            if(this.Children[0] is IPropertyCondition)
+            {
+                if(this.Children.EvaluateConditionals(newContext, out object result))
+                {
+                    context.SetVariable(this.Name, result);
+                }
+            }
+            else
+            { 
+                var varOutput  = new JsonStringWriter();
 
-            var result = varOutput.ToString();
+                varOutput.StartObject();
+                base.Evaluate(varOutput, newContext, (fnc)=> fnc());
+                varOutput.EndObject();
 
-            context.SetVariable(this.Name, result.JsonToExpando());
+                var result = varOutput.ToString();
+
+                context.SetVariable(this.Name, result.JsonToExpando());
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal static class TokenExtensions
+    {
+        internal static bool EvaluateConditionals(this IList<TToken> tokens, ExpressionContext context, out object output)
+        {
+            foreach(IPropertyCondition child in tokens)
+            {
+                child.Evaluate(null, context, null);
+
+                if(child.If)
+                {
+                    output = child.EvaluatedValue;
+                    return true;
+                }
+            }
+
+            output = null;
+            return false;
         }
     }
 
@@ -1234,7 +1487,7 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
 
@@ -1266,7 +1519,7 @@ namespace JTran
         internal string Name      { get; }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var newContext = new ExpressionContext(context.Data, context);
 
@@ -1290,7 +1543,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var template = context.GetTemplate(_templateName);
 

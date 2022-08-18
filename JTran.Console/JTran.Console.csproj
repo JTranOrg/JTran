@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JTran.Project\JTran.Project.csproj" />
     <ProjectReference Include="..\JTran\JTran.csproj" />
   </ItemGroup>
 
