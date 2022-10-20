@@ -20,6 +20,8 @@
 
 using System;
 
+using JTran.Extensions;
+
 namespace JTran.Expressions
 {
     /*****************************************************************************/
@@ -83,6 +85,27 @@ namespace JTran.Expressions
         public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
             return left.EvaluateToBool(context) || right.EvaluateToBool(context);
+        }
+    }
+
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class DataPart : IOperator
+    {
+        public int Precedence => int.MaxValue;
+
+        /*****************************************************************************/
+        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
+        {
+            var val = left.Evaluate(context);
+
+            return val.GetValue((right as DataValue).Name, context);
+        }
+
+        /*****************************************************************************/
+        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        {
+            return Convert.ToBoolean(Evaluate(left, right, context));
         }
     }
 }

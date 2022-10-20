@@ -876,7 +876,7 @@ If no "return" property is created then the whole object is returned
         "#catch":
         {
             Make: "Pontiac"
-        },
+        }
     }
 
 #### <a id="trycatch">#try and #catch</a>
@@ -895,7 +895,7 @@ A try/catch is a way to test for exception. If while processing a try block and 
         "#catch":
         {
             Make: "Pontiac"
-        },
+        }
     }
 
 

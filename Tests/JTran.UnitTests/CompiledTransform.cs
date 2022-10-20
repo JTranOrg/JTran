@@ -437,6 +437,25 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("CopyOf")]
+        public void CompiledTransform_Transform_CopyOf_array_noobject_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformForEachNoObjectCopy);
+            var result      = transformer.Transform(_dataCarList, null, null);
+
+            Assert.AreNotEqual(_transformForEachNoObjectCopy, result);
+                        
+            var cars = JsonConvert.DeserializeObject<CarsContainer>(result);
+
+            Assert.AreEqual(3, cars.Cars.Count);
+            Assert.AreEqual("Chevy",          cars.Cars[0].Make);
+            Assert.AreEqual("Corvette",       cars.Cars[0].Model);
+            Assert.AreEqual(1964,             cars.Cars[0].Year);
+            Assert.AreEqual("Blue",           cars.Cars[0].Color);
+            Assert.AreEqual("Fred Flintstone", cars.Cars[0].Driver);
+        }
+
+        [TestMethod]
+        [TestCategory("CopyOf")]
         public void CompiledTransform_Transform_CopyOf_expr_Success()
         {
             var transformer = CompiledTransform.Compile(_transformCopyOfExpr);
@@ -1095,6 +1114,15 @@ namespace JTran.UnitTests
              }
         }";
 
+        private static readonly string _transformForEachNoObjectCopy =
+        @"{
+            '#foreach(Cars, Cars)':
+            {
+                '#noobject':   '#copyof(@)',
+                'Driver':      'Fred Flintstone'
+             }
+        }";
+
         private static readonly string _transformForEach2 =
         "{\r\n" + 
         "    Driver:\r\n" + 
@@ -1480,6 +1508,20 @@ namespace JTran.UnitTests
             public string        Color     { get; set; }
             public Engine        Engine    { get; set; }
             public int?          Index     { get; set; }
+        }
+
+        public class CarsContainer
+        {
+           public List<Automobile3> Cars  { get; set; }
+        }
+
+        public class Automobile3
+        {
+            public string        Make     { get; set; }
+            public string        Model    { get; set; }
+            public int           Year     { get; set; }
+            public string        Color    { get; set; }
+            public string        Driver   { get; set; }
         }
 
         public class Engine

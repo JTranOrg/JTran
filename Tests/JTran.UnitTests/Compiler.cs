@@ -1064,6 +1064,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_first_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("first(Cars).Model");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("Chevy", expression.Evaluate(context));
+        }
+
+        [TestMethod]
         public void Compiler_function_contains_str_Success()
         {   
             Assert.IsTrue(EvaluateToBool("contains('batman', 'bat')"));

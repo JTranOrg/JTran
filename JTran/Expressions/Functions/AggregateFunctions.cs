@@ -30,7 +30,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class AggregateFunctions
     {
-    private readonly IDictionary<string, IComparer<object>> _sortComparers = new Dictionary<string, IComparer<object>>();
+        private readonly IDictionary<string, IComparer<object>> _sortComparers = new Dictionary<string, IComparer<object>>();
 
         /*****************************************************************************/
         public int count(object val)
@@ -95,6 +95,40 @@ namespace JTran.Expressions
                 return list.Reverse().ToList();
 
             return new String(val.ToString().Reverse().ToArray());
+        }
+
+        /*****************************************************************************/
+        public object last(object val)
+        {
+            if(val is null)
+                return null;
+
+            if(val is IEnumerable<object> list)
+            { 
+                if(list.Count() == 0)
+                    return null;
+
+                return list.Last();
+            }
+
+            return val;
+        }
+
+        /*****************************************************************************/
+        public object first(object val)
+        {
+            if(val is null)
+                return null;
+
+            if(val is IEnumerable<object> list)
+            { 
+                if(list.Count() == 0)
+                    return null;
+
+                return list.First();
+            }
+
+            return val;
         }
 
         /*****************************************************************************/
