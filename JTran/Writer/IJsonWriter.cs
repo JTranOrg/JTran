@@ -46,6 +46,7 @@ namespace JTran
         void WriteRaw(string json);
         void WriteRaw(Stream  stream);
         void WriteItem(object item, bool newContainer = true);
+        void WriteProperties(object item);
         void WriteProperty(string name, object val, bool forceString = false);
         void WriteList(IEnumerable<object> list);
 
@@ -119,6 +120,15 @@ namespace JTran
             }
             else 
                 WriteSimpleArrayItem(item);
+        }
+
+        /****************************************************************************/
+        public void WriteProperties(object item)
+        {
+            if(item is ExpandoObject expObject)
+            { 
+               expObject.ChildrenToJson(this);
+            }
         }
 
         /****************************************************************************/
@@ -314,6 +324,12 @@ namespace JTran
 
         /****************************************************************************/
         public void WriteItem(object item, bool newContainer = true)
+        {
+            throw new HaveOutput();
+        }
+
+        /****************************************************************************/
+        public void WriteProperties(object item)
         {
             throw new HaveOutput();
         }

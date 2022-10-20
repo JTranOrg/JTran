@@ -216,8 +216,14 @@ namespace JTran.Expressions
         /*****************************************************************************/
         private IExpression CreateExpression(IExpression left, IOperator op, IExpression right)
         {            
-            if(left != null && op != null && right != null)
-                return new ComplexExpression { Left = left, Operator = op, Right = right };
+            if(left != null && right != null)
+            {
+                if(op != null)
+                    return new ComplexExpression { Left = left, Operator = op, Right = right };
+
+                if(right is DataValue)
+                    return new ComplexExpression { Left = left, Operator = new DataPart(), Right = right };
+            }
 
             return left;
         }

@@ -9,6 +9,7 @@ using JTran;
 using JTran.Expressions;
 using JTran.Extensions;
 using System;
+using System.Reflection;
 
 namespace JTran.UnitTests
 {
@@ -38,6 +39,75 @@ namespace JTran.UnitTests
             Assert.AreEqual("Chevy",    (result[2] as IDictionary<string, object>)["Model"]);
         }
 
+        [TestMethod]
+        public void AggregateFunctions_required_Success()
+        {
+            var expression = Compile("required(Cars, 'Cars is required')");
+            var context    = CreateContext(new { Cars = new List<object> {}}  );
+            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+
+            Assert.IsNotNull(ex.InnerException);
+            Assert.IsTrue(ex.InnerException is Transformer.UserError);
+            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_required2_Success()
+        {
+            List<object> data = null;
+            var expression = Compile("required(Cars, 'Cars is required')");
+            var context    = CreateContext(new { Cars = data}  );
+            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+
+            Assert.IsNotNull(ex.InnerException);
+            Assert.IsTrue(ex.InnerException is Transformer.UserError);
+            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_required3_Success()
+        {
+            var expression = Compile("required(Cars, 'Cars is required')");
+            var context    = CreateContext(new { Cars = ""}  );
+            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+
+            Assert.IsNotNull(ex.InnerException);
+            Assert.IsTrue(ex.InnerException is Transformer.UserError);
+            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_required4_Success()
+        {
+            var expression = Compile("required(Cars, 'Cars is required')");
+            var context    = CreateContext(new { Cars = "  "}  );
+            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+
+            Assert.IsNotNull(ex.InnerException);
+            Assert.IsTrue(ex.InnerException is Transformer.UserError);
+            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_first_array_Success()
+        {
+            var expression = Compile("first(Cars)");
+            var context    = CreateContext(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }}  );
+            var result     = expression.Evaluate(context);
+   
+            Assert.AreEqual("Chevy", (result as IDictionary<string, object>)["Model"]);
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_last_array_Success()
+        {
+            var expression = Compile("last(Cars)");
+            var context    = CreateContext(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }}  );
+            var result     = expression.Evaluate(context);
+   
+            Assert.AreEqual("Cadillac", (result as IDictionary<string, object>)["Model"]);
+        }
+
         private IExpression Compile(string expr)
         {
             var parser   = new Parser();
@@ -49,7 +119,7 @@ namespace JTran.UnitTests
 
         private ExpressionContext CreateContext(object data)
         {
-            return new ExpressionContext(CreateTestData(data), extensionFunctions: Transformer.CompileFunctions(null));;
+            return new ExpressionContext(CreateTestData(data), extensionFunctions: Transformer.CompileFunctions(null));
         }
 
         private object CreateTestData(object obj)

@@ -49,6 +49,7 @@ namespace JTran.UnitTests
 
             var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
 
+            Assert.AreEqual("Linda",              customers.SpecialCustomer);
             Assert.AreEqual(4,               customers.Customers.Count);
             Assert.AreEqual("John",          customers.Customers[0].FirstName);
             Assert.AreEqual("Smith",         customers.Customers[0].LastName);
@@ -1473,6 +1474,7 @@ namespace JTran.UnitTests
 
        private static readonly string _transformForEach1 =
         @"{
+            'SpecialCustomer':    '#(last(Customers.Residents).Name)',
             '#foreach(Customers.Residents, Customers)':
             {
                 LastName:    '#(//Surname)',
@@ -1497,7 +1499,7 @@ namespace JTran.UnitTests
         "{" + 
          "    '#foreach(Customers[Surname == \"Anderson\"], Customers)':" + 
          "    {" + 
-         "        LastName:    '#(Surname)'," + 
+         "        LastName:    \"#(required(Surname, 'Surname is required'))\"," + 
          "        FirstName:   '#(Name)'," + 
          "        Age:         '#(Age)'," + 
          "        Address:     '#(Address)'" + 
@@ -1509,7 +1511,7 @@ namespace JTran.UnitTests
             'Name':        'Fred',
             '#foreach(Automobiles, Cars)':
             {
-                Brand:    '#(Make)',
+                Brand:    '#(Make))',
                 Model:    '#(Model)',
                 Year:     '#(Year)',
                 Color:    '#(Color)',
@@ -2288,6 +2290,7 @@ namespace JTran.UnitTests
 
         public class CustomerContainer
         {
+            public string SpecialCustomer     { get; set; }
             public List<Customer> Customers   { get; set; }
         }     
         

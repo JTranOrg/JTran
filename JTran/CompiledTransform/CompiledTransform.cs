@@ -312,7 +312,12 @@ namespace JTran
                     return new TSimpleArrayItem(val);
 
                 if(sval.StartsWith("#copyof"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TCopyOf(null, sval);
+
                     return new TCopyOf(name, sval);
+                }
 
                 if(name.StartsWith("#if"))
                     return new TPropertyIf(name, val);
@@ -749,7 +754,7 @@ namespace JTran
         /****************************************************************************/
         internal TCopyOf(string name, string val) 
         {
-            _name = CreateValue(name);
+            _name = name == null ? null : CreateValue(name);
 
             var parms = CompiledTransform.ParseElementParams("copyof", val, new List<bool> {false} );
 
@@ -763,19 +768,26 @@ namespace JTran
         public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
             var newScope = _expression.Evaluate(context);
-            var name     = _name.Evaluate(context).ToString();
+            var name     = _name?.Evaluate(context)?.ToString();
 
             wrap( ()=>
             { 
-                writer.WriteContainerName(name);
+                if(name != null)
+                { 
+                    writer.WriteContainerName(name);
 
-                if(newScope is ExpandoObject expObject)
-                { 
-                    writer.WriteItem(expObject);
+                    if(newScope is ExpandoObject expObject)
+                    { 
+                        writer.WriteItem(expObject);
+                    }
+                    else if(newScope is IEnumerable<object> list)
+                    { 
+                        writer.WriteList(list);
+                    }
                 }
-                else if(newScope is IEnumerable<object> list)
-                { 
-                    writer.WriteList(list);
+                else
+                {
+                    writer.WriteProperties(newScope);
                 }
             });
         }

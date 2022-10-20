@@ -516,6 +516,26 @@ namespace JTran.Expressions
         {
             return !System.Convert.ToBoolean(val);
         }
+        
+        /*****************************************************************************/
+        public object required(object val, string errorMessage)
+        {
+            if(val == null)
+                 throw new Transformer.UserError(errorMessage);
+
+            if(val is IEnumerable<object> list)
+            {
+                if(list.Count() == 0)
+                    throw new Transformer.UserError(errorMessage);
+
+                return val;
+            }
+
+            if(string.IsNullOrWhiteSpace(val.ToString()))
+                throw new Transformer.UserError(errorMessage);
+
+            return val;
+        }
 
         /*****************************************************************************/
         [IgnoreParameterCount]

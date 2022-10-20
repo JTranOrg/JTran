@@ -297,6 +297,8 @@ These functions operate on a list of values
 - [any](#any)
 - [avg](#avg)
 - [contains](#contains_list)
+- [first](#first)
+- [last](#last)
 - [count](#count)
 - [min](#min)
 - [min](#min)
@@ -418,6 +420,46 @@ Then this expression:
     #(contains(Employees, "Fred"))
 
 Result is true<br><br>
+
+##### <a id="first">first</a>(expr)
+
+Returns the first item in the array. If the array is null or empty then a null will be returned. Given this data:
+
+    {
+        Employees
+        [
+            "Fred",
+            "Wilma",
+            "Pebbles",
+            "Dino"
+        ]
+    }
+
+Then this expression:
+
+    #(first(Employees))
+
+Result is "Fred"<br><br>
+
+##### <a id="last">last</a>(expr)
+
+Returns the last item in the array. If the array is null or empty then a null will be returned. Given this data:
+
+    {
+        Employees
+        [
+            "Fred",
+            "Wilma",
+            "Pebbles",
+            "Dino"
+        ]
+    }
+
+Then this expression:
+
+    #(last(Employees))
+
+Result is "Dino"<br><br>
 
 ##### <a id="count">count</a>(expr)
 
@@ -730,6 +772,7 @@ Result is 45<br><br>
   - [not](#not)
   - [number](#number)
   - [position](#position)
+  - [required](#required)
 <br><br>
 
 ##### <a id="errorcode">errorcode</a>()
@@ -776,6 +819,14 @@ Result is 55<br><br>
 Returns the index of the object within an array. Indices are always zero based. If this function is not called in the context of #foreach it will always return a zero:
 
     "#(position())"
+
+<br>
+
+##### <a id="required">required</a>(expr, message)
+
+If the given expression returns a null, an empty array, an empty string or all whitespace string then the function will throw an exception with the given message, otherwise it will the result of the passed in expression.
+
+    "Name": "#(required(Name, 'Name is required'))"
 
 <br>
 

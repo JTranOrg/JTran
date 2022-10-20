@@ -86,6 +86,23 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        internal static void ChildrenToJson(this ExpandoObject obj, IJsonWriter writer)
+        {
+            if(obj == null)
+                return;
+
+            var dict     = (obj as IDictionary<string, object>).Where( kv=> !kv.Key.StartsWith("_jtran_") );
+            var numItems = dict.Count();
+
+            foreach(var kv in dict)
+            {
+                writer.StartChild();
+                ToJson(kv.Key, kv.Value, writer);
+                writer.EndChild();
+            }
+        }
+
+        /****************************************************************************/
         internal static void ToJson(string key, object value, IJsonWriter writer)
         {
             if(value is IEnumerable<object> list)

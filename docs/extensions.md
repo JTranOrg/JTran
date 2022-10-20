@@ -60,7 +60,7 @@ JSON really has only 5 types:
 4. Object
 5. Array
 
-JTran will atttempt to convert any value passed as a parameter to your function if the types do not match. If JTran cannot convert the value (e.g. converting "bob" to an int) then you will get runtime exceptions.
+JTran will attempt to convert any value passed as a parameter to your function if the types do not match. If JTran cannot convert the value (e.g. converting "bob" to an int) then you will get runtime exceptions.
 
 1. Numbers in JTran are internally represented by either a Decimal or a long (Int64). JTran will attempt to convert from one of those types to the type of the parameter. e.g. from a long to an int or from a decimal to a double. JTran uses the .Net function Convert.ChangeType to do this. If that function fails then its exception will be propagated up.
 2. JTran uses the same function to convert to bool.
