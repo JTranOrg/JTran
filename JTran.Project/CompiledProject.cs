@@ -66,6 +66,18 @@ namespace JTran.Project
              transformer.Transform(source, output, context);
         }
 
+        /****************************************************************************/
+        public void TransformFile(string sourcePath, string destinationPath)
+        {
+             var transformer = new Transformer(this.Transform, this.Extensions, this.Includes);
+             var context = new TransformerContext();
+
+             using var source = File.OpenRead(this.SourcePath);
+             using var output = File.OpenWrite(destinationPath);
+
+             transformer.Transform(source, output, context);
+        }
+
         #region Private
 
         /****************************************************************************/
