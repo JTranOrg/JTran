@@ -1211,6 +1211,12 @@ namespace JTran.UnitTests
             ]
         }";
 
+       private static readonly string _transformEmptyObject =
+        @"{
+            'Drivers': {},
+            'Cars': []
+          }";
+
        private static readonly string _transformArray2dim2 =
         @"{
             '#array(Cells)':
@@ -1430,6 +1436,25 @@ namespace JTran.UnitTests
 
         #endregion
 
+        #region Bugs
+
+        [TestMethod]
+        public void Transformer_Transform_empty_object()
+        {
+            var transformer = new JTran.Transformer(_transformEmptyObject, new object[] { new ExtFunctions2() } );
+            var result      = transformer.Transform(_data6);
+
+            Assert.AreNotEqual(_transform6, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+            Assert.IsNotNull(jobj["Drivers"]);
+            Assert.IsNotNull(jobj["Cars"]);
+        }
+
+        #endregion
+        
         #region Private 
 
         private class ExtFunctions
