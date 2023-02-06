@@ -5,13 +5,15 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>A JSON to JSON transformer</Description>
     <Authors>JTranOrg</Authors>
-    <Copyright>© 2020-2022 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <Copyright>© 2020-2023 - Jim Lightfoot, All Rights Reserved</Copyright>
     <Company>JTranOrg</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>3.1.1</Version>
+    <Version>3.1.2</Version>
+    <Title>JTran</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +27,10 @@
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

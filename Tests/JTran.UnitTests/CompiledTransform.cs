@@ -691,7 +691,6 @@ namespace JTran.UnitTests
                
           }";
 
-
         #region Message
 
         [TestMethod]
@@ -961,6 +960,29 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void CompiledTransform_Transform_function_empty_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformEmpty);
+            var result      = transformer.Transform(_dataEmptyTests, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformForEach1, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result);
+
+            Assert.AreEqual("Bob",          driver.Driver.FirstName);
+            Assert.AreEqual("Jones",        driver.Driver.LastName);
+            Assert.AreEqual("unknown",      driver.Driver.Engine);
+            Assert.AreEqual("unknown",      driver.Driver.OriginalDriver);
+            Assert.AreEqual("not assigned", driver.Driver.TrackName);
+            Assert.AreEqual("not assigned", driver.Driver.TrackNo);
+            Assert.AreEqual("none",         driver.Driver.Mechanics);
+            Assert.AreEqual("bob",          driver.Driver.Uncle);
+            Assert.AreEqual("Mae",          driver.Driver.Aunt);
+            Assert.AreEqual("Linda",        driver.Driver.Cousin);
+        }
+
+        [TestMethod]
         public void CompiledTransform_Transform_document_Success()
         {
             var transformer = CompiledTransform.Compile(_transformDocument1);
@@ -1141,6 +1163,56 @@ namespace JTran.UnitTests
         "                 Displacement:   375\r\n" + 
         "             }\r\n" + 
         "        }\r\n" + 
+        "    }\r\n" + 
+        "}";
+
+
+        private static readonly string _transformEmpty =
+        "{\r\n" + 
+        "    Driver:\r\n" + 
+        "    {\r\n" + 
+        "        \"#if(empty(Cars[Make == 'Audi']))\":\r\n" + 
+        "        {\r\n" + 
+        "          FirstName: \"Bob\",\r\n" + 
+        "          LastName:  \"Jones\"\r\n" + 
+        "        },\r\n" + 
+        "        \"#else\":" + 
+        "        {\r\n" + 
+        "          FirstName: \"Frank\",\r\n" + 
+        "          LastName:  \"Smith\"\r\n" + 
+        "        },\r\n" + 
+        "        \"#if(empty(Engine))\":\r\n" + 
+        "        {\r\n" + 
+        "          Engine: \"unknown\"\r\n" + 
+        "        },\r\n" + 
+        "        \"#if(empty(Driver))\":\r\n" + 
+        "        {\r\n" + 
+        "          OriginalDriver: \"unknown\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(Mechanics))\":\r\n" + 
+        "        {\r\n" + 
+        "          Mechanics: \"none\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(TrackNo))\":\r\n" + 
+        "        {\r\n" + 
+        "          TrackNo: \"not assigned\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(TrackName))\":\r\n" + 
+        "        {\r\n" + 
+        "          TrackName: \"not assigned\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(BobsYourUncle))\":\r\n" + 
+        "        {\r\n" + 
+        "          Uncle: \"bob\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(Aunt))\":\r\n" + 
+        "        {\r\n" + 
+        "          Aunt: \"Mae\"\r\n" + 
+        "        },\r\n" +
+        "        \"#if(empty(Cousin.Father.Brother.Daughter))\":\r\n" + 
+        "        {\r\n" + 
+        "          Cousin: \"Linda\"\r\n" + 
+        "        }\r\n" +
         "    }\r\n" + 
         "}";
 
@@ -1394,6 +1466,24 @@ namespace JTran.UnitTests
             ModelField: 'Model'
         }";
 
+        private static readonly string _dataEmptyTests =
+        @"{
+            Cars:
+            [
+                {
+                   Make:   'Chevy',
+                   Model:  'Corvette',
+                   Year:   1964,
+                   Color:  'Blue'
+                }
+            ],
+            Driver:    {},
+            Mechanics: [],
+            TrackNo:   0,
+            TrackName: '',
+            Aunt:      null
+        }";
+
         private static readonly string _dataCopyOf =
         @"{
              Make:   'Chevy',
@@ -1484,9 +1574,17 @@ namespace JTran.UnitTests
 
         public class Driver2
         {
-            public string             FirstName   { get; set; }
-            public string             LastName    { get; set; }
-            public List<Automobile2>  Vehicles    { get; set; }
+            public string             FirstName        { get; set; }
+            public string             LastName         { get; set; }
+            public string             Engine           { get; set; }
+            public List<Automobile2>  Vehicles         { get; set; }
+            public string             OriginalDriver   { get; set; }
+            public string             Mechanics        { get; set; }
+            public string             TrackNo          { get; set; }
+            public string             TrackName        { get; set; }
+            public string             Uncle            { get; set; }
+            public string             Aunt             { get; set; }
+            public string             Cousin           { get; set; }
         }
 
         public class Automobile
