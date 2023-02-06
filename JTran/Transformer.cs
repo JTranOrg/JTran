@@ -21,10 +21,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 
 using JTran.Expressions;
-using Newtonsoft.Json.Linq;
 
 namespace JTran
 {
@@ -47,32 +45,10 @@ namespace JTran
         }
 
         /****************************************************************************/
-        /*public Transformer(JTran.Project.Project project)
-        {
-            var cproj = CompiledProject.Load(project, (ex)=> throw ex);
-
-            _transform = CompiledTransform.Compile(cproj.Transform, cproj.Includes);
-            _extensionFunctions = CompileFunctions(cproj.Extensions);
-        }*/
-
-        /****************************************************************************/
         public string Transform(string data, TransformerContext context = null)
         {
             return _transform.Transform(data, context, _extensionFunctions);
         }
-
-        /****************************************************************************/
-        /*public string Transform(string data, JTran.Project.Project project)
-        {
-           var cproj = CompiledProject.Load(project, (ex)=> throw ex);
-           var docRepos = new File
-           var context = new TransformerContext
-           {
-            DocumentRepositories = cproj.Documents
-           };
-
-            return _transform.Transform(data, context, _extensionFunctions);
-        }*/
 
         /****************************************************************************/
         public void Transform(Stream input, Stream output, TransformerContext context = null)

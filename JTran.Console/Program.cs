@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using JTran;
 using JTranProject = JTran.Project.Project;
 using System.Reflection;
+using JTran.Project;
 
 namespace JTran.Console
 {
@@ -163,15 +164,15 @@ namespace JTran.Console
 
             try
             {
-                var transformer  = new JTran.Transformer(project);
+                var compiledProj = CompiledProject.Load(project, (ex)=> System.Console.Write(ex.Message));
 
                 // Single file
                 if(!string.IsNullOrWhiteSpace(Path.GetExtension(project.SourcePath)))
                 {
-                    var source = File.ReadAllText(project.SourcePath);
-                    var result = transformer.Transform(source, project);
+                    using var output = File.OpenWrite(project.DestinationPath);
 
-                    WriteFile(project, source, result);
+                    compiledProj.Run(output);
+
                     return;
                 }
 
@@ -184,10 +185,12 @@ namespace JTran.Console
 
                 foreach(var sourceFile in sourceFiles)
                 {
-                    var source = File.ReadAllText(sourceFile);
-                    var result = transformer.Transform(sourceFile, project);
+                    var dest = project.DestinationPath;
 
-                    WriteFile(project, source, result);
+                    if(string.IsNullOrWhiteSpace(Path.GetExtension(dest)))
+                        dest = Path.Combine(dest, Path.GetFileName(sourceFile));
+
+                    compiledProj.TransformFile(sourceFile, dest);
                 }
             }
             catch(Exception ex2)
@@ -195,17 +198,6 @@ namespace JTran.Console
                 System.Console.WriteLine(ex2.Message);
                 return;
             }
-        }
-
-        /****************************************************************************/
-        private static void WriteFile(Project project, string sourcePath, string result)
-        {        
-            var dest = project.DestinationPath;
-
-            if(string.IsNullOrWhiteSpace(Path.GetExtension(dest)))
-                dest = Path.Combine(dest, Path.GetFileName(sourcePath));
-
-            File.WriteAllText(dest, result);
         }
 
         /****************************************************************************/

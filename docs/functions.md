@@ -19,6 +19,7 @@
 
 - [contains](#contains)
 - [endswith](#endswith)
+- [empty](#empty)
 - [indexof](#indexof)
 - [lowercase](#lowercase)
 - [normalizespace](#normalizespace)
@@ -297,6 +298,7 @@ These functions operate on a list of values
 - [any](#any)
 - [avg](#avg)
 - [contains](#contains_list)
+- [empty](#empty)  
 - [first](#first)
 - [last](#last)
 - [count](#count)
@@ -766,6 +768,7 @@ Result is 45<br><br>
 #### General Purpose Functions
 
   - [document](#document)
+  - [empty](#empty)
   - [errorcode](#errorcode)
   - [errormessage](#errormessage)
   - [name](#name)
@@ -774,6 +777,17 @@ Result is 45<br><br>
   - [position](#position)
   - [required](#required)
 <br><br>
+
+##### <a id="empty">empty</a>()
+
+Returns true if the specified expression is "empty". An expression is empty in the following cases:
+
+* If the property or object does not exists
+* If the property or object is null
+* If the property is a string and is empty or contains only whitespace
+* If the property is a number and the value is zero
+* If the item is an object and contains no children
+* If the item is an array and the array is empty (length == 0)
 
 ##### <a id="errorcode">errorcode</a>()
 

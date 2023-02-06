@@ -1,27 +1,14 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-using JTran;
-
-using Newtonsoft.Json.Linq;
-
-using MondoCore.Common;
-
 namespace JTran.PerformanceTests
 {
-    [TestClass]
     public class TransformerTests
     {
-        [TestMethod]
-        [DataRow(10)]
-        [DataRow(100)]
-        [DataRow(1000)]
-        [DataRow(5000)]
-        [DataRow(200000)]
-        [DataRow(2000000)]
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
         public void Transform_Transform_large_file(int numItems)
         {
             var transformer = CreateTransformer(_transformForEach1);

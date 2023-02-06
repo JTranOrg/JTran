@@ -10,17 +10,19 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2023 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using JTran.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+
+using JTran.Extensions;
 
 namespace JTran.Expressions
 {
@@ -515,6 +517,44 @@ namespace JTran.Expressions
         public bool not(object val)
         {
             return !System.Convert.ToBoolean(val);
+        }
+        
+        /*****************************************************************************/
+        public bool empty(object val)
+        {
+            if(val == null)
+                return true;
+
+            if(decimal.TryParse(val.ToString(), out decimal dValue))
+                return dValue == 0M;
+
+            if(val is IEnumerable<object> list)
+                return list.Count() == 0;
+
+            if(val is string str)
+                return string.IsNullOrWhiteSpace(str);
+
+            var dict = new Dictionary<string, object>();
+
+            foreach (PropertyInfo item2 in from p in val.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                        where p.CanRead
+                                        select p)
+            {
+                try
+                {
+                    object obj2 = item2.GetGetMethod().Invoke(val, null);
+
+                    if (obj2 != null)
+{
+                        dict.Add(item2.Name, obj2);
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return dict.Count == 0;
         }
         
         /*****************************************************************************/

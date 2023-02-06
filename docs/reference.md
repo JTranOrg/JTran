@@ -16,7 +16,7 @@ JTran is made up of processing instructions. All processing instructions start w
 
 <br>
 
-#### Output Expressions
+#### <a id="Output-Expressions">Output Expressions</a>
 
 An output expression can be used for a property value:
 
@@ -235,7 +235,7 @@ Note that if the current scope is an array item then the parent is the array its
 
 <br>
 
-### Elements
+### <a id="Elements">Elements</a>
 
 Elements are akin to programming constructs, e.g foreach and if. <br><br>
 
@@ -248,6 +248,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
+- <strong>[foreachgroup](#foreachgroup)</strong> - Iterates over an array and creates groups of subarrays
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
@@ -554,6 +555,143 @@ If no array name is specified then no new array is created and contents are outp
             Driver: "Joe Smith"
         }
     }
+
+
+#### #foreachgroup
+
+#foreachgroup iterates over an array and groups them into subarrays
+
+###### Transform
+
+    {
+        // Groups cars into subarrays by Make. This will create an array called 'Makes'
+        "#foreachgroup(Drivers, Make, Makes)":
+        {
+            Make: '#(Make)', // Make here is the grouped by value from the foreachgroup parameter
+
+            // currentgroup() returns the list of Cars that belong to the current group (Make)
+            '#foreach(currentgroup(), Drivers)':
+            {
+                Name:  '#(Name)',
+                Model: '#(Model)'
+            }
+        }
+    }
+
+###### Source
+
+    {
+        Drivers:
+        [
+            {
+                Name:      'John Smith',
+                Make:      'Chevy',
+                Model:     'Corvette',
+            },
+            {
+                Name:      'Fred Jones',
+                Make:      'Pontiac',
+                Model:     'Firebird',
+            },
+            {
+                Name:      'Mary Anderson',
+                Make:      'Chevy',
+                Model:     'Camaro',
+            },
+            {
+                Name:      'Amanda Ramirez',
+                Make:      'Pontiac',
+                Model:     'GTO',
+            },
+        ]
+    }
+
+###### Output
+
+    {
+        Makes:
+        [
+            {
+                Make:      'Chevy',
+                Drivers:   
+                [
+                    {
+                        Name:      'John Smith',
+                        Model:     'Corvette',
+                    },
+                    {
+                        Name:      'Mary Anderson',
+                        Model:     'Camaro',
+                    }
+                ]
+            },
+            {
+                Make:      'Pontiac',
+                Drivers:   
+                [
+                    {
+                        Name:      'Fred Jones',
+                        Model:     'Firebird',
+                    },
+                    {
+                        Name:      'Amanda Ramirez',
+                        Model:     'GTO',
+                    }
+                ]
+            }
+        ]
+    }
+
+If no array name is specified then no new array is created and contents are output for each child
+
+###### Transform
+
+    {
+        "#foreach(Cars)":
+        {
+            "#(Make)":
+            {
+                Model:   "#(Model)",
+                Driver:  "#(//Driver.Name)"
+            }
+        }
+    }
+
+###### Source Document
+
+    {
+        Cars:
+        [
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            }
+        ],
+        Driver:
+        {
+           Name: "Joe Smith"
+        }
+    }
+
+###### Output
+
+    {
+        Chevy:
+        {
+            Model: "Corvette",
+            Driver: "Joe Smith"
+        },
+        Pontiac:
+        {
+            Model: "Firebird",
+            Driver: "Joe Smith"
+        }
+    }
+
 
 #### #include
 
@@ -1267,7 +1405,9 @@ You can also use expressions in the #mapitem but then you'll need to use the sco
             }
         ]   
     }
-### Templates
+
+
+### <a id="Templates">Templates</a>
 
 Templates are reusable snippets of JTran code that can be called by other JTran code.
 
