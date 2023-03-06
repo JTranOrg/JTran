@@ -102,7 +102,7 @@ Searches for all instances of substrings in a list and removes them
             'abc',
             'cde'
         ]
-    }
+    },
 
     #(removeany('123abc456cde789', lists.keywords))
 
