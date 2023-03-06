@@ -224,6 +224,9 @@ namespace JTran.Expressions
                     }
                 }
 
+                if(parmType == typeof(IEnumerable<object>) && currentParam is IList<object> list)
+                    return list;
+
                 return Convert.ChangeType(currentParam, parmType);
             }
 

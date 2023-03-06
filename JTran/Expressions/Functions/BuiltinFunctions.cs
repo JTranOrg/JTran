@@ -466,12 +466,14 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public string removeany(string val, IEnumerable<object> list)
         {
+            if(val == null)
+                return null;
+            
             foreach(var r1 in list)
             { 
                 var newVal = val?.Replace(r1.ToString(), "");
 
-                if(newVal != val)
-                    return newVal;
+                val = newVal;
             }
 
             return val;
