@@ -998,6 +998,21 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void CompiledTransform_Transform_function_removeany2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformRemoveAny2);
+            var result      = transformer.Transform(_dataRemoveAny, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformRemoveAny2, result);
+
+            var obj = JObject.Parse(result);
+
+            Assert.IsNotNull(obj);
+
+            Assert.AreEqual("4255551212", obj["Phone"].ToString());
+        }
+
+        [TestMethod]
         public void CompiledTransform_Transform_document_Success()
         {
             var transformer = CompiledTransform.Compile(_transformDocument1);
@@ -1162,7 +1177,18 @@ namespace JTran.UnitTests
 
         private static readonly string _transformRemoveAny =
         "{\r\n" + 
+        "   \"#variable(punc)\":         ['(', ')', '-', '.', ' ']," +
         "   Phone:  \"#(removeany(Phone, ['(', ')', '-', '.', ' ']))\"\r\n" + 
+        "}";
+
+       private static readonly string _transformRemoveAny2 =
+        "{\r\n" + 
+        "   \"#variable(punc)\":" + 
+        "   {" + 
+        "      punctuation:" +
+        "   ['(', ')', '-', '.', ' ']," +
+        "   }," + 
+        "   Phone:  \"#(removeany(Phone, $punc.punctuation))\"\r\n" + 
         "}";
 
         private static readonly string _transformForEach2 =
@@ -1506,7 +1532,7 @@ namespace JTran.UnitTests
 
         private static readonly string _dataRemoveAny =
         @"{
-            Phone: '(425) 555-1212'
+            Phone: '((425) (555-)12-..12'
         }";
 
         private static readonly string _dataCopyOf =
