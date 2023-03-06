@@ -418,12 +418,33 @@ namespace JTran.UnitTests
             Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
         }
 
+        [TestMethod]
+        public void Transformer_Transform_removeany_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_removeany, null);
+            var result      = transformer.Transform(_removeanyData);
+   
+            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
+
+            var json = JObject.Parse(result);
+
+            Assert.AreEqual("5554561234", json["Phone"].ToString());
+        }
+
         private static readonly string _datetimeformat =
         "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";
 
         private static readonly string _datetimeformatData =
         @"{
              Time: '2020-11-12T01:48:52.00000'
+        }";
+
+        private static readonly string _removeany =
+        "{ Phone: \"#(removeany(Phone, ['(', ')', ' ', '.' ]))\" }";
+
+        private static readonly string _removeanyData =
+        @"{
+             Phone: '(555) 456-1234'
         }";
 
 
