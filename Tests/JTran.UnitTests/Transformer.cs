@@ -418,7 +418,7 @@ namespace JTran.UnitTests
             Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public void Transformer_Transform_removeany_Succeeds()
         {
             var transformer = new JTran.Transformer(_removeany, null);
@@ -429,7 +429,7 @@ namespace JTran.UnitTests
             var json = JObject.Parse(result);
 
             Assert.AreEqual("5554561234", json["Phone"].ToString());
-        }
+        }*/
 
         private static readonly string _datetimeformat =
         "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";

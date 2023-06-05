@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using JTran.Extensions;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.Expressions
 {
@@ -40,7 +41,7 @@ namespace JTran.Expressions
             { ",", true }
         };
 
-       private static IDictionary<string, bool> _conditionals = new Dictionary<string, bool>
+        private static IDictionary<string, bool> _conditionals = new Dictionary<string, bool>
         {
             { "&&", true },
             { "||", true }
@@ -61,15 +62,15 @@ namespace JTran.Expressions
 
             last = null;
 
-            while(tokens.Count > 0)
+            while (tokens.Count > 0)
             {
                 var token = tokens.Peek();
 
                 last = token;
 
-                if(token.Value == "?")
+                if (token.Value == "?")
                 {
-                    if(!conditional)
+                    if (!conditional)
                     {
                         tokens.Dequeue();
                         HandleTertiary(tokens, outputTokens, token);
@@ -80,38 +81,34 @@ namespace JTran.Expressions
 
                 tokens.Dequeue();
 
-                if(token.Value == ":")
+                if (token.Value == ":")
                 {
                     break;
                 }
 
-                if(token.Value.Length > 0 && token.Type != Token.TokenType.Literal)
+                if (token.Value.Length > 0 && token.Type != Token.TokenType.Literal)
                 {
-                    if(_beginBoundary.Contains(token.Value))
+                    if (_beginBoundary.Contains(token.Value))
                     {
-                        var expressionToken = new ExpressionToken();
-
-                        expressionToken.Children = InnerPrecompile(tokens, false, out last);
-
                         if(token.Value == "[")
-                        {
-                            if(last.Value != "]")
-                                throw new Transformer.SyntaxException("Missing \"]\" in array indexer expression");
-
+                        { 
                             outputTokens.Add(token);
-                            outputTokens.Add(ExpressionOrSingle(expressionToken));
-                            outputTokens.Add(last);
+                            AddCommaDelimitedList(outputTokens, tokens, "]", "Missing \"]\" in array", out last);
                         }
                         else
-                            outputTokens.Add(ExpressionOrSingle(expressionToken));
+                        {
+                            var expressionToken = new ExpressionToken();
 
+                            expressionToken.Children = InnerPrecompile(tokens, false, out last);
+                            outputTokens.Add(ExpressionOrSingle(expressionToken));
+                        }
                         continue;
                     }
 
-                    if(_endBoundary.ContainsKey(token.Value))
+                    if (_endBoundary.ContainsKey(token.Value))
                         break;
 
-                    if(_conditionals.ContainsKey(token.Value))
+                    if (_conditionals.ContainsKey(token.Value))
                     {
                         PopExpression(tokens, outputTokens, token, true, out last);
                         continue;
@@ -119,30 +116,14 @@ namespace JTran.Expressions
                 }
 
                 // Is it a function call?
-                if(token.Type == Token.TokenType.Text && tokens.Count > 0 && tokens.Peek().Value == "(")
+                if (token.Type == Token.TokenType.Text && tokens.Count > 0 && tokens.Peek().Value == "(")
                 {
                     outputTokens.Add(token);
 
                     var paren = tokens.Dequeue();
                     outputTokens.Add(paren);
 
-                    while(true)
-                    { 
-                        var expressionToken = new ExpressionToken();
-
-                        expressionToken.Children = InnerPrecompile(tokens, false, out last);
-
-                        outputTokens.Add(ExpressionOrSingle(expressionToken));
-                        outputTokens.Add(last);
-
-                        if(last.Value != ",")
-                        {
-                            if(last.Value != ")")
-                                throw new Transformer.SyntaxException("Missing \")\" in function call");
-
-                            break;
-                        }
-                    }
+                    AddCommaDelimitedList(outputTokens, tokens, ")", "Missing \")\" in function call", out last);
 
                     continue;
                 }
@@ -153,13 +134,34 @@ namespace JTran.Expressions
             return outputTokens;
         }
 
+        private static void AddCommaDelimitedList(List<Token> outputTokens, Queue<Token> tokens, string endDelimiter, string errMsg, out Token last)
+        {
+            while (true)
+            {
+                var expressionToken = new ExpressionToken();
+
+                expressionToken.Children = InnerPrecompile(tokens, false, out last);
+
+                outputTokens.Add(ExpressionOrSingle(expressionToken));
+                outputTokens.Add(last);
+
+                if (last.Value != ",")
+                {
+                    if (last.Value != endDelimiter)
+                        throw new Transformer.SyntaxException(errMsg);
+
+                    break;
+                }
+            }
+        }
+
         private static Token ExpressionOrSingle(ExpressionToken expressionToken)
         {
-            if(expressionToken.Children.Count == 1)
+            if (expressionToken.Children.Count == 1)
             {
                 var result = expressionToken.Children[0];
 
-                if(result is ExpressionToken exprTokenInner)
+                if (result is ExpressionToken exprTokenInner)
                     return ExpressionOrSingle(exprTokenInner);
 
                 return result;
@@ -188,7 +190,7 @@ namespace JTran.Expressions
         {
             PopExpression(tokens, outputTokens, token, false, out Token last);
 
-            if(last.Value != ":")
+            if (last.Value != ":")
                 throw new Transformer.SyntaxException("Missing \":\" in tertiary expression");
 
             outputTokens.Add(last);

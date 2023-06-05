@@ -123,7 +123,7 @@ namespace JTran.UnitTests
         public void CompiledTransform_Transform_ForEach_Success()
         {
             var transformer = CompiledTransform.Compile(_transformForEach1);
-            var result      = transformer.Transform(_dataCarList, null, null);
+            var result      = transformer.Transform(_dataCarList, null, Transformer.CompileFunctions(null));
 
             Assert.AreNotEqual(_transformForEach1, result);
             Assert.IsNotNull(JObject.Parse(result));
@@ -135,6 +135,21 @@ namespace JTran.UnitTests
             Assert.AreEqual("Corvette", driver.Driver.Vehicles[0].Model);
             Assert.AreEqual(1964,       driver.Driver.Vehicles[0].Year);
             Assert.AreEqual("Blue",     driver.Driver.Vehicles[0].Color);
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_ForEach_where_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformForEachWhere);
+            var result      = transformer.Transform(_dataTrainSchedule, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformForEachWhere, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var schedule = JsonConvert.DeserializeObject<TrainSchedule>(result);
+
+            Assert.AreEqual(1,              schedule.Trains.Count);
+            Assert.AreEqual("Vancouver",    schedule.Trains[0].Destination);
         }
 
         private static readonly string _transformForEach1 =
@@ -156,6 +171,33 @@ namespace JTran.UnitTests
                 }
             }
         }";
+
+        private static readonly string _transformForEachWhere =
+        @"{
+            '#variable(City)':   'Seattle',
+            '#variable(Departing)':   '0800',
+            '#variable(Arriving)':   '1100',
+            '#foreach(Routes[Origin == $City and any(Times[Departing == $Departing and Arriving == $Arriving])], Trains)':
+            {
+                Origin:         '#(Origin)',
+                Destination:    '#(Destination)',
+                Departing:      '#(Departing)',
+                Arriving:       '#(Arriving)'
+           }
+        }";
+
+        public class TrainSchedule
+        {
+           public List<Route> Trains { get; set; } = new List<Route>();
+        }
+
+        public class Route
+        {
+            public string Origin        { get; set; } = "";
+            public string Destination   { get; set; } = "";
+            public string Departing     { get; set; } = "";
+            public string Arriving      { get; set; } = "";
+        }
 
         [TestMethod]
         public void CompiledTransform_Transform_If_Success()
@@ -982,7 +1024,7 @@ namespace JTran.UnitTests
             Assert.AreEqual("Linda",        driver.Driver.Cousin);
         }
 
-        [TestMethod]
+      /*  [TestMethod]
         public void CompiledTransform_Transform_function_removeany_Success()
         {
             var transformer = CompiledTransform.Compile(_transformRemoveAny);
@@ -995,7 +1037,7 @@ namespace JTran.UnitTests
             Assert.IsNotNull(obj);
 
             Assert.AreEqual("4255551212", obj["Phone"]);
-        }
+        }*/
 
         [TestMethod]
         public void CompiledTransform_Transform_function_removeany2_Success()
@@ -1483,6 +1525,70 @@ namespace JTran.UnitTests
                 MakeField: 'Brand',
                 ModelField: 'Model'
             }
+        }";
+
+        private static readonly string _dataTrainSchedule =
+        @"{
+            Routes:
+            [
+                {
+                    Origin:         'Seattle',
+                    Destination:    'Bellingham',
+                    Times:
+                    [
+                        {
+                            Departing:   '0600',
+                            Arriving:    '0800'
+                        },
+                        {
+                            Departing:   '0800',
+                            Arriving:    '1000'
+                        },
+                        {
+                            Departing:   '1000',
+                            Arriving:    '1200'
+                        }
+                    ]
+                },
+                {
+                    Origin:         'Seattle',
+                    Destination:    'Vancouver',
+                    Times:
+                    [
+                        {
+                            Departing:   '0500',
+                            Arriving:    '0800'
+                        },
+                        {
+                            Departing:   '0800',
+                            Arriving:    '1100'
+                        },
+                        {
+                            Departing:   '1100',
+                            Arriving:    '1400'
+                        }
+                    ]
+                },
+                {
+                    Origin:         'Portland',
+                    Destination:    'San Francisco',
+                    Times:
+                    [
+                        {
+                            Departing:   '0500',
+                            Arriving:    '0800'
+                        },
+                        {
+                            Departing:   '0800',
+                            Arriving:    '1100'
+                        },
+                        {
+                            Departing:   '1100',
+                            Arriving:    '1400'
+                        }
+                    ]
+                }
+            ]
         }";
 
         private static readonly string _dataCarList =

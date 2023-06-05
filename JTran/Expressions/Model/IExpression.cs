@@ -148,7 +148,8 @@ namespace JTran.Expressions
             
             for(var i = 0; i < numParts; ++i)
             {
-                var expr = _parts[i].Evaluate(new ExpressionContext(data, context));
+                var newContext = new ExpressionContext(data, context);
+                var expr       = _parts[i].Evaluate(newContext);
 
                 if(expr == null)
                 {
