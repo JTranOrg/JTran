@@ -1090,6 +1090,23 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("Array")]
+        public void Transformer_Transform_Array_foreach_emptyarray_Succeeds()
+        {
+            var transformer = new JTran.Transformer(_transformArrayForEachEmptyArray, null);
+            var result      = transformer.Transform(_dataNoEmployees);
+   
+            Assert.AreNotEqual(_transformArrayForEachEmptyArray, _data4);
+
+            var json  = JObject.Parse(result);
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(2,              array.Count());
+            Assert.AreEqual("JohnSmith",    array[0]["Name"]);
+            Assert.AreEqual("BobJones",     array[1]["Name"]);
+        }
+
+        [TestMethod]
+        [TestCategory("Array")]
         public void Transformer_Transform_Array_2dim_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2dim, null);
@@ -1208,6 +1225,22 @@ namespace JTran.UnitTests
                     {
                         'Name': 'King Krakatoa'
                     }
+                }
+            }
+        }";
+
+        private static readonly string _transformArrayForEachEmptyArray =
+        @"{
+            '#variable(Find)': 'Fred',
+            '#array(Persons)':
+            {
+                '#foreach(Customers, {})':
+                {
+                   'Name': '#(Name + Surname)'
+                },
+                '#foreach(Employees[Name == $Find], {})':
+                {
+                   'Name': '#(Name + Surname)'
                 }
             }
         }";
@@ -1927,6 +1960,32 @@ namespace JTran.UnitTests
                      }
                  }
               ]
+            }";
+
+            private static readonly string _dataNoEmployees =
+            @"{
+                Customers:
+                [
+                    {
+                        Surname: 'Smith',
+                        Name:    'John'
+                    },
+                    {
+                        Surname: 'Jones',
+                        Name:    'Bob'
+                    }
+               ],
+               Employees:
+               [
+                 {
+                     Surname: 'Anderson',
+                     Name:    'Linda'
+                 },
+                 {
+                     Surname:   'Gonzales',
+                     Name:      'Pedro'
+                 }
+               ]
             }";
 
         private static readonly string _data4 =

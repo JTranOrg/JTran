@@ -480,6 +480,24 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public string padleft(string val, string padchar, int totalLen)
+        {
+            if(val == null || padchar == null || padchar.Length == 0)
+                return val;
+
+            return val.PadLeft(totalLen, padchar.FirstOrDefault());
+        }
+
+        /*****************************************************************************/
+        public string padright(string val, string padchar, int totalLen)
+        {
+            if(val == null || padchar == null || padchar.Length == 0)
+                return val;
+
+            return val.PadRight(totalLen, padchar.FirstOrDefault());
+        }
+
+        /*****************************************************************************/
         public string removeending(string val, string r1)
         {
             return val?.ReplaceEnding(r1, "");
