@@ -829,6 +829,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_string2_Success()
+        {
+            var parser     = new Parser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("string('007')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("007", expression.Evaluate(context).ToString());
+        }
+
+        [TestMethod]
         public void Compiler_function_sequence_Success()
         {
             var parser     = new Parser();
@@ -954,15 +966,15 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_string2_Success()
+        public void Compiler_function_string_padleft_Success()
         {
             var parser     = new Parser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("string(1) + string(2) + string(3)");
+            var tokens     = parser.Parse("string(padleft(7, '0', 3))");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("123", expression.Evaluate(context));
+            Assert.AreEqual("007", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
