@@ -209,14 +209,17 @@ namespace JTran.Extensions
                 if(value is bool)
                     return value.ToString().ToLower();
 
-                if(bool.TryParse(value.ToString(), out bool bval))
-                    return bval.ToString().ToLower();
+                if(!(value is StringValue))
+                { 
+                    if(bool.TryParse(value.ToString(), out bool bval))
+                        return bval.ToString().ToLower();
 
-                if(long.TryParse(value.ToString(), out long lval))
-                    return lval.ToString();
+                    if(long.TryParse(value.ToString(), out long lval))
+                        return lval.ToString();
 
-                if(decimal.TryParse(value.ToString(), out decimal dval))
-                    return dval.ToString().ReplaceEnding(".0", "");
+                    if(decimal.TryParse(value.ToString(), out decimal dval))
+                        return dval.ToString().ReplaceEnding(".0", "");
+                }
 
                 if(value is DateTime dtVal)
                     return "\"" + dtVal.ToString("o") + "\"";

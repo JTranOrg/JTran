@@ -1110,6 +1110,9 @@ namespace JTran
             if(result == null)
                 return;
 
+            if(result is IEnumerable<object> tryList && !tryList.Any())
+                return;
+
             var arrayName = _name == null ? null : _name.Evaluate(context)?.ToString()?.Trim();
             
             arrayName = string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
@@ -1119,7 +1122,7 @@ namespace JTran
 
             // If the result of the expression is an array
             if(result is IEnumerable<object> list && list.Any())
-            {                 
+            {       
                 wrap( ()=> 
                 { 
                     if(arrayName != null && arrayName != "{}")
@@ -1663,7 +1666,7 @@ namespace JTran
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dval))
+            if(!(val is StringValue) && decimal.TryParse(val.ToString(), out decimal dval))
             {
                 if(Math.Floor(dval) == dval)
                     return Convert.ToInt64(dval);

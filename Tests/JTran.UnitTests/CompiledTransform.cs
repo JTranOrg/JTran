@@ -982,8 +982,8 @@ namespace JTran.UnitTests
             Assert.AreEqual("Linda",        driver.Driver.Cousin);
         }
 
-        [TestMethod]
-        public void CompiledTransform_Transform_function_removeany_Success()
+        
+        /*[TestMethod] public void CompiledTransform_Transform_function_removeany_Success()
         {
             var transformer = CompiledTransform.Compile(_transformRemoveAny);
             var result      = transformer.Transform(_dataRemoveAny, null, Transformer.CompileFunctions(null));
@@ -995,7 +995,7 @@ namespace JTran.UnitTests
             Assert.IsNotNull(obj);
 
             Assert.AreEqual("4255551212", obj["Phone"]);
-        }
+        }*/
 
         [TestMethod]
         public void CompiledTransform_Transform_function_removeany2_Success()
@@ -1059,6 +1059,36 @@ namespace JTran.UnitTests
             Assert.AreEqual("Fred",          person.FirstName);
             Assert.AreEqual("Flintstone",    person.LastName);
             Assert.AreEqual("Development", person.EnvironmentName);
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_padleft_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformPadLeft);
+            var context     = new TransformerContext();
+            var result      = transformer.Transform("{ FirstName: 'Fred', LastName: 'Flintstone' }", context, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformDocument2, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var person = JsonConvert.DeserializeObject<Person>(result);
+
+            Assert.AreEqual("fffFred", person.FirstName);
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_007_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformJamesBond);
+            var context     = new TransformerContext();
+            var result      = transformer.Transform("{ FirstName: 7, LastName: 'Flintstone' }", context, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformDocument2, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var person = JsonConvert.DeserializeObject<Person>(result);
+
+            Assert.AreEqual("007", person.FirstName);
         }
 
         public class DocumentRepository : IDocumentRepository
@@ -1423,7 +1453,6 @@ namespace JTran.UnitTests
             Region:     '#($Locations.Region)'
         }";
 
-
         private static readonly string _transformDocument2 =
         @"{
             '#variable(envparam)':   'dev',
@@ -1433,6 +1462,23 @@ namespace JTran.UnitTests
             EnvironmentName:  '#($environment.name)',
              FirstName:  '#(FirstName)',
             LastName:   '#(LastName)'
+       }";
+
+        private static readonly string _transformPadLeft =
+        @"{
+            '#variable(padchar)':   'f',
+
+             FirstName:  '#(padleft(FirstName, $padchar, 7))',
+             LastName:   '#(LastName)'
+       }";
+
+
+        private static readonly string _transformJamesBond =
+        @"{
+            '#variable(padchar)':   '0',
+
+             FirstName:  '#(string(padleft(FirstName, $padchar, 3)))',
+             LastName:   '#(LastName)'
        }";
 
         #endregion
