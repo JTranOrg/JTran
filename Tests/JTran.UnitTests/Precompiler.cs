@@ -3,16 +3,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using JTran;
 using JTran.Expressions;
-
-using Moq;
-using JTran.Extensions;
-using System.Collections;
-using System.Xml.Schema;
+using JTran.Parser;
+using JTranParser = JTran.Parser.Parser;
 
 namespace JTran.UnitTests
 {
@@ -23,7 +18,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_simple_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob'");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -37,7 +32,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_simple_wParens()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("(Name == 'bob')");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -51,7 +46,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_simple_func()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("getcity(Name == 'bob')");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -66,7 +61,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_func_wParams()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("getcity(Name == 'bob', $Age)");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -83,7 +78,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_func_wParams_nested()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("getcity(Name == 'bob', getstate(ZipCode == 98033, Role == 'Engineer'))");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -117,7 +112,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_complex_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob' && City == 'San Francisco'");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -144,7 +139,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_complex_wParens_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("(Name == 'bob') && (City == 'San Francisco')");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -173,7 +168,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_tertiary_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob' ? 'Jones' : 'Anderson'");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -198,7 +193,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_tertiary_complex_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob' && City == 'Seattle' ? 'Jones' : 'Anderson'");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -234,7 +229,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_tertiary_double_and_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob' && City == 'Seattle' && State == 'WA' ? 'Jones' : 'Anderson'");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -283,7 +278,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_tertiary_nested_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Name == 'bob' ? 'Jones' : (City == 'Chicago' ? 'Anderson' : 'Bell')");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -324,7 +319,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_multipart_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("Customer.Name.Last");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -337,7 +332,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_multipart2_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("$Customer.Name.Last");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -350,7 +345,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_multipart3_expression()
         {
-            var parser  = new Parser();
+            var parser  = new JTranParser();
             var tokens  = parser.Parse("$Customer.FirstName + $Customer.LastName");
             var tokens2 = Precompiler.Precompile(tokens);
 
@@ -365,7 +360,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_sortforeach_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("#foreach(sort(Customers, Name), {})");
             var tokens2 = Precompiler.Precompile(tokens);
    

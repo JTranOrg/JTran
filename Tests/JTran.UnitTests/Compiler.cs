@@ -4,16 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Newtonsoft.Json;
+
 using Newtonsoft.Json.Linq;
 
-using JTran;
 using JTran.Expressions;
 
-using Moq;
 using JTran.Extensions;
+using JTran.Parser;
+using JTranParser = JTran.Parser.Parser;
+
 using System.Collections;
-using System.Xml.Schema;
 
 namespace JTran.UnitTests
 {
@@ -24,7 +24,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_StringEquality_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Name == 'Fred'"));
             var context    = new ExpressionContext(CreateTestData(new {Name = "Fred" } ));
@@ -36,7 +36,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_NumberEquality_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Age == 22"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22 } ));
@@ -48,7 +48,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_NumberGreaterThan_True()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Age > 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22 } ));
@@ -60,7 +60,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_NumberGreaterThan_val_is_null()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Age > 21"));
             var context    = new ExpressionContext(CreateTestData(new {} ));
@@ -72,7 +72,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_NumberGreaterThan_False()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Age > 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 18 } ));
@@ -84,7 +84,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_NumberLessThan_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Age < 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 19 } ));
@@ -96,7 +96,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_complex_bool_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("$IsLicensed && Licensed && Age < 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
@@ -110,7 +110,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Addition_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Year + Age"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
@@ -122,7 +122,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Addition_Multiple_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Year + Age - 4"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
@@ -134,7 +134,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Addition_concat_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("'Bob' + 'Fred'"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
@@ -146,7 +146,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Addition_concat2_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("'Bob' + 32 + 'Fred'"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
@@ -158,7 +158,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Addition_multipart_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Customer.FirstName + Customer.LastName"));
             var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
@@ -186,7 +186,7 @@ namespace JTran.UnitTests
 
         private IExpression Compile(string expression)
         {        
-            var parser      = new Parser();
+            var parser      = new JTranParser();
             var tokens      = parser.Parse("$Customer.FirstName + $Customer.LastName");
             var compiler    = new Compiler();
 
@@ -196,7 +196,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Subtraction_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Year - Age"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
@@ -208,7 +208,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Multiplication_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Salary * Months"));
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12 } ));
@@ -220,7 +220,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Precedence_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("100 + Salary * Months");
             var expression = compiler.Compile(tokens);
@@ -233,7 +233,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Division_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Paycheck / Months"));
             var context    = new ExpressionContext(CreateTestData(new {Paycheck = 1200, Months = 12 } ));
@@ -245,7 +245,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_TertiaryOperator_Left()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Age >= 21 ? 'Beer' : 'Coke'");
             var expression = compiler.Compile(tokens);
@@ -258,7 +258,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_TertiaryOperator_Complex()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Name == 'bob' && Age >= 21 ? FirstName : LastName");
             var expression = compiler.Compile(tokens);
@@ -271,7 +271,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Multple_Ands_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("$isactive && Type == $Type3 && $LicenseState != $CA && $LicenseState != $Unknown");
             var expression = compiler.Compile(tokens);
@@ -299,7 +299,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_DateTime_GreaterThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1980, 4, 5) },
@@ -312,7 +312,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_DateTime_GreaterThan_false()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1986, 4, 5) },
@@ -325,7 +325,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_DateTime_LessThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1980, 4, 5) },
@@ -338,7 +338,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_DateTime_LessThan_false()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = new DateTime(1986, 4, 5) },
@@ -355,7 +355,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_GreaterThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
@@ -368,7 +368,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_1_is_null_GreaterThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate > Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
@@ -381,7 +381,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_1_is_missing_GreaterThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate > Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
@@ -394,7 +394,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_GreaterThan_false()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Wife.Birthdate > Husband.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
@@ -407,7 +407,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_LessThan_true()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
@@ -420,7 +420,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_use_string_LessThan_false()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate < Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
@@ -433,7 +433,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_max()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("max(Husband.Birthdate, Wife.Birthdate)"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
@@ -447,7 +447,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_DateTime_min()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("min(Husband.Birthdate, Wife.Birthdate)"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1986-04-05T10:00:00" },
@@ -467,7 +467,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Multipart_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
             var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = new { Cylinders = 8 } }  } ));
@@ -479,7 +479,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Multipart_missing_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
             var context    = new ExpressionContext(CreateTestData(new { Car = new { Tires = new { Tread = .5 } }  } ));
@@ -491,7 +491,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Multipart_null_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
             var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = (Automobile)null, Tires = new { Tread = .5 } }  } ));
@@ -507,7 +507,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Parenthesis_And_True()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("(Age >= 21) && (State == 'WA')"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, State = "WA" } ));
@@ -519,7 +519,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Parenthesis_And_False()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("(Age >= 21) && (State == 'WA')"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, State = "WA" } ));
@@ -531,7 +531,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Parenthesis_Or_True()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("(Year <= 1962) || (Year >= 1969)"));
             var context    = new ExpressionContext(CreateTestData(new {Year = 1961} ));
@@ -543,7 +543,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Parenthesis_Or_False()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("(Year <= 1962) || (Year >= 1969)"));
             var context    = new ExpressionContext(CreateTestData(new {Year = 1967} ));
@@ -555,7 +555,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Parenthesis_Math__Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("(100 + Salary) * Months - 20");
             var expression = compiler.Compile(tokens);
@@ -572,7 +572,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Number_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[2]");
             var expression = compiler.Compile(tokens);
@@ -588,7 +588,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Number_int_array_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[0]");
             var expression = compiler.Compile(tokens);
@@ -604,7 +604,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Number_int_array_as_var_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("$Indices[0]");
             var expression = compiler.Compile(tokens);
@@ -621,7 +621,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Expression_Number_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[$WhichCar]");
             var expression = compiler.Compile(tokens);
@@ -637,7 +637,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Expression_Number_multilevel_var_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[$Which.Car]");
             var expression = compiler.Compile(tokens);
@@ -653,7 +653,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Expression_Where_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[Make == 'Chevy']");
             var expression = compiler.Compile(tokens);
@@ -669,7 +669,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Multi_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[Make == 'Chevy'].Tickets[Location == 'WA']");
             var expression = compiler.Compile(tokens);
@@ -686,7 +686,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_Array_Indexer_Multi2_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Cars[Make == 'Chevy'].Tickets[Location == 'WA']");
             var expression = compiler.Compile(tokens);
@@ -715,7 +715,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_floor_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("floor(3.5)");
             var expression = compiler.Compile(tokens);
@@ -731,7 +731,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_ceiling_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("ceiling(3.5)");
             var expression = compiler.Compile(tokens);
@@ -747,7 +747,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_floorceiling_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("floor(ceiling(3.5))");
             var expression = compiler.Compile(tokens);
@@ -763,7 +763,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_pow_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("pow(10, 2)");
             var expression = compiler.Compile(tokens);
@@ -779,7 +779,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_sqrt_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sqrt(100)");
             var expression = compiler.Compile(tokens);
@@ -795,7 +795,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_not_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("not(Make == 'Chevy')");
             var expression = compiler.Compile(tokens);
@@ -807,7 +807,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_normalize_space_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("normalizespace(Make + ' ' + ' Camaro ')");
             var expression = compiler.Compile(tokens);
@@ -819,7 +819,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_string_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("string(2 + Year)");
             var expression = compiler.Compile(tokens);
@@ -831,7 +831,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_string2_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("string('007')");
             var expression = compiler.Compile(tokens);
@@ -843,7 +843,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_sequence_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sequence(1, 5)");
             var expression = compiler.Compile(tokens);
@@ -860,7 +860,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_sequence_increment_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sequence(2, 10, 2)");
             var expression = compiler.Compile(tokens);
@@ -878,7 +878,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_sequence_backwards_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sequence(10, 2, -2)");
             var expression = compiler.Compile(tokens);
@@ -896,7 +896,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_lowercase_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("lowercase('ABcDeF')");
             var expression = compiler.Compile(tokens);
@@ -908,7 +908,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_uppercase_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("uppercase('ABcDeF')");
             var expression = compiler.Compile(tokens);
@@ -920,7 +920,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_number_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Age < number(MaxAge)");
             var expression = compiler.Compile(tokens);
@@ -932,7 +932,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_number_null_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Age < number(MaxAge)");
             var expression = compiler.Compile(tokens);
@@ -944,7 +944,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_number_notnumber_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Age > number(MaxAge)");
             var expression = compiler.Compile(tokens);
@@ -956,7 +956,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_isnumber_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("Age < (isnumber(MaxAge) ? MaxAge : 10000)");
             var expression = compiler.Compile(tokens);
@@ -968,7 +968,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_string_padleft_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("string(padleft(7, '0', 3))");
             var expression = compiler.Compile(tokens);
@@ -980,7 +980,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_stringlength_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("stringlength('crop')");
             var expression = compiler.Compile(tokens);
@@ -992,7 +992,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_substring_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substring('franklin', 0, 5)");
             var expression = compiler.Compile(tokens);
@@ -1004,7 +1004,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_indexof_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("indexof('franklin', 'ank')");
             var expression = compiler.Compile(tokens);
@@ -1016,7 +1016,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_substringafter_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substringafter('beebop', 'bee')");
             var expression = compiler.Compile(tokens);
@@ -1028,7 +1028,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_substringafter2_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substringafter('beebop' + Foo, 'bee')");
             var expression = compiler.Compile(tokens);
@@ -1040,7 +1040,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_multiple_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("substring(normalizespace(substringbefore(substringafter('Franklin Delano Roosevelt', 'Franklin'), 'Roosevelt')), 1, 4)");
             var expression = compiler.Compile(tokens);
@@ -1052,7 +1052,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_blank_string_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("'bob' + '' + ' jones'");
             var expression = compiler.Compile(tokens);
@@ -1066,7 +1066,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_count_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("count(Cars)");
             var expression = compiler.Compile(tokens);
@@ -1078,7 +1078,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_first_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("first(Cars).Model");
             var expression = compiler.Compile(tokens);
@@ -1106,7 +1106,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_sum_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("sum(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
@@ -1118,7 +1118,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_avg_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("avg(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
@@ -1130,7 +1130,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_avg2_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("avg(SaleAmount)");
             var expression = compiler.Compile(tokens);
@@ -1142,7 +1142,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_max_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("max(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
@@ -1156,7 +1156,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Compiler_function_min_Success()
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse("min(Cars.SaleAmount)");
             var expression = compiler.Compile(tokens);
@@ -1229,7 +1229,7 @@ namespace JTran.UnitTests
 
         private static bool EvaluateToBool(string sExpr)
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse(sExpr);
             var expression = compiler.Compile(tokens);
@@ -1240,7 +1240,7 @@ namespace JTran.UnitTests
 
         private static bool EvaluateToBool(string sExpr, IList<object> list)
         {
-            var parser     = new Parser();
+            var parser     = new JTranParser();
             var compiler   = new Compiler();
             var tokens     = parser.Parse(sExpr);
             var expression = compiler.Compile(tokens);

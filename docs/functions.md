@@ -23,6 +23,8 @@
 - [indexof](#indexof)
 - [lowercase](#lowercase)
 - [normalizespace](#normalizespace)
+- [padleft](#padleft)
+- [padright](#padright)
 - [remove](#remove)
 - [removeany](#removeany)
 - [removeanyending](#removeanyending)
@@ -82,6 +84,22 @@ Trims spaces off of the beginning and end and converts multiple instances of spa
     #(normalizespace('  ab   c    d  '))
 
 Result is "ab c d"<br><br>
+
+##### <a id="padleft">padleft</a>(expr)
+
+Adds additional characters to the left of the given string to fill to the specified length.
+    
+    #(padleft('abc', 'x', 5))
+
+Result is "xxabc"<br><br>
+
+##### <a id="padright">padright</a>(expr)
+
+Adds additional characters to the right of the given string to fill to the specified length.
+    
+    #(padright('abc', 'x', 5))
+
+Result is "abcxx"<br><br>
 
 ##### <a id="remove">remove</a>(expr)
 

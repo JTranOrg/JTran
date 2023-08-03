@@ -36,24 +36,6 @@ namespace JTran.Extensions
     public static class StringExtensions
     {
         /****************************************************************************/
-        internal static bool IsSingleQuoted(this string s)
-        {
-            return(s.StartsWith("'") && s.EndsWith("'"));
-        }
-
-        /****************************************************************************/
-        internal static bool IsDoubleQuoted(this string s)
-        {
-            return(s.StartsWith("\"") && s.EndsWith("\""));
-        }
-
-        /****************************************************************************/
-        internal static bool IsQuoted(this string s)
-        {
-            return(s.IsSingleQuoted() || s.IsDoubleQuoted());
-        }
-
-        /****************************************************************************/
         public static object JsonToExpando(this string s)
         {
             var convertor = new ExpandoObjectConverter();
@@ -63,31 +45,13 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static string ReplaceEnding(this string s, string ending, string replace)
-        {
-            if(!s.EndsWith(ending))
-                return s;
-            
-            return s.Substring(0, s.Length - ending.Length) + replace;
-        }
-
-        /****************************************************************************/
-        internal static string EnsureDoesNotStartWith(this string s, string start)
-        {
-            if(!s.StartsWith(start))
-                return s;
-            
-            return s.Substring(start.Length);
-        }
-
-        /****************************************************************************/
-        internal static T ExpandoToObject<T>(this object obj)
+        public static T ExpandoToObject<T>(this object obj)
         {            
             return JsonConvert.DeserializeObject<T>((obj as ExpandoObject).ToJson());
         }
 
         /****************************************************************************/
-        internal static bool TryParseDateTime(this string sdate, out DateTime dtValue)
+        public static bool TryParseDateTime(this string sdate, out DateTime dtValue)
         {
             dtValue = DateTime.MinValue;
 

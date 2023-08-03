@@ -19,9 +19,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Runtime.InteropServices.ComTypes;
+
 using JTran.Extensions;
+using JTran.Parser;
+using JTranParser = JTran.Parser.Parser;
 
 namespace JTran.Expressions
 {
@@ -42,7 +43,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         internal static IExpression Compile(string expr)
         {
-            var parser   = new Parser();
+            var parser   = new JTranParser();
             var compiler = new Compiler();
 
             return compiler.Compile(parser.Parse(expr));
