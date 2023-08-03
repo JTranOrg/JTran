@@ -1,14 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System.Collections.Generic;
-using System.Linq;
+using JTran.Parser;
+using JTranParser = JTran.Parser.Parser;
 
-using Newtonsoft.Json;
-
-using JTran;
-using JTran.Expressions;
-
-namespace JTran.UnitTests
+namespace JTran.Parser.UnitTests
 {
     [TestClass]
     [TestCategory("Expressions")]
@@ -17,7 +12,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Parser_Equality_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("Name == 'Fred'");
    
             Assert.IsNotNull(tokens);
@@ -34,7 +29,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Where_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("Cars[Make == 'Chevy']");
    
             Assert.IsNotNull(tokens);
@@ -50,7 +45,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Addition_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("FirstName + ' Fred ' + LastName");
    
             Assert.IsNotNull(tokens);
@@ -65,7 +60,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Tertiary_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("FirstName ? FirstName : LastName");
    
             Assert.IsNotNull(tokens);
@@ -80,7 +75,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Tertiary2_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("Name == Instructor && Age >= 21 ? FirstName : LastName");
    
             Assert.IsNotNull(tokens);
@@ -101,7 +96,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_NullCoalescing_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("FirstName ?? LastName");
    
             Assert.IsNotNull(tokens);
@@ -114,7 +109,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_StringLiteral_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("FirstName == 'LastName = Bob'");
    
             Assert.IsNotNull(tokens);
@@ -128,7 +123,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Number_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("Wage == 21.5");
    
             Assert.IsNotNull(tokens);
@@ -142,7 +137,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_JTranField_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("#(Wage) == 21.5");
    
             Assert.IsNotNull(tokens);
@@ -158,7 +153,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Variable_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("$Wage == 21.5");
    
             Assert.IsNotNull(tokens);
@@ -171,7 +166,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Multi_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("100 + Salary * Months");
    
             Assert.IsNotNull(tokens);
@@ -192,7 +187,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_Multi2_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("fn(Val + 3, 4)");
    
             Assert.IsNotNull(tokens);
@@ -210,7 +205,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_sortforeach_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("#foreach(sort(Customers, Name), {})");
    
             Assert.IsNotNull(tokens);
@@ -231,7 +226,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_blank_string_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("#('')");
    
             Assert.IsNotNull(tokens);
@@ -245,7 +240,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Expression_blank_string2_Success()
         {
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse("#(somefunc(''))");
    
             Assert.IsNotNull(tokens);

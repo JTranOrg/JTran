@@ -29,6 +29,9 @@ using Newtonsoft.Json.Linq;
 
 using JTran.Extensions;
 using JTran.Expressions;
+using JTran.Parser;
+
+using JTranParser = JTran.Parser.Parser;
 
 using System.Diagnostics;
 
@@ -146,7 +149,7 @@ namespace JTran
         internal static IList<IExpression> ParseElementParams(string elementName, string source, IList<bool> isExplicitParam) 
         {
             var result = new List<IExpression>();
-            var parser = new Parser();
+            var parser = new JTranParser();
             var tokens = parser.Parse(source);
             var tokens2 = Precompiler.Precompile(tokens);
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>A JSON to JSON transformer</Description>
     <Authors>JTranOrg</Authors>
@@ -11,7 +11,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>3.1.6</Version>
+    <Version>3.2.0</Version>
     <Title>JTran</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -32,6 +32,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JTran.Parser\JTran.Parser.csproj" />
   </ItemGroup>
 
 </Project>

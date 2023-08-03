@@ -1,15 +1,15 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Collections.Generic;
+using System.Reflection;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using JTran;
 using JTran.Expressions;
 using JTran.Extensions;
-using System;
-using System.Reflection;
+using JTran.Parser;
+
+using JTranParser = JTran.Parser.Parser;
 
 namespace JTran.UnitTests
 {
@@ -110,7 +110,7 @@ namespace JTran.UnitTests
 
         private IExpression Compile(string expr)
         {
-            var parser   = new Parser();
+            var parser   = new JTranParser();
             var compiler = new Compiler();
             var tokens   = parser.Parse(expr);
 
