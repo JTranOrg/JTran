@@ -51,6 +51,11 @@ namespace JTran.Expressions
             return _value;
         }
 
+        public override string ToString()
+        {
+            return _value?.ToString();
+        }
+
         public bool EvaluateToBool(ExpressionContext context)
         {
             return EvaluateToBool(_value, context);

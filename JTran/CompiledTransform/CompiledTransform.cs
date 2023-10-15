@@ -34,6 +34,7 @@ using JTran.Parser;
 using JTranParser = JTran.Parser.Parser;
 
 using System.Diagnostics;
+using System.Data;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -320,6 +321,22 @@ namespace JTran
                         return new TCopyOf(null, sval);
 
                     return new TCopyOf(name, sval);
+                }
+
+                if(sval.StartsWith("#include"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TInclude(null, sval);
+
+                    return new TInclude(name, sval);
+                }
+
+               if(sval.StartsWith("#exclude"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TExclude(null, sval);
+
+                    return new TExclude(name, sval);
                 }
 
                 if(name.StartsWith("#if"))
@@ -792,6 +809,120 @@ namespace JTran
                 {
                     writer.WriteProperties(newScope);
                 }
+            });
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TInclude : TToken
+    {
+        private readonly IExpression _expression;
+        private readonly IValue _name;
+        private readonly IDictionary<string, string> _properties;
+
+        /****************************************************************************/
+        internal TInclude(string name, string val) 
+        {
+            _name = name == null ? null : CreateValue(name);
+
+            var parms = CompiledTransform.ParseElementParams("include", val, new List<bool> { false, true } );
+
+            if(parms.Count == 0)
+                throw new Transformer.SyntaxException("Missing expression for #include");
+
+            _expression = parms[0];
+
+            _properties = parms.Skip(1).Select( s=> s.ToString()).ToDictionary( k=> k, v=> v);
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
+        {
+            var newScope = _expression.Evaluate(context);
+            var name     = _name?.Evaluate(context)?.ToString();
+
+            wrap( ()=>
+            { 
+                if(newScope is ExpandoObject expObject)
+                { 
+                    var properties = expObject.Where( kv=> _properties.ContainsKey(kv.Key));
+
+                    if(properties.Count() > 0)
+                    { 
+                        if(name != null)
+                            writer.WriteContainerName(name);
+
+                        writer.StartObject();
+
+                        foreach(var kv in properties)
+                            writer.WriteProperty(kv.Key, kv.Value);
+
+                        writer.EndObject();
+
+                        return;
+                    }
+                }
+
+                if(name != null)
+                    writer.WriteProperty(name, null);
+            });
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TExclude : TToken
+    {
+        private readonly IExpression _expression;
+        private readonly IValue _name;
+        private readonly IDictionary<string, string> _properties;
+
+        /****************************************************************************/
+        internal TExclude(string name, string val) 
+        {
+            _name = name == null ? null : CreateValue(name);
+
+            var parms = CompiledTransform.ParseElementParams("exclude", val, new List<bool> { false, true } );
+
+            if(parms.Count == 0)
+                throw new Transformer.SyntaxException("Missing expression for #exclude");
+
+            _expression = parms[0];
+
+            _properties = parms.Skip(1).Select( s=> s.ToString()).ToDictionary( k=> k, v=> v);
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
+        {
+            var newScope = _expression.Evaluate(context);
+            var name     = _name?.Evaluate(context)?.ToString();
+
+            wrap( ()=>
+            { 
+                if(newScope is ExpandoObject expObject)
+                { 
+                    var properties = expObject.Where( kv=> !_properties.ContainsKey(kv.Key));
+
+                    if(properties.Count() > 0)
+                    { 
+                        if(name != null)
+                            writer.WriteContainerName(name);
+
+                        writer.StartObject();
+
+                        foreach(var kv in properties)
+                            writer.WriteProperty(kv.Key, kv.Value);
+
+                        writer.EndObject();
+
+                        return;
+                    }
+                }
+
+                if(name != null)
+                    writer.WriteProperty(name, null);
             });
         }
     }

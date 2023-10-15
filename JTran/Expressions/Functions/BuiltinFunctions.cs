@@ -529,6 +529,15 @@ namespace JTran.Expressions
             return val?.IndexOf(substr) ?? -1;
         }
 
+        /*****************************************************************************/
+        public IEnumerable<string> split(string val, string separator)
+        {
+            if(string.IsNullOrWhiteSpace(val)) 
+                return Enumerable.Empty<string>();
+
+            return val.Split(separator).Select( s=> s.Trim() );
+        }
+
         #endregion
 
         #region General Functions

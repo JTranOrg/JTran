@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Expressions;
+using System.Linq;
 
 namespace JTran.UnitTests
 {
@@ -93,6 +94,33 @@ namespace JTran.UnitTests
             var parameters2 = new List<IExpression> { new JTran.Expressions.Value(new { Name = "fred"}) };
 
             Assert.IsFalse(Convert.ToBoolean(func.Evaluate(parameters2, context)));
+        }
+
+        [TestMethod]
+        public void Function_split_Success()
+        {
+            var func       = new Function(new BuiltinFunctions(), "split");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.Value("bob"), new JTran.Expressions.Value(",") };
+
+            var result = func.Evaluate(parameters, context) as IEnumerable<string>;
+
+            Assert.AreEqual(1, result.Count());
+
+            parameters = new List<IExpression> { new JTran.Expressions.Value(""), new JTran.Expressions.Value(",") };
+
+            result = func.Evaluate(parameters, context) as IEnumerable<string>;
+
+            Assert.AreEqual(0, result.Count());
+
+            parameters = new List<IExpression> { new JTran.Expressions.Value(" bob;fred ; george  "), new JTran.Expressions.Value(";") };
+
+           var result2 = (func.Evaluate(parameters, context) as IEnumerable<string>).ToList();
+
+            Assert.AreEqual(3, result2.Count);
+            Assert.AreEqual("bob",    result2[0]);
+            Assert.AreEqual("fred",   result2[1]);
+            Assert.AreEqual("george", result2[2]);
         }
     }
 }

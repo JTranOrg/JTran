@@ -11,7 +11,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>3.2.0</Version>
+    <Version>3.3.0</Version>
     <Title>JTran</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\JTran.Parser\JTran.Parser.csproj" />
+    <ProjectReference Include="..\JTran.Parser\JTran.Parser.csproj" />
   </ItemGroup>
 
 </Project>
