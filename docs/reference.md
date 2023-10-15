@@ -247,10 +247,12 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
 - <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
+- <strong>[exclude](#exclude)</strong> - Outputs the specified expression and excludes the listed properties
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[foreachgroup](#foreachgroup)</strong> - Iterates over an array and creates groups of subarrays
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
+- <strong>[include (as a property)](#include (as a property))</strong> - Outputs the specified properties of an object 
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
 - <strong>[map](#map)</strong> - Maps a set of a keys or expressions to a single output value 
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
@@ -452,6 +454,45 @@ The only purpose of #bind is to change the scope:
     }
 
 The result is that any instruction inside the #bind block will operate on the contents of the Driver object instead of the root object.<br><br>
+
+#### #exclude 
+
+Takes on object and outputs the properties of that object except for those that are listed. If the expression is not an object than a null is returned.
+
+
+###### Transform
+
+    {
+        "Supervisor": #exclude(Employees[Title == 'Supervisor'], Title)":
+    }
+
+###### Source Document
+
+    {
+        Employees:
+        [
+            {
+               FirstName:  "Linda",
+               LastName:   "Smith",
+               Title:      "Supervisor"
+            },
+            {
+               FirstName:  "Jack",
+               LastName:   "Ramirez",
+               Title:      "Lineman"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Supervisor:
+        {
+            FirstName: "Linda",
+            LastName:  "Smith"
+        }
+    }
 
 #### #foreach
 
@@ -718,6 +759,45 @@ You must specify how the included files are loaded when instantiating the transf
             var context = new TransformContext { Arguments = new Dictionary<string, object>() };
 
             return transformer.Transform(source, context);
+        }
+    }
+
+#### #include (as a property)
+
+#include takes on object and outputs only the properties of that object that are listed. If the expression is not an object than a null is returned.
+
+
+###### Transform
+
+    {
+        "Supervisor": #include(Employees[Title == 'Supervisor'], FirstName, LastName)":
+    }
+
+###### Source Document
+
+    {
+        Employees:
+        [
+            {
+               FirstName:  "Linda",
+               LastName:   "Smith",
+               Title:      "Supervisor"
+            },
+            {
+               FirstName:  "Jack",
+               LastName:   "Ramirez",
+               Title:      "Lineman"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Supervisor:
+        {
+            FirstName: "Linda",
+            LastName:  "Smith"
         }
     }
 

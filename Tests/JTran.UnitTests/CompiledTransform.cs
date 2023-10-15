@@ -366,6 +366,23 @@ namespace JTran.UnitTests
             Assert.AreEqual("Boulder", driver.Driver.LastName);
         }
 
+        [TestMethod]
+        public void CompiledTransform_Transform_MultipleIfElse_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformMultipleIfElse);
+            var result      = transformer.Transform("{ Region: 'WA', CurrentRegion: 'WA', PastRegion: 'OR', FutureRegion: 'CA', Subregion: 'Seattle', CurrentSubregion: 'Bellevue',  Region2: 'WA', CurrentRegion2: 'WA', PastRegion2: 'OR', FutureRegion2: 'CA', Subregion2: 'Seattle', CurrentSubregion2: 'Bellevue'    }", null, null);
+
+            Assert.AreNotEqual(_transformMultipleIfElse, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var family = JsonConvert.DeserializeObject<Family>(result);
+
+            Assert.AreEqual("Lance",   family.HusbandFirstName);
+            Assert.AreEqual("Boulder", family.HusbandSurname);
+            Assert.AreEqual("Linda",   family.WifeFirstName);
+            Assert.AreEqual("Baines",  family.WifeSurname);
+        }
+
         #region CopyOf
 
         [TestMethod]
@@ -629,6 +646,42 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(jresult["CanDrive"]);
             Assert.AreEqual("true", jresult["CanDrive"].ToString().ToLower());
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_include_Success()
+        {
+            var transformer = CompiledTransform.Compile(_tranformInclude);
+            var result      = transformer.Transform(_dataSoldiers, null, null);
+
+            Assert.AreNotEqual(_tranformInclude, result);
+            Assert.AreNotEqual(_dataSoldiers, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var platoon = JsonConvert.DeserializeObject<Platoon>(result);
+
+            Assert.AreEqual("Carl",             platoon.PlatoonSergeant.FirstName);
+            Assert.AreEqual("Lipton",           platoon.PlatoonSergeant.LastName);
+            Assert.AreEqual("First Sergeant",   platoon.PlatoonSergeant.Rank);
+            Assert.AreEqual("",                 platoon.PlatoonSergeant.DOB);
+        }
+
+        [TestMethod]
+        public void CompiledTransform_Transform_exclude_Success()
+        {
+            var transformer = CompiledTransform.Compile(_tranformExclude);
+            var result      = transformer.Transform(_dataSoldiers, null, null);
+
+            Assert.AreNotEqual(_tranformExclude, result);
+            Assert.AreNotEqual(_dataSoldiers, result);
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var platoon = JsonConvert.DeserializeObject<Platoon>(result);
+
+            Assert.AreEqual("Carl",             platoon.PlatoonSergeant.FirstName);
+            Assert.AreEqual("Lipton",           platoon.PlatoonSergeant.LastName);
+            Assert.AreEqual("First Sergeant",   platoon.PlatoonSergeant.Rank);
+            Assert.AreEqual("",                 platoon.PlatoonSergeant.DOB);
         }
 
 
@@ -1205,13 +1258,7 @@ namespace JTran.UnitTests
              }
         }";
 
-        private static readonly string _transformRemoveAny =
-        "{\r\n" + 
-        "   \"#variable(punc)\":         ['(', ')', '-', '.', ' ']," +
-        "   Phone:  \"#(removeany(Phone, ['(', ')', '-', '.', ' ']))\"\r\n" + 
-        "}";
-
-       private static readonly string _transformRemoveAny2 =
+        private static readonly string _transformRemoveAny2 =
         "{\r\n" + 
         "   \"#variable(punc)\":" + 
         "   {" + 
@@ -1435,6 +1482,47 @@ namespace JTran.UnitTests
             }
         }";
 
+
+        private static readonly string _transformMultipleIfElse =
+        @"{
+            '#if(Region == CurrentRegion)':
+            {
+                '#if(Subregion == CurrentSubregion)':
+                {
+                    HusbandFirstName:   'Fred',
+                    HusbandSurname:    'Flintstone'
+                },
+                '#else':
+                {
+                    HusbandFirstName:   'Lance',
+                    HusbandSurname:    'Boulder'
+                }
+            },
+            '#else':
+            {
+                HusbandFirstName:   'Frank',
+                HusbandSurname:    'Sands'
+            },
+            '#if(Region2 == CurrentRegion2)':
+            {
+                '#if(Subregion2 == CurrentSubregion2)':
+                {
+                    WifeFirstName:   'Wilma',
+                    WifeSurname:    'Franklin'
+                },
+                '#else':
+                {
+                    WifeFirstName:   'Linda',
+                    WifeSurname:    'Baines'
+                }
+            },
+            '#else(2)':
+            {
+                WifeSurname:   'Francis',
+                WifeSurname:    'Smith'
+            }
+        }";
+
         private static readonly string _transformCopyOf2 =
         @"{
             '#foreach(Cars, Vehicles)':
@@ -1451,6 +1539,33 @@ namespace JTran.UnitTests
             LastName:   '#(LastName)',
             City:       '#($Locations.City)',
             Region:     '#($Locations.Region)'
+        }";
+
+        private class Platoon
+        {
+            public Soldier PlatoonSergeant { get; set; }
+        }
+
+        private class Soldier
+        {
+            public string FirstName { get; set; } = "";
+            public string LastName  { get; set; } = "";
+            public string Rank      { get; set; } = "";
+            public string DOB       { get; set; } = "";
+        }
+
+        private static readonly string _tranformInclude =
+        @"{
+            '#variable(PlatoonSergeant)':   'Lipton',
+
+            PlatoonSergeant:  '#include(Soldiers[LastName == $PlatoonSergeant], LastName, FirstName, Rank)',
+        }";
+
+        private static readonly string _tranformExclude =
+        @"{
+            '#variable(PlatoonSergeant)':   'Lipton',
+
+            PlatoonSergeant:  '#exclude(Soldiers[LastName == $PlatoonSergeant], DOB)',
         }";
 
         private static readonly string _transformDocument2 =
@@ -1511,6 +1626,25 @@ namespace JTran.UnitTests
             },
             MakeField: 'Brand',
             ModelField: 'Model'
+        }";
+
+        private static readonly string _dataSoldiers =
+        @"{
+            Soldiers:
+            [
+                {
+                  FirstName: 'Carl',
+                  LastName: 'Lipton',
+                  Rank:     'First Sergeant',
+                  DOB:      '1921-08-23'
+                },
+                {
+                  FirstName: 'Frank',
+                  LastName:  'Smith',
+                  Rank:      'Sergeant',
+                  DOB:       '1923-03-12'
+                }
+            ]
         }";
 
         private static readonly string _data3 =
@@ -1641,6 +1775,14 @@ namespace JTran.UnitTests
         }";
 
         #endregion
+
+        public class Family
+        {
+            public string HusbandFirstName { get; set; }
+            public string HusbandSurname   { get; set; }
+            public string WifeFirstName    { get; set; }
+            public string WifeSurname      { get; set; }
+        }
 
         public class DriverContainer
         {

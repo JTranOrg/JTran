@@ -48,9 +48,12 @@ namespace JTran.Expressions
         /*****************************************************************************/
         internal Function(object container, MethodInfo method)
         {
+            if(method == null)
+                throw new ArgumentNullException(nameof(method), "A method with that name does not exist");
+
             var name = method.Name.ToLower();
 
-            if(name.StartsWith("___"))
+            if(name.StartsWith("___"))  
                 name = name.Substring(3);
 
             this.Name = name;

@@ -128,15 +128,15 @@ namespace JTran.PerformanceTests
 
         public class Person
         {
-            public string Surname       { get;set; }
-            public string FirstName     { get;set; }
-            public string MiddleName    { get;set; }
-            public string StreetNumber  { get;set; }
-            public string StreetName    { get;set; }
-            public string City          { get;set; }
-            public string State         { get;set; }
-            public string ZipCode       { get;set; }
-            public string Birthdate     { get;set; }
+            public string Surname       { get;set; } = "";
+            public string FirstName     { get;set; } = "";
+            public string MiddleName    { get;set; } = "";
+            public string StreetNumber  { get;set; } = "";
+            public string StreetName    { get;set; } = "";
+            public string City          { get;set; } = "";
+            public string State         { get;set; } = "";
+            public string ZipCode       { get;set; } = "";
+            public string Birthdate     { get;set; } = "";
         }
 
         #region Surnames

@@ -1,3 +1,6 @@
+using System.Linq;
+using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Collections.Generic;
@@ -6,11 +9,6 @@ using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using System.Threading.Tasks;
-
-using MondoCore.Common;
 
 namespace JTran.UnitTests
 {
@@ -438,15 +436,6 @@ namespace JTran.UnitTests
         @"{
              Time: '2020-11-12T01:48:52.00000'
         }";
-
-        private static readonly string _removeany =
-        "{ Phone: \"#(removeany(Phone, ['(', ')', ' ', '.' ]))\" }";
-
-        private static readonly string _removeanyData =
-        @"{
-             Phone: '(555) 456-1234'
-        }";
-
 
         [TestMethod]
         public void Transformer_Transform_null_reference_Succeeds()
@@ -2459,17 +2448,4 @@ namespace JTran.UnitTests
         #endregion
    
     }
-
-    internal static class Extensions
-    {
-        internal static string SubstringBefore(this string str, string find)
-        {
-            var index = str.IndexOf(find);
-
-            if(index == -1)
-                return str;
-
-            return str.Substring(0, index);
-        }
-    } 
 }

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Newtonsoft.Json.Linq;
 using MondoCore.Common;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.Project.UnitTests
 {
@@ -15,10 +14,9 @@ namespace JTran.Project.UnitTests
     public class CompiledProjectTests
     {
         [TestMethod]
-        public void CompiledProject_Load()
+        public async Task CompiledProject_Load()
         { 
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).SubstringBefore("bin");
-
             var project = new JTran.Project.Project
             {
                 Name            = "Test Project",
@@ -43,7 +41,7 @@ namespace JTran.Project.UnitTests
 
             proj.Run(stream);
 
-            var result = stream.ReadString();
+            var result = await stream.ReadStringAsync();
 
             Assert.IsNotNull(result);
 
