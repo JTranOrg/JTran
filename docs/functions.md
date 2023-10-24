@@ -786,15 +786,34 @@ Result is 45<br><br>
 #### General Purpose Functions
 
   - [document](#document)
+  - [coalesce](#coalesce)
+  - [coalescenumber](#coalescenumber)
   - [empty](#empty)
   - [errorcode](#errorcode)
   - [errormessage](#errormessage)
+  - [iif](#iif)
   - [name](#name)
   - [not](#not)
   - [number](#number)
   - [position](#position)
   - [required](#required)
 <br><br>
+
+##### <a id="coalesce">coalesce</a>()
+
+Returns the first parameter that is a non-null, non empty or non whitespace string
+
+    "#(coalesce('', ' ', null, 'bob'))"
+
+Result is "bob"<br><br>
+
+##### <a id="coalescenumber">coalescenumber</a>()
+
+Returns the first parameter that evaluates to a non-zero value. Note that if the value does not evaluate to a number it will be treated as a zero
+
+    "#(coalescenumber('bob', 0, null, 34))"
+
+Result is 34<br><br>
 
 ##### <a id="empty">empty</a>()
 
@@ -814,6 +833,14 @@ Returns the error code thrown from a [#throw](reference.md#throw) directive
 ##### <a id="errormessage">errormessage</a>()
 
 Returns the error message thrown from a [#throw](reference.md#throw) directive
+
+##### <a id="iif">iif</a>()
+
+Evaluates the first parameter as a condition and returns the second parameter if true otherwise the third
+
+    "#(iif(7 == 8, 'frank', 'bob'))"
+
+Result is "bob"<br><br>
 
 ##### <a id="name">name</a>()
 

@@ -700,7 +700,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_wFunction_Success()
         {
-            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(sort(Customers, Name), Persons)", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(sort(Customers, Name, City), Persons)", new List<bool> {false, true} );
 
             Assert.AreEqual(2,                       parms.Count);
             Assert.IsTrue(parms[0] is IExpression);
@@ -1035,6 +1035,93 @@ namespace JTran.UnitTests
             Assert.AreEqual("Linda",        driver.Driver.Cousin);
         }
 
+        [TestMethod]
+        public void CompiledTransform_Transform_function_sort_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformSort);
+            var result      = transformer.Transform(_dataSort, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformSort, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+        }
+        
+        [TestMethod]
+        public void CompiledTransform_Transform_function_coalesce_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCoalesce);
+            var result      = transformer.Transform(_dataCoalesce, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformCoalesce, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+
+            Assert.AreEqual("Frank", jobj["Driver"].ToString());
+        }   
+        
+        [TestMethod]
+        public void CompiledTransform_Transform_function_coalescenumber_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformCoalesceNumber);
+            var result      = transformer.Transform(_dataCoalesceNumber, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformCoalesceNumber, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+
+            Assert.AreEqual(33d, double.Parse(jobj["Driver"].ToString()));
+        }
+        
+        [TestMethod]
+        public void CompiledTransform_Transform_function_iif_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformIIf);
+            var result      = transformer.Transform(_dataIIf, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformIIf, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+
+            Assert.AreEqual("Wilma", jobj["Driver"]!.ToString());
+        }
+        
+        [TestMethod]
+        public void CompiledTransform_Transform_function_iif2_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformIIf2);
+            var result      = transformer.Transform(_dataIIf, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformIIf2, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+
+            Assert.AreEqual("Fred", jobj["Driver"]!.ToString());
+        }
+        
+        [TestMethod]
+        public void CompiledTransform_Transform_function_singleitem_Success()
+        {
+            var transformer = CompiledTransform.Compile(_transformSingleItem);
+            var result      = transformer.Transform(_dataSingleItem, null, Transformer.CompileFunctions(null));
+
+            Assert.AreNotEqual(_transformSingleItem, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+
+            Assert.AreEqual("Wilma", jobj["Driver"]!.ToString());
+        }
         
         /*[TestMethod] public void CompiledTransform_Transform_function_removeany_Success()
         {
@@ -1389,6 +1476,55 @@ namespace JTran.UnitTests
             }
         }";
 
+        private static readonly string _transformCoalesce =
+        @"{
+            Driver:  '#(coalesce(Monday, null, Tuesday, Wednesday))' 
+          }";
+
+        private static readonly string _transformCoalesceNumber =
+        @"{
+            Driver:  '#(coalescenumber(Monday, null, Tuesday, Wednesday))' 
+          }";
+
+        private static readonly string _transformIIf =
+        @"{
+            '#variable(Blah)': 'Blah',
+            '#variable(checkthis)': 'Blah',
+
+             Driver:  '#(iif($checkthis == $Blah, Monday, Wednesday))' 
+          }";
+
+        private static readonly string _transformIIf2 =
+        @"{
+            '#variable(Blah)': 'Blah',
+            '#variable(checkthis)': 'Blah',
+
+             Driver:  '#(iif($checkthis != $Blah, Monday, Wednesday))' 
+          }";
+
+        private static readonly string _transformSingleItem =
+        @"{
+            '#variable(Wilma)': 'Wilma',
+
+             Driver:  '#(Drivers[Name == $Wilma].Name)' 
+          }";
+
+        private static readonly string _transformSort =
+        @"{
+            '#variable(sortBy)': 'Name',
+            Drivers:  '#(sort(Drivers, $sortBy))' 
+          }";
+
+        private static readonly string _dataSort =
+        @"{
+            Drivers:
+            [
+                { 'Name': 'Ted' },
+                { 'Name': 'Bob' },
+                { 'Name': 'Linda' }
+            ]
+          }";
+
         private static readonly string _transformVariable =
         @"{
             Driver:  
@@ -1613,6 +1749,24 @@ namespace JTran.UnitTests
             }
         }";
 
+        private static readonly string _dataIIf =
+        @"{
+            Monday:    'Wilma',
+            Wednesday: 'Fred'
+        }";
+
+        private static readonly string _dataCoalesce =
+        @"{
+            Monday:    ' ',
+            Wednesday: 'Frank'
+        }";
+
+        private static readonly string _dataCoalesceNumber =
+        @"{
+            Monday:    0,
+            Wednesday: 33
+        }";
+
         private static readonly string _data2 =
         @"{
             FirstName: 'John',
@@ -1626,6 +1780,23 @@ namespace JTran.UnitTests
             },
             MakeField: 'Brand',
             ModelField: 'Model'
+        }";
+
+        private static readonly string _dataSingleItem =
+        @"{
+            Drivers:
+            [
+                {
+                  Name:     'Wilma',
+                  Rank:     2,
+                  DOB:      '1991-08-23'
+                },
+                {
+                  Name:     'Fred',
+                  Rank:     8,
+                  DOB:      '1989-04-17'
+                }
+            ]
         }";
 
         private static readonly string _dataSoldiers =

@@ -690,12 +690,6 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object coalesce(object primary, object secondary, object tertiary)
-        {
-            return primary != null ? primary : (secondary != null ? secondary : tertiary);
-        }
-
-        /*****************************************************************************/
         public IList<object> sequence(object from, object to, object increment)
         {
             if(!decimal.TryParse(from.ToString(), out decimal dFrom))
@@ -723,6 +717,45 @@ namespace JTran.Expressions
             }
              
             return list;
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public string coalesce(string primary, params string[] fields)
+        {
+            if(!string.IsNullOrWhiteSpace(primary))
+                return primary.Trim();
+
+            foreach(string field in fields)
+                if(!string.IsNullOrWhiteSpace(field))
+                    return field.Trim();
+               
+            return "";
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public double coalescenumber(string primary, params string[] fields)
+        {
+            if(double.TryParse(primary, out double d))
+                if(d != 0d)
+                    return d;
+
+            foreach(string field in fields)
+            {
+                if(double.TryParse(field, out double d2))
+
+                if(d2 != 0d)
+                    return d2;
+            }
+
+            return 0d;
+        }
+
+        /*****************************************************************************/
+        public object iif(bool condition, object first, object second)
+        {
+            return condition ? first : second;  
         }
 
         #endregion
