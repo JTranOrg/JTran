@@ -36,6 +36,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Function_coalesce_Success()
+        {
+            var func       = new Function(new BuiltinFunctions(), "coalesce");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.Value(null), new JTran.Expressions.Value(""), new JTran.Expressions.Value("frank") };
+
+            var result = func.Evaluate(parameters, context);
+
+            Assert.AreEqual("frank", result);
+        }
+
+        [TestMethod]
         [DataRow("0", true)]
         [DataRow("1", false)]
         [DataRow("-123232", false)]

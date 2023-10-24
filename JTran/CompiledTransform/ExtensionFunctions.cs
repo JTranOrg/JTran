@@ -39,7 +39,7 @@ namespace JTran
 
                 foreach(var func in list)
                 {
-                    var key = CreateKey(func.Name, func.NumParams);
+                    var key = CreateKey(func.Name, func.IgnoreParams ? -1 : func.NumParams);
 
                     if(!_functions.ContainsKey(key))
                         _functions.Add(key, func);
@@ -55,13 +55,26 @@ namespace JTran
             if(_functions.ContainsKey(key))
                 return _functions[key];
 
+            key = CreateKey(name, -1);
+
+            if(_functions.ContainsKey(key))
+            {
+                var fn = _functions[key];
+
+                if(fn.IgnoreParams) 
+                    return fn;
+            }
+
             return null;
         }
 
         /*****************************************************************************/
         private string CreateKey(string name, int numParams)
         {
-            if(name == "document" || name == "sort")
+            if(numParams == -1) 
+                return name;
+
+            if(name == "document" || name == "sort" || name == "coalesce")
                 return name;
 
             return name + "_" + numParams;

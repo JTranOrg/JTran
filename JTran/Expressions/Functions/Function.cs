@@ -57,8 +57,9 @@ namespace JTran.Expressions
                 name = name.Substring(3);
 
             this.Name = name;
+            this.IgnoreParams = method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(IgnoreParameterCount)))?.Any() ?? false;
 
-            if(method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(IgnoreParameterCount)))?.Any() ?? false)
+            if(this.IgnoreParams)
                 this.NumParams = 0;
             else
                 this.NumParams = method.GetParameters().Where( p=> !p.HasDefaultValue ).Count();
@@ -99,8 +100,9 @@ namespace JTran.Expressions
             return list;
         }
 
-        internal string Name      { get; }
-        internal int    NumParams { get; }
+        internal string Name         { get; }
+        internal int    NumParams    { get; }
+        internal bool   IgnoreParams { get; }
 
         /*****************************************************************************/
         private IList<(ParameterInfo, Type)> GetMethodParameters(int numPassedIn, out int indexOfParams, out Type paramsType)
@@ -193,16 +195,16 @@ namespace JTran.Expressions
         private object CreateTypedArray(Type elementType, IList<object> values)
         {
             if(elementType.Name == "String")
-                return (new List<string>(values.Select( v=> v.ToString()))).ToArray();
+                return (new List<string>(values.Select( v=> v?.ToString()))).ToArray();
 
             if(elementType.Name == "Decimal")
-                return (new List<decimal>(values.Select( v=> decimal.Parse(v.ToString())))).ToArray();
+                return (new List<decimal>(values.Select( v=> decimal.Parse(v?.ToString() ?? "0")))).ToArray();
 
             if(elementType.Name == "Long")
-                return (new List<long>(values.Select( v=> long.Parse(v.ToString())))).ToArray();
+                return (new List<long>(values.Select( v=> long.Parse(v?.ToString() ?? "0")))).ToArray();
 
             if(elementType.Name == "Integer")
-                return (new List<int>(values.Select( v=> int.Parse(v.ToString())))).ToArray();
+                return (new List<int>(values.Select( v=> int.Parse(v?.ToString() ?? "0")))).ToArray();
 
             return values.ToArray();
         }
