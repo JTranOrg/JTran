@@ -369,7 +369,7 @@ namespace JTran.Expressions
             var index = val.IndexOf(substr);
 
             if(index == -1)
-                return "";
+                return val;
  
             return val.Substring(0, index);
         }

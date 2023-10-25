@@ -1432,75 +1432,72 @@ namespace JTran
             var result = _expression.Evaluate(context);
 
             // If the result of the expression is an array
-            if(result is IEnumerable<object> list)
+            if(!(result is IEnumerable<object> list))
             { 
-                // Get the groups
-                var groupBy = _groupBy.Evaluate(context).ToString().Trim();
+                list = new List<object> { result };
+            }
 
-                var groups = list.GroupBy
-                (
-                    (item)=> item.GetSingleValue(groupBy, null),
-                    (item)=> item,
-                    (groupValue, items) => { 
-                                                IDictionary<string, object> item = new ExpandoObject(); 
+            // Get the groups
+            var groupBy = _groupBy.Evaluate(context).ToString().Trim();
+
+            var groups = list.GroupBy
+            (
+                (item)=> item.GetSingleValue(groupBy, null),
+                (item)=> item,
+                (groupValue, items) => { 
+                                            IDictionary<string, object> item = new ExpandoObject(); 
                                                     
-                                                item[groupBy] = groupValue; 
-                                                item["__groupItems"] = items; 
+                                            item[groupBy] = groupValue; 
+                                            item["__groupItems"] = items; 
                                                     
-                                                return item as ExpandoObject; 
-                                            }
-                );
+                                            return item as ExpandoObject; 
+                                        }
+            );
 
-                var numGroups = groups.Count();
+            var numGroups = groups.Count();
 
-                if(numGroups == 0)
-                    return;
+            if(numGroups == 0)
+                return;
 
-                wrap( ()=>
-                { 
-                    // Check to see if we're outputting to an array
-                    if(_name != null)
-                    {
-                        var arrayName = _name.Evaluate(context).ToString().Trim();
+            wrap( ()=>
+            { 
+                // Check to see if we're outputting to an array
+                if(_name != null)
+                {
+                    var arrayName = _name.Evaluate(context).ToString().Trim();
                 
-                        output.WriteContainerName(arrayName);
-                        output.StartArray();
-                    }
+                    output.WriteContainerName(arrayName);
+                    output.StartArray();
+                }
 
-                    // Iterate thru the groups
-                    foreach(var groupScope in groups)
+                // Iterate thru the groups
+                foreach(var groupScope in groups)
+                {
+                    var newContext = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
+
+                    newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
+
+                    base.Evaluate(output, newContext, (fnc)=>
                     {
-                        var newContext = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
-
-                        newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
-
-                        base.Evaluate(output, newContext, (fnc)=>
-                        {
-                            output.StartChild();
-                            output.StartObject();
+                        output.StartChild();
+                        output.StartObject();
                         
-                            fnc();
+                        fnc();
 
-                            output.EndObject();
-                            output.EndChild();
-                       });
+                        output.EndObject();
+                        output.EndChild();
+                    });
 
-                    }
+                }
 
-                    if(_name != null)
-                    { 
-                        output.EndArray();
-                        output.WriteRaw("\r\n");
-                    }                    
-                });
-            }
-            else 
-            {
-                // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions), wrap);
-            }
+                if(_name != null)
+                { 
+                    output.EndArray();
+                    output.WriteRaw("\r\n");
+                }                    
+            });
         }
-   }
+    }
 
     /****************************************************************************/
     /****************************************************************************/

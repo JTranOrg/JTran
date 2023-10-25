@@ -1014,6 +1014,30 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_substringbefore_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("substringbefore('beebop', 'bop')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("bee", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_function_substringbefore2_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("substringbefore('beebop', '/')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual("beebop", expression.Evaluate(context));
+        }
+
+        [TestMethod]
         public void Compiler_function_substringafter_Success()
         {
             var parser     = new JTranParser();
