@@ -1,0 +1,13 @@
+{
+  "#variable(drivers)": "#(drivers)",
+
+  "#foreachgroup($drivers, Make, Makes)": 
+  {
+    "Make":  "#(Make)",
+  
+    "#foreach(currentgroup(), Drivers)":
+    {
+        "#(noobject)": "#copyof(@)"
+    }
+  }
+}

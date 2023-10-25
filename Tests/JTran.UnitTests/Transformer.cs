@@ -542,6 +542,24 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
         }
 
+        [TestMethod]
+        public void Transformer_Transform_ForEachGroup_variables_Success()
+        {
+            var transformer = new JTran.Transformer(_transformForEachGroup2, null);
+            var result      = transformer.Transform(_dataForEachGroup1);
+   
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup2), JObject.Parse(result)));
+        }
+
+        [TestMethod]
+        public void Transformer_Transform_ForEachGroup_variable2s_Success()
+        {
+            var transformer = new JTran.Transformer(LoadSample("only1_group.jtran"), null);
+            var result      = transformer.Transform(LoadSample("only1_group.json"));
+   
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup3), JObject.Parse(result)));
+        }
+
         #endregion
 
         #region Template
@@ -1792,6 +1810,23 @@ namespace JTran.UnitTests
                 }
              }
         }";
+     
+        private static readonly string _transformForEachGroup2 =
+        @"{
+            '#variable(Pontiac)':    'Pontiac',
+            '#variable(Drivers)':    '#(Drivers[Make != $Pontiac])',
+
+            '#foreachgroup($Drivers, Make, Makes)':
+            {
+                'Make': '#(Make)',
+
+                '#foreach(currentgroup(), Drivers)':
+                {
+                    Name:  '#(Name)',
+                    Model: '#(Model)'
+                }
+             }
+        }";
 
         private static readonly string _resultForEachGroup1 = 
         @"{
@@ -1822,6 +1857,66 @@ namespace JTran.UnitTests
                         {
                             Name:      'Amanda Ramirez',
                             Model:     'GTO',
+                        }
+                    ]
+                },
+                {
+                    Make:      'Audi',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'William Lee',
+                            Model:     'RS5',
+                        }
+                    ]
+                }
+            ]
+        }";
+
+        private static readonly string _resultForEachGroup2 = 
+        @"{
+            Makes:
+            [
+                {
+                    Make:      'Chevy',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'John Smith',
+                            Model:     'Corvette',
+                        },
+                        {
+                            Name:      'Mary Anderson',
+                            Model:     'Camaro',
+                        }
+                    ]
+                },
+                {
+                    Make:      'Audi',
+                    Drivers:   
+                    [
+                        {
+                            Name:      'William Lee',
+                            Model:     'RS5',
+                        }
+                    ]
+                }
+            ]
+        }";
+
+        private static readonly string _resultForEachGroup3 = 
+        @"{
+            Makes:
+            [
+                {
+                    Make:      'Chevy',
+                    Drivers:   
+                    [
+                        {
+                            'Name':  'Joan Baez',
+                            'Make':  'Chevy',
+                            'Model': 'Corvette',
+                            'Year':  1956
                         }
                     ]
                 }
@@ -2359,6 +2454,13 @@ namespace JTran.UnitTests
                     Year:      1971,
                     Color:     'Black'
                 },
+                {
+                    Name:      'William Lee',
+                    Make:      'Audi',
+                    Model:     'RS5',
+                    Year:      2023,
+                    Color:     'Red'
+                }
             ]
         }";
 
@@ -2439,6 +2541,14 @@ namespace JTran.UnitTests
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests)).Location).SubstringBefore("\\bin");
             var path = Path.Combine(assemblyPath, "Transforms", name + ".jtran");
+
+            return File.ReadAllText(path);
+        }
+
+        public static string LoadSample(string name)
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests)).Location).SubstringBefore("\\bin");
+            var path = Path.Combine(assemblyPath, "Samples", name);
 
             return File.ReadAllText(path);
         }
