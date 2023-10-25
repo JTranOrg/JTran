@@ -1,0 +1,56 @@
+{
+  "#variable(manifest)":            "#(manifest)",
+  "#variable(dws)":                 "#(dws)",
+  "#variable(CommodityCodes)":      "#(document(cargo, commoditycodemap.csv))",
+  "#variable(OriginalWeightUnit)":  "#(dws.unit_of_measures.weight)",
+  "#variable(WeightUnit)":
+  {
+    "#if($OriginalWeightUnit == 'kg')":       "lb",
+    "#elseif($OriginalWeightUnit == 'lbs')":  "lb",
+    "#else":                                  "#($OriginalWeightUnit)"
+  },
+
+  "#foreach(dws.dws_units, containers)": 
+  {
+    "#variable(uld)":         "#(uld)",
+    "#variable(shipments)":   "#($manifest[cart == $uld])",
+
+    "Count":                     "#(count($shipments))",
+    "Id":                     "#(uld)",
+    "Destination":            "#(pou)",
+    "IsCart":                 "#(temporary_container)",
+    "Pieces":                 "#(sum($shipments.pieces))",
+    "GrossWeight":            "#(gross_weight)",
+    "TotalWeight":            "#(coalescenumber(actual_weight, gross_weight))",
+    "Tare":                   "#(tare_weight)",
+
+    "#if(count($shipments) != 0)": 
+    {
+      "#foreachgroup($shipments, commodity_code, CommodityGroups)": 
+      {
+        "CommodityCode":  "#(commodity_code)",
+        "NumItems":  "#(count(currentgroup()))",
+
+        "#bind(currentgroup())": 
+        {
+          "Pieces":         "#(sum(pieces))",
+          "TotalWeight":    "#(sum(weight))"
+        },
+
+        "#foreach(currentgroup(), Airwaybills)":
+        {
+            "#(noobject)":    "#copyof(@)"
+        }
+      }
+    }
+  },
+
+  "#function(WeightConversion, Weight, UnitOfMeasure)":
+  {
+    "return":
+    {
+      "#if($UnitOfMeasure == 'kg')": "#(ceiling($Weight * 2.20462262 * 1000) / 1000)",
+      "#else": "#($Weight)"
+    }
+  }
+}
