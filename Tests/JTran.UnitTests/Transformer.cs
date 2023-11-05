@@ -345,6 +345,19 @@ namespace JTran.UnitTests
          "        Address:     '#(Address)'," + 
          "        '#break':     ''" + 
          "    }" + 
+         "}";        
+         
+         private static readonly string _transformForEachContinue =
+        "{" + 
+        "      '#variable(John)': 'John'," + 
+         "    '#foreach(Customers, Customers)':" + 
+         "    {" + 
+         "        '#if(Name == $John)': '#continue'," + 
+         "        LastName:    '#(Surname)'," + 
+         "        FirstName:   '#(Name)'," + 
+         "        Age:         '#(Age)'," + 
+         "        Address:     '#(Address)'" + 
+         "    }" + 
          "}";
 
         #endregion
@@ -575,6 +588,57 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
         }
 
+        #region Call template with variable
+
+        [TestMethod]
+        [TestCategory("Template")]
+        public void Transformer_Transform_Template_var_Success()
+        {
+            var transformer = new JTran.Transformer(_transformTemplateVar, null);
+            var result      = transformer.Transform(_dataForEachCars);
+   
+            Assert.AreNotEqual(_transformTemplateVar, _dataForEachCars);
+        }
+
+        private static readonly string _transformTemplateVar =
+        @"{
+             '#variable(mycars)': '#(Cars)',
+
+             '#template(cars, somecars)': 
+             {
+                '#foreach($somecars, Cars)':
+                {
+                   '#noobject': '#copyof(@)'
+                }
+             },
+
+            '#calltemplate(cars)':
+            {
+                somecars: '#($mycars)'
+            }
+        }";
+
+        private static readonly string _dataForEachCars = 
+        @"{
+            Cars:
+            [
+                {
+                    Make:      'Chevy',
+                    Model:     'Corvette',
+                    Year:      1964,
+                    Color:     'Blue'
+                },
+                {
+                    Make:      'Pontiac',
+                    Model:     'Firebird',
+                    Year:      1964,
+                    Color:     'Blue'
+                }
+            ]
+        }";
+
+        #endregion
+
         [TestMethod]
         [TestCategory("Template")]
         public void Transformer_Transform_Template_aftercall_Success()
@@ -607,9 +671,6 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformTemplateTwice, _dataForEachGroup1);
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ First: { FirstName: \"bob\", Year: 1965 },  Second: { FirstName: \"fred\", Year: 1965 } }"), JObject.Parse(result)));
         }
-
-        
-
 
         private static readonly string _transformTemplate2 =
         @"{

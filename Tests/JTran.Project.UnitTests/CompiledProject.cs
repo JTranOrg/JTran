@@ -4,8 +4,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MondoCore.Common;
 using Newtonsoft.Json.Linq;
+
+using JTran.UnitTests;
 
 namespace JTran.Project.UnitTests
 {

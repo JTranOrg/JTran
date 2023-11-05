@@ -263,6 +263,7 @@ Result is 'bob'<br><br>
 - [floor](#floor)
 - [pi](#pi)
 - [pow](#pow)
+- [precision](#precision)
 - [round](#round)
 - [sqrt](#sqrt)
 - Trigonometric Functions
@@ -296,6 +297,23 @@ Result is 4<br><br>
 
 Returns the value of pi
 
+##### <a id="pow">pow</a>(expr)
+
+Returns the value of the given base to a power
+
+    #(pow(10, 3))
+
+Result is 1000<br><br>
+
+##### <a id="precision">precision</a>(expr)
+
+Reduces the precision of the given decimal value to the the given numbe of decimal places
+
+
+    #(precision(12.7342, 2))
+
+Result is 12.73
+
 ##### <a id="round">round</a>(expr)
 
 Rounds off the given val
@@ -307,7 +325,6 @@ Result is 4
     #(round(4.5))
 
 Result is 5<br><br>
-
 
 #### Aggregate and Array Functions
 
@@ -819,11 +836,11 @@ Result is 34<br><br>
 
 Returns true if the specified expression is "empty". An expression is empty in the following cases:
 
-* If the property or object does not exists
+* If the property or object does not exist
 * If the property or object is null
 * If the property is a string and is empty or contains only whitespace
 * If the property is a number and the value is zero
-* If the item is an object and contains no children
+* If the item is an object and has no properties
 * If the item is an array and the array is empty (length == 0)
 
 ##### <a id="errorcode">errorcode</a>()
