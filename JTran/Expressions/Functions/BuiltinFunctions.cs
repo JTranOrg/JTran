@@ -87,6 +87,20 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public object precision(object val, int numPlaces)
+        {
+            if(val == null)
+                return null;
+
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+                return null;
+
+            var multiplier = (decimal)Math.Pow(10, numPlaces);
+
+            return Math.Floor(dVal * multiplier) / multiplier;
+        }
+
+        /*****************************************************************************/
         public object abs(object val)
         {
             if(val == null)

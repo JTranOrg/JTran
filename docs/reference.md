@@ -242,6 +242,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[array](#array)</strong> - Outputs an array 
 - <strong>[arrayitem](#arrayitem)</strong> - Outputs an array item
 - <strong>[bind](#bind)</strong> - Changes the scope to a new object
+- <strong>[break](#break)</strong> - Breaks out of the the current iteration in a foreach loop
 - <strong>[calltemplate](#Templates)</strong> - Calls a template
 - <strong>[catch](#trycatch)</strong> - Part of a try/catch block
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
@@ -454,6 +455,49 @@ The only purpose of #bind is to change the scope:
     }
 
 The result is that any instruction inside the #bind block will operate on the contents of the Driver object instead of the root object.<br><br>
+
+#### #break
+
+Stops the processing of a #foreach:
+
+###### Transform
+
+   {
+     "#foreach(Cars, Cars)": 
+     {  
+       "Make":    "#(Surname)",
+       "Model:    "#(Name)", 
+       "#break":  "" 
+     }
+   }
+
+###### Source Document
+
+    {
+      Cars:
+      [
+        {
+           Make: "Chevy",
+           Model: "Corvette"
+        },
+        {
+           Make: "Pontiac",
+           Model: "Firebird"
+        }
+      ]
+    }
+
+    ###### Output
+
+    {
+      Cars:
+      [
+        {
+           Make: "Chevy",
+           Model: "Corvette"
+        }
+      ]
+    }
 
 #### #exclude 
 

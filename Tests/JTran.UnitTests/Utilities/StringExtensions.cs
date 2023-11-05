@@ -4,9 +4,9 @@ using System.Text;
 
 namespace JTran.UnitTests
 {
-    internal static class StringExtensions
+    public static class StringExtensions
     {
-        internal static string SubstringBefore(this string val, string before)
+        public static string SubstringBefore(this string val, string before)
         {
             var index = val.IndexOf(before);
 

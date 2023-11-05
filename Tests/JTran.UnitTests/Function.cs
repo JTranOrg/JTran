@@ -48,6 +48,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Function_precision_Success()
+        {
+            var func       = new Function(new BuiltinFunctions(), "precision");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7345M), new JTran.Expressions.NumberValue(2) };
+
+            var result = (decimal)func.Evaluate(parameters, context);
+
+            Assert.AreEqual(12.73M, result);
+        }
+
+        [TestMethod]
         [DataRow("0", true)]
         [DataRow("1", false)]
         [DataRow("-123232", false)]
