@@ -1,0 +1,9 @@
+{
+    "#foreach(Customers.Residents.Humans, Customers)":
+    {
+        "LastName":    "#(///Surname)",
+        "FirstName":   "#(Name)",
+        "Age":         "#(Age)",
+        "Address":     "#(///Address)"
+    }
+}

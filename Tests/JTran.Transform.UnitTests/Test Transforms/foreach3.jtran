@@ -1,0 +1,9 @@
+{
+  "#foreach(Customers[Surname == 'Anderson'], Customers)":
+  {
+    "LastName":   "#(required(Surname, 'Surname is required'))",
+    "FirstName":  "#(Name)",
+    "Age":        "#(Age)",
+    "Address":    "#(Address)"
+  }
+}

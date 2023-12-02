@@ -1,0 +1,41 @@
+{
+  Customers:
+  [
+    {
+      Surname: "Smith",
+      Address: "123 Elm St",
+      Residents:
+      {
+        Humans:
+        [
+          {
+            Name: "John",
+            Age: 34
+          },
+          {
+            Name: "Mary",
+            Age: 32
+          }
+        ]
+      }
+    },
+    {
+      Surname: "Anderson",
+      Address: "375 Maple Ave",
+      Residents:
+      {
+        Humans:
+        [
+          {
+            Name: "Fred",
+            Age: 41
+          },
+          {
+            Name: "Linda",
+            Age: 39
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "SpecialCustomer": "#(last(Customers.Residents).Name)",
+  "#foreach(Customers.Residents, Customers)":
+  {
+    "LastName":   "#(//Surname)",
+    "FirstName":  "#(Name)",
+    "Age":        "#(Age)",
+    "Address":    "#(//Address)"
+  }
+}
