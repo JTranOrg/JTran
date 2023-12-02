@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
 
@@ -22,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
     <ProjectReference Include="..\..\JTran.Parser\JTran.Parser.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>

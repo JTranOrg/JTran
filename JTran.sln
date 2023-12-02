@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Parser.UnitTests", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Parser", "JTran.Parser\JTran.Parser.csproj", "{849BB978-09AC-414B-BFA4-8288748D6607}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Common", "JTran.Common\JTran.Common.csproj", "{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Transform.UnitTests", "Tests\JTran.Transform.UnitTests\JTran.Transform.UnitTests.csproj", "{3363902B-2E4A-4377-81DA-2F62D0DEA851}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +88,14 @@ Global
 		{849BB978-09AC-414B-BFA4-8288748D6607}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{849BB978-09AC-414B-BFA4-8288748D6607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{849BB978-09AC-414B-BFA4-8288748D6607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +107,7 @@ Global
 		{20D1B2B4-A6DD-4F63-BA95-58E1F305F61E} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
 		{FCD93688-2288-4951-B271-6BE475E518E4} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
 		{5CDF702B-BE08-477D-A2F6-15110D2C26E5} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
+		{3363902B-2E4A-4377-81DA-2F62D0DEA851} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {95B81A49-7C69-455E-9627-6FF789B1A697}

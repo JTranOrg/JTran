@@ -1,0 +1,29 @@
+{
+  "Customers":
+  [
+    {
+      "Surname":  "Smith",
+      "Address":  "123 Elm St",
+      "Name":     "John",
+      "Age":      34
+    },
+    {
+      "Surname":  "Smith",
+      "Address":  "123 Elm St",
+      "Name":     "Mary",
+      "Age":      32
+    },
+    {
+      "Surname":  "Anderson",
+      "Address":  "375 Maple Ave",
+      "Name":     "Fred",
+      "Age":      41
+    },
+    {
+      "Surname":  "Anderson",
+      "Address":  "375 Maple Ave",
+      "Name":     "Linda",
+      "Age":      39
+    }
+  ]
+}

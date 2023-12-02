@@ -10,6 +10,8 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using JTran.Common;
+
 namespace JTran.UnitTests
 {
     [TestClass]
@@ -35,96 +37,6 @@ namespace JTran.UnitTests
         }
 
         #region ForEach
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEach1, null);
-            var result      = transformer.Transform(_data2);
-   
-            Assert.AreNotEqual(_transformForEach1, _data2);
-
-            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
-
-            Assert.AreEqual("Linda",              customers.SpecialCustomer);
-            Assert.AreEqual(4,               customers.Customers.Count);
-            Assert.AreEqual("John",          customers.Customers[0].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[0].LastName);
-            Assert.AreEqual(34,              customers.Customers[0].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[0].Address);
-                                             
-            Assert.AreEqual("Mary",          customers.Customers[1].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[1].LastName);
-            Assert.AreEqual(32,              customers.Customers[1].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[1].Address);
-                                             
-            Assert.AreEqual("Fred",          customers.Customers[2].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[2].LastName);
-            Assert.AreEqual(41,              customers.Customers[2].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[2].Address);
-                                             
-            Assert.AreEqual("Linda",         customers.Customers[3].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[3].LastName);
-            Assert.AreEqual(39,              customers.Customers[3].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[3].Address);
-        }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach2_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEach2, null);
-            var result      = transformer.Transform(_data3);
-   
-            Assert.AreNotEqual(_transformForEach2, _data3);
-
-            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
-
-            Assert.AreEqual(4,               customers.Customers.Count);
-            Assert.AreEqual("John",          customers.Customers[0].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[0].LastName);
-            Assert.AreEqual(34,              customers.Customers[0].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[0].Address);
-                                             
-            Assert.AreEqual("Mary",          customers.Customers[1].FirstName);
-            Assert.AreEqual("Smith",         customers.Customers[1].LastName);
-            Assert.AreEqual(32,              customers.Customers[1].Age);
-            Assert.AreEqual("123 Elm St",    customers.Customers[1].Address);
-                                             
-            Assert.AreEqual("Fred",          customers.Customers[2].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[2].LastName);
-            Assert.AreEqual(41,              customers.Customers[2].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[2].Address);
-                                             
-            Assert.AreEqual("Linda",         customers.Customers[3].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[3].LastName);
-            Assert.AreEqual(39,              customers.Customers[3].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[3].Address);
-        }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach3_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEach3, null);
-            var result      = transformer.Transform(_data4, null);
-   
-            Assert.AreNotEqual(_transformForEach3, _data4);
-
-            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
-
-            Assert.AreEqual(2,               customers.Customers.Count);
-            Assert.AreEqual("Fred",          customers.Customers[0].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[0].LastName);
-            Assert.AreEqual(41,              customers.Customers[0].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[0].Address);
-                                             
-            Assert.AreEqual("Linda",         customers.Customers[1].FirstName);
-            Assert.AreEqual("Anderson",      customers.Customers[1].LastName);
-            Assert.AreEqual(39,              customers.Customers[1].Age);
-            Assert.AreEqual("375 Maple Ave", customers.Customers[1].Address);
-        }
 
         [TestMethod]
         [TestCategory("ForEach")]
@@ -197,80 +109,6 @@ namespace JTran.UnitTests
             var dodgeModel = json["Owner"]["Cars"]["Dodge"]["Model"];
 
             Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
-        }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach_break_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEachBreak, null);
-            var result      = transformer.Transform(_data4, null);
-   
-            Assert.AreNotEqual(_transformForEachBreak, _data4);
-
-            var customers = JsonConvert.DeserializeObject<CustomerContainer>(result);
-
-            Assert.AreEqual(1,       customers.Customers.Count);
-            Assert.AreEqual("John",  customers.Customers[0].FirstName);
-            Assert.AreEqual("Smith", customers.Customers[0].LastName);
-        }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public async Task Transformer_Transform_ForEach_list_Success()
-        {
-            var list = new List<Automobile>
-            {
-                new Automobile
-                {
-                    Make  = "Chevrolet",
-                    Model = "Corvette",
-                    Year  = 1956,
-                    Color = "Blue",
-                },
-                new Automobile
-                {
-                    Make  = "Pontiac",
-                    Model = "Firebird",
-                    Year  = 1969,
-                    Color = "Green",
-                },
-                new Automobile
-                {
-                    Make  = "Chevrolet",
-                    Model = "Camaro",
-                    Year  = 1970,
-                    Color = "Black",
-                }
-            };
-
-            var transformer = new JTran.Transformer(_transformList, null);
-            var result = "";
-
-            using(var output = new MemoryStream())
-            { 
-                transformer.Transform(list, "Automobiles", output);
-
-                result = await output.ReadStringAsync();
-            }
-
-            var owner = JsonConvert.DeserializeObject<Owner2>(result);
-
-            Assert.IsNotNull(owner);
-            Assert.IsNotNull(owner.Cars);
-            Assert.AreEqual(3, owner.Cars.Count);
-
-            Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
-            Assert.AreEqual("Corvette",  owner.Cars[0].Model);
-            Assert.AreEqual(1956,        owner.Cars[0].Year);
-
-            Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
-            Assert.AreEqual("Firebird",  owner.Cars[1].Model);
-            Assert.AreEqual(1969,        owner.Cars[1].Year);
-
-            Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
-            Assert.AreEqual("Camaro",    owner.Cars[2].Model);
-            Assert.AreEqual(1970,        owner.Cars[2].Year);
         }
 
         private IEnumerable<Automobile> GetList()
@@ -1619,40 +1457,6 @@ namespace JTran.UnitTests
                 Make: '#(Car.Make)'
         }";
 
-       private static readonly string _transformForEach1 =
-        @"{
-            'SpecialCustomer':    '#(last(Customers.Residents).Name)',
-            '#foreach(Customers.Residents, Customers)':
-            {
-                LastName:    '#(//Surname)',
-                FirstName:   '#(Name)',
-                Age:         '#(Age)',
-                Address:     '#(//Address)'
-            }
-        }";
-
-        private static readonly string _transformForEach2 =
-        @"{
-            '#foreach(Customers.Residents.Humans, Customers)':
-            {
-                LastName:    '#(///Surname)',
-                FirstName:   '#(Name)',
-                Age:         '#(Age)',
-                Address:     '#(///Address)'
-            }
-        }";
-
-        private static readonly string _transformForEach3 =
-        "{" + 
-         "    '#foreach(Customers[Surname == \"Anderson\"], Customers)':" + 
-         "    {" + 
-         "        LastName:    \"#(required(Surname, 'Surname is required'))\"," + 
-         "        FirstName:   '#(Name)'," + 
-         "        Age:         '#(Age)'," + 
-         "        Address:     '#(Address)'" + 
-         "    }" + 
-         "}";
-
         private static readonly string _transformList = 
         @"{
             'Name':        'Fred',
@@ -2060,49 +1864,6 @@ namespace JTran.UnitTests
                              Age:     39
                         }
                      ]
-                 }
-              ]
-            }";
-
-        private static readonly string _data3 =
-        @"{
-              Customers:
-              [
-                  {
-                      Surname:     'Smith',
-                      Address:     '123 Elm St', 
-                      Residents:
-                      {
-                          Humans:
-                         [
-                            {
-                                 Name:   'John',
-                                 Age:     34
-                            },
-                            {
-                                 Name:   'Mary',
-                                 Age:     32
-                            }
-                         ]
-                      }
-                 },
-                  {
-                      Surname:     'Anderson',
-                      Address:     '375 Maple Ave',   
-                      Residents:
-                      {
-                          Humans:
-                         [
-                            {
-                                 Name:   'Fred',
-                                 Age:     41
-                            },
-                            {
-                                 Name:   'Linda',
-                                 Age:     39
-                            }
-                        ]
-                     }
                  }
               ]
             }";

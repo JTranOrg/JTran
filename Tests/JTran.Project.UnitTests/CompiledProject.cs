@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
+using JTran.Common;
 using JTran.UnitTests;
 
 namespace JTran.Project.UnitTests

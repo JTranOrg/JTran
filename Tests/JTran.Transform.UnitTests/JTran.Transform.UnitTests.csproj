@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+
+    <AssemblyName>JTran.Transform.UnitTests</AssemblyName>
+    <RootNamespace>JTran.Transform.UnitTests</RootNamespace>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Sample Data\customers.json" />
+    <None Remove="Sample Data\customers2.json" />
+    <None Remove="Sample Data\customers3.json" />
+    <None Remove="Sample Data\customers4.json" />
+    <None Remove="Test Transforms\foreach.jtran" />
+    <None Remove="Test Transforms\foreach2.jtran" />
+    <None Remove="Test Transforms\foreach3.jtran" />
+    <None Remove="Test Transforms\foreachbreak.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Sample Data\customers4.json" />
+    <EmbeddedResource Include="Sample Data\customers3.json" />
+    <EmbeddedResource Include="Sample Data\customers2.json" />
+    <EmbeddedResource Include="Sample Data\customers.json" />
+    <EmbeddedResource Include="Test Transforms\foreach3.jtran" />
+    <EmbeddedResource Include="Test Transforms\foreach2.jtran" />
+    <EmbeddedResource Include="Test Transforms\foreach.jtran" />
+    <EmbeddedResource Include="Test Transforms\foreachbreak.jtran" />
+    <EmbeddedResource Include="Test Transforms\list.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
+    <ProjectReference Include="..\..\JTran\JTran.csproj" />
+  </ItemGroup>
+
+</Project>
