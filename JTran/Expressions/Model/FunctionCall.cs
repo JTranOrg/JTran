@@ -24,6 +24,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 
 using JTran.Json;
+using System.Reflection;
 
 namespace JTran.Expressions
 {
@@ -46,7 +47,27 @@ namespace JTran.Expressions
             var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
 
             if(func != null)
-                return func.Evaluate(_parameters, context);
+            { 
+                try
+                { 
+                    return func.Evaluate(_parameters, context);
+                }
+                catch(Transformer.UserError) 
+                {
+                    throw;
+                }
+                catch(TargetInvocationException tex) 
+                {
+                    if(tex.InnerException is Transformer.UserError)
+                        throw tex.InnerException;
+
+                    throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {tex.InnerException.Message}", tex.InnerException);
+                }
+                catch(Exception ex) 
+                {
+                    throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {ex.InnerException.Message}", ex);
+                }
+            }
 
             var tfunc = context.GetFunction(_functionName);
             

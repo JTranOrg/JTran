@@ -13,21 +13,59 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Sample Data\automobiles.json" />
+    <None Remove="Sample Data\car1.json" />
+    <None Remove="Sample Data\car2.json" />
     <None Remove="Sample Data\customers.json" />
     <None Remove="Sample Data\customers2.json" />
     <None Remove="Sample Data\customers3.json" />
     <None Remove="Sample Data\customers4.json" />
+    <None Remove="Sample Data\map\address.json" />
+    <None Remove="Sample Data\map\emptydata.json" />
+    <None Remove="Sample Data\simpleperson.json" />
+    <None Remove="Test Transforms\dotattributes.jtran" />
+    <None Remove="Test Transforms\dotattributes2.jtran" />
+    <None Remove="Test Transforms\extensionfunction.jtran" />
+    <None Remove="Test Transforms\extensionfunction2.jtran" />
     <None Remove="Test Transforms\foreach.jtran" />
     <None Remove="Test Transforms\foreach2.jtran" />
     <None Remove="Test Transforms\foreach3.jtran" />
     <None Remove="Test Transforms\foreachbreak.jtran" />
+    <None Remove="Test Transforms\map\map.jtran" />
+    <None Remove="Test Transforms\map\map2.jtran" />
+    <None Remove="Test Transforms\map\map3.jtran" />
+    <None Remove="Test Transforms\map\map4.jtran" />
+    <None Remove="Test Transforms\map\map_expressions.jtran" />
+    <None Remove="Test Transforms\map\map_expressions2.jtran" />
+    <None Remove="Test Transforms\map\map_property.jtran" />
+    <None Remove="Test Transforms\map\variablecontent.jtran" />
+    <None Remove="Test Transforms\noelements.jtran" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Sample Data\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\car2.json" />
+    <EmbeddedResource Include="Sample Data\car1.json" />
+    <EmbeddedResource Include="Sample Data\map\emptydata.json" />
+    <EmbeddedResource Include="Sample Data\map\address.json" />
+    <EmbeddedResource Include="Sample Data\simpleperson.json" />
     <EmbeddedResource Include="Sample Data\customers4.json" />
     <EmbeddedResource Include="Sample Data\customers3.json" />
     <EmbeddedResource Include="Sample Data\customers2.json" />
     <EmbeddedResource Include="Sample Data\customers.json" />
+    <EmbeddedResource Include="Test Transforms\extensionfunction2.jtran" />
+    <EmbeddedResource Include="Test Transforms\extensionfunction.jtran" />
+    <EmbeddedResource Include="Test Transforms\dotattributes2.jtran" />
+    <EmbeddedResource Include="Test Transforms\dotattributes.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map3.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map2.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map_expressions.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map_expressions2.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map_property.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\map4.jtran" />
+    <EmbeddedResource Include="Test Transforms\map\variablecontent.jtran" />
+    <EmbeddedResource Include="Test Transforms\noelements.jtran" />
     <EmbeddedResource Include="Test Transforms\foreach3.jtran" />
     <EmbeddedResource Include="Test Transforms\foreach2.jtran" />
     <EmbeddedResource Include="Test Transforms\foreach.jtran" />

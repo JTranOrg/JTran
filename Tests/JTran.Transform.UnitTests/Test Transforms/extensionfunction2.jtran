@@ -1,0 +1,17 @@
+{
+  "Owner":
+  {
+    "Name": "#(Owner)",
+    "Cars":
+    {
+      "#foreach(Automobiles)":
+      {
+        "#(Make)":
+        {
+          "Model": "#(addx(Model))",
+          "Color": "#(badmama(Color))"
+        }
+      }
+    }
+  }
+}

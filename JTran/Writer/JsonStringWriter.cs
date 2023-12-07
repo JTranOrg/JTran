@@ -21,6 +21,7 @@ using System.Text;
 using System.IO;
 
 using JTran.Common;
+using JTran.Extensions;
 
 namespace JTran
 {
@@ -61,5 +62,17 @@ namespace JTran
 
             _output.Append(text);
         } 
+
+        /****************************************************************************/
+        protected override string FormatForJsonOutput(string s)
+        {
+            return s.FormatForJsonOutput();
+        }
+
+       /****************************************************************************/
+        protected override string FormatForOutput(object s, bool forceString = false)
+        {
+            return s.FormatForOutput(forceString, true);
+        }
     }
 }

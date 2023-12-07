@@ -1,3 +1,8 @@
+using JTran.Common;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text;
+
 namespace JTran.PerformanceTests
 {
     public class TransformerTests
@@ -14,65 +19,77 @@ namespace JTran.PerformanceTests
             var transformer = CreateTransformer(_transformForEach1);
             TimeSpan duration = TimeSpan.Zero;
 
-            using(var result = File.OpenWrite($"c:\\Documents\\Testing\\JTran\\largefile_{numItems}.json"))
-            { 
-                using(var dataSource = CreateLargeDataSource(numItems))
-                {
-                    var dtStart = DateTime.Now;
+            using var dataSource = CreateLargeDataSource(numItems);
 
-                    transformer.Transform(dataSource, new BufferedStream(result, 4096 * 1024));
+            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource.ReadString());
 
-                    var dtEnd = DateTime.Now;
+            dataSource.Seek(0, SeekOrigin.Begin);
 
-                    duration = dtEnd - dtStart;
+            var dtStart = DateTime.Now;
 
-                  //  File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_{numItems}.json", dataSource.ReadString());
-                }
-            }
+            using var output = new MemoryStream();
 
-              //  var sresult = result.ReadString();
+            transformer.Transform(dataSource, output);
 
-              //  Assert.IsFalse(string.IsNullOrWhiteSpace(sresult));
+            var dtEnd = DateTime.Now;
 
-               // var jresult = JObject.Parse(sresult);
+            duration = dtEnd - dtStart;
+                 
+            var sOutput = output.ReadString();
 
-              //  Assert.IsNotNull(jresult);
+            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", sOutput);
+
+            var jresult = JObject.Parse(sOutput);
+
+            Assert.NotNull(jresult);
         }
 
         #region Private
 
         private Stream CreateLargeDataSource(int numItems = 100000)
         {
-            var strm = new MemoryStream();
+            var customers = new CustomerContainer
+            {
+                Customers = new()
+            };
 
-            using(var writer = new JsonStreamWriter(strm))
+            for(int i = 0; i < numItems; ++i)
             { 
-                writer.StartObject();
-                    writer.WriteContainerName("Customers");
-                    writer.StartArray();
+                var person = CreateRandomPerson();
 
-                        for(int i = 0; i < numItems; ++i)
-                        { 
-                            var person = CreateRandomPerson();
-
-                            writer.StartObject();
-                                writer.WriteProperty("Id",         Guid.NewGuid().ToString());
-                                writer.WriteProperty("FirstName",  person.FirstName);
-                                writer.WriteProperty("MiddleName", person.MiddleName);
-                                writer.WriteProperty("LastName",   person.Surname);
-                                writer.WriteProperty("Birthdate",  person.Birthdate);
-                                writer.WriteProperty("Address",    person.StreetNumber + " " + person.StreetName);
-                                writer.WriteProperty("City",       person.City);
-                                writer.WriteProperty("State",      person.State);
-                                writer.WriteProperty("ZipCode",    person.ZipCode, true);
-                            writer.EndObject();
-                        }
-
-                    writer.EndArray();
-                writer.EndObject();
+                customers.Customers.Add(new Customer
+                { 
+                    Id           = Guid.NewGuid().ToString(),
+                    FirstName    = person.FirstName,
+                    MiddleName   = person.MiddleName,
+                    LastName     = person.Surname.StartsWith("A") ? ("\\\\" + person.Surname + "\\\\") : person.Surname,
+                    Birthdate    = person.Birthdate,
+                    Address      = person.StreetNumber + " " + person.StreetName,
+                    City         = person.City,
+                    State        = person.State,
+                    ZipCode      = person.ZipCode
+                });
             }
 
-           return strm;
+           return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(customers)));
+        }
+
+        internal class CustomerContainer
+        {
+            internal List<Customer>? Customers   { get; set; } 
+        }        
+        
+        internal class Customer
+        {
+            internal string Id          { get; set; } = "";
+            internal string FirstName   { get; set; } = "";
+            internal string MiddleName  { get; set; } = "";
+            internal string LastName    { get; set; } = "";
+            internal string Birthdate   { get; set; } = "";
+            internal string Address     { get; set; } = "";
+            internal string City        { get; set; } = "";
+            internal string State       { get; set; } = "";
+            internal string ZipCode     { get; set; } = "";
         }
 
         private JTran.Transformer CreateTransformer(string transform)

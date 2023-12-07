@@ -1,0 +1,15 @@
+{
+  "#variable(blah)":  "#(frank)",
+  "Region":
+  {
+    "#map(Address.State)":
+    {
+      "#mapitem('CA')": "West",
+      "#mapitem('WA')": "PNW",
+      "#mapitem('OR')": "PNW",
+      "#mapitem('NY')": "East",
+      "#mapitem($blah == 'blah')": "Midwest",
+      "#mapitem":       "South"
+    }
+  }
+}

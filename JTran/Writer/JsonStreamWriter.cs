@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Extensions;
 using System;
 using System.IO;
 using System.Text;
@@ -69,6 +70,18 @@ namespace JTran
         public void Dispose()
         {
             // Do nothing for now
+        }
+
+        /****************************************************************************/
+        protected override string FormatForJsonOutput(string s)
+        {
+            return s.FormatForJsonOutput();
+        }
+
+       /****************************************************************************/
+        protected override string FormatForOutput(object s, bool forceString = false)
+        {
+            return s.FormatForOutput(forceString, true);
         }
     }
 }

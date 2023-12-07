@@ -199,7 +199,7 @@ namespace JTran.Extensions
         }
 
         /*****************************************************************************/
-        internal static string FormatForOutput(this object value, bool forceString = false)
+        internal static string FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
         {
             if(value == null)
                 return "null";
@@ -225,7 +225,7 @@ namespace JTran.Extensions
                     return "\"" + dtVal.ToString("o") + "\"";
             }
 
-            return "\"" + value.ToString() + "\"";
+            return "\"" + (finalOutput ? value.ToString().FormatForJsonOutput() : value.ToString()) + "\"";
         }
 
         #region Private

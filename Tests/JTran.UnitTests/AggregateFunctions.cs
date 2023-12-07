@@ -43,11 +43,9 @@ namespace JTran.UnitTests
         {
             var expression = Compile("required(Cars, 'Cars is required')");
             var context    = CreateContext(new { Cars = new List<object> {}}  );
-            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+            var ex         = Assert.ThrowsException<Transformer.UserError>( ()=> expression.Evaluate(context));
 
-            Assert.IsNotNull(ex.InnerException);
-            Assert.IsTrue(ex.InnerException is Transformer.UserError);
-            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+            Assert.AreEqual("Cars is required", ex.Message);
         }
 
         [TestMethod]
@@ -56,11 +54,9 @@ namespace JTran.UnitTests
             List<object> data = null;
             var expression = Compile("required(Cars, 'Cars is required')");
             var context    = CreateContext(new { Cars = data}  );
-            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+            var ex         = Assert.ThrowsException<Transformer.UserError>( ()=> expression.Evaluate(context));
 
-            Assert.IsNotNull(ex.InnerException);
-            Assert.IsTrue(ex.InnerException is Transformer.UserError);
-            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+            Assert.AreEqual("Cars is required", ex.Message);
         }
 
         [TestMethod]
@@ -68,11 +64,9 @@ namespace JTran.UnitTests
         {
             var expression = Compile("required(Cars, 'Cars is required')");
             var context    = CreateContext(new { Cars = ""}  );
-            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+            var ex         = Assert.ThrowsException<Transformer.UserError>( ()=> expression.Evaluate(context));
 
-            Assert.IsNotNull(ex.InnerException);
-            Assert.IsTrue(ex.InnerException is Transformer.UserError);
-            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+            Assert.AreEqual("Cars is required", ex.Message);
         }
 
         [TestMethod]
@@ -80,11 +74,9 @@ namespace JTran.UnitTests
         {
             var expression = Compile("required(Cars, 'Cars is required')");
             var context    = CreateContext(new { Cars = "  "}  );
-            var ex         = Assert.ThrowsException<TargetInvocationException>( ()=> expression.Evaluate(context));
+            var ex         = Assert.ThrowsException<Transformer.UserError>( ()=> expression.Evaluate(context));
 
-            Assert.IsNotNull(ex.InnerException);
-            Assert.IsTrue(ex.InnerException is Transformer.UserError);
-            Assert.AreEqual("Cars is required", ex.InnerException.Message);
+            Assert.AreEqual("Cars is required", ex.Message);
         }
 
         [TestMethod]

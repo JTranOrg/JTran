@@ -78,10 +78,12 @@ namespace JTran
             internal bool   PreviousFinished  { get; set; } = false;
         }
 
+        protected abstract string FormatForJsonOutput(string s);
+        protected abstract string FormatForOutput(object s, bool forceString = false);
+
         /****************************************************************************/
         public bool InObject => !(_stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false);
         public bool InArray  => _stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false;
-
 
         #region Write
 
@@ -90,7 +92,7 @@ namespace JTran
         {
             StartChild();
             _stack.Peek().PreviousFinished = true;
-            WriteLine($"\"{name}\":");
+            WriteLine($"\"{FormatForJsonOutput(name)}\":");
         }
 
         /****************************************************************************/
@@ -98,7 +100,7 @@ namespace JTran
         {
             StartChild();
 
-            var sitem = item.FormatForOutput();
+            var sitem = FormatForOutput(item);
 
             WriteLine(sitem, false);
             EndChild();
@@ -157,7 +159,7 @@ namespace JTran
             }
             else
             { 
-                WriteLine($"\"{name}\":  {val.FormatForOutput(forceString)}", false);
+                WriteLine($"\"{FormatForJsonOutput(name)}\":  {FormatForOutput(val, forceString)}", false);
             }
 
             EndChild();

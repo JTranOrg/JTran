@@ -28,13 +28,18 @@ using JTran.Json;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
-
 namespace JTran.Extensions
 {
     /****************************************************************************/
     /****************************************************************************/
     public static class StringExtensions
     {
+        /****************************************************************************/
+        public static string FormatForJsonOutput(this string str)
+        {            
+            return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\\r").Replace("\n", "\\\n").Replace("\t", "\\\t").Replace("\f", "\\\f").Replace("\b", "\\\b");
+        }
+
         /****************************************************************************/
         public static T ExpandoToObject<T>(this object obj)
         {            

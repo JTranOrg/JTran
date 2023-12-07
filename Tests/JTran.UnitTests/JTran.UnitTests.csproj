@@ -13,16 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="JsonParser\Samples\customers.json" />
-    <None Remove="JsonParser\Samples\singlecustomer.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="JsonParser\Samples\singlecustomer.json" />
-    <EmbeddedResource Include="JsonParser\Samples\customers.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="Moq" Version="4.16.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
