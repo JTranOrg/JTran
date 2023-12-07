@@ -13,6 +13,7 @@ using JTran.Expressions;
 namespace JTran.UnitTests
 {
     [TestClass]
+    [TestCategory("CompiledTransform")]
     public class CompiledTransformTests
     {
         [TestMethod]

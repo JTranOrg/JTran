@@ -20,12 +20,11 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
-using System.Text;
 using System.Runtime.CompilerServices;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+using JTran.Json;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -36,12 +35,9 @@ namespace JTran.Extensions
     public static class StringExtensions
     {
         /****************************************************************************/
-        public static object JsonToExpando(this string s)
-        {
-            var convertor = new ExpandoObjectConverter();
-            var xObject =  JsonConvert.DeserializeObject<ExpandoObject>(s, convertor);
-            
-            return xObject.SetParent();
+        public static string FormatForJsonOutput(this string str)
+        {            
+            return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\\r").Replace("\n", "\\\n").Replace("\t", "\\\t").Replace("\f", "\\\f").Replace("\b", "\\\b");
         }
 
         /****************************************************************************/

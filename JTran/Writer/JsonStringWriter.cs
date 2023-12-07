@@ -10,17 +10,17 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 27 Dec 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using System;
 using System.Text;
 using System.IO;
 
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran
@@ -62,5 +62,17 @@ namespace JTran
 
             _output.Append(text);
         } 
+
+        /****************************************************************************/
+        protected override string FormatForJsonOutput(string s)
+        {
+            return s.FormatForJsonOutput();
+        }
+
+       /****************************************************************************/
+        protected override string FormatForOutput(object s, bool forceString = false)
+        {
+            return s.FormatForOutput(forceString, true);
+        }
     }
 }

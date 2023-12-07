@@ -1,0 +1,21 @@
+{
+  "Owner": "Bob Smith",
+  "Automobiles":
+  [
+    {
+      "Make": "Chevy",
+      "Model": "Camaro",
+      "Color": "Green"
+    },
+    {
+      "Make": "Pontiac",
+      "Model": "Firebird",
+      "Color": "Blue"
+    },
+    {
+      "Make": "Dodge",
+      "Model": "Charger",
+      "Color": "Black"
+    }
+  ]
+}

@@ -568,14 +568,17 @@ namespace JTran.Expressions
             if(val == null)
                 return true;
 
+            if(val is bool)
+                return false;
+
+            if(val is string str)
+                return string.IsNullOrWhiteSpace(str);
+
             if(decimal.TryParse(val.ToString(), out decimal dValue))
                 return dValue == 0M;
 
             if(val is IEnumerable<object> list)
                 return list.Count() == 0;
-
-            if(val is string str)
-                return string.IsNullOrWhiteSpace(str);
 
             var dict = new Dictionary<string, object>();
 

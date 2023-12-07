@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 using JTran.Expressions;
 
 using JTran.Extensions;
-using JTran.Parser;
+using JTran.Json;
 using JTranParser = JTran.Parser.Parser;
 
 using System.Collections;

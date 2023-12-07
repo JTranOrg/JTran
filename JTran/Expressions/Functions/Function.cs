@@ -10,20 +10,21 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using JTran.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+
+using JTran.Json;
 
 namespace JTran.Expressions
 {
