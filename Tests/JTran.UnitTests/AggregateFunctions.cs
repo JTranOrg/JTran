@@ -6,8 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json.Linq;
 
 using JTran.Expressions;
-using JTran.Extensions;
-using JTran.Parser;
+using JTran.Json;
 
 using JTranParser = JTran.Parser.Parser;
 

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Dynamic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using JTran;
-using JTran.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using JTran.Json;
 
 namespace JTran.UnitTests
 {

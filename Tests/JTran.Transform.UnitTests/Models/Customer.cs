@@ -1,5 +1,4 @@
 ﻿
-
 namespace JTran.Transform.UnitTests
 {
     public class Customer

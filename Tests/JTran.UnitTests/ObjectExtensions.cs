@@ -1,12 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json.Linq;
-
-using JTran;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using JTran.Extensions;
+using JTran.Json;
 
 namespace JTran.UnitTests
 {

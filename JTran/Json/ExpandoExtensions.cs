@@ -10,29 +10,38 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using System;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
-namespace JTran.Extensions
+namespace JTran.Json
 {
     /****************************************************************************/
     /****************************************************************************/
     public static class ExpandoExtensions
     {
+        /****************************************************************************/
+        public static object JsonToExpando(this string s)
+        {
+            var convertor = new ExpandoObjectConverter();
+            var xObject =  JsonConvert.DeserializeObject<ExpandoObject>(s, convertor);
+            
+            return xObject.SetParent();
+        }
+
         /****************************************************************************/
         internal static ExpandoObject SetParent(this ExpandoObject obj)
         {
