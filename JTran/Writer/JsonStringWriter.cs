@@ -20,7 +20,7 @@
 using System.Text;
 using System.IO;
 
-using JTran.Common;
+using JTran.Common.Extensions;
 using JTran.Extensions;
 
 namespace JTran

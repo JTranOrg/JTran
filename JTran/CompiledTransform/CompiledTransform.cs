@@ -33,6 +33,7 @@ using JTran.Extensions;
 using JTran.Expressions;
 using JTran.Json;
 using JTran.Parser;
+using JTran.Common.Extensions;
 
 using JTranParser = JTran.Parser.Parser;
 
