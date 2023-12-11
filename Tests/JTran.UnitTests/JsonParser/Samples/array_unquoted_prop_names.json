@@ -1,0 +1,25 @@
+{
+    Cars:
+    [
+        {
+            Make:   'Chevy',
+            Model:  'Corvette',
+            Year:   1964,
+            Color:  'Blue'
+        },
+        {
+            Make:   'Pontiac',
+            Model:  'Firebird',
+            Year:   1969,
+            Color:  'Green'
+        },
+        {
+            Make:   'Audi',
+            Model:  'S8',
+            Year:   2020,
+            Color:  'Black'
+        }
+    ],
+    MakeField: 'Brand',
+    ModelField: 'Model'
+}

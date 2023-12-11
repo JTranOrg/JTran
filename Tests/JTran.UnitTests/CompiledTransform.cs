@@ -1022,7 +1022,7 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformForEach1, result);
             Assert.IsNotNull(JObject.Parse(result));
 
-            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result);
+            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result)!;
 
             Assert.AreEqual("Bob",          driver.Driver.FirstName);
             Assert.AreEqual("Jones",        driver.Driver.LastName);
@@ -1943,7 +1943,7 @@ namespace JTran.UnitTests
                         Solenoid:   77
                     }
                 }
-            ],
+            ]
         }";
 
         #endregion

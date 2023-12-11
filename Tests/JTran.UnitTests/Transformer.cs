@@ -173,31 +173,6 @@ namespace JTran.UnitTests
             Assert.AreEqual(1970,        owner.Cars[2].Year);
         }
 
-        private static readonly string _transformForEachBreak =
-        "{" + 
-         "    '#foreach(Customers, Customers)':" + 
-         "    {" + 
-         "        LastName:    '#(Surname)'," + 
-         "        FirstName:   '#(Name)'," + 
-         "        Age:         '#(Age)'," + 
-         "        Address:     '#(Address)'," + 
-         "        '#break':     ''" + 
-         "    }" + 
-         "}";        
-         
-         private static readonly string _transformForEachContinue =
-        "{" + 
-        "      '#variable(John)': 'John'," + 
-         "    '#foreach(Customers, Customers)':" + 
-         "    {" + 
-         "        '#if(Name == $John)': '#continue'," + 
-         "        LastName:    '#(Surname)'," + 
-         "        FirstName:   '#(Name)'," + 
-         "        Age:         '#(Age)'," + 
-         "        Address:     '#(Address)'" + 
-         "    }" + 
-         "}";
-
         #endregion
 
         [TestMethod]

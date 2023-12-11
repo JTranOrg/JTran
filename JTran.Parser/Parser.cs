@@ -18,7 +18,7 @@ namespace JTran.Parser
         
         private readonly List<Token> _sb = new List<Token>();
 
-        private Token _token = null;
+        private Token? _token = null;
 
         /*****************************************************************************/
         public Parser()
@@ -103,10 +103,10 @@ namespace JTran.Parser
         private const string _punctuation = @"[](),";
 
         /*****************************************************************************/
-        private void PushToken(Token token = null, bool? literal = null)
+        private void PushToken(Token? token = null, bool? literal = null)
         {
             if(literal.HasValue)
-                literal = this._token.Type > Token.TokenType.NoToken;
+                literal = this._token!.Type > Token.TokenType.NoToken;
 
             if(token == null)
                 token = this._token;

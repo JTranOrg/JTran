@@ -1,0 +1,54 @@
+{
+  "Customers":
+  [
+    {
+      "LastName":   "Smith",
+      "FirstName":  "John",
+      "Age":        34,
+      "Address":    
+      {
+        "Street": "123 Elm St",
+        "City":   "Springfield",
+        "State":  "CA",
+        "Zip":    "94332"
+      }
+    },
+    {
+      "LastName":   "Smith",
+      "FirstName":  "Mary",
+      "Age":        33,
+      "Address":    
+      {
+        "Street": "123 Elm St",
+        "City":   "Springfield",
+        "State":  "CA",
+        "Zip":    "94332"
+      }
+    },
+    {
+      "LastName":   "Anderson",
+      "FirstName":  "Fred",
+      "Age":        41,
+      "Address":    
+      {
+        "Street": "375 Maple Ave",
+        "City":   "Oriville",
+        "State":  "PA",
+        "Zip":    "94332"
+      }
+    },
+    {
+      "LastName":  "Anderson",
+      "FirstName": "Linda",
+      "Address":   "375 Maple Ave",
+      "Age":        38,
+      "Address":    
+      {
+        "Street": "375 Maple Ave",
+        "City":   "Oriville",
+        "State":  "PA",
+        "Zip":    "94332"
+      }
+    }
+  ]
+}

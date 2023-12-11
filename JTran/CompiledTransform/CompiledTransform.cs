@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                                                                                                 
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -21,10 +21,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Data;using System.Dynamic;
+using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using Newtonsoft.Json.Linq;
 
@@ -35,6 +37,7 @@ using JTran.Json;
 using JTran.Parser;
 
 using JTranParser = JTran.Parser.Parser;
+using System.Buffers.Text;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -55,12 +58,10 @@ namespace JTran
 
         /****************************************************************************/
         internal void Transform(Stream input, Stream output, TransformerContext context, ExtensionFunctions extensionFunctions)
-        {
-            var data = input.ReadString();
-            
+        {           
             using(var writer = new JsonStreamWriter(output))
             { 
-                Transform(data, writer, context, extensionFunctions);
+                Transform(input, writer, context, extensionFunctions);
             }
 
             return;
@@ -69,9 +70,10 @@ namespace JTran
         /****************************************************************************/
         internal string Transform(string data, TransformerContext context, ExtensionFunctions extensionFunctions)
         {
+            using var input = new MemoryStream(UTF8Encoding.UTF8.GetBytes(data));
             var output = new JsonStringWriter();
 
-            Transform(data, output, context, extensionFunctions);
+            Transform(input, output, context, extensionFunctions);
     
             var result = output.ToString();
 
@@ -93,28 +95,7 @@ namespace JTran
             return;
         }
 
-        /****************************************************************************/
-        private void Transform(string data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
-        {
-            var expando = data.JsonToExpando();
-
-            TransformObject(expando, output, context, extensionFunctions);
-    
-            return;
-        }                
-
-        /****************************************************************************/
-        private void TransformObject(object data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
-        {
-            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
-
-            output.StartObject();
-            this.Evaluate(output, newContext, f=> f());
-            output.EndObject();
-    
-            return;
-        }        
-
+        
         /****************************************************************************/
         internal static CompiledTransform Compile(string source, IDictionary<string, string> includeSource = null)
         {
@@ -183,6 +164,31 @@ namespace JTran
             return result;
         }
 
+        #region Private 
+
+        /****************************************************************************/
+        private void Transform(Stream data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
+            var parser  = new Json.Parser();
+            var expando = parser.Parse(data);
+
+            TransformObject(expando, output, context, extensionFunctions);
+    
+            return;
+        }                
+
+        /****************************************************************************/
+        private void TransformObject(object data, IJsonWriter output, TransformerContext context, ExtensionFunctions extensionFunctions)
+        {
+            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
+
+            output.StartObject();
+            this.Evaluate(output, newContext, f=> f());
+            output.EndObject();
+    
+            return;
+        }        
+
         /****************************************************************************/
         private static bool IsExplicitParam(IList<bool> isExplicitParam, int index)
         {
@@ -194,6 +200,8 @@ namespace JTran
 
             return isExplicitParam[index];
         }
+
+        #endregion
     }
 
     /****************************************************************************/

@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>A JSON to JSON transformer</Description>
     <Authors>JTranOrg</Authors>
-    <Copyright>© 2020-2023 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <Copyright>© 2020-2024 - Jim Lightfoot, All Rights Reserved</Copyright>
     <Company>JTranOrg</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl></PackageProjectUrl>

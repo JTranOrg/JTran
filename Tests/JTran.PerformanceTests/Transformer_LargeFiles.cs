@@ -13,15 +13,15 @@ namespace JTran.PerformanceTests
         [InlineData(1000)]
         [InlineData(5000)]
         [InlineData(200000)]
-        [InlineData(2000000)]
-        public void Transform_Transform_large_file(int numItems)
+        //[InlineData(2000000)]
+        public async Task Transform_Transform_large_file(int numItems)
         {
             var transformer = CreateTransformer(_transformForEach1);
             TimeSpan duration = TimeSpan.Zero;
 
             using var dataSource = CreateLargeDataSource(numItems);
 
-            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource.ReadString());
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
 
             dataSource.Seek(0, SeekOrigin.Begin);
 
@@ -34,10 +34,10 @@ namespace JTran.PerformanceTests
             var dtEnd = DateTime.Now;
 
             duration = dtEnd - dtStart;
-                 
-            var sOutput = output.ReadString();
+            
+            var sOutput = await output.ReadStringAsync();
 
-            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", sOutput);
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", sOutput);
 
             var jresult = JObject.Parse(sOutput);
 
@@ -62,7 +62,7 @@ namespace JTran.PerformanceTests
                     Id           = Guid.NewGuid().ToString(),
                     FirstName    = person.FirstName,
                     MiddleName   = person.MiddleName,
-                    LastName     = person.Surname.StartsWith("A") ? ("\\\\" + person.Surname + "\\\\") : person.Surname,
+                    LastName     = "\\" + person.Surname + "\\",
                     Birthdate    = person.Birthdate,
                     Address      = person.StreetNumber + " " + person.StreetName,
                     City         = person.City,
@@ -71,25 +71,27 @@ namespace JTran.PerformanceTests
                 });
             }
 
-           return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(customers)));
+            var cstr = JsonConvert.SerializeObject(customers, Formatting.Indented);
+
+            return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
         }
 
-        internal class CustomerContainer
+        public class CustomerContainer
         {
-            internal List<Customer>? Customers   { get; set; } 
+            public List<Customer> Customers   { get; set; } = new List<Customer>();
         }        
         
-        internal class Customer
+        public class Customer
         {
-            internal string Id          { get; set; } = "";
-            internal string FirstName   { get; set; } = "";
-            internal string MiddleName  { get; set; } = "";
-            internal string LastName    { get; set; } = "";
-            internal string Birthdate   { get; set; } = "";
-            internal string Address     { get; set; } = "";
-            internal string City        { get; set; } = "";
-            internal string State       { get; set; } = "";
-            internal string ZipCode     { get; set; } = "";
+            public string Id          { get; set; } = "";
+            public string FirstName   { get; set; } = "";
+            public string MiddleName  { get; set; } = "";
+            public string LastName    { get; set; } = "";
+            public string Birthdate   { get; set; } = "";
+            public string Address     { get; set; } = "";
+            public string City        { get; set; } = "";
+            public string State       { get; set; } = "";
+            public string ZipCode     { get; set; } = "";
         }
 
         private JTran.Transformer CreateTransformer(string transform)
@@ -301,7 +303,7 @@ namespace JTran.PerformanceTests
             "Glendale",         "Rancho Cucamonga",     "Macon",            "Mesquite",
             "Huntington Beach", "Santa Rosa",           "Kansas City",      "Olathe",
             "McKinney",         "Peoria",               "Sunnyvale",        "Dayton",
-            "Montgomery",       "Oceanside",            "Pomona",           "Carrollton",
+            "Montgomery",       "Ocean\"si\\de",          "Pomona",           "Carrollton",
             "Augusta",          "Elk Grove",            "Killeen",          "Waco",
             "Aurora",           "Salem",                "Escondido",        "Orange",
             "Akron",            "Pembroke Pines",       "Pasadena",         "Fullerton",
@@ -318,7 +320,7 @@ namespace JTran.PerformanceTests
             "Kent",             "Arvada",               "Manchester",       "Waterbury",
             "Columbia",         "Ann Arbor",            "Pueblo",           "League City",
             "Santa Clara",      "Rochester",            "Lakeland",         "Santa Maria",
-            "New Haven",        "Cambridge",            "Pompano Beach",    "Tyler	",
+            "New Haven",        "Cambridge",            "Pompano Beach",    "Tyler",
             "Stamford",         "Sugar Land",           "W Palm Beach",     "Davie",
             "Concord",          "Lansing",              "Antioch",          "Lakewood",
             "Elizabeth",        "Evansville",           "Everett",          "Daly City",

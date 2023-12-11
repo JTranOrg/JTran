@@ -123,7 +123,7 @@ namespace JTran.Json
             else if(value is ExpandoObject expando)
             {
                 writer.WriteContainerName(key);
-               expando.ToJson(writer);                   
+                expando.ToJson(writer);                   
             }
             else
             {                       

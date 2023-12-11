@@ -120,6 +120,8 @@ namespace JTran
 
                EndChild();
             }
+            else if(item is IEnumerable<object> list)
+                WriteList(list);
             else 
                 WriteSimpleArrayItem(item);
         }
