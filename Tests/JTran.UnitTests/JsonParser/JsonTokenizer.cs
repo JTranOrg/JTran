@@ -14,7 +14,8 @@ namespace JTran.UnitTests
         [TestMethod]
         public void JsonParser_ReadNextToken_success()
         {
-            Assert.AreEqual(JsonToken.TokenType.EOF,            Test("").Type);
+            Assert.ThrowsException<JsonParseException>( ()=> Test("").Type);
+
             Assert.AreEqual(JsonToken.TokenType.BeginObject,    Test("  {").Type);
             Assert.AreEqual(JsonToken.TokenType.EndObject,      Test("\r\n  }").Type);
             Assert.AreEqual(JsonToken.TokenType.BeginArray,     Test("  [").Type);
@@ -23,10 +24,10 @@ namespace JTran.UnitTests
             Assert.AreEqual(JsonToken.TokenType.Property,       Test("  :").Type);
 
             Assert.AreEqual(JsonToken.TokenType.Number,         Test("  42").Type);
-            Assert.AreEqual("42",                               Test("  42").Value);
+            Assert.AreEqual(42m,                                Test("  42").Value);
 
             Assert.AreEqual(JsonToken.TokenType.Number,         Test("  42.2").Type);
-            Assert.AreEqual("42.2",                             Test("  42.2").Value);
+            Assert.AreEqual(42.2m,                              Test("  42.2").Value);
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \"bob\"").Type);
             Assert.AreEqual("bob",                              Test("  \"bob\"").Value);
@@ -55,8 +56,9 @@ namespace JTran.UnitTests
             using var json = new MemoryStream(UTF8Encoding.Default.GetBytes(text));
             var reader     = new CharacterReader(json);
             var tokenizer  = new JsonTokenizer();
+            var lineNumber = 0L;
 
-            return tokenizer.ReadNextToken(reader);
+            return tokenizer.ReadNextToken(reader, ref lineNumber);
         }
     }
 }

@@ -1,0 +1,3 @@
+{
+  "Driver":  "#(coalesce(Monday, null, Tuesday, Wednesday))"
+}

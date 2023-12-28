@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Threading.Tasks;
-
-using Newtonsoft.Json;
-
-using JTran;
-using JTranProject = JTran.Project.Project;
 using System.Reflection;
+
+using JTranProject = JTran.Project.Project;
+
+using JTran.Extensions;
 using JTran.Project;
 
 namespace JTran.Console
@@ -72,9 +68,9 @@ namespace JTran.Console
 
                     try
                     { 
-                        project = JsonConvert.DeserializeObject<JTranProject>(json);
+                        project = json.ToObject<JTranProject>();
                     }
-                    catch(Newtonsoft.Json.JsonSerializationException)
+                    catch(JsonParseException ex)
                     {
                         WriteError("Project file is not a valid json file");
                         return;

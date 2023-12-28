@@ -20,11 +20,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 using JTran.Json;
-using System.Reflection;
 
 namespace JTran.Expressions
 {
@@ -89,12 +87,13 @@ namespace JTran.Expressions
                 tfunc.Evaluate(output, funcContext, (f)=> f());
                 output.EndObject();
 
-                var jobject = JObject.Parse(output.ToString());
+                var exp = output.ToString().JsonToExpando();
+                var dict = exp as IDictionary<string, object>;
 
-                if(jobject["return"] != null)
-                    return jobject["return"];
+                if(dict.ContainsKey("return") && dict["return"] != null)
+                    return dict["return"];
 
-                return output.ToString().JsonToExpando();
+                return exp;
             }
 
             throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");

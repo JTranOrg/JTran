@@ -15,7 +15,7 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("John",  obj.GetValue("FirstName", null));
             Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null));
-            Assert.AreEqual(375L,    obj.GetValue("Car.Engine.Displacement", null));
+            Assert.AreEqual(375m,    obj.GetValue("Car.Engine.Displacement", null));
             Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice", null)));
         }
 

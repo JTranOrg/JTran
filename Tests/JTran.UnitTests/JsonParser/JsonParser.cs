@@ -153,6 +153,16 @@ namespace JTran.UnitTests
             Assert.AreEqual(0, trackName.ToString().Length);
         }
 
+        [TestMethod]
+        [DataRow("empties")]
+        public void JsonParser_Parse_JTran(string fileName)
+        {
+            var json = TestParse(fileName, true);
+            var jobj = JObject.Parse(json);
+
+            Assert.IsNotNull(jobj);
+        }
+
         #region Parse Errors
 
         [TestMethod]
@@ -160,24 +170,87 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_error(string fileName)
         {
             var data       = LoadSample(fileName);
-            var parser     = new Json.Parser();
+            var parser     = new Json.Parser(new JsonModelBuilder());
             using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
             
-            var ex = Assert.ThrowsException<Json.Parser.ParseError>( ()=> parser.Parse(strm) );
+            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
 
             Assert.IsNotNull(ex);
+        }
+
+        [TestMethod]
+        [DataRow("array_not_supported")]
+        [DataRow("not_json_at_all")]
+        public void JsonParser_Parse_invalid_json_files(string fileName)
+        {
+            var data       = LoadSample(fileName);
+            var parser     = new Json.Parser(new JsonModelBuilder());
+            using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            
+            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
+
+            Assert.IsNotNull(ex);
+            Assert.AreEqual(1, ex.LineNumber);
+            Assert.AreEqual("1", ex.Data["LineNumber"]);
+            Assert.IsTrue(ex.Message.StartsWith("Unexpected token"));
+        }
+
+        [TestMethod]
+        [DataRow("missing_quotes", 3)]
+        [DataRow("missing_quotes2", 10)]
+        public void JsonParser_Parse_missing_quotes(string fileName, long lineNumber)
+        {
+            var data   = LoadSample(fileName);
+            var parser = new Json.Parser(new JsonModelBuilder());
+            
+            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
+
+            Assert.IsNotNull(ex);
+            Assert.AreEqual(lineNumber, ex.LineNumber);
+            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
+            Assert.IsTrue(ex.Message.StartsWith("Missing end quotes"));
+        }
+
+        [TestMethod]
+        [DataRow("missing_quotes3", 13)]
+        public void JsonParser_Parse_end_of_file(string fileName, long lineNumber)
+        {
+            var data   = LoadSample(fileName);
+            var parser = new Json.Parser(new JsonModelBuilder());
+            
+            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
+
+            Assert.IsNotNull(ex);
+            Assert.AreEqual(lineNumber, ex.LineNumber);
+            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
+            Assert.IsTrue(ex.Message.StartsWith("Unexpected end of file"));
+        }
+
+        [TestMethod]
+        [DataRow("missing_brace", 7)]
+        [DataRow("missing_comma", 8)]
+        public void JsonParser_Parse_unexpected_token(string fileName, long lineNumber)
+        {
+            var data   = LoadSample(fileName);
+            var parser = new Json.Parser(new JsonModelBuilder());
+            
+            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
+
+            Assert.IsNotNull(ex);
+            Assert.AreEqual(lineNumber, ex.LineNumber);
+            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
+            Assert.IsTrue(ex.Message.StartsWith("Unexpected token"));
         }
 
         #endregion
 
         #region Private 
 
-        private string TestParse(string fileName)
+        private string TestParse(string fileName, bool jtran = false)
         {
-            var data       = LoadSample(fileName);
-            var parser     = new Json.Parser();
-            using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
-            var result     = parser.Parse(strm);
+            var data       = LoadSample(fileName, jtran);
+            var parser     = new Json.Parser(new JsonModelBuilder());
+            var result     = parser.Parse(data) as ExpandoObject;
 
             Assert.IsNotNull(result);
 
@@ -188,9 +261,10 @@ namespace JTran.UnitTests
             return json;
         }
 
-        private static string LoadSample(string name)
+        private static string LoadSample(string name, bool jtran = false)
         {
-            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.UnitTests.JsonParser.Samples.{name}.json");
+            var ext = jtran ? "jtran" : "json";
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.UnitTests.JsonParser.Samples.{name}.{ext}");
             
             return stream!.ReadString();
         }

@@ -10,10 +10,15 @@ namespace JTran.Transform.UnitTests
     public class SimpleTests
     {
         [TestMethod]
-        [DataRow("noelements",  "simpleperson")]
+        [DataRow("noelements", "simpleperson")]
         public async Task Simple_success(string transform, string data)
         {
-            await TransformerTest.Test(transform, data);
+            var result = await TransformerTest.Test(transform, data);
+            var jobj   = JObject.Parse(result.ToString());
+
+             Assert.AreEqual("Chevy",    jobj["Make"]!.ToString());
+             Assert.AreEqual("Corvette", jobj["Model"]!.ToString());
+             Assert.AreEqual(1964,       int.Parse(jobj["Year"]!.ToString()));
         }
 
         [TestMethod]

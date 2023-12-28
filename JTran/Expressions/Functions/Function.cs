@@ -17,7 +17,6 @@
  *                                                                          
  ****************************************************************************/
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -196,7 +195,7 @@ namespace JTran.Expressions
         private object CreateTypedArray(Type elementType, IList<object> values)
         {
             if(elementType.Name == "String")
-                return (new List<string>(values.Select( v=> v?.ToString()))).ToArray();
+                return (new List<string>(values.Select( v=> v.ToString()))).ToArray();
 
             if(elementType.Name == "Decimal")
                 return (new List<decimal>(values.Select( v=> decimal.Parse(v?.ToString() ?? "0")))).ToArray();
@@ -222,12 +221,7 @@ namespace JTran.Expressions
                 else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
                 {
                     if(currentParam is ExpandoObject exParam)
-                    {
-                        var json = exParam.ToJson();
-                        var typedParam = JsonConvert.DeserializeObject(json, parmType);
-
-                        return typedParam;
-                    }
+                        return exParam.ToObject(parmType);
                 }
 
                 if(parmType == typeof(IEnumerable<object>) && currentParam is IList<object> list)

@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 
-
 using JTran.Extensions;
 using JTran.Json;
 
@@ -158,6 +157,12 @@ namespace JTran
                 this.WriteContainerName(name);
                 
                 expObject.ToJson(this);
+            }
+            else if(val is IEnumerable<object> list)
+            { 
+                this.WriteContainerName(name);
+                
+                WriteList(list);
             }
             else
             { 

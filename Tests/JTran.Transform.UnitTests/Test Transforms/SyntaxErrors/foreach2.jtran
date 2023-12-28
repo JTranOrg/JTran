@@ -1,0 +1,9 @@
+{
+    "#foreach()":
+    {
+        "LastName":    "#(///Surname)",
+        "FirstName":   "#(Name)",
+        "Age":         "#(Age)",
+        "Address":     "#(///Address)"
+    }
+}

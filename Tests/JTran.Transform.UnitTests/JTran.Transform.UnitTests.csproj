@@ -16,21 +16,40 @@
     <None Remove="Sample Data\automobiles.json" />
     <None Remove="Sample Data\car1.json" />
     <None Remove="Sample Data\car2.json" />
+    <None Remove="Sample Data\cars.json" />
+    <None Remove="Sample Data\coalesce.json" />
+    <None Remove="Sample Data\coalescenumber.json" />
     <None Remove="Sample Data\customers.json" />
     <None Remove="Sample Data\customers2.json" />
     <None Remove="Sample Data\customers3.json" />
     <None Remove="Sample Data\customers4.json" />
+    <None Remove="Sample Data\ExtensionFunctions\empty.json" />
+    <None Remove="Sample Data\Functions\iif.json" />
+    <None Remove="Sample Data\Functions\sortmultiple.json" />
+    <None Remove="Sample Data\Functions\sortnumbers.json" />
     <None Remove="Sample Data\map\address.json" />
     <None Remove="Sample Data\map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
+    <None Remove="Sample Data\sort.json" />
+    <None Remove="Test Transforms\coalesce.jtran" />
+    <None Remove="Test Transforms\coalescenumber.jtran" />
     <None Remove="Test Transforms\dotattributes.jtran" />
     <None Remove="Test Transforms\dotattributes2.jtran" />
+    <None Remove="Test Transforms\ExtensionFunctions\empties.jtran" />
     <None Remove="Test Transforms\extensionfunction.jtran" />
     <None Remove="Test Transforms\extensionfunction2.jtran" />
     <None Remove="Test Transforms\foreach.jtran" />
     <None Remove="Test Transforms\foreach2.jtran" />
     <None Remove="Test Transforms\foreach3.jtran" />
     <None Remove="Test Transforms\foreachbreak.jtran" />
+    <None Remove="Test Transforms\Functions\iif.jtran" />
+    <None Remove="Test Transforms\Functions\position.jtran" />
+    <None Remove="Test Transforms\Functions\sortdesc.jtran" />
+    <None Remove="Test Transforms\Functions\sortmultiple.jtran" />
+    <None Remove="Test Transforms\Functions\sortmultipledesc.jtran" />
+    <None Remove="Test Transforms\Functions\sortnumbers.jtran" />
+    <None Remove="Test Transforms\Functions\sortnumbersdesc.jtran" />
+    <None Remove="Test Transforms\iterate.jtran" />
     <None Remove="Test Transforms\map\map.jtran" />
     <None Remove="Test Transforms\map\map2.jtran" />
     <None Remove="Test Transforms\map\map3.jtran" />
@@ -40,23 +59,44 @@
     <None Remove="Test Transforms\map\map_property.jtran" />
     <None Remove="Test Transforms\map\variablecontent.jtran" />
     <None Remove="Test Transforms\noelements.jtran" />
+    <None Remove="Test Transforms\SyntaxErrors\foreach2.jtran" />
+    <None Remove="Test Transforms\SyntaxErrors\includenotfound.jtran" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Sample Data\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\Functions\iif.json" />
+    <EmbeddedResource Include="Sample Data\Functions\sortmultiple.json" />
+    <EmbeddedResource Include="Sample Data\Functions\sortnumbers.json" />
+    <EmbeddedResource Include="Sample Data\Functions\sort.json" />
+    <EmbeddedResource Include="Sample Data\Functions\coalescenumber.json" />
+    <EmbeddedResource Include="Sample Data\Functions\coalesce.json" />
     <EmbeddedResource Include="Sample Data\car2.json" />
     <EmbeddedResource Include="Sample Data\car1.json" />
+    <EmbeddedResource Include="Sample Data\ExtensionFunctions\empty.json" />
     <EmbeddedResource Include="Sample Data\map\emptydata.json" />
     <EmbeddedResource Include="Sample Data\map\address.json" />
+    <EmbeddedResource Include="Sample Data\cars.json" />
     <EmbeddedResource Include="Sample Data\simpleperson.json" />
     <EmbeddedResource Include="Sample Data\customers4.json" />
     <EmbeddedResource Include="Sample Data\customers3.json" />
     <EmbeddedResource Include="Sample Data\customers2.json" />
     <EmbeddedResource Include="Sample Data\customers.json" />
+    <EmbeddedResource Include="Test Transforms\Functions\iif.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\position.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sortdesc.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sortmultipledesc.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sortmultiple.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sortnumbersdesc.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sortnumbers.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\sort.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\coalescenumber.jtran" />
+    <EmbeddedResource Include="Test Transforms\ExtensionFunctions\empties.jtran" />
     <EmbeddedResource Include="Test Transforms\extensionfunction2.jtran" />
     <EmbeddedResource Include="Test Transforms\extensionfunction.jtran" />
     <EmbeddedResource Include="Test Transforms\dotattributes2.jtran" />
     <EmbeddedResource Include="Test Transforms\dotattributes.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\coalesce.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map3.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map2.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map.jtran" />
@@ -71,6 +111,9 @@
     <EmbeddedResource Include="Test Transforms\foreach.jtran" />
     <EmbeddedResource Include="Test Transforms\foreachbreak.jtran" />
     <EmbeddedResource Include="Test Transforms\list.jtran" />
+    <EmbeddedResource Include="Test Transforms\iterate.jtran" />
+    <EmbeddedResource Include="Test Transforms\SyntaxErrors\includenotfound.jtran" />
+    <EmbeddedResource Include="Test Transforms\SyntaxErrors\foreach2.jtran" />
   </ItemGroup>
 
   <ItemGroup>

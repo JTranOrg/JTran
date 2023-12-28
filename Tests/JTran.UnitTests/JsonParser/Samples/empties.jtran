@@ -1,0 +1,47 @@
+{
+  "Driver":
+  {
+    "#if(empty(Cars[Make == 'Audi']))":
+    {
+      FirstName: "Bob",
+      LastName: "Jones"
+    },
+    "#else": 
+    {
+      FirstName: "Frank",
+      LastName: "Smith"
+    },
+    "#if(empty(Engine))":
+    {
+      Engine: "unknown"
+    },
+    "#if(empty(Driver))":
+    {
+      OriginalDriver: "unknown"
+    },
+    "#if(empty(Mechanics))":
+    {
+      Mechanics: "none"
+    },
+    "#if(empty(TrackNo))":
+    {
+      TrackNo: "track number not assigned"
+    },
+    "#if(empty(TrackName))":
+    {
+      TrackName: "track name not assigned"
+    },
+    "#if(empty(BobsYourUncle))":
+    {
+      Uncle: "bob"
+    },
+    "#if(empty(Aunt))":
+    {
+      Aunt: "Mae"
+    },
+    "#if(empty(Cousin.Father.Brother.Daughter))":
+    {
+      Cousin: "Linda"
+    }
+  }
+}

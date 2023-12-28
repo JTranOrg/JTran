@@ -1196,9 +1196,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSort, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[0]["Name"]);
             Assert.AreEqual("JohnSmith",        array[1]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[2]["Name"]);
@@ -1215,9 +1215,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSortDesc, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[3]["Name"]);
             Assert.AreEqual("JohnSmith",        array[2]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
@@ -1234,9 +1234,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSort2fields, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[0]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
             Assert.AreEqual("JohnSmith",        array[2]["Name"]);
@@ -1255,7 +1255,7 @@ namespace JTran.UnitTests
             var json  = JObject.Parse(result);
             var array = json["Persons"]  as JArray;
 
-            Assert.AreEqual(5,                  array.Count());
+            Assert.AreEqual(5,                    array!.Count);
             Assert.AreEqual("FredAnderson41",     array[0]["Name"]);
             Assert.AreEqual("LindaAnderson39",    array[1]["Name"]);
             Assert.AreEqual("JohnSmith34",        array[2]["Name"]);
@@ -2183,61 +2183,61 @@ namespace JTran.UnitTests
 
         public class Customer
         {
-            public string FirstName   { get; set; }
-            public string LastName    { get; set; }
+            public string FirstName   { get; set; } = "";
+            public string LastName    { get; set; } = "";
             public int    Age         { get; set; }
-            public string Address     { get; set; }
+            public string Address     { get; set; } = "";
         }        
         
         public class Automobile
         {
-            public string        Make     { get; set; }
-            public string        Model    { get; set; }
+            public string        Make     { get; set; } = "";
+            public string        Model    { get; set; } = "";
             public int           Year     { get; set; }
-            public string        Color    { get; set; }
+            public string        Color    { get; set; } = "";
         }
 
         public class CustomerContainer
         {
-            public string SpecialCustomer     { get; set; }
+            public string SpecialCustomer     { get; set; } = "";
             public List<Customer> Customers   { get; set; }
         }     
         
         public class Driver
         {
-            public string       FieldName   { get; set; }
-            public string       FirstName   { get; set; }
-            public string       LastName    { get; set; }
+            public string       FieldName   { get; set; } = "";
+            public string       FirstName   { get; set; } = "";
+            public string       LastName    { get; set; } = "";
             public Automobile2  Car         { get; set; }
         }
         
         public class Automobile2
         {
-            public string        FieldName { get; set; }
-            public string        Brand     { get; set; }
-            public string        Model     { get; set; }
-            public int           Year      { get; set; }
-            public string        Color     { get; set; }
+            public string        FieldName { get; set; } = "";
+            public string        Brand     { get; set; } = "";
+            public string        Model     { get; set; } = "";
+            public int           Year      { get; set; } 
+            public string        Color     { get; set; } = "";
         }
         
         public class Automobile3
         {
-            public string        Make       { get; set; }
-            public string        Model      { get; set; }
+            public string        Make       { get; set; } = "";
+            public string        Model      { get; set; } = "";
             public int           Year       { get; set; }
-            public string        Color      { get; set; }
+            public string        Color      { get; set; } = "";
             public IList<Driver> Mechanics  { get; set; }
         }
 
         public class Owner
         {
-            public string            Name   { get; set; }
+            public string            Name   { get; set; } = "";
             public List<Automobile3> Cars   { get; set; }
         }     
 
         public class Owner2
         {
-            public string            Name   { get; set; }
+            public string            Name   { get; set; } = "";
             public List<Automobile2> Cars   { get; set; }
         }     
 

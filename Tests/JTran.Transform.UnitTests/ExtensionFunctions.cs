@@ -1,8 +1,9 @@
+using System.Reflection;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
 
 namespace JTran.Transform.UnitTests
 {
@@ -32,6 +33,29 @@ namespace JTran.Transform.UnitTests
             var ex = await Assert.ThrowsExceptionAsync<TargetInvocationException>( async ()=> await TransformerTest.Test(transform, data, new object[] { new ExtFunctions() } ));
 
             Assert.IsTrue(ex.Message.Contains("badmama"));
+        }
+
+        [TestMethod]
+        [DataRow("ExtensionFunctions.empties", "ExtensionFunctions.empty")]
+        public async Task ExtensionFunctions_empty_Success(string transform, string data)
+        {
+            var result = await TransformerTest.Test(transform, data, new object[] { new ExtFunctions() } );
+
+            var json = JObject.Parse(result)!;
+            Assert.IsNotNull(JObject.Parse(result));
+
+            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result)!;
+
+            Assert.AreEqual("Bob",          driver.Driver.FirstName);
+            Assert.AreEqual("Jones",        driver.Driver.LastName);
+            Assert.AreEqual("unknown",      driver.Driver.Engine);
+            Assert.AreEqual("unknown",      driver.Driver.OriginalDriver);
+            Assert.AreEqual("track name not assigned", driver.Driver.TrackName);
+            Assert.AreEqual("track number not assigned", driver.Driver.TrackNo);
+            Assert.AreEqual("none",         driver.Driver.Mechanics);
+            Assert.AreEqual("bob",          driver.Driver.Uncle);
+            Assert.AreEqual("Mae",          driver.Driver.Aunt);
+            Assert.AreEqual("Linda",        driver.Driver.Cousin);
         }
 
         #region Private 

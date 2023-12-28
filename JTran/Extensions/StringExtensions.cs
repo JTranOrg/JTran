@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2023 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -18,11 +18,8 @@
  ****************************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.CompilerServices;
-
-using Newtonsoft.Json;
 
 using JTran.Json;
 
@@ -35,15 +32,29 @@ namespace JTran.Extensions
     public static class StringExtensions
     {
         /****************************************************************************/
+        public static T ToObject<T>(this string str) where T : new()
+        {          
+            var parser = new Json.Parser(new JsonModelBuilder());
+            var expObj = parser.Parse(str) as ExpandoObject;
+
+            return expObj.ToObject<T>();
+        }
+
+        /****************************************************************************/
         public static string FormatForJsonOutput(this string str)
         {            
             return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\\r").Replace("\n", "\\\n").Replace("\t", "\\\t").Replace("\f", "\\\f").Replace("\b", "\\\b");
         }
 
         /****************************************************************************/
-        public static T ExpandoToObject<T>(this object obj)
+        public static string SubstringBefore(this string str, string part)
         {            
-            return JsonConvert.DeserializeObject<T>((obj as ExpandoObject).ToJson());
+            var index = str.IndexOf(part);
+
+            if(index == -1)
+                return str;
+
+            return str.Substring(0, index);
         }
 
         /****************************************************************************/

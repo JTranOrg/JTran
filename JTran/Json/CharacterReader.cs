@@ -13,13 +13,13 @@ namespace JTran.Json
     /****************************************************************************/
     internal interface ICharacterReader
     {
-        char ReadNext();    
+        char ReadNext(ref long lineNumber);    
         void GoBack();    
     }
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class CharacterReader : ICharacterReader
+    internal class CharacterReader : ICharacterReader, IDisposable
     {
         private string? _currentLine;
         private int     _position = -1;
@@ -30,10 +30,15 @@ namespace JTran.Json
         internal CharacterReader(Stream stream) 
         { 
             //_reader = new StreamReader(stream);
-            _reader = new StreamReader(stream, Encoding.UTF8, true, 64 * 1024);
+            _reader = new StreamReader(stream, Encoding.UTF8, true, 8 * 1024);
         }
 
-        public char ReadNext()
+       internal CharacterReader(string str) 
+        { 
+            _reader = new StringReader(str);
+        }
+
+        public char ReadNext(ref long lineNumber)
         {
             if(_back != null)
             {
@@ -42,9 +47,13 @@ namespace JTran.Json
                 return _last;
             }
 
+            if(_currentLine == null && _position != -1)
+                throw new ArgumentOutOfRangeException(nameof(ReadNext));
+
             while(_position == -1 || _position >= _currentLine.Length)
             {
                 _currentLine = _reader.ReadLine();
+                ++lineNumber;
 
                 if(_currentLine == null)
                     throw new ArgumentOutOfRangeException(nameof(ReadNext));
@@ -66,6 +75,11 @@ namespace JTran.Json
                 throw new IndexOutOfRangeException(nameof(GoBack));
 
             _back = _last;
+        }
+
+        public void Dispose()
+        {
+            _reader.Dispose();
         }
     }
 }

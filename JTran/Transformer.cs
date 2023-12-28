@@ -42,6 +42,19 @@ namespace JTran
         {
             _transform = CompiledTransform.Compile(transform, includeSource);
             _extensionFunctions = CompileFunctions(extensionFunctions);
+        }       
+        
+        /****************************************************************************/
+        /// <summary>
+        /// Construct a new Transformer
+        /// </summary>
+        /// <param name="transform">A stream containing the JTran source</param>
+        /// <param name="extensionFunctions">Extension functions</param>
+        /// <param name="includeSource">Source for include files</param>
+        public Transformer(Stream transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
+        {
+            _transform = CompiledTransform.Compile(transform, includeSource);
+            _extensionFunctions = CompileFunctions(extensionFunctions);
         }
 
         /****************************************************************************/
@@ -51,6 +64,12 @@ namespace JTran
         }
 
         /****************************************************************************/
+        /// <summary>
+        /// Transforms the input json and writes to the output stream
+        /// </summary>
+        /// <param name="input">Contains the source json data</param>
+        /// <param name="output">A stream to write the results to</param>
+        /// <param name="context">A transformer context</param>
         public void Transform(Stream input, Stream output, TransformerContext context = null)
         {
              _transform.Transform(input, output, context, _extensionFunctions);
@@ -72,6 +91,8 @@ namespace JTran
             public SyntaxException(string error, Exception inner) : base(error, inner)
             {
             }
+
+            public long LineNumber { get; }
         }
 
         /****************************************************************************/

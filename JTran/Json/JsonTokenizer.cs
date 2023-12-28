@@ -14,7 +14,7 @@ namespace JTran.Json
     /// </summary>
     internal class JsonTokenizer
     {
-        internal JsonToken ReadNextToken(ICharacterReader reader) 
+        internal JsonToken ReadNextToken(ICharacterReader reader, ref long lineNumber) 
         {
             var ch = '\0';
 
@@ -22,12 +22,13 @@ namespace JTran.Json
             var token = new JsonToken();
             var doubleQuoted = false;
             var singleQuoted = false;
+            var previousChar = '\0';
 
             try
             { 
                 while(true)
                 {
-                    ch = reader.ReadNext();
+                    ch = reader.ReadNext(ref lineNumber);
 
                     if(!char.IsWhiteSpace(ch))
                         break;
@@ -57,7 +58,7 @@ namespace JTran.Json
 
                 while(true)
                 {
-                    ch = reader.ReadNext();
+                    ch = reader.ReadNext(ref lineNumber);
 
                     if(escape)
                     {
@@ -71,7 +72,7 @@ namespace JTran.Json
                             case '\"':   ch = '\"'; break;
                             case '\'':   ch = '\''; break;
                             default: 
-                                throw new Json.Parser.ParseError("Invalid escaped character", -1);
+                                throw new JsonParseException("Invalid escaped character", lineNumber);
                         }
 
                         escape = false;
@@ -97,15 +98,21 @@ namespace JTran.Json
                             reader.GoBack(); 
                             break;
                         }
+
+                        if(ch == '\"' || ch == '\'')
+                            throw new JsonParseException("Missing end quotes", lineNumber); 
                     }
 
                   Append:
 
                     sb.Append(ch); 
+                    previousChar = ch;
                 }
             }
             catch(ArgumentOutOfRangeException)
             { 
+                if(sb == null)
+                    throw new JsonParseException("Unexpected end of file", lineNumber);
             }
 
             if(sb != null)
@@ -123,9 +130,10 @@ namespace JTran.Json
                         case "false": token.Type = JsonToken.TokenType.Boolean; break;
                         default: 
                         {
-                            if(double.TryParse(val, out double dVal))
+                            if(decimal.TryParse(val, out decimal dVal))
                             { 
-                                token.Type = JsonToken.TokenType.Number; 
+                                token.Type  = JsonToken.TokenType.Number; 
+                                token.Value = dVal;
                             }
                             else
                                 token.Type = JsonToken.TokenType.Text; 
@@ -166,7 +174,7 @@ namespace JTran.Json
         }
 
         internal TokenType Type  { get; set; } = TokenType.EOF;
-        internal string    Value { get; set; } = "";
+        internal object    Value { get; set; } = "";
 
         internal enum TokenType
         {

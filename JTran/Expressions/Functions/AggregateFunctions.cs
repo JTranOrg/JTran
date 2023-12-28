@@ -164,12 +164,31 @@ namespace JTran.Expressions
             /*****************************************************************************/
             internal SortComparer(string[] sortFields)
             {
-                for(var i = 0; i < sortFields.Length; i += 2)
+                foreach(var sortField in sortFields)
                 {
-                    var field = new SortField { Name = sortFields[i] };
+                    if(sortField == "asc")
+                    {
+                        _sortFields.Last().Ascending = true;
+                        continue;
+                    }
 
-                    if(sortFields.Length-1 > i)
-                        field.Ascending = sortFields[i+1].ToLower() == "asc";
+                    if(sortField == "desc")
+                    {
+                        _sortFields.Last().Ascending = false;
+                        continue;
+                    }
+
+                    var field = new SortField { Name = sortField.Trim(), Ascending = true };
+
+                    if(field.Name.EndsWith(" desc"))
+                    { 
+                        field.Ascending = false;
+                        field.Name = field.Name.Substring(0, field.Name.Length - 4).Trim();
+                    }
+                    else if(field.Name.EndsWith(" asc"))
+                    { 
+                        field.Name = field.Name.Substring(0, field.Name.Length - 3).Trim();
+                    }
 
                     _sortFields.Add(field);
                 }

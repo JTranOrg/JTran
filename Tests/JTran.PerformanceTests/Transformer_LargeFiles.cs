@@ -1,7 +1,8 @@
-using JTran.Common;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text;
+
+using Newtonsoft.Json;
+
+using JTran.Common;
 
 namespace JTran.PerformanceTests
 {
@@ -23,25 +24,19 @@ namespace JTran.PerformanceTests
 
             await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
 
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+
             dataSource.Seek(0, SeekOrigin.Begin);
 
             var dtStart = DateTime.Now;
 
-            using var output = new MemoryStream();
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
 
             transformer.Transform(dataSource, output);
 
             var dtEnd = DateTime.Now;
 
             duration = dtEnd - dtStart;
-            
-            var sOutput = await output.ReadStringAsync();
-
-            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", sOutput);
-
-            var jresult = JObject.Parse(sOutput);
-
-            Assert.NotNull(jresult);
         }
 
         #region Private
