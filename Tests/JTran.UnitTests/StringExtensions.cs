@@ -17,6 +17,10 @@ namespace JTran.UnitTests
             Assert.AreEqual("b\\\"ob",  "b\"ob".FormatForJsonOutput());
             Assert.AreEqual("James \\\\Jim\\\\ Smith",  "James \\Jim\\ Smith".FormatForJsonOutput());
             Assert.AreEqual("James \\\\快\\\\ Chan",  "James \\快\\ Chan".FormatForJsonOutput());
+            Assert.AreEqual("James \\r Franklin",  "James \r Franklin".FormatForJsonOutput());
+            Assert.AreEqual("James \\r\\n Franklin",  "James \r\n Franklin".FormatForJsonOutput());
+            Assert.AreEqual("James \\\" Franklin",  "James \" Franklin".FormatForJsonOutput());
+            Assert.AreEqual("James \\\"\\n Franklin",  "James \"\n Franklin".FormatForJsonOutput());
         }
     }
 }
