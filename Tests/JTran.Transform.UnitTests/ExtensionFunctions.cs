@@ -20,7 +20,7 @@ namespace JTran.Transform.UnitTests
 
             Assert.AreEqual("xCamaro",   json["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
             Assert.AreEqual("xFirebird", json["Owner"]!["Cars"]!["Pontiac"]!["Model"]!.ToString());
-            Assert.AreEqual("xCharger",  json["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
+            Assert.AreEqual("xCha\\rrger",  json["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
             Assert.AreEqual("yGreen",    json["Owner"]!["Cars"]!["Chevy"]!["Color"]!.ToString());
             Assert.AreEqual("yBlue",     json["Owner"]!["Cars"]!["Pontiac"]!["Color"]!.ToString());
             Assert.AreEqual("yBlack",    json["Owner"]!["Cars"]!["Dodge"]!["Color"]!.ToString());
