@@ -27,6 +27,10 @@
     <None Remove="Sample Data\Functions\iif.json" />
     <None Remove="Sample Data\Functions\sortmultiple.json" />
     <None Remove="Sample Data\Functions\sortnumbers.json" />
+    <None Remove="Sample Data\Include\include.json" />
+    <None Remove="Sample Data\JTranFunctions\after.json" />
+    <None Remove="Sample Data\JTranFunctions\after2.json" />
+    <None Remove="Sample Data\JTranFunctions\nested.json" />
     <None Remove="Sample Data\map\address.json" />
     <None Remove="Sample Data\map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
@@ -49,7 +53,13 @@
     <None Remove="Test Transforms\Functions\sortmultipledesc.jtran" />
     <None Remove="Test Transforms\Functions\sortnumbers.jtran" />
     <None Remove="Test Transforms\Functions\sortnumbersdesc.jtran" />
+    <None Remove="Test Transforms\Iif\iif.jtran" />
+    <None Remove="Test Transforms\Iif\iif2.jtran" />
+    <None Remove="Test Transforms\Include\include.jtran" />
+    <None Remove="Test Transforms\Include\otherfile.jtran" />
     <None Remove="Test Transforms\iterate.jtran" />
+    <None Remove="Test Transforms\JTranFunctions\after.jtran" />
+    <None Remove="Test Transforms\JTranFunctions\nested.jtran" />
     <None Remove="Test Transforms\map\map.jtran" />
     <None Remove="Test Transforms\map\map2.jtran" />
     <None Remove="Test Transforms\map\map3.jtran" />
@@ -61,6 +71,8 @@
     <None Remove="Test Transforms\noelements.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\foreach2.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\includenotfound.jtran" />
+    <None Remove="Test Transforms\SyntaxErrors\variable.jtran" />
+    <None Remove="Test Transforms\SyntaxErrors\variable2.jtran" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,6 +86,15 @@
     <EmbeddedResource Include="Sample Data\car2.json" />
     <EmbeddedResource Include="Sample Data\car1.json" />
     <EmbeddedResource Include="Sample Data\ExtensionFunctions\empty.json" />
+    <EmbeddedResource Include="Sample Data\ForEach\nested.json" />
+    <EmbeddedResource Include="Sample Data\Include\include.json" />
+    <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
+    <EmbeddedResource Include="Test Transforms\Iif\iif2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Iif\iif.jtran" />
+    <EmbeddedResource Include="Test Transforms\Include\include.jtran" />
+    <EmbeddedResource Include="Test Transforms\Include\otherfile.jtran" />
+    <EmbeddedResource Include="Test Transforms\JTranFunctions\after2.jtran" />
+    <EmbeddedResource Include="Sample Data\JTranFunctions\after.json" />
     <EmbeddedResource Include="Sample Data\map\emptydata.json" />
     <EmbeddedResource Include="Sample Data\map\address.json" />
     <EmbeddedResource Include="Sample Data\cars.json" />
@@ -97,6 +118,9 @@
     <EmbeddedResource Include="Test Transforms\dotattributes2.jtran" />
     <EmbeddedResource Include="Test Transforms\dotattributes.jtran" />
     <EmbeddedResource Include="Test Transforms\Functions\coalesce.jtran" />
+    <EmbeddedResource Include="Test Transforms\JTranFunctions\after.jtran" />
+    <EmbeddedResource Include="Test Transforms\ForEach\nested.jtran" />
+    <EmbeddedResource Include="Test Transforms\JTranFunctions\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map3.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map2.jtran" />
     <EmbeddedResource Include="Test Transforms\map\map.jtran" />
@@ -112,6 +136,8 @@
     <EmbeddedResource Include="Test Transforms\foreachbreak.jtran" />
     <EmbeddedResource Include="Test Transforms\list.jtran" />
     <EmbeddedResource Include="Test Transforms\iterate.jtran" />
+    <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable2.jtran" />
+    <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\includenotfound.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\foreach2.jtran" />
   </ItemGroup>

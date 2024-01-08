@@ -1,0 +1,5 @@
+{
+  "#variable(driver)":  "bob",
+  
+  "Make": "#iif($driver == 'bob', 'Chevy', 'Audi')"
+}

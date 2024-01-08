@@ -17,23 +17,11 @@
  * 
  ****************************************************************************/
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Data;
 using System.Dynamic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-
-using JTran.Extensions;
-using JTran.Expressions;
+using System.Xml.Linq;
 using JTran.Json;
-using JTran.Parser;
-
-using JTranParser = JTran.Parser.Parser;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -43,74 +31,90 @@ namespace JTran
     /****************************************************************************/
     internal class JTranModelBuilder : IJsonModelBuilder
     {
-        private IDictionary<string, string>? _includeSource;
+        private readonly IDictionary<string, string>? _includeSource;
+        private readonly bool _include;
+        private readonly TContainer? _parent;
 
         /****************************************************************************/
-        public JTranModelBuilder(IDictionary<string, string>? includeSource = null) 
+        public JTranModelBuilder(IDictionary<string, string>? includeSource = null, bool include = false, TContainer? parent = null) 
         {
             _includeSource = includeSource;
+            _include = include;
+            _parent = parent;
         }
        
         #region Properties
 
         /****************************************************************************/
-        public object AddObject(string name, object? parent)
+        public object AddObject(string name, object? parent, object? previous)
         {
             if(parent == null)
-                return new CompiledTransform(_includeSource);
+            { 
+                var root = _include ? new IncludedTransform(_includeSource) : new CompiledTransform(_includeSource);
+
+                root.Parent = _parent;
+
+                return root;
+            }
 
             if(parent is TContainer container)
-                return container.CreateObject(name);
+                return container.CreateObject(name, previous);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
         public object AddArray(string name, object parent)
         {
             if(parent == null)
-                return new CompiledTransform(_includeSource);
+            { 
+                var root = _include ? new IncludedTransform(_includeSource) : new CompiledTransform(_includeSource);
+
+                root.Parent = _parent;
+
+                return root;
+            }
 
             if(parent is TContainer container)
-                return container.CreateArray(name, null);
+                return container.CreateArray(name);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddText(string name, string val, object parent)      
+        public object AddText(string name, string val, object parent, object? previous)      
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val);
+                return container.CreateProperty(name, val, previous);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddBoolean(string name, bool val, object parent)     
+        public object AddBoolean(string name, bool val, object parent, object? previous)     
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val);
+                return container.CreateProperty(name, val, previous);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
         
         /****************************************************************************/
-        public object AddNumber(string name, double val, object parent)    
+        public object AddNumber(string name, double val, object parent, object? previous)    
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val);
+                return container.CreateProperty(name, val, previous);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddNull(string name, object parent)                
+        public object AddNull(string name, object parent, object? previous)                
         {
             if(parent is TContainer container)
-                return container.CreateProperty(name, null);
+                return container.CreateProperty(name, null, previous);
 
-            throw new Transformer.SyntaxException("What the heck is this?!");
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         #endregion
@@ -120,59 +124,55 @@ namespace JTran
         /****************************************************************************/
         public object AddObject(object? parent)
         {
-            var newObj = new ExpandoObject();
+            if(parent is TContainer container)
+                return container.CreateObject(null, null);
 
-            if(parent is IList<object> list)
-                list.Add(newObj);
-
-            return newObj;
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
         public object AddArray(object? parent)
         {
-            var newArr = new List<object>();
+            if(parent is TContainer container)
+                return container.CreateArray(null);
 
-            if(parent is IList<object> list)
-                list.Add(newArr);
-
-            return newArr;
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
         public object AddText(string val, object parent)      
         { 
-            if(parent is IList<object> list)
-                list.Add(val);
+            if(parent is TContainer container)
+                return container.CreateProperty(null, val, null);
 
-            return val; 
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
         public object AddBoolean(bool val, object parent)     
         { 
-            if(parent is IList<object> list)
-                list.Add(val);
+            if(parent is TContainer container)
+                return container.CreateProperty(null, val, null);
 
-            return val; 
+            throw new Transformer.SyntaxException("Invalid container");
         }
         
         /****************************************************************************/
         public object AddNumber(double val, object parent)    
         { 
-            if(parent is IList<object> list)
-                list.Add(val);
+            if(parent is TContainer container)
+                return container.CreateProperty(null, val, null);
 
-            return val; 
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
         public object AddNull(object parent)                
         { 
-            if(parent is IList<object> list)
-                list.Add(null);
+            if(parent is TContainer container)
+                return container.CreateProperty("", null, null);
 
-            return (object)null; 
+            throw new Transformer.SyntaxException("Invalid container");
         }
 
         #endregion

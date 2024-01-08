@@ -57,36 +57,36 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public decimal sum(object val)
+        public double sum(object val)
         {
-            return aggregate(val, (result, dval)=> result + dval, 0M, out int count );
+            return aggregate(val, (result, dval)=> result + dval, 0d, out int count );
         }
 
        /*****************************************************************************/
-        public decimal avg(object val)
+        public double avg(object val)
         {
-            return aggregate(val, (result, dval)=> result + dval, 0M, out int count ) / count;
+            return aggregate(val, (result, dval)=> result + dval, 0d, out int count ) / count;
         }
 
         /*****************************************************************************/
-        public decimal max(object val)
+        public double max(object val)
         {
-            return aggregate(val, (result, dval)=> Math.Max(result, dval), 0M, out int count );
+            return aggregate(val, (result, dval)=> Math.Max(result, dval), 0d, out int count );
         }
 
         /*****************************************************************************/
-        public decimal min(object val)
+        public double min(object val)
         {
-            var retVal = aggregate(val, (result, dval)=> Math.Min(result, dval), decimal.MaxValue, out int count );
+            var retVal = aggregate(val, (result, dval)=> Math.Min(result, dval), double.MaxValue, out int count );
 
             if(count == 0)
-                return 0M;
+                return 0d;
 
             return retVal;
         }
 
         /*****************************************************************************/
-        public object reverse(object val)
+        public object? reverse(object val)
         {
             if(val is null)
                 return null;
@@ -98,7 +98,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object last(object val)
+        public object? last(object val)
         {
             if(val is null)
                 return null;
@@ -115,7 +115,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object first(object val)
+        public object? first(object val)
         {
             if(val is null)
                 return null;
@@ -133,7 +133,7 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public object sort(object expr, params string[] sortFields)
+        public object? sort(object expr, params string[] sortFields)
         {
             if(expr is null)
                 return null;
@@ -234,19 +234,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        private static decimal aggregate(object val, Func<decimal, decimal, decimal> fn, decimal startVal, out int count)
+        private static double aggregate(object val, Func<double, double, double> fn, double startVal, out int count)
         {
             count = 1;
 
             if(val is null)
-                return 0M;
+                return 0d;
 
             if(val is IEnumerable<object> list)
             { 
-                decimal result = startVal;
+                double result = startVal;
 
                 foreach(var item in list)
-                    if(decimal.TryParse(item.ToString(), out decimal dval))
+                    if(double.TryParse(item.ToString(), out double dval))
                         result = fn(result, dval);
 
                 count = list.Count();
@@ -254,10 +254,10 @@ namespace JTran.Expressions
                 return result;
             }
 
-            if(decimal.TryParse(val.ToString(), out decimal dval2))
+            if(double.TryParse(val.ToString(), out double dval2))
                 return dval2;
 
-            return 0M;
+            return 0d;
         }
 
         #endregion

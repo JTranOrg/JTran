@@ -14,16 +14,16 @@ namespace JTran.Json
     /****************************************************************************/
     /****************************************************************************/
     /// <summary>
-    /// Parse a text file and convert into the JTran data object model
+    /// Create an object model (ExpandoObject or jtran)
     /// </summary>
     internal interface IJsonModelBuilder
     {
-        object AddObject(string name, object parent);
+        object AddObject(string name, object parent, object? previous);
         object AddArray(string name, object parent);
-        object AddText(string name, string val, object parent);
-        object AddBoolean(string name, bool val, object parent);
-        object AddNumber(string name, double val, object parent);
-        object AddNull(string name, object parent);
+        object AddText(string name, string val, object parent, object? previous);
+        object AddBoolean(string name, bool val, object parent, object? previous);
+        object AddNumber(string name, double val, object parent, object? previous);
+        object AddNull(string name, object parent, object? previous);
 
         object AddObject(object? parent);
         object AddArray(object? parent);
@@ -36,14 +36,14 @@ namespace JTran.Json
     /****************************************************************************/
     /****************************************************************************/
     /// <summary>
-    /// Parse a text file and convert into the JTran data object model (an ExpandoObject)
+    /// Create a JTran data object model (an ExpandoObject)
     /// </summary>
     internal class JsonModelBuilder : IJsonModelBuilder
     {
         #region Properties
 
         /****************************************************************************/
-        public object AddObject(string name, object? parent)
+        public object AddObject(string name, object? parent, object? _)
         {
             var newObj = new ExpandoObject();
 
@@ -66,7 +66,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddText(string name, string val, object parent)      
+        public object AddText(string name, string val, object parent, object? previous)      
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -75,7 +75,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddBoolean(string name, bool val, object parent)     
+        public object AddBoolean(string name, bool val, object parent, object? previous)     
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -84,7 +84,7 @@ namespace JTran.Json
         }
         
         /****************************************************************************/
-        public object AddNumber(string name, double val, object parent)    
+        public object AddNumber(string name, double val, object parent, object? previous)    
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -93,7 +93,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddNull(string name, object parent)                
+        public object AddNull(string name, object parent, object? previous)                
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, null);

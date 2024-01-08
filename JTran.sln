@@ -42,6 +42,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Common", "JTran.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Transform.UnitTests", "Tests\JTran.Transform.UnitTests\JTran.Transform.UnitTests.csproj", "{3363902B-2E4A-4377-81DA-2F62D0DEA851}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rota", "Rota", "{BD20283D-F96D-48CC-AD10-42595CF3A028}"
+	ProjectSection(SolutionItems) = preProject
+		Rota\readme.md = Rota\readme.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rota.Transform.Test", "Rota\Rota.Transform.Test\Rota.Transform.Test.csproj", "{CFA44AFB-429D-4152-B40D-D17776D0B9E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transforms", "Rota\Transforms\Transforms.csproj", "{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JTran.Random", "JTran.Random\JTran.Random.csproj", "{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +107,18 @@ Global
 		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3363902B-2E4A-4377-81DA-2F62D0DEA851}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFA44AFB-429D-4152-B40D-D17776D0B9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFA44AFB-429D-4152-B40D-D17776D0B9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFA44AFB-429D-4152-B40D-D17776D0B9E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFA44AFB-429D-4152-B40D-D17776D0B9E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +131,8 @@ Global
 		{FCD93688-2288-4951-B271-6BE475E518E4} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
 		{5CDF702B-BE08-477D-A2F6-15110D2C26E5} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
 		{3363902B-2E4A-4377-81DA-2F62D0DEA851} = {F3B12120-EDF8-4DFE-A9B2-81D7AA3F2329}
+		{CFA44AFB-429D-4152-B40D-D17776D0B9E2} = {BD20283D-F96D-48CC-AD10-42595CF3A028}
+		{99E43A73-B7D1-4F93-A100-3FEAD37B84B2} = {BD20283D-F96D-48CC-AD10-42595CF3A028}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {95B81A49-7C69-455E-9627-6FF789B1A697}

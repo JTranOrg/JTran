@@ -75,7 +75,7 @@ namespace JTran.Extensions
                 else
                     expression = "";
 
-                obj = context.GetVariable(varName);
+                obj = context.GetVariable(varName, context);
 
                 if(expression == "")
                     return obj;
@@ -142,7 +142,7 @@ namespace JTran.Extensions
         }
 
         /*****************************************************************************/
-        internal static int CompareTo(this object leftVal, object rightVal, out Type type)
+        internal static int compareto(object? leftVal, object? rightVal, out Type type)
         {
             type = typeof(object);
 
@@ -155,8 +155,8 @@ namespace JTran.Extensions
             if(leftVal == null)
                 return -1;
 
-            var leftValStr  = leftVal?.ToString(); 
-            var rightValStr = rightVal?.ToString(); 
+            var leftValStr  = leftVal.ToString(); 
+            var rightValStr = rightVal.ToString(); 
 
             if(long.TryParse(leftValStr, out long leftLong))
             { 
@@ -167,12 +167,12 @@ namespace JTran.Extensions
                 }
             }
 
-            if(decimal.TryParse(leftValStr, out decimal leftDecimal))
+            if(double.TryParse(leftValStr, out double leftDouble))
             { 
-                if(decimal.TryParse(rightValStr, out decimal rightDecimal))
+                if(double.TryParse(rightValStr, out double rightDouble))
                 { 
-                    type = typeof(decimal);
-                    return leftDecimal.CompareTo(rightDecimal);
+                    type = typeof(double);
+                    return leftDouble.CompareTo(rightDouble);
                 }
             }
 
@@ -199,6 +199,12 @@ namespace JTran.Extensions
         }
 
         /*****************************************************************************/
+        internal static int CompareTo(this object leftVal, object rightVal, out Type type)
+        {
+            return compareto(leftVal, rightVal, out type);
+        }
+
+        /*****************************************************************************/
         internal static string FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
         {
             if(value == null)
@@ -217,7 +223,7 @@ namespace JTran.Extensions
                     if(long.TryParse(value.ToString(), out long lval))
                         return lval.ToString();
 
-                    if(decimal.TryParse(value.ToString(), out decimal dval))
+                    if(double.TryParse(value.ToString(), out double dval))
                         return dval.ToString().ReplaceEnding(".0", "");
                 }
 

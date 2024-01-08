@@ -69,8 +69,8 @@ namespace JTran.Expressions
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  
 
-            if(decimal.TryParse(value.ToString(), out decimal dval))
-                return dval != 0M;
+            if(double.TryParse(value.ToString(), out double dval))
+                return dval != 0d;
 
             return !string.IsNullOrWhiteSpace(value.ToString());
         }
@@ -80,9 +80,9 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class NumberValue : IExpression
     {
-        private decimal _value;
+        private double _value;
 
-        public NumberValue(decimal val)
+        public NumberValue(double val)
         {
             _value = val;
         }
@@ -97,7 +97,7 @@ namespace JTran.Expressions
 
         public bool EvaluateToBool(ExpressionContext context)
         {
-            return _value > 0M;
+            return _value > 0d;
         }
     }
 
@@ -277,13 +277,13 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            return context.GetVariable(_name);
+            return context.GetVariable(_name, context);
         }
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
         {
-            object val = context.GetVariable(_name);
+            object val = context.GetVariable(_name, context);
 
             return Value.EvaluateToBool(val, context);
         }

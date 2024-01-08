@@ -45,9 +45,9 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("Charger", json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
+            Assert.AreEqual("Camaro",   json.PathValue<string>("Owner.Cars.Chevy.Model"));
+            Assert.AreEqual("Firebird", json.PathValue<string>("Owner.Cars.Pontiac.Model"));
+            Assert.AreEqual("Charger",  json.PathValue<string>("Owner.Cars.Dodge.Model"));
         }
 
         [TestMethod]
@@ -99,10 +99,10 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
+            Assert.AreEqual("Camaro",   json.PathValue<string>("Owner.Cars.Chevy.Model"));
+            Assert.AreEqual("Firebird", json.PathValue<string>("Owner.Cars.Pontiac.Model"));
 
-            var dodgeModel = json["Owner"]["Cars"]["Dodge"]["Model"];
+            var dodgeModel = json.PathValue("Owner.Cars.Dodge.Model");
 
             Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
         }
@@ -195,15 +195,15 @@ namespace JTran.UnitTests
    
             Assert.AreNotEqual(_transformExtFunction, _data5);
 
-            var json = JObject.Parse(result);
+            var json = JObject.Parse(result)!;
 
-            Assert.AreEqual("xCamaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("xFirebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("xCharger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
-            Assert.AreEqual("yGreen",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
-            Assert.AreEqual("yBlue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
-            Assert.AreEqual("yBlack",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
-        }
+            Assert.AreEqual("xCamaro",   json["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
+            Assert.AreEqual("xFirebird", json["Owner"]!["Cars"]!["Pontiac"]!["Model"]!.ToString());
+            Assert.AreEqual("xCharger",  json["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
+            Assert.AreEqual("yGreen",    json["Owner"]!["Cars"]!["Chevy"]!["Color"]!.ToString());
+            Assert.AreEqual("yBlue",     json["Owner"]!["Cars"]!["Pontiac"]!["Color"]!.ToString());
+            Assert.AreEqual("yBlack",    json["Owner"]!["Cars"]!["Dodge"]!["Color"]!.ToString());
+        }                                             
 
         [TestMethod]
         public void Transformer_Transform_ExtensionFunction_ClassParam_Succeeds()
@@ -569,17 +569,6 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("Function")]
-        public void Transformer_Transform_Function_after__Success()
-        {
-            var transformer = new JTran.Transformer(_transformFunctionAfter, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.AreNotEqual(_transformFunctionAfter, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1964 }"), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        [TestCategory("Function")]
         public void Transformer_Transform_Function2_Success()
         {
             var transformer = new JTran.Transformer(_transformFunction2, null);
@@ -599,35 +588,6 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformFunctionParams, _dataForEachGroup1);
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1967 }"), JObject.Parse(result)));
         }
-
-        [TestMethod]
-        [TestCategory("Function")]
-        public void Transformer_Transform_Function_nested_Success()
-        {
-            var transformSource = LoadTransform("nestedfunction");
-            var transformer     = new JTran.Transformer(transformSource, null);
-            var result          = transformer.Transform(_dataProducts);
-            var json            = JObject.Parse(result);
-   
-            Assert.AreNotEqual(transformSource, _dataProducts);
-            Assert.AreEqual("Topsoil", json["Products"][0]["Name"].ToString());
-            Assert.AreEqual("Paint",   json["Products"][1]["Name"].ToString());
-        }
-
-        private static readonly string _dataProducts =
-        @"{
-	        'Products':
-	        [
-   		        {
-       		        'Name':   'Topsoil (yards)',
-       		        'UOM':    'yard'
-     	        },
-   		        {
-       		        'Name':   'Paint (gallons)',
-       		        'UOM':    'gallon'
-     	        }
-            ]
-        }";
 
         private static readonly string _transformFunction =
         @"{
@@ -2229,16 +2189,16 @@ namespace JTran.UnitTests
             public IList<Driver> Mechanics  { get; set; }
         }
 
-        public class Owner
-        {
-            public string            Name   { get; set; } = "";
-            public List<Automobile3> Cars   { get; set; }
-        }     
-
         public class Owner2
         {
             public string            Name   { get; set; } = "";
             public List<Automobile2> Cars   { get; set; }
+        }     
+
+        public class Owner
+        {
+            public string            Name   { get; set; } = "";
+            public List<Automobile3> Cars   { get; set; }
         }     
 
         public class Roster

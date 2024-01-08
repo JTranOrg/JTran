@@ -16,11 +16,11 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "floor");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7M) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7d) };
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual(12M, result);
+            Assert.AreEqual(12d, result);
         }
 
         [TestMethod]
@@ -28,7 +28,7 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "substring");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.Value("frank"), new JTran.Expressions.NumberValue(1M), new JTran.Expressions.NumberValue(3M) };
+            var parameters = new List<IExpression> { new JTran.Expressions.Value("frank"), new JTran.Expressions.NumberValue(1d), new JTran.Expressions.NumberValue(3d) };
 
             var result = func.Evaluate(parameters, context);
 
@@ -52,11 +52,11 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "precision");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7345M), new JTran.Expressions.NumberValue(2) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7345d), new JTran.Expressions.NumberValue(2) };
 
-            var result = (decimal)func.Evaluate(parameters, context);
+            var result = (double)func.Evaluate(parameters, context);
 
-            Assert.AreEqual(12.73M, result);
+            Assert.AreEqual(12.73d, result);
         }
 
         [TestMethod]
@@ -68,7 +68,7 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "empty");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(decimal.Parse(input)) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(double.Parse(input)) };
 
             Assert.AreEqual(result, Convert.ToBoolean(func.Evaluate(parameters, context)));
         }

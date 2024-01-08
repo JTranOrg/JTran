@@ -1,0 +1,14 @@
+{
+    "#variable(bob)": 
+    {
+      "name":  
+    },
+
+    "#foreach(Customers)":
+    {
+        "LastName":    "#(Surname)",
+        "FirstName":   "#($bob.name)",
+        "Age":         "#(Age)",
+        "Address":     "#(Address)"
+    }
+}

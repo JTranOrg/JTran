@@ -31,14 +31,14 @@ namespace JTran
     public class Transformer
     {
         private readonly CompiledTransform _transform;
-        private readonly ExtensionFunctions _extensionFunctions;
+        private readonly ExtensionFunctions? _extensionFunctions;
 
         /****************************************************************************/
         /// <summary>
         /// Construct a new Transformer
         /// </summary>
         /// <param name="transform">The JSON that defines the transform</param>
-        public Transformer(string transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
+        public Transformer(string transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
         {
             _transform = CompiledTransform.Compile(transform, includeSource);
             _extensionFunctions = CompileFunctions(extensionFunctions);
@@ -82,17 +82,15 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public class SyntaxException : Exception
+        public class SyntaxException : JsonParseException
         {
-            public SyntaxException(string error) : base(error)
+            public SyntaxException(string error) : base(error, 0)
             {
             }
 
             public SyntaxException(string error, Exception inner) : base(error, inner)
             {
             }
-
-            public long LineNumber { get; }
         }
 
         /****************************************************************************/
@@ -117,7 +115,7 @@ namespace JTran
         #region Private
 
         /****************************************************************************/
-        internal static ExtensionFunctions CompileFunctions(IEnumerable extensionFunctions)
+        internal static ExtensionFunctions CompileFunctions(IEnumerable? extensionFunctions)
         {
             var result = new Dictionary<string, Function>();
             var containers = new List<object>();

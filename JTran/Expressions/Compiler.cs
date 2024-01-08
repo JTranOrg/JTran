@@ -113,7 +113,7 @@ namespace JTran.Expressions
                     }
 
                     case Token.TokenType.Number:
-                        expr = new NumberValue(decimal.Parse(token.Value));
+                        expr = new NumberValue(double.Parse(token.Value));
                         break;
 
                     case Token.TokenType.Literal:
@@ -260,7 +260,7 @@ namespace JTran.Expressions
                     return new Value(token.Value);
 
                 case Token.TokenType.Number:
-                    return new NumberValue(decimal.Parse(token.Value));
+                    return new NumberValue(double.Parse(token.Value));
 
                 case Token.TokenType.Text:
                 { 

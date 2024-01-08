@@ -20,23 +20,25 @@ namespace JTran.PerformanceTests
             var transformer = CreateTransformer(_transformForEach1);
             TimeSpan duration = TimeSpan.Zero;
 
-            using var dataSource = CreateLargeDataSource(numItems);
+          //  using var dataSource = CreateLargeDataSource(numItems);
 
-            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
+          //  await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
 
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
 
-            dataSource.Seek(0, SeekOrigin.Begin);
+          //  dataSource.Seek(0, SeekOrigin.Begin);
 
             var dtStart = DateTime.Now;
 
             using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
 
-            transformer.Transform(dataSource, output);
+            transformer.Transform(input, output);
 
             var dtEnd = DateTime.Now;
 
             duration = dtEnd - dtStart;
+
+            await Task.CompletedTask;
         }
 
         #region Private

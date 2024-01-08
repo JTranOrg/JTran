@@ -6,12 +6,26 @@ namespace JTran
     /****************************************************************************/
     public class JsonParseException : Exception
     {
+    private long _lineNumber = 0L;
+
         public JsonParseException(string msg, long lineNo) : base(msg)
         {
             this.LineNumber = lineNo;
-            this.Data.Add("LineNumber", lineNo.ToString());
         }
 
-        public long LineNumber { get; }
+        public JsonParseException(string msg, Exception inner) : base(msg, inner)
+        {
+        }
+
+        public long LineNumber 
+        { 
+            get => _lineNumber; 
+
+            set
+            {
+                _lineNumber = value;
+                this.Data["LineNumber"] = _lineNumber.ToString();
+            }
+        }
     }
 }

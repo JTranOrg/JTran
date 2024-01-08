@@ -1,0 +1,8 @@
+{
+  "#include": "otherfile.jtran",
+
+  "#calltemplate(DisplayName)":
+  {
+    name: "bob"
+  }
+}

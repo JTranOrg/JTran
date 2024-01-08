@@ -166,8 +166,8 @@ namespace JTran.UnitTests
         #region Parse Errors
 
         [TestMethod]
-        [DataRow("singlecustomer_invalidescape")]
-        public void JsonParser_Parse_error(string fileName)
+        [DataRow("singlecustomer_invalidescape", 8)]
+        public void JsonParser_Parse_error(string fileName, int lineNumber)
         {
             var data       = LoadSample(fileName);
             var parser     = new Json.Parser(new JsonModelBuilder());
@@ -176,10 +176,25 @@ namespace JTran.UnitTests
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
 
             Assert.IsNotNull(ex);
+            Assert.AreEqual(lineNumber, ex.LineNumber);
+            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
         }
 
         [TestMethod]
         [DataRow("array_not_supported")]
+        public void JsonParser_Parse_array(string fileName)
+        {
+            var data       = LoadSample(fileName);
+            var parser     = new Json.Parser(new JsonModelBuilder());
+            using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            
+            var result = parser.Parse(strm);
+
+           Assert.IsNotNull(result);
+           Assert.IsTrue(result is IEnumerable<object>);
+        }
+
+        [TestMethod]
         [DataRow("not_json_at_all")]
         public void JsonParser_Parse_invalid_json_files(string fileName)
         {
@@ -189,15 +204,14 @@ namespace JTran.UnitTests
             
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
 
-            Assert.IsNotNull(ex);
-            Assert.AreEqual(1, ex.LineNumber);
-            Assert.AreEqual("1", ex.Data["LineNumber"]);
-            Assert.IsTrue(ex.Message.StartsWith("Unexpected token"));
+           Assert.AreEqual(1, ex.LineNumber);
+           Assert.AreEqual("1", ex.Data["LineNumber"]);
+           Assert.IsTrue(ex.Message.StartsWith("Invalid json"));
         }
 
         [TestMethod]
-        [DataRow("missing_quotes", 3)]
-        [DataRow("missing_quotes2", 10)]
+        [DataRow("missing_quotes", 2)]
+        [DataRow("missing_quotes2", 9)]
         public void JsonParser_Parse_missing_quotes(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
@@ -212,7 +226,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("missing_quotes3", 13)]
+        [DataRow("missing_quotes3", 10)]
         public void JsonParser_Parse_end_of_file(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
@@ -228,7 +242,7 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [DataRow("missing_brace", 7)]
-        [DataRow("missing_comma", 8)]
+        [DataRow("missing_comma", 7)]
         public void JsonParser_Parse_unexpected_token(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);

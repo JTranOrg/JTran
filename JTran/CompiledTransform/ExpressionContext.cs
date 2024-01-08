@@ -34,18 +34,18 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly object                                   _data;
-        private readonly IDictionary<string, object>              _variables;
-        private readonly IDictionary<string, IDocumentRepository> _docRepositories;
-        private readonly ExpressionContext                        _parent;
+        private readonly object                                    _data;
+        private readonly IDictionary<string, object>               _variables;
+        private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
+        private readonly ExpressionContext?                        _parent;
 
         /*****************************************************************************/
-        internal ExpressionContext(object                         data, 
-                                   string                         name = "", 
-                                   TransformerContext             transformerContext = null, 
-                                   ExtensionFunctions             extensionFunctions = null,
-                                   IDictionary<string, TTemplate> templates          = null,
-                                   IDictionary<string, TFunction> functions          = null)
+        internal ExpressionContext(object                          data, 
+                                   string                          name = "", 
+                                   TransformerContext?             transformerContext = null, 
+                                   ExtensionFunctions?             extensionFunctions = null,
+                                   IDictionary<string, TTemplate>? templates          = null,
+                                   IDictionary<string, TFunction>? functions          = null)
         {
             _data            = data;
             _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
@@ -78,14 +78,14 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object                         Data               => _data;
-        internal string                         Name               { get; }
-        internal bool                           PreviousCondition  { get; set; }
-        internal ExtensionFunctions             ExtensionFunctions { get; }
-        internal IDictionary<string, TTemplate> Templates          { get; }
-        internal IDictionary<string, TFunction> Functions          { get; }
-        internal IList<object>                  CurrentGroup       { get; set; }
-        internal Transformer.UserError          UserError          { get; set; }
+        internal object                           Data               => _data;
+        internal string                           Name               { get; }
+        internal bool                             PreviousCondition  { get; set; }
+        internal ExtensionFunctions?              ExtensionFunctions { get; }
+        internal IDictionary<string, TTemplate>?  Templates          { get; }
+        internal IDictionary<string, TFunction>?  Functions          { get; }
+        internal IList<object>?                   CurrentGroup       { get; set; }
+        internal Transformer.UserError?           UserError          { get; set; }
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
@@ -107,15 +107,26 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object GetVariable(string name)
+        internal object GetVariable(string name, ExpressionContext context)
         {
             if(_variables.ContainsKey(name))
-                return _variables[name];
+            { 
+                var val = _variables[name];
+
+                if(val is IVariable variable)
+                {
+                    val = variable.GetActualValue(context);
+
+                    _variables[name] = val;
+                }
+
+                return val;
+            }
 
             if(_parent == null)
                 throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
 
-            return _parent.GetVariable(name);
+            return _parent.GetVariable(name, context);
         }
 
         /*****************************************************************************/
@@ -235,8 +246,8 @@ namespace JTran
 
             if(!val.GetType().IsClass)
             { 
-                // If it's any kind of number return it as a decimal
-                if(decimal.TryParse(val.ToString(), out decimal dVal))
+                // If it's any kind of number return it as a double
+                if(double.TryParse(val.ToString(), out double dVal))
                     return dVal;
             }
 

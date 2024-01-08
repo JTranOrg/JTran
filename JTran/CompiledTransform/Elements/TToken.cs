@@ -12,17 +12,22 @@ namespace JTran
         public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
         /****************************************************************************/
-        internal protected IValue CreateValue(object value)
+        internal protected IValue CreateValue(object? value)
         {
-            return CreateValue(value?.ToString() ?? "");
+            return CreateValue(value?.ToString());
         }  
         
+        internal TContainer? Parent { get; set; }
+
         /****************************************************************************/
-        private IValue CreateValue(string sval)
+        private IValue CreateValue(string? sval)
         {
+            if(sval == null)
+                return new SimpleValue(sval);
+
             if(!sval.StartsWith("#("))
             { 
-                if(decimal.TryParse(sval, out decimal val))
+                if(double.TryParse(sval, out double val))
                     return new NumberValue(val);
 
                 return new SimpleValue(sval);

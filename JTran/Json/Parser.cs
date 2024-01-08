@@ -28,10 +28,12 @@ namespace JTran.Json
     /// </summary>
     internal class Parser : IJsonParser
     {
+        private readonly JsonTokenizer _tokenizer = new JsonTokenizer();
+        private readonly IJsonModelBuilder _modelBuilder;
+
         private long _lineNumber = 1;
         private ICharacterReader _reader;
-        private IJsonModelBuilder _modelBuilder;
-        private readonly JsonTokenizer _tokenizer = new JsonTokenizer();
+        private JsonToken _currentToken = new JsonToken(0L);
 
         /****************************************************************************/
         internal Parser(IJsonModelBuilder modelBuilder)
@@ -61,26 +63,40 @@ namespace JTran.Json
         public object InnerParse(ICharacterReader reader) 
         {
             _lineNumber = 0;
-
             _reader = reader;
 
-            var token = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
+            var tokenValue = "";
 
-            // ??? Add support for array
-            if(token.Type != JsonToken.TokenType.BeginObject) 
-                throw new JsonParseException($"Unexpected token: {token.Value}", _lineNumber);
+            try
+            { 
+                var token = _currentToken = _tokenizer.ReadNextToken(_reader, ref _lineNumber)!;
 
-            return BeginObject("", null);
+                if(token.Type == JsonToken.TokenType.BeginObject) 
+                    return BeginObject("", null, null);
+
+                if(token.Type == JsonToken.TokenType.BeginArray) 
+                    return BeginArray("", null);
+
+                tokenValue = token.Value.ToString();
+            }
+            catch(JsonParseException ex)
+            {
+                ex.LineNumber = _currentToken.LineNumber;
+                throw;
+            }
+
+            throw new JsonParseException("Invalid json", _lineNumber);
         }
 
-        private object BeginObject(string? name, object parent) 
+        private object BeginObject(string? name, object parent, object? previous) 
         {
-            var ex = name == null ? _modelBuilder.AddObject(parent) : _modelBuilder.AddObject(name, parent);
+            var ex = name == null ? _modelBuilder.AddObject(parent) : _modelBuilder.AddObject(name, parent, previous);
             var previousTokenType = JsonToken.TokenType.BeginObject;
+            object? runningPrevious = null;
 
             while(true)
             {
-                var token = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
+                var token = _currentToken = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
 
                 switch(token.Type)
                 {
@@ -97,7 +113,7 @@ namespace JTran.Json
                     {                    
                         var propName = token.Value.ToString();
                         
-                        BeginProperty(propName, ex);
+                        runningPrevious = BeginProperty(propName, ex, runningPrevious);
 
                         break;
                     }
@@ -116,7 +132,7 @@ namespace JTran.Json
 
             while(true)
             {
-                var token = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
+                var token =  _currentToken = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
 
                 switch(token.Type)
                 {
@@ -137,7 +153,7 @@ namespace JTran.Json
 
                     case JsonToken.TokenType.BeginObject:
                     {
-                        BeginObject(null, array);
+                        BeginObject(null, array, null);
                         continue;
                     }
 
@@ -156,21 +172,21 @@ namespace JTran.Json
             return array;
         }
 
-        private object BeginProperty(string name, object parent) 
+        private object BeginProperty(string name, object parent, object? previous) 
         {
-            var token = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
+            var token = _currentToken = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
 
              if(token.Type == JsonToken.TokenType.Property)
              { 
-                token = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
+                token = _currentToken = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
 
                 switch(token.Type)
                 {
-                    case JsonToken.TokenType.Text:        return _modelBuilder.AddText(name, token.Value.ToString(), parent);      
-                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, double.Parse(token.Value.ToString()), parent);       
-                    case JsonToken.TokenType.Boolean:     return _modelBuilder.AddBoolean(name, token.Value.ToString() == "true", parent);       
-                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent);       
-                    case JsonToken.TokenType.BeginObject: return BeginObject(name, parent);
+                    case JsonToken.TokenType.Text:        return _modelBuilder.AddText(name, token.Value.ToString(), parent, previous);      
+                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, double.Parse(token.Value.ToString()), parent, previous);       
+                    case JsonToken.TokenType.Boolean:     return _modelBuilder.AddBoolean(name, token.Value.ToString() == "true", parent, previous);       
+                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent, previous);       
+                    case JsonToken.TokenType.BeginObject: return BeginObject(name, parent, previous);
                     case JsonToken.TokenType.BeginArray:  return BeginArray(name, parent);
 
                     default:

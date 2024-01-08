@@ -1,0 +1,12 @@
+{
+  "#template(DisplayName, name)":
+  {
+    "FirstName": "#($name)",
+    "Year": 1965
+  },
+
+  "#function(DisplayName, person2)":
+  {
+    return: "#($person2.FirstName + $person2.LastName)"
+  }
+}

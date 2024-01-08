@@ -1,0 +1,109 @@
+{
+  "#variable(origins)": 
+  [
+    "Terra",
+    "Oraxia",
+    "Akh'Malia",
+    "Jannar",
+    "Detos",
+    "Abafar",
+    "Agamar",
+    "Akiva",
+    "Aldhani",
+    "Batuu",
+    "Bracca",
+    "Corellia",
+    "D'Qar",
+    "Eadu",
+    "Cardassia",
+    "Chalna",
+    "Dakala",
+    "Malona",
+    "Maxia Zeta",
+    "Narendra",
+    "Nel Bato",
+    "Ohniaka",
+    "Oran'taku",
+    "Paan Mokar",
+    "P'Jem",
+    "Praxis",
+    "Qo'noS",
+    "Rahm-Izad",
+    "Rakhar",
+    "Rha'darus",
+    "Risa",
+    "Ruah 4",
+    "Salva",
+    "Scalos",
+    "Sha Ka Ree",
+    "Sobras",
+    "T'Khut",
+    "T'Lani Prime",
+    "T-Rogoran",
+    "Talax",
+    "Eta Cassiopeia 3",
+    "Unefra 4",
+    "Valt Minor",
+    "Wadi",
+    "Xantoras",
+    "Xendi Sabu",
+    "Zetar",
+    "Z'Anaka"
+  ],
+
+  "#variable(nature_of_goods)": 
+  [
+    "Drones",
+    "Medical Supplies",
+    "Machinery",
+    "Machinery Parts",
+    "Metal Stock",
+    "Lumber",
+    "Plastic Stock",
+    "Foodstuffs",
+    "Chemicals (non-volatile)",
+    "Chemicals (volatile)"
+  ],
+
+  "ship": 
+  {
+    "name":             "Rocinante",
+    "class":            "Heavy Freighter",
+    "registration":     "Rigel 5",
+    "year_built":       "2465",
+    "length":           "120m",
+    "width":            "28m",
+    "height":           "14m",
+    "numengines":       "2",
+    "maxwarp":          "5",
+    "pod_attachment":   "external",
+    "maxpods":          "42"
+  },
+
+  "#iterate(4, pods)": 
+  {
+    "id":               "#(guid())",
+    "index":            "#(position() + 1)",
+    "origin":           "Terra",
+    "destination":      "#(pickrandom($origins))",
+
+    "#iterate(randominteger(2, 8), containers)": 
+    {
+      "id":             "#(guid())",
+      "index":          "#(position() + 1)",
+      "size":           "full",
+
+      "#iterate(randominteger(8, 128), shipments)": 
+      {
+        "id":           "#(guid())",
+        "index":        "#(position() + 1)",
+        "description":  "#(pickrandom($nature_of_goods))",
+        "quantity":     "#(randominteger(1, 100))",
+        "width":        "#(precision(randomnumber(4, 128), 2))",
+        "height":       "#(precision(randomnumber(4, 128), 2))",
+        "volume":       "#(precision(randomnumber(4, 128), 2))",
+        "weight":       "#(precision(randomnumber(4, 128), 2))"
+      }
+    }
+  }
+}

@@ -8,11 +8,11 @@ namespace JTran.Transform.UnitTests
 {
     public static class TransformerTest
     {
-        public static async Task<string> Test(string transformName, string sampleName, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null)
+        public static async Task<string> Test(string transformName, string sampleName, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null)
         {
             var transform   = await LoadTransform(transformName);
             var data        = await LoadSample(sampleName);
-            var transformer = new JTran.Transformer(transform, extFunctions);
+            var transformer = new JTran.Transformer(transform, extFunctions, includeSource: includeSource);
 
             if(dataTransform != null) 
                 data = dataTransform(data);
@@ -52,22 +52,25 @@ namespace JTran.Transform.UnitTests
             return result;
         }
 
-        #region Private
-
-        private static Task<string> LoadTransform(string name)
+        internal static Task<string> LoadTransform(string name)
         {
+            var files = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.Transform.UnitTests.Test_Transforms.{name}.jtran");
             
+            if(stream == null)
+                throw new FileNotFoundException(name);
+
             return stream!.ReadStringAsync();
         }
 
-        private static Task<string> LoadSample(string name)
+        internal static Task<string> LoadSample(string name)
         {
             using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.Transform.UnitTests.Sample_Data.{name}.json");
-            
+                       
+            if(stream == null)
+                throw new FileNotFoundException(name);
+
             return stream!.ReadStringAsync();
         }
-
-        #endregion
     }
 }

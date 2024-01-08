@@ -473,7 +473,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = new { Cylinders = 8 } }  } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(8m, expression.Evaluate(context));
+            Assert.AreEqual(8d, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -725,7 +725,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(3M, result);
+            Assert.AreEqual(3d, result);
         }
 
         [TestMethod]
@@ -741,7 +741,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(4M, result);
+            Assert.AreEqual(4d, result);
         }
 
         [TestMethod]
@@ -757,7 +757,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(4M, result);
+            Assert.AreEqual(4d, result);
         }
 
         [TestMethod]
@@ -773,7 +773,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(100M, result);
+            Assert.AreEqual(100d, result);
         }
 
         [TestMethod]
@@ -789,7 +789,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(10M, result);
+            Assert.AreEqual(10d, result);
         }
 
         [TestMethod]
@@ -848,13 +848,13 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(1, 5)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<double>((expression.Evaluate(context) as IList<object>).Select( i=> double.Parse(i.ToString())));
    
-            Assert.AreEqual(1m, list[0]);
-            Assert.AreEqual(2m, list[1]);
-            Assert.AreEqual(3m, list[2]);
-            Assert.AreEqual(4m, list[3]);
-            Assert.AreEqual(5m, list[4]);
+            Assert.AreEqual(1d, list[0]);
+            Assert.AreEqual(2d, list[1]);
+            Assert.AreEqual(3d, list[2]);
+            Assert.AreEqual(4d, list[3]);
+            Assert.AreEqual(5d, list[4]);
         }
 
         [TestMethod]
@@ -865,14 +865,14 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(2, 10, 2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<double>((expression.Evaluate(context) as IList<object>).Select( i=> double.Parse(i.ToString())));
    
             Assert.AreEqual(5,  list.Count);
-            Assert.AreEqual(2m, list[0]);
-            Assert.AreEqual(4m, list[1]);
-            Assert.AreEqual(6m, list[2]);
-            Assert.AreEqual(8m, list[3]);
-            Assert.AreEqual(10m, list[4]);
+            Assert.AreEqual(2d, list[0]);
+            Assert.AreEqual(4d, list[1]);
+            Assert.AreEqual(6d, list[2]);
+            Assert.AreEqual(8d, list[3]);
+            Assert.AreEqual(10d, list[4]);
         }
 
         [TestMethod]
@@ -883,14 +883,14 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(10, 2, -2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<double>((expression.Evaluate(context) as IList<object>).Select( i=> double.Parse(i.ToString())));
    
             Assert.AreEqual(5,  list.Count);
-            Assert.AreEqual(10m, list[0]);
-            Assert.AreEqual(8m, list[1]);
-            Assert.AreEqual(6m, list[2]);
-            Assert.AreEqual(4m, list[3]);
-            Assert.AreEqual(2m, list[4]);
+            Assert.AreEqual(10d, list[0]);
+            Assert.AreEqual(8d, list[1]);
+            Assert.AreEqual(6d, list[2]);
+            Assert.AreEqual(4d, list[3]);
+            Assert.AreEqual(2d, list[4]);
         }
 
         [TestMethod]
@@ -1136,7 +1136,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1000M }, new { Model = "Pontiac", SaleAmount = 2000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(3000M, expression.Evaluate(context));
+            Assert.AreEqual(3000d, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1148,7 +1148,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(2400M, expression.Evaluate(context));
+            Assert.AreEqual(2400d, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1160,7 +1160,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Model = "Chevy", SaleAmount = 1200M } ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(1200M, expression.Evaluate(context));
+            Assert.AreEqual(1200d, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1174,7 +1174,7 @@ namespace JTran.UnitTests
                                                                                                   new { Model = "Pontiac",  SaleAmount = 2000M},  
                                                                                                   new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(4000M, expression.Evaluate(context));
+            Assert.AreEqual(4000d, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1186,7 +1186,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(1200M, expression.Evaluate(context));
+            Assert.AreEqual(1200d, expression.Evaluate(context));
         }
 
         #endregion

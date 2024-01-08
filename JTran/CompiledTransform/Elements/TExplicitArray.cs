@@ -15,7 +15,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateObject(string name)
+        internal override TToken CreateObject(string name, object? previous)
         {
             var obj = new TObject(null);
 
@@ -25,7 +25,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateArray(string name, object? val)
+        internal override TToken CreateArray(string? name)
         {
             var obj = new TExplicitArray(null);
 
@@ -35,7 +35,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateProperty(string name, object val)
+        internal override TToken CreateProperty(string name, object? val, object? previous)
         {
             var obj = new TSimpleArrayItem(val);
 
@@ -44,7 +44,7 @@ namespace JTran
             return obj;
         }
 
-        internal IValue Name  { get; set; }
+        internal IValue? Name  { get; set; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)

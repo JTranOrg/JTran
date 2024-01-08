@@ -19,7 +19,7 @@ namespace JTran.Json
             var ch = '\0';
 
             StringBuilder? sb = null;
-            var token = new JsonToken();
+            var token = new JsonToken(lineNumber);
             var doubleQuoted = false;
             var singleQuoted = false;
             var previousChar = '\0';
@@ -36,7 +36,7 @@ namespace JTran.Json
 
                 switch(ch)
                 {
-                    case '\0': token.Type = JsonToken.TokenType.EOF;        token.Value = "end of file"; return token;
+                    case '\0': token.Type = JsonToken.TokenType.EOF;         token.Value = "end of file"; return token;
                     case '{':  token.Type = JsonToken.TokenType.BeginObject; token.Value = "{"; return token;
                     case '}':  token.Type = JsonToken.TokenType.EndObject;   token.Value = "}"; return token;
                     case '[':  token.Type = JsonToken.TokenType.BeginArray;  token.Value = "["; return token;
@@ -130,7 +130,7 @@ namespace JTran.Json
                         case "false": token.Type = JsonToken.TokenType.Boolean; break;
                         default: 
                         {
-                            if(decimal.TryParse(val, out decimal dVal))
+                            if(double.TryParse(val, out double dVal))
                             { 
                                 token.Type  = JsonToken.TokenType.Number; 
                                 token.Value = dVal;
@@ -169,12 +169,14 @@ namespace JTran.Json
 
     internal struct JsonToken
     {
-        public JsonToken()
+        public JsonToken(long lineNumber)
         {
+            this.LineNumber = lineNumber;
         }
 
-        internal TokenType Type  { get; set; } = TokenType.EOF;
-        internal object    Value { get; set; } = "";
+        internal TokenType Type       { get; set; } = TokenType.EOF;
+        internal object    Value      { get; set; } = "";
+        internal long      LineNumber { get; }
 
         internal enum TokenType
         {

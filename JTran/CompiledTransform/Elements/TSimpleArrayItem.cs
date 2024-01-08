@@ -11,7 +11,7 @@ namespace JTran
         private readonly IValue _val;
 
         /****************************************************************************/
-        internal TSimpleArrayItem(object val) 
+        internal TSimpleArrayItem(object? val) 
         {
             _val = CreateValue(val);
         }

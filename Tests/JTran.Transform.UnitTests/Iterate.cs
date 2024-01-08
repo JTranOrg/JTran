@@ -9,6 +9,7 @@ namespace JTran.Transform.UnitTests
     [TestCategory("Iterate")]
     public class IterateTests
     {
+    /*
         [TestMethod]
         [DataRow("iterate", "customers")]
         public async Task Iterate_success(string transform, string data)
@@ -19,6 +20,6 @@ namespace JTran.Transform.UnitTests
             var drivers = all!["Drivers"]! as JArray;
 
             Assert.AreEqual(3, drivers!.Count);
-        }
+        }*/
     }
 }

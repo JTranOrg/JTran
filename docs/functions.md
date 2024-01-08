@@ -266,6 +266,7 @@ Result is 'bob'<br><br>
 - [precision](#precision)
 - [round](#round)
 - [sqrt](#sqrt)
+- [truncate](#truncate)
 - Trigonometric Functions
   - [acos](#acos)
   - [asin](#asin)
@@ -307,7 +308,7 @@ Result is 1000<br><br>
 
 ##### <a id="precision">precision</a>(expr)
 
-Reduces the precision of the given decimal value to the the given numbe of decimal places
+Reduces the precision of the given decimal value to the the given number of decimal places
 
 
     #(precision(12.7342, 2))
@@ -325,6 +326,15 @@ Result is 4
     #(round(4.5))
 
 Result is 5<br><br>
+
+##### <a id="sqrt">sqrt</a>(expr)
+
+Gets the square root of the given val
+
+    #(sqrt(64))
+
+Result is 8
+
 
 #### Aggregate and Array Functions
 
@@ -807,6 +817,7 @@ Result is 45<br><br>
   - [coalescenumber](#coalescenumber)
   - [empty](#empty)
   - [errorcode](#errorcode)
+  - [guid](#guid)
   - [errormessage](#errormessage)
   - [iif](#iif)
   - [name](#name)
@@ -858,6 +869,15 @@ Evaluates the first parameter as a condition and returns the second parameter if
     "#(iif(7 == 8, 'frank', 'bob'))"
 
 Result is "bob"<br><br>
+
+##### <a id="guid">guid</a>()
+
+Creates a 128 bit globally unique identifer
+
+    "#(guid())"
+
+Result is (similiar to) "B385F4D7-AAB5-4C32-99F4-896F58154FE6"<br><br>
+
 
 ##### <a id="name">name</a>()
 

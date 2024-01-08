@@ -51,255 +51,263 @@ namespace JTran.Expressions
         #region Math Functions
 
         /*****************************************************************************/
-        public object floor(object val)
+        public object? floor(object val)
         {
             if(val == null)
                 return null;
 
-            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+            if(!double.TryParse(val.ToString(), out double dVal))
                 return null;
 
             return Math.Floor(dVal);
         }
 
         /*****************************************************************************/
-        public object ceiling(object val)
+        public object? ceiling(object val)
         {
             if(val == null)
                 return null;
 
-            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+            if(!double.TryParse(val.ToString(), out double dVal))
                 return null;
 
             return Math.Ceiling(dVal);
         }
 
         /*****************************************************************************/
-        public object round(object val)
+        public object? round(object val)
         {
             if(val == null)
                 return null;
 
-            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+            if(!double.TryParse(val.ToString(), out double dVal))
                 return null;
 
             return Math.Round(dVal);
         }
 
         /*****************************************************************************/
-        public object precision(object val, int numPlaces)
+        public object? precision(object val, int numPlaces)
         {
-            if(val == null)
+            if(val == null || numPlaces < 1)
                 return null;
 
-            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+            if(!double.TryParse(val.ToString(), out double dVal))
                 return null;
 
-            var multiplier = (decimal)Math.Pow(10, numPlaces);
+            var multiplier = (double)Math.Pow(10, numPlaces);
 
             return Math.Floor(dVal * multiplier) / multiplier;
         }
 
         /*****************************************************************************/
-        public object abs(object val)
+        public object? abs(object val)
         {
             if(val == null)
                 return null;
 
-            if(!decimal.TryParse(val.ToString(), out decimal dVal))
+            if(!double.TryParse(val.ToString(), out double dVal))
                 return null;
 
             return Math.Abs(dVal);
         }
 
         /*****************************************************************************/
-        public decimal? number(object val)
+        public object? number(object val)
         {
-            if(val != null)
-                if(decimal.TryParse(val.ToString(), out decimal result))
-                    return result;
+            if(val == null)
+                return null;
 
-            return null;
+            if(double.TryParse(val.ToString(), out double result))
+                return result;
+
+            return 0d;
         }
 
         /*****************************************************************************/
         public bool isnumber(object val)
         {
-            return decimal.TryParse(val.ToString(), out decimal result);
+            if(val == null)
+                return false;
+
+            return double.TryParse(val.ToString(), out double result);
         }
 
         /*****************************************************************************/
-        public bool isinteger(object val)
+        public bool? isinteger(object? val)
         {
+            if(val == null)
+                return false;
+
             return long.TryParse(val.ToString(), out long result);
         }
 
         /*****************************************************************************/
-        public object max(object val1, object val2)
+        public object? max(object val1, object val2)
         {
-            var result = val1.CompareTo(val2, out Type type) == 1 ? val1 : val2;
+            var result = ObjectExtensions.compareto(val1, val2, out Type type) == 1 ? val1 : val2;
             
             return Convert(result, type);
         }
 
         /*****************************************************************************/
-        public object min(object val1, object val2)
+        public object? min(object val1, object val2)
         {
-            var result = val1.CompareTo(val2, out Type type) == -1 ? val1 : val2;
+            var result =  ObjectExtensions.compareto(val1, val2, out Type type) == -1 ? val1 : val2;
             
             return Convert(result, type);
         }
         
         /*****************************************************************************/
-        public decimal pi()
+        public double pi()
         {            
-            return (decimal)Math.PI;
+            return (double)Math.PI;
         }
 
         /*****************************************************************************/
-        public object pow(object val1, object val2)
-        {            
-            if(val1 == null || val2 == null)
-                return null;
-
-            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
-                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
-                    return (decimal)Math.Pow((double)dVal1, (double)dVal2);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object sqrt(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Sqrt((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object sin(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Sin((double)dVal);
-
-            return null;
-        }
-
-
-        /*****************************************************************************/
-        public object cos(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Cos((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object sinh(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Sinh((double)dVal);
-
-            return null;
-        }
-
-
-        /*****************************************************************************/
-        public object cosh(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Cosh((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object tan(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Tan((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object acos(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Acos((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object asin(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Asin((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object atan(object val)
-        {            
-            if(val == null)
-                return null;
-
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
-                return(decimal)Math.Atan((double)dVal);
-
-            return null;
-        }
-
-        /*****************************************************************************/
-        public object atan2(object val1, object val2)
+        public object? pow(object val1, object val2)
         {            
             if(val1 == null || val2 == null)
                 return null;
 
-            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
-                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
-                    return (decimal)Math.Atan2((double)dVal1, (double)dVal2);
+            if(double.TryParse(val1.ToString(), out double dVal1))
+                if(double.TryParse(val2.ToString(), out double dVal2))
+                    return (double)Math.Pow((double)dVal1, (double)dVal2);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? sqrt(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Sqrt((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? sin(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Sin((double)dVal);
 
             return null;
         }
 
 
         /*****************************************************************************/
-        private object Convert(object result, Type type)
+        public object? cos(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Cos((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? sinh(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Sinh((double)dVal);
+
+            return null;
+        }
+
+
+        /*****************************************************************************/
+        public object? cosh(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Cosh((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? tan(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Tan((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? acos(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Acos((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? asin(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Asin((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? atan(object val)
+        {            
+            if(val == null)
+                return null;
+
+            if(double.TryParse(val.ToString(), out double dVal))
+                return Math.Atan((double)dVal);
+
+            return null;
+        }
+
+        /*****************************************************************************/
+        public object? atan2(object val1, object val2)
+        {            
+            if(val1 == null || val2 == null)
+                return null;
+
+            if(double.TryParse(val1.ToString(), out double dVal1))
+                if(double.TryParse(val2.ToString(), out double dVal2))
+                    return (double)Math.Atan2((double)dVal1, (double)dVal2);
+
+            return null;
+        }
+
+
+        /*****************************************************************************/
+        private object? Convert(object result, Type type)
         {
             switch(type.Name)
             {
                 case "Long":      return long.Parse(result.ToString());
-                case "Decimal":   return decimal.Parse(result.ToString());
+                case "double":   return double.Parse(result.ToString());
                 case "Boolean":   return bool.Parse(result.ToString());
                 case "String":    return result.ToString();
 
@@ -331,7 +339,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string lowercase(object val)
+        public string guid()
+        {
+            return Guid.NewGuid().ToString().ToLower();
+        }
+
+        /*****************************************************************************/
+        public string? lowercase(object val)
         {
             if(val == null)
                 return null;
@@ -340,7 +354,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string uppercase(object val)
+        public string? uppercase(object val)
         {
             if(val == null)
                 return null;
@@ -349,19 +363,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string substring(string val, int start, int length)
+        public string? substring(string val, int start, int length)
         {
-            return val.Substring(start, length);
+            return val?.Substring(start, length);
         }
 
         /*****************************************************************************/
-        public string substring(string val, int start)
+        public string? substring(string val, int start)
         {
-            return val.Substring(start);
+            return val?.Substring(start);
         }
 
         /*****************************************************************************/
-        public string substringafter(string val, string substr)
+        public string? substringafter(string val, string substr)
         {
             if(string.IsNullOrEmpty(val) || string.IsNullOrEmpty(substr))
                 return val;
@@ -430,55 +444,55 @@ namespace JTran.Expressions
             }
 
             if(val is IEnumerable<object> list)
-                return list.Any( i=> i.CompareTo(searchFor, out Type type) == 0 );
+                return list.Any( i=> ObjectExtensions.compareto(i, searchFor, out Type type) == 0 );
 
             return false;
         }
 
         /*****************************************************************************/
-        public string normalizespace(string val)
+        public string? normalizespace(string val)
         {
             return val?.Trim()?.Replace("  ", " ");
         }
 
         /*****************************************************************************/
-        public string trim(string val)
+        public string? trim(string val)
         {
             return val?.Trim();
         }
 
         /*****************************************************************************/
-        public string trimend(string val)
+        public string? trimend(string val)
         {
             return val?.TrimEnd();
         }
 
         /*****************************************************************************/
-        public string trimstart(string val)
+        public string? trimstart(string val)
         {
             return val?.TrimStart();
         }
         
         /*****************************************************************************/
-        public string replace(string val, string r1, string r2)
+        public string? replace(string val, string r1, string r2)
         {
             return val?.Replace(r1, r2);
         }
 
         /*****************************************************************************/
-        public string replaceending(string val, string r1, string r2)
+        public string? replaceending(string val, string r1, string r2)
         {
             return val?.ReplaceEnding(r1, r2);
         }
 
         /*****************************************************************************/
-        public string remove(string val, string r1)
+        public string? remove(string val, string r1)
         {
             return val?.Replace(r1, "");
         }
 
         /*****************************************************************************/
-        public string removeany(string val, IEnumerable<object> list)
+        public string? removeany(string val, IEnumerable<object> list)
         {
             if(val == null)
                 return null;
@@ -494,7 +508,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string padleft(string val, string padchar, int totalLen)
+        public string? padleft(string? val, string? padchar, int totalLen)
         {
             if(val == null || padchar == null || padchar.Length == 0)
                 return val;
@@ -503,7 +517,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string padright(string val, string padchar, int totalLen)
+        public string? padright(string val, string padchar, int totalLen)
         {
             if(val == null || padchar == null || padchar.Length == 0)
                 return val;
@@ -512,15 +526,20 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string removeending(string val, string r1)
+        public string? removeending(string val, string r1)
         {
             return val?.ReplaceEnding(r1, "");
         }
 
         /*****************************************************************************/
-        public string removeanyending(string val, object list)
+        public string? removeanyending(string? val, object list)
         {
-            foreach(var r1 in list as IEnumerable<object>)
+            if(val == null || list == null)
+            return null;
+            {
+                
+            }
+            foreach (var r1 in list as IEnumerable<object>)
             { 
                 var newVal = val?.ReplaceEnding(r1.ToString(), "");
 
@@ -544,7 +563,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public IEnumerable<string> split(string val, string separator)
+        public IEnumerable<string> split(string? val, string separator)
         {
             if(string.IsNullOrWhiteSpace(val)) 
                 return Enumerable.Empty<string>();
@@ -574,8 +593,8 @@ namespace JTran.Expressions
             if(val is string str)
                 return string.IsNullOrWhiteSpace(str);
 
-            if(decimal.TryParse(val.ToString(), out decimal dValue))
-                return dValue == 0M;
+            if(double.TryParse(val.ToString(), out double dValue))
+                return dValue == 0d;
 
             if(val is IEnumerable<object> list)
                 return list.Count() == 0;
@@ -703,33 +722,33 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public IList<object> sequence(object from, object to)
         {
-            return sequence(from, to, 1m);
+            return sequence(from, to, 1d);
         }
 
         /*****************************************************************************/
         public IList<object> sequence(object from, object to, object increment)
         {
-            if(!decimal.TryParse(from.ToString(), out decimal dFrom))
+            if(!double.TryParse(from.ToString(), out double dFrom))
                 return new List<object>();
 
-            if(!decimal.TryParse(to.ToString(), out decimal dTo))
+            if(!double.TryParse(to.ToString(), out double dTo))
                 return new List<object>();
 
-            decimal dIncrement = 1m;
+            double dIncrement = 1d;
 
-            if(decimal.TryParse(increment.ToString(), out decimal dIncr) && dIncr != 0m)
+            if(double.TryParse(increment.ToString(), out double dIncr) && dIncr != 0d)
                 dIncrement = dIncr;
 
             var list = new List<object>();
 
             if(dIncrement > 0)
             { 
-                for(decimal d = dFrom; d <= dTo; d += dIncrement)
+                for(double d = dFrom; d <= dTo; d += dIncrement)
                     list.Add(d);
             }
             else
             { 
-                for(decimal d = dFrom; d >= dTo; d += dIncrement)
+                for(double d = dFrom; d >= dTo; d += dIncrement)
                     list.Add(d);
             }
              

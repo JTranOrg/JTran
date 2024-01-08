@@ -90,7 +90,7 @@ namespace JTran.Expressions
                 var exp = output.ToString().JsonToExpando();
                 var dict = exp as IDictionary<string, object>;
 
-                if(dict.ContainsKey("return") && dict["return"] != null)
+                if(dict.ContainsKey("return"))
                     return dict["return"];
 
                 return exp;

@@ -254,6 +254,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[include (as a property)](#include (as a property))</strong> - Outputs the specified properties of an object 
+- <strong>[iterate](#iterate)</strong> - Create an array by looping over the contents
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
 - <strong>[map](#map)</strong> - Maps a set of a keys or expressions to a single output value 
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
@@ -507,7 +508,7 @@ Takes on object and outputs the properties of that object except for those that 
 ###### Transform
 
     {
-        "Supervisor": #exclude(Employees[Title == 'Supervisor'], Title)":
+        "Supervisor": "#exclude(Employees[Title == 'Supervisor'], Title)":
     }
 
 ###### Source Document
@@ -810,7 +811,6 @@ You must specify how the included files are loaded when instantiating the transf
 
 #include takes on object and outputs only the properties of that object that are listed. If the expression is not an object than a null is returned.
 
-
 ###### Transform
 
     {
@@ -843,6 +843,60 @@ You must specify how the included files are loaded when instantiating the transf
             FirstName: "Linda",
             LastName:  "Smith"
         }
+    }
+
+#### #iterate
+
+#iterate will create an array with the given name and iterate the number of times (derived from the expression) over the contents
+
+###### Transform
+
+    {
+        "#iterate(length(Cars), Cars)":
+        {
+            Index: "#(position() + 1)",
+            Make:  "Cars[position()]"
+        }
+    }
+
+###### Source Document
+
+    {
+        Cars:
+        [
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            },
+            {
+               Make:  "Dodge",
+               Model: "Charger"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Cars:
+        [
+            {
+                Index: "1",
+                Make:  "Chevy"
+            },
+            {
+                Index: "2",
+                Make:  "Pontiac"
+            },
+            {
+                Index: "3",
+                Make:  "Dodge"
+            }
+       ]
     }
 
 #### #if

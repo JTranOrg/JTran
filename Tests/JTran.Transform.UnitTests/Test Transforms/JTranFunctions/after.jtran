@@ -1,0 +1,8 @@
+{
+  "Year": "#(BestYear(3))",
+
+  "#function(BestYear)":
+  {
+    "return": 1964
+  }
+}

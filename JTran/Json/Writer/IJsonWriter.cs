@@ -53,6 +53,8 @@ namespace JTran
         bool InArray  { get; }
     }    
     
+    /****************************************************************************/
+    /****************************************************************************/
     /// <summary>
     /// Class for writing to a json document 
     /// </summary>
@@ -205,7 +207,7 @@ namespace JTran
         public void StartChild()
         {
             if(!_stack.Empty() && _stack.Peek().NumChildren > 0 && !_stack.Peek().ChildFinished)
-           {
+            {
                  AppendLine(",");
                 _stack.Peek().ChildFinished = true;
             }
@@ -301,11 +303,15 @@ namespace JTran
         #endregion
     }
         
+    /****************************************************************************/
+    /****************************************************************************/
     /// <summary>
     /// Tests whether any output will ever be written
     /// </summary>
     internal class JsonTestWriter : IJsonWriter
     {
+        internal long NumWrites   { get; private set; }
+
         /****************************************************************************/
         internal JsonTestWriter()
         {
@@ -322,51 +328,50 @@ namespace JTran
         /****************************************************************************/
         public void WriteContainerName(string name)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteSimpleArrayItem(object item)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteItem(object item, bool newContainer = true)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteProperties(object item)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteList(IEnumerable<object> list)
         {
-            // ??? Maybe not if empty
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteProperty(string name, object val, bool forceString = false)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteRaw(string json)
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
         public void WriteRaw(Stream strm)
         {
             if(strm.Length > 0)
-                throw new HaveOutput();
+                ++NumWrites;
         }
 
         #endregion
@@ -384,7 +389,7 @@ namespace JTran
         /****************************************************************************/
         public void StartObject()
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/
@@ -395,7 +400,7 @@ namespace JTran
         /****************************************************************************/
         public void StartArray()
         {
-            throw new HaveOutput();
+            ++NumWrites;
         }
 
         /****************************************************************************/

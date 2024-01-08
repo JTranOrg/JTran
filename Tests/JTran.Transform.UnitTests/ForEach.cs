@@ -121,5 +121,21 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("John",  customers!.Customers[0].FirstName);
             Assert.AreEqual("Smith", customers!.Customers[0].LastName);
         }
+
+        [TestMethod]
+        [DataRow("nested", "nested")]
+        public async Task Functions_nested(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, "ForEach." + data);
+
+            var roster = JsonConvert.DeserializeObject<Roster>(result);
+
+            Assert.AreEqual(3,               roster?.Owner?.Cars.Count);
+            Assert.AreEqual("Chevy",         roster?.Owner?.Cars[0].Make);
+            Assert.AreEqual("Camaro",        roster?.Owner?.Cars[0].Model);
+            Assert.AreEqual(3,               roster?.Owner?.Cars[0].Mechanics.Count);
+            Assert.AreEqual("Bob",           roster?.Owner?.Cars[0].Mechanics[0].FirstName);
+            Assert.AreEqual("Mendez",        roster?.Owner?.Cars[0].Mechanics[0].LastName);
+        }
     }
 }

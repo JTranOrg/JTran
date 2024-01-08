@@ -1,12 +1,7 @@
-﻿using JTran.Extensions;
-using JTran.Json;
-using JTran.Parser;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Dynamic;
-using System.Linq;
+
+using JTran.Extensions;
 
 namespace JTran
 {
@@ -17,9 +12,7 @@ namespace JTran
         internal List<TToken>                   Children    { get; }
         internal IDictionary<string, TTemplate> Templates   { get; }
         internal IDictionary<string, TFunction> Functions   { get; }
-        internal CompiledTransform              CompiledTransform { get; set; }
-
-        private TToken _previous;
+        internal CompiledTransform?             CompiledTransform { get; set; }
 
         /****************************************************************************/
         internal TContainer()
@@ -47,32 +40,33 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected void Compile(CompiledTransform transform, ExpandoObject source, TContainer parent = null)
-        {   
-            foreach(var child in source)
-            {
-                var newToken = CreateToken(transform, child.Key, child.Value, parent);
+        internal protected virtual TTemplate AddTemplate(TTemplate template)
+        {
+            this.Templates.Add(template.Name, template);
 
-                if(newToken != null)
-                    this.Children.Add(newToken);
-
-                _previous = newToken;
-            }
+            return template;
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateObject(string name)
+        internal protected virtual TFunction AddFunction(TFunction function)
+        {
+            this.Functions.Add(function.Name, function);
+
+            return function;
+        }
+
+        /****************************************************************************/
+        internal virtual TToken CreateObject(string name, object? previous)
         {
             TToken? result = null;
             
+            if(name.StartsWith("#template"))
+                return AddTemplate(new TTemplate(name));
+
             if(name.StartsWith("#function"))
-            { 
-                var function = new TFunction(name);
+                return AddFunction(new TFunction(name));
 
-                this.Functions.Add(function.Name, function);
-            }
-
-            else if(name.StartsWith("#variable"))
+            if(name.StartsWith("#variable"))
                 result = new TVariableObject(name);
 
             else if(name.StartsWith("#map("))
@@ -90,6 +84,9 @@ namespace JTran
             else if(name.StartsWith("#foreach"))
                 result = new TForEach(name);
 
+            else if(name.StartsWith("#iterate"))
+                result = new TIterate(name);
+
             else if(name.StartsWith("#arrayitem"))
                 result = new TArrayItem(name);
 
@@ -101,7 +98,7 @@ namespace JTran
 
             else if(name.StartsWith("#catch"))
             { 
-                if(_previous is TTry || _previous is TCatch)
+                if(previous is TTry || previous is TCatch)
                     result = new TCatch(name);
 
                else
@@ -113,7 +110,7 @@ namespace JTran
 
             else if(name.StartsWith("#elseif"))
             { 
-                if(_previous is TIf || _previous is TElseIf)
+                if(previous is TIf || previous is TElseIf)
                     result = new TElseIf(name);
                 else
                     throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
@@ -121,7 +118,7 @@ namespace JTran
 
             else if(name.StartsWith("#else"))
             { 
-                if(_previous is TIf || _previous is TElseIf)
+                if(previous is TIf || previous is TElseIf)
                     result = new TElse(name);
                 else 
                     throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
@@ -138,201 +135,144 @@ namespace JTran
                 result = new TObject(name);
 
             if(result != null)
-                this.Children.Add(result);
-
-            return result;
-        }
-
-        /****************************************************************************/
-        internal virtual TToken CreateArray(string name, object? val)
-        {
-            TToken? result = new TExplicitArray(name);
-
-            if(result != null)
-                this.Children.Add(result);
-
-            return result;
-        }
-
-        /****************************************************************************/
-        internal virtual TToken CreateProperty(string name, object? val)
-        {
-            TToken? result = null;
-
-            if(result != null)
-                this.Children.Add(result);
-
-            return result;
-        }
-
-        /****************************************************************************/
-        internal TToken CreateToken(CompiledTransform transform, string name, object child, TContainer parent)
-        {   
-            var t = child.GetType().ToString();
-
-            // Is the child an array "[]"
-           // if(child is IEnumerable<object> array)
-            //    return new TExplicitArray(name, array);
-
-            // Is the child an object "{}"
-            if(child is ExpandoObject obj)
             { 
-                if(name.StartsWith("#template"))
-                { 
-                    var template = new TTemplate(name);
+                this.Children.Add(result);
+                result.Parent = this;
+            }
 
-                    this.Templates.Add(template.Name, template);
+            return result;
+        }
+
+        /****************************************************************************/
+        internal virtual TToken CreateArray(string? name)
+        {
+            TToken? result;
+
+            if(name?.StartsWith("#variable") ?? false)
+                result = new TVariableArray(name);
+            else 
+                result = new TExplicitArray(name);
+
+            this.Children.Add(result);
+
+            return result;
+        }
+
+        /****************************************************************************/
+        internal virtual TToken CreateProperty(string name, object? val, object? previous)
+        {
+            var result = CreatePropertyToken(name, val, previous);
+
+            if(result != null)
+            { 
+                this.Children.Add(result);
+                result.Parent = this;
+            }
+
+            return result;
+        }
+
+        /****************************************************************************/
+        protected virtual TToken CreatePropertyToken(string name, object child, object? previous)
+        {   
+            if(!string.IsNullOrEmpty(name)) 
+            { 
+                if(name.StartsWith("#include"))
+                { 
+                    this.CompiledTransform.LoadInclude(child.ToString(), this);
+
                     return null;
                 }
 
-                if(name.StartsWith("#function"))
-                { 
-                    var function = new TFunction(name);
-
-                    this.Functions.Add(function.Name, function);
-                    return null;
-                }
+                if(name.StartsWith("#break"))
+                    return new TBreak();
 
                 if(name.StartsWith("#variable"))
-                    return new TVariableObject(name);
+                    return new TVariable(name, child);
 
-                if(name.StartsWith("#map("))
-                    return new TMap(name);
+                if(name.StartsWith("#message"))
+                    return new TMessage(child);
 
-                 if(name.StartsWith("#calltemplate"))
-                    return new TCallTemplate(name);
+                if(name.StartsWith("#throw"))
+                    return new TThrow(name, child);
 
-                if(name.StartsWith("#bind"))
-                    return new TBind(name);
+                var sval = child.ToString();
 
-                if(name.StartsWith("#foreachgroup"))
-                    return new TForEachGroup(name);
+                if(name.StartsWith("#mapitem"))
+                {                
+                    if(this is TMap && (previous is TMapItem || previous == null))
+                        return new TMapItem(name, child);
 
-                if(name.StartsWith("#foreach"))
-                    return new TForEach(name);
-
-                if(name.StartsWith("#arrayitem"))
-                    return new TArrayItem(name);
-
-                if(name.StartsWith("#array"))
-                    return new TArray(name);
-
-                if(name.StartsWith("#try"))
-                    return new TTry();
-
-                if(name.StartsWith("#catch"))
-                { 
-                    if(_previous is TTry || _previous is TCatch)
-                        return new TCatch(name);
-
-                    throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
+                    throw new Transformer.SyntaxException("#mapitem must be a child of #map");
                 }
 
+                if(name.StartsWith("#arrayitem"))
+                    return new TSimpleArrayItem(child);
+
                 if(name.StartsWith("#if"))
-                    return new TIf(name);
+                    return new TPropertyIf(name, child);
 
                 if(name.StartsWith("#elseif"))
                 { 
-                    if(_previous is TIf || _previous is TElseIf)
-                        return new TElseIf(name);
+                    if(previous is TPropertyIf || previous is TElseIf)
+                        return new TPropertyElseIf(name, child);
 
                     throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
                 }
 
                 if(name.StartsWith("#else"))
                 { 
-                    if(_previous is TIf || _previous is TElseIf)
-                        return new TElse(name);
+                    if(previous is TPropertyIf || previous is TPropertyElseIf)
+                        return new TPropertyElse(name, child);
 
                     throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+                }   
+
+                if(sval.StartsWith("#copyof"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TCopyOf(null, sval);
+
+                    return new TCopyOf(name, sval);
+                }
+
+                if(sval.StartsWith("#include"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TInclude(null, sval);
+
+                    return new TInclude(name, sval);
+                }
+
+                if(sval.StartsWith("#exclude"))
+                { 
+                    if(name.StartsWith("#noobject"))
+                        return new TExclude(null, sval);
+
+                    return new TExclude(name, sval);
+                }
+
+                if(sval.StartsWith("#iif"))
+                { 
+                    return new TIif(name, sval);
                 }
 
                 if(name.StartsWith("#") && !name.StartsWith("#("))
                 { 
                     name = name.SubstringBefore("(").Trim();
 
-                    throw new Transformer.SyntaxException($"Unknown element name: {name} at line number ???");
+                    throw new Transformer.SyntaxException($"Unknown element name: {name}");
                 }
 
-                return new TObject(name);
+                if(sval.StartsWith("#") && !sval.StartsWith("#("))
+                { 
+                    sval = sval.SubstringBefore("(").Trim();
+
+                    throw new Transformer.SyntaxException($"Unknown element name: {sval}");
+                }
             }
 
-            // Must be a simple property
-            if(name.StartsWith("#include"))
-            { 
-                transform.LoadInclude(child.ToString());
-                return null;
-            }
-
-            if(name.StartsWith("#break"))
-                return new TBreak();
-
-            if(name.StartsWith("#variable"))
-                return new TVariable(name, child);
-
-            if(name.StartsWith("#message"))
-                return new TMessage(child);
-
-            if(name.StartsWith("#throw"))
-                return new TThrow(name, child);
-
-            var sval = child.ToString();
-
-            if(name.StartsWith("#mapitem"))
-            {                
-                if(parent is TMap && (_previous is TMapItem || _previous == null))
-                    return new TMapItem(name, child);
-
-                throw new Transformer.SyntaxException("#mapitem must be a child of #map");
-            }
-
-            if(name.StartsWith("#arrayitem"))
-                return new TSimpleArrayItem(child);
-
-            if(sval.StartsWith("#copyof"))
-            { 
-                if(name.StartsWith("#noobject"))
-                    return new TCopyOf(null, sval);
-
-                return new TCopyOf(name, sval);
-            }
-
-            if(sval.StartsWith("#include"))
-            { 
-                if(name.StartsWith("#noobject"))
-                    return new TInclude(null, sval);
-
-                return new TInclude(name, sval);
-            }
-
-            if(sval.StartsWith("#exclude"))
-            { 
-                if(name.StartsWith("#noobject"))
-                    return new TExclude(null, sval);
-
-                return new TExclude(name, sval);
-            }
-
-            if(name.StartsWith("#if"))
-                return new TPropertyIf(name, child);
-
-            if(name.StartsWith("#elseif"))
-            { 
-                if(_previous is TPropertyIf || _previous is TElseIf)
-                    return new TPropertyElseIf(name, child);
-
-                throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
-            }
-
-            if(name.StartsWith("#else"))
-            { 
-                if(_previous is TPropertyIf || _previous is TPropertyElseIf)
-                    return new TPropertyElse(name, child);
-
-                throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
-            }                
-                
             return new TProperty(name, child);
-        }
+       }
     }
 }

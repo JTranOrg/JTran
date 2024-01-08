@@ -24,10 +24,10 @@ namespace JTran.UnitTests
             Assert.AreEqual(JsonToken.TokenType.Property,       Test("  :").Type);
 
             Assert.AreEqual(JsonToken.TokenType.Number,         Test("  42").Type);
-            Assert.AreEqual(42m,                                Test("  42").Value);
+            Assert.AreEqual(42d,                                Test("  42").Value);
 
             Assert.AreEqual(JsonToken.TokenType.Number,         Test("  42.2").Type);
-            Assert.AreEqual(42.2m,                              Test("  42.2").Value);
+            Assert.AreEqual(42.2d,                              Test("  42.2").Value);
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \"bob\"").Type);
             Assert.AreEqual("bob",                              Test("  \"bob\"").Value);
