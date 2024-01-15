@@ -1,0 +1,6 @@
+{
+  "#foreach(['Chevy', 'Pontiac', 'Audi'], Cars)":
+  {
+    "Make": "#(@)"
+  }
+}

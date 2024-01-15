@@ -1,0 +1,7 @@
+{
+  "Brand":    "#(Make)",
+  "Model":    "#(Model)",
+  "Year":     "#(Year)",
+  "Color":    "#(Color)",
+  "Invoice":  "#copyof(Service.Parts)"
+}

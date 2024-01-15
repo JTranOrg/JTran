@@ -728,60 +728,10 @@ If no array name is specified then no new array is created and contents are outp
         ]
     }
 
-If no array name is specified then no new array is created and contents are output for each child
-
-###### Transform
-
-    {
-        "#foreach(Cars)":
-        {
-            "#(Make)":
-            {
-                Model:   "#(Model)",
-                Driver:  "#(//Driver.Name)"
-            }
-        }
-    }
-
-###### Source Document
-
-    {
-        Cars:
-        [
-            {
-               Make:  "Chevy",
-               Model: "Corvette"
-            },
-            {
-               Make:  "Pontiac",
-               Model: "Firebird"
-            }
-        ],
-        Driver:
-        {
-           Name: "Joe Smith"
-        }
-    }
-
-###### Output
-
-    {
-        Chevy:
-        {
-            Model: "Corvette",
-            Driver: "Joe Smith"
-        },
-        Pontiac:
-        {
-            Model: "Firebird",
-            Driver: "Joe Smith"
-        }
-    }
-
 
 #### #include
 
-#include provides a way to include JTran code from external files. Templates are the only things that can be in included files.
+#include provides a way to include JTran code from external files. Templates and functions are the only things that can be in included files.
 
     {
         "#include":     "mytemplates.json",  // The value cannot be an expression. It must be a hardcoded value

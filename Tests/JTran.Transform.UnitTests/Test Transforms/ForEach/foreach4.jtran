@@ -1,0 +1,9 @@
+{
+    "#foreach(Customers, Customers)":
+    {
+        "LastName":    "#(Surname)",
+        "FirstName":   "#(Name)",
+        "Age":         "#(Age)",
+        "Address":     "#(Address)"
+    }
+}

@@ -10,11 +10,12 @@ namespace JTran.Transform.UnitTests
 
     public class Automobile3
     {
-        public string        Make       { get; set; } = "";
-        public string        Model      { get; set; } = "";
-        public int           Year       { get; set; }
-        public string        Color      { get; set; } = "";
-        public IList<Driver> Mechanics  { get; set; } = new List<Driver>();
+        public string         Make        { get; set; } = "";
+        public string         Model       { get; set; } = "";
+        public int            Year        { get; set; }
+        public string?        Color       { get; set; }
+        public string?        Driver      { get; set; }
+        public IList<Driver>? Mechanics   { get; set; }
     }
 
     public class Owner

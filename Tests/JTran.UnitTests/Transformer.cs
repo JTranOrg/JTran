@@ -351,38 +351,6 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("abc", json["MyProp"].ToString());
         }
-        
-        #region ForEachGroup
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEachGroup1, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.AreNotEqual(_transformForEachGroup1, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_variables_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEachGroup2, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup2), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_variable2s_Success()
-        {
-            var transformer = new JTran.Transformer(LoadSample("only1_group.jtran"), null);
-            var result      = transformer.Transform(LoadSample("only1_group.json"));
-   
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup3), JObject.Parse(result)));
-        }
-
-        #endregion
 
         #region Template
 
@@ -1471,7 +1439,6 @@ namespace JTran.UnitTests
                 }
             }
         }";
-
         
         private static readonly string _mapError = 
         @"{
@@ -1522,132 +1489,7 @@ namespace JTran.UnitTests
                 }
              }
         }";
-     
-        private static readonly string _transformForEachGroup1 =
-        @"{
-            '#foreachgroup(Drivers, Make, Makes)':
-            {
-                Make:             '#(Make)',
-                '#foreach(currentgroup(), Drivers)':
-                {
-                    Name:  '#(Name)',
-                    Model: '#(Model)'
-                }
-             }
-        }";
-     
-        private static readonly string _transformForEachGroup2 =
-        @"{
-            '#variable(Pontiac)':    'Pontiac',
-            '#variable(Drivers)':    '#(Drivers[Make != $Pontiac])',
-
-            '#foreachgroup($Drivers, Make, Makes)':
-            {
-                'Make': '#(Make)',
-
-                '#foreach(currentgroup(), Drivers)':
-                {
-                    Name:  '#(Name)',
-                    Model: '#(Model)'
-                }
-             }
-        }";
-
-        private static readonly string _resultForEachGroup1 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'John Smith',
-                            Model:     'Corvette',
-                        },
-                        {
-                            Name:      'Mary Anderson',
-                            Model:     'Camaro',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Pontiac',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'Fred Jones',
-                            Model:     'Firebird',
-                        },
-                        {
-                            Name:      'Amanda Ramirez',
-                            Model:     'GTO',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Audi',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'William Lee',
-                            Model:     'RS5',
-                        }
-                    ]
-                }
-            ]
-        }";
-
-        private static readonly string _resultForEachGroup2 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'John Smith',
-                            Model:     'Corvette',
-                        },
-                        {
-                            Name:      'Mary Anderson',
-                            Model:     'Camaro',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Audi',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'William Lee',
-                            Model:     'RS5',
-                        }
-                    ]
-                }
-            ]
-        }";
-
-        private static readonly string _resultForEachGroup3 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            'Name':  'Joan Baez',
-                            'Make':  'Chevy',
-                            'Model': 'Corvette',
-                            'Year':  1956
-                        }
-                    ]
-                }
-            ]
-        }";
-
+         
         private static readonly string _transformBool = 
         @"{
             '#variable(isValidState)':  '#(Address.State != null)',

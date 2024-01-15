@@ -20,7 +20,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -276,52 +275,6 @@ namespace JTran
             parent.Functions!.Add(function.Name, function);
 
             return function;
-        }
-    }
-
-    /****************************************************************************/
-    /****************************************************************************/
-    internal class TMessage : TToken
-    {
-        private IValue _message;
-
-        /****************************************************************************/
-        internal TMessage(object val)
-        {
-            _message = CreateValue(val);
-        }
-
-        /****************************************************************************/
-        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
-        {
-            var msg = _message.Evaluate(context);
-
-            Console.WriteLine(msg);
-            Debug.WriteLine(msg);
-        }
-    }
-
-    /****************************************************************************/
-    /****************************************************************************/
-    internal class TBind : TContainer
-    {
-        private readonly IExpression _expression;
-
-        /****************************************************************************/
-        internal TBind(string name) 
-        {
-            var parms = CompiledTransform.ParseElementParams("bind", name, new List<bool> {false} );
-
-            _expression = parms[0];
-        }
-
-        /****************************************************************************/
-        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
-        {
-            var newScope   = _expression.Evaluate(context);
-            var newContext = new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
-
-            base.Evaluate(output, newContext, wrap);
         }
     }
 

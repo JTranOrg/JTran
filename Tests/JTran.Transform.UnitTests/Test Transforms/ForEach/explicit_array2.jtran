@@ -1,0 +1,17 @@
+{
+  "#variable(mycar)":  "Chevy",
+  "#variable(hercar)":  
+  {
+    "Make": "Pontiac"
+  },
+
+  "#variable(hiscar)":  
+  {
+    "Make": "Audi"
+  },
+
+  "#foreach([$mycar, $hercar.Make, $hiscar.Make + 'i'], Cars)":
+  {
+    "Make": "#(@)"
+  }
+}

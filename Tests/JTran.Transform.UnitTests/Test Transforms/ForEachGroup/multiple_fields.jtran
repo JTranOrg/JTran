@@ -1,0 +1,14 @@
+{
+  "#foreachgroup(Drivers, [Make, Model], Makes)": 
+  {
+    "Make":  "#(Make)",
+    "Model":  "#(Model)",
+  
+    "#foreach(currentgroup(), Drivers)":
+    {
+      "Name":  "#(Name)",
+      "Year":  "#(Year)",
+      "Color": "#(Color)"
+    }
+  }
+}

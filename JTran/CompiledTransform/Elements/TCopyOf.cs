@@ -36,15 +36,19 @@ namespace JTran
             { 
                 if(name != null)
                 { 
-                    writer.WriteContainerName(name);
-
                     if(newScope is ExpandoObject expObject)
                     { 
+                        writer.WriteContainerName(name);
                         writer.WriteItem(expObject);
                     }
                     else if(newScope is IEnumerable<object> list)
                     { 
+                        writer.WriteContainerName(name);
                         writer.WriteList(list);
+                    }
+                    else
+                    { 
+                        writer.WriteProperty(name, newScope);
                     }
                 }
                 else

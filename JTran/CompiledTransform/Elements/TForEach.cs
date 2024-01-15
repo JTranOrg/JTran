@@ -151,13 +151,11 @@ namespace JTran
         /****************************************************************************/
         internal TForEachGroup(string name) 
         {
-            name = name.Substring("#foreachgroup(".Length);
+            var parms = CompiledTransform.ParseElementParams("foreachgroup", name, new List<bool> {false, true} )!;
 
-            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' }); // ??? Really need to parse this
-
-            _expression = Compiler.Compile(parms[0]);
-            _groupBy    = parms.Length > 1 ? new Value(parms[1]) : null;
-            _name       = parms.Length > 2 ? new Value(parms[2]) : null;
+            _expression = parms[0];
+            _groupBy    = parms.Count > 1 ? new Value(parms[1]) : null;
+            _name       = parms.Count > 2 ? new Value(parms.Last()) : null;
         }
 
         /****************************************************************************/

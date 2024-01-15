@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.Transform.UnitTests
 {
@@ -61,6 +62,31 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("Anderson",      customers.Customers[1].LastName);
             Assert.AreEqual(39,              customers.Customers[1].Age);
             Assert.AreEqual("375 Maple Ave", customers.Customers[1].Address);
+        }
+
+        [TestMethod]
+        [DataRow("explicit_array", "customers4")]
+        [DataRow("explicit_array2", "customers4")]
+        public async Task ForEach_explicit_array(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, data);
+
+            var jobj = JObject.Parse(result);
+            var cars = jobj["Cars"] as JArray;
+
+            Assert.AreEqual(3, cars!.Count);
+            Assert.AreEqual("Chevy",   cars[0]!["Make"]!.ToString());
+            Assert.AreEqual("Pontiac", cars[1]!["Make"]!.ToString());
+            Assert.AreEqual("Audi",    cars[2]!["Make"]!.ToString());
+        }
+
+        [TestMethod]
+        [DataRow("foreach4", "customers")]
+        public async Task ForEach_simple_array(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, data);
+
+            var jobj = JObject.Parse(result);
         }
 
         [TestMethod]

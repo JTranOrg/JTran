@@ -3,9 +3,9 @@
  *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
- *             File: TToken.cs					    		        
- *        Class(es): TToken			         		            
- *          Purpose: Base class for all elements               
+ *             File: TMessage.cs					    		        
+ *        Class(es): TMessage			         		            
+ *          Purpose: Element to output a message to the console                
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 08 Jan 2024                                             
@@ -18,43 +18,29 @@
  ****************************************************************************/
 
 using System;
+using System.Diagnostics;
 
 namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal abstract class TToken
+    internal class TMessage : TToken
     {
-        public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
+        private IValue _message;
 
         /****************************************************************************/
-        internal protected IValue CreateValue(object? value)
+        internal TMessage(object val)
         {
-            return CreateValue(value?.ToString());
-        }  
-        
-        internal TContainer? Parent { get; set; }
+            _message = CreateValue(val);
+        }
 
         /****************************************************************************/
-        private IValue CreateValue(string? sval)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            if(sval == null)
-                return new SimpleValue(sval);
+            var msg = _message.Evaluate(context);
 
-            if(!sval.StartsWith("#("))
-            { 
-                if(double.TryParse(sval, out double val))
-                    return new NumberValue(val);
-
-                return new SimpleValue(sval);
-            }
-
-            if(!sval.EndsWith(")"))
-                throw new Transformer.SyntaxException("Missing closing parenthesis");
-
-            var expr = sval.Substring(2, sval.Length - 3);
-
-            return new ExpressionValue(expr);
-        }   
+            Console.WriteLine(msg);
+            Debug.WriteLine(msg);
+        }
     }
 }

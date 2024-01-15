@@ -3,9 +3,9 @@
  *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
- *             File: TToken.cs					    		        
- *        Class(es): TToken			         		            
- *          Purpose: Base class for all elements               
+ *             File: TBind.cs					    		        
+ *        Class(es): TBind			         		            
+ *          Purpose: Element to change scope                  
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 08 Jan 2024                                             
@@ -18,43 +18,32 @@
  ****************************************************************************/
 
 using System;
+using System.Collections.Generic;
+
+using JTran.Expressions;
 
 namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal abstract class TToken
+    internal class TBind : TContainer
     {
-        public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
+        private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal protected IValue CreateValue(object? value)
+        internal TBind(string name) 
         {
-            return CreateValue(value?.ToString());
-        }  
-        
-        internal TContainer? Parent { get; set; }
+            var parms = CompiledTransform.ParseElementParams("bind", name, new List<bool> {false} );
+
+            _expression = parms[0];
+        }
 
         /****************************************************************************/
-        private IValue CreateValue(string? sval)
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            if(sval == null)
-                return new SimpleValue(sval);
+            var newScope   = _expression.Evaluate(context);
+            var newContext = new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
 
-            if(!sval.StartsWith("#("))
-            { 
-                if(double.TryParse(sval, out double val))
-                    return new NumberValue(val);
-
-                return new SimpleValue(sval);
-            }
-
-            if(!sval.EndsWith(")"))
-                throw new Transformer.SyntaxException("Missing closing parenthesis");
-
-            var expr = sval.Substring(2, sval.Length - 3);
-
-            return new ExpressionValue(expr);
-        }   
-    }
-}
+            base.Evaluate(output, newContext, wrap);
+        }
+    }}

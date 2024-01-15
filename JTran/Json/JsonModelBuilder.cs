@@ -106,7 +106,7 @@ namespace JTran.Json
         #region Array Items
 
         /****************************************************************************/
-        public object AddObject(object parent)
+        public object AddObject(object? parent)
         {
             var newObj = new ExpandoObject();
 
@@ -117,7 +117,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddArray(object parent)
+        public object AddArray(object? parent)
         {
             var newArr = new List<object>();
 

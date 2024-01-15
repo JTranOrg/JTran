@@ -172,8 +172,8 @@ namespace JTran
             }
 
             EndChild();
-        }
-
+        }        
+        
         /****************************************************************************/
         public void WriteRaw(string json)
         {
@@ -317,8 +317,6 @@ namespace JTran
         {
         }
 
-        internal class HaveOutput : Exception {}
-
         /****************************************************************************/
         public bool InObject => false;
         public bool InArray  => false;
@@ -359,6 +357,11 @@ namespace JTran
         public void WriteProperty(string name, object val, bool forceString = false)
         {
             ++NumWrites;
+        }
+
+        /****************************************************************************/
+        public void WritePropertyValue(object val, bool forceString = false)
+        {
         }
 
         /****************************************************************************/

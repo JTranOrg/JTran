@@ -1,0 +1,15 @@
+{
+  "#array(Makes)":
+  {
+    "#foreachgroup(Drivers, Make)":
+    {
+      "Make": "#(Make)",
+
+      "#foreach(currentgroup(), Drivers)":
+      {
+        "Name": "#(Name)",
+        "Model": "#(Model)"
+      }
+    }
+  }
+}

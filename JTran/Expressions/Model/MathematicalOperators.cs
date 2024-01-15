@@ -87,7 +87,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class AdditionOperator : MathematicalOperator
     {
-        public override int Precedence => 13;
+        public override int Precedence => OperatorPrecendence.AdditionOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left + right; }
         protected override double  DoDoubleMath(double left, double right)      { return left + right; }
@@ -99,7 +99,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class SubtractionOperator : MathematicalOperator
     {
-        public override int Precedence => 12;
+        public override int Precedence => OperatorPrecendence.SubtractionOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left - right; }
         protected override double  DoDoubleMath(double left, double right)      { return left - right; }
@@ -111,7 +111,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class MultiplyOperator : MathematicalOperator
     {
-        public override int Precedence => 15;
+        public override int Precedence => OperatorPrecendence.MultiplyOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left * right; }
         protected override double DoDoubleMath(double left, double right)   { return left * right; }
@@ -123,7 +123,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class DivisionOperator : MathematicalOperator
     {
-        public override int Precedence => 14;
+        public override int Precedence => OperatorPrecendence.DivisionOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left / right; }
         protected override double DoDoubleMath(double left, double right)   { return left / right; }
@@ -135,7 +135,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class ModulusOperator : MathematicalOperator
     {
-        public override int Precedence => 13;
+        public override int Precedence => OperatorPrecendence.ModulusOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left % right; }
         protected override double DoDoubleMath(double left, double right)   { return left % right; }

@@ -22,7 +22,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-
+using System.Linq;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -33,6 +33,30 @@ namespace JTran.Expressions
     {
         object Evaluate(ExpressionContext context);
         bool   EvaluateToBool(ExpressionContext context);
+    }
+
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class ArrayExpression : IExpression
+    {
+        /*****************************************************************************/
+        public ArrayExpression()
+        {
+        }
+
+        /*****************************************************************************/
+        public object Evaluate(ExpressionContext context)
+        {
+            return this.SubExpressions.Select( x=> x.Evaluate(context) );
+        }
+
+        /*****************************************************************************/
+        public bool EvaluateToBool(ExpressionContext context)
+        {
+            return false;
+        }
+
+        internal IList<IExpression> SubExpressions { get; set; } = new List<IExpression>();
     }
 
     /*****************************************************************************/
@@ -133,9 +157,10 @@ namespace JTran.Expressions
     {
         private readonly IList<IExpression> _parts = new List<IExpression>();
 
-        public MultiPartDataValue(IExpression initial)
+        public MultiPartDataValue(IExpression? initial)
         {
-            _parts.Add(initial);
+            if(initial != null)
+                _parts.Add(initial);
         }
 
         /*****************************************************************************/
