@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Parser;
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
 
 namespace JTran.Parser.UnitTests
 {
@@ -121,6 +121,23 @@ namespace JTran.Parser.UnitTests
         }
 
         [TestMethod]
+        [DataRow("2")]
+        [DataRow("2.5")]
+        [DataRow(".5")]
+        [DataRow("-2.5")]
+        [DataRow("21.5")]
+        public void Expression_Decimal_Success(string val)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(val);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(1,         tokens.Count);
+            Assert.AreEqual(val,     tokens[0].Value);
+            Assert.AreEqual(Token.TokenType.Number, tokens[0].Type);
+        }
+
+        [TestMethod]
         public void Expression_Number_Success()
         {
             var parser = new JTranParser();
@@ -132,22 +149,6 @@ namespace JTran.Parser.UnitTests
             Assert.AreEqual("==",       tokens[1].Value);
             Assert.AreEqual("21.5",     tokens[2].Value);
             Assert.AreEqual(Token.TokenType.Number,     tokens[2].Type);
-        }
-
-        [TestMethod]
-        public void Expression_JTranField_Success()
-        {
-            var parser = new JTranParser();
-            var tokens = parser.Parse("#(Wage) == 21.5");
-   
-            Assert.IsNotNull(tokens);
-            Assert.AreEqual(6,          tokens.Count);
-            Assert.AreEqual("#",        tokens[0].Value);
-            Assert.AreEqual("(",        tokens[1].Value);
-            Assert.AreEqual("Wage",     tokens[2].Value);
-            Assert.AreEqual(")",        tokens[3].Value);
-            Assert.AreEqual("==",       tokens[4].Value);
-            Assert.AreEqual("21.5",     tokens[5].Value);
         }
 
         [TestMethod]
@@ -252,6 +253,17 @@ namespace JTran.Parser.UnitTests
             Assert.AreEqual("",         tokens[4].Value);
             Assert.AreEqual(")",        tokens[5].Value);
             Assert.AreEqual(")",        tokens[6].Value);
+        }
+
+        [TestMethod]
+        public void Expression_commas_Success()
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse("(a, b)");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(5, tokens.Count);
+            Assert.AreEqual(Token.TokenType.Operator, tokens[2].Type);
         }
     }
 }

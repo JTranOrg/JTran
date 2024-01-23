@@ -23,7 +23,7 @@ using System.Runtime.CompilerServices;
 
 using JTran.Extensions;
 using JTran.Parser;
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -55,7 +55,7 @@ namespace JTran.Expressions
         {
             var precompiled = Precompiler.Precompile(tokens);
 
-            return InnerCompile(precompiled);
+            return InnerCompile(new [] { precompiled } );
         }
         
         /*****************************************************************************/
@@ -70,46 +70,20 @@ namespace JTran.Expressions
         private const string _endBoundary   = @"]),:";
 
         /*****************************************************************************/
-        public IExpression CreateArrayExpression(ExpressionToken token, Stack<Token> tokens)
+        public IExpression CreateArrayExpression(Token token)
         {
-            var items = token.Children;
+            var array  = new ArrayExpression();
+            var tokens = new List<Token>();
 
-            var array = new ArrayExpression();
-
-            foreach(var item in items)
+            foreach(var item in token)
             {
-                if(item.Value == ",")
-                    continue;
+                tokens.Add(item);
 
-                IExpression? expr;
-
-                switch(item.Type)
-                {
-                    case Token.TokenType.Number:
-                        expr = new NumberValue(double.Parse(item.Value));
-                        break;
-
-                    case Token.TokenType.Literal:
-                        expr = new Value(item.Value);
-                        break;
-
-                    case Token.TokenType.Expression:
-                        expr = InnerCompile((item as ExpressionToken)!.Children);
-                        break;
-
-                    case Token.TokenType.Function:
-                        expr = CreateFunction(item as ExpressionToken);
-                        break;
-
-                    case Token.TokenType.Text:
-                        expr = CreateValue(item);
-                        break;
-
-                    default:
-                        throw new System.Exception("What is this???");
-                }
+                var expr = InnerCompile(tokens);
 
                 array.SubExpressions.Add(expr);
+
+                tokens.Clear();
             }
 
             return array;
@@ -118,88 +92,48 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public IExpression CreateExpression(Stack<Token> tokens, out string lastToken)
         {
-            IExpression? left  = null;
-            IExpression? right = null;
-            object?      last  = null;
-            IOperator?   op    = null;
+            IExpression? leftExpr  = null;
+            IExpression? rightExpr = null;
+            object?      last      = null;
+            IOperator?   op        = null;
 
             lastToken = null;
 
             while(tokens.Count > 0)
             {
                 var token = tokens.Pop();
-                IExpression expr = null;
+                IExpression? expr = null;
 
                 lastToken = token.Value;
 
                 switch(token.Type)
                 {
                     case Token.TokenType.Expression:
-                    {
-                        var expressionToken = token as ExpressionToken;
-
-                        expr = InnerCompile(expressionToken.Children);
-
+                        expr = InnerCompile(token);
                         break;
-                    }
 
                     case Token.TokenType.Function:
-                    {
-                        expr = CreateFunction(token as ExpressionToken);
-
-                        var current = right ?? left;
-
-                        if(!(last is IOperator) && current is MultiPartDataValue multiPart)
-                        { 
-                            multiPart.AddPart(expr);
-                            continue;
-                        }
-
+                        expr = CreateFunction(token);
                         break;
-                    }
 
-                    case Token.TokenType.Array:
                     case Token.TokenType.Text:
-                    {
                         expr = CreateValue(token);
-
-                        bool bContinue = false;
-                        var  current   = right ?? left;
-                        MultiPartDataValue? mcurrent = null;
-
-                        if(!(last is IOperator) && current is MultiPartDataValue multiPart)
-                        { 
-                            mcurrent = multiPart;
-                            multiPart.AddPart(expr);
-                            bContinue = true;
-                        }
-
-                        if(token.Type == Token.TokenType.Array)
-                        {
-                            var array = token as ExpressionToken;
-
-                            if(mcurrent == null)
-                            { 
-                                mcurrent = new MultiPartDataValue(expr);
-                                expr = mcurrent;
-                            }
-
-                            foreach(ExpressionToken indexer in array!.Children)
-                            {
-                                var indexerExpr = InnerCompile(indexer!.Children);
-
-                                mcurrent.AddPart(new Indexer(indexerExpr));
-                            }
-                        }
-
-                        if(bContinue)
-                            continue;
-
                         break;
-                    }
 
                     case Token.TokenType.Number:
                         expr = new NumberValue(double.Parse(token.Value));
+                        break;                    
+                        
+                    case Token.TokenType.Array:
+                        expr = CreateIndexedArray(token);
+                        break;
+
+                    case Token.TokenType.ArrayIndexer:
+                        expr = InnerCompile(token);
+                        break;
+
+                    case Token.TokenType.Multipart:
+                        expr = CreateMultipartValue(token);
                         break;
 
                     case Token.TokenType.Literal:
@@ -209,52 +143,25 @@ namespace JTran.Expressions
                     case Token.TokenType.Tertiary:
                     { 
                         var tertiary  = new TertiaryExpression();
-                        var exprToken = token as ExpressionToken;
+                        var exprToken = token;
 
-                        tertiary.Conditional = InnerCompile(new List<Token> { exprToken!.Children[0] });
-                        tertiary.IfTrue      = InnerCompile(new List<Token> { exprToken!.Children[1] });
-                        tertiary.IfFalse     = InnerCompile(new List<Token> { exprToken!.Children[2] });
+                        tertiary.Conditional = InnerCompile(new List<Token> { exprToken[0] });
+                        tertiary.IfTrue      = InnerCompile(new List<Token> { exprToken[1] });
+                        tertiary.IfFalse     = InnerCompile(new List<Token> { exprToken[2] });
                         
-                        left = tertiary;
-                        right = null;
+                        leftExpr = tertiary;
+                        rightExpr = null;
                         op = null;
 
                         continue;
                     }
 
+                    case Token.TokenType.ExplicitArray:
+                        expr = CreateArrayExpression(token);
+                        break;
+
                     case Token.TokenType.Operator:
                     {
-                        if(_beginBoundary.Contains(token.Value))
-                        {
-                            if(token.Value == "[" && tokens.Peek() is ExpressionToken exprArray)
-                            { 
-                                expr = CreateArrayExpression(exprArray, tokens);
-                                tokens.Pop(); // Pop off the array
-                                tokens.Pop(); // Pop off the end array
-                                goto SetLeftRight;
-                            }
-
-                            expr = CreateExpression(tokens, out lastToken);
-
-                            if(token.Value == "[")
-                            {
-                                var current = EnsureMultiPart(ref left, ref right);
-
-                                if(current is MultiPartDataValue mcurrent)
-                                    mcurrent.AddPart(new Indexer(expr));
-
-                                continue;
-                            }
-
-                            break;
-                        }
-
-                        if(_endBoundary.Contains(token.Value))
-                        { 
-                            lastToken = token.Value;
-                            goto BreakOut;
-                        }
-
                         var newOp = CreateOperator(token.Value);
 
                         if(op == null)
@@ -264,55 +171,54 @@ namespace JTran.Expressions
                             continue;
                         }
 
-                        if(op.Precedence >= newOp.Precedence)
-                        {
-                           left  = new ComplexExpression { Left = left, Operator = op, Right = right };
-                           op    = newOp;
-                           right = CreateExpression(tokens, out lastToken);
+                        leftExpr  = new ComplexExpression { Left = leftExpr, Operator = op, Right = rightExpr };
+                        op    = newOp;
+                        rightExpr = CreateExpression(tokens, out lastToken);
 
-                           continue;
-                        }
-                        else
-                        {
-                           var newExpr = CreateExpression(tokens, out lastToken);
-                           right = new ComplexExpression { Left = right, Operator = newOp, Right = newExpr };
- 
-                           continue;
-                        }
-                   }
+                        continue;
+                    }
+
+                    default:
+                        throw new Transformer.SyntaxException("Unknown token type");
                 }
 
-              SetLeftRight:
-
-                if(left == null)
-                    left = expr;
-                else if(right == null)
-                    right = expr;
+                if(leftExpr == null)
+                    leftExpr = expr;
+                else if(rightExpr == null)
+                    rightExpr = expr;
 
                 last = expr;
             }
 
-          BreakOut:
-
-            return CreateExpression(left, op, right);
+            return CreateExpression(leftExpr, op, rightExpr);
         }
 
         #region Private
        
         /*****************************************************************************/
-        private IExpression? EnsureMultiPart(ref IExpression left, ref IExpression? right)
+        private IExpression CreateIndexedArray(Token token)
         {
-            var current = right ?? left;
+            var result = new MultiPartDataValue(CreateValue(token));
 
-            if(!(current is MultiPartDataValue))
+            foreach(var part in token)
             {
-                if(right != null)
-                    current = right = new MultiPartDataValue(right);
-                else
-                    current = left = new MultiPartDataValue(left);
+                result.AddPart(new Indexer(InnerCompile(new [] { part })));
             }
 
-            return current;
+            return result;
+        }
+
+        /*****************************************************************************/
+        private IExpression CreateMultipartValue(Token token)
+        {
+            var result = new MultiPartDataValue(null);
+
+            foreach(var part in token)
+            {
+                result.AddPart(InnerCompile(new [] { part }));
+            }
+
+            return result;
         }
 
         /*****************************************************************************/
@@ -331,16 +237,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        private IExpression CreateFunction(ExpressionToken token)
+        private IExpression CreateFunction(Token token)
         {        
             var func = new FunctionCall(token.Value.EnsureDoesNotStartWith("."));
 
-            foreach(var child in token.Children)
-            {
-                var param = InnerCompile(new List<Token> { child });
+            if(token.Count > 0)
+            { 
+                foreach(var child in token)
+                {
+                    var param = InnerCompile(new List<Token> { child });
 
-                if(param != null)
-                    func.AddParameter(param);
+                    if(param != null)
+                        func.AddParameter(param);
+                }
             }
 
             return func;

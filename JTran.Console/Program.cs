@@ -70,7 +70,7 @@ namespace JTran.Console
                     { 
                         project = json.ToObject<JTranProject>();
                     }
-                    catch(JsonParseException ex)
+                    catch(JsonParseException)
                     {
                         WriteError("Project file is not a valid json file");
                         return;

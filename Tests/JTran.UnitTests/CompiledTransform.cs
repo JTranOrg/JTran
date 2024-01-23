@@ -1,9 +1,7 @@
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json.Linq;
-
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using JTran.Expressions;
 
@@ -1295,14 +1293,6 @@ namespace JTran.UnitTests
             }
         }";
 
-        private static readonly string _transformCopyOf2 =
-        @"{
-            '#foreach(Cars, Vehicles)':
-            {
-                Stuff: '#copyof(@)'
-            }
-        }";
-
         private static readonly string _transformDocument1 =
         @"{
             '#variable(Locations)':   '#(document(Locations, Default))',
@@ -1484,65 +1474,6 @@ namespace JTran.UnitTests
         private static readonly string _dataRemoveAny =
         @"{
             Phone: '((425) (555-)12-..12'
-        }";
-
-        private static readonly string _dataCopyOf =
-        @"{
-             Make:   'Chevy',
-             Model:  'Corvette',
-             Year:   1964,
-             Color:  'Blue',
-             Service:
-             {
-                Parts:
-                {
-                    Muffler:    945,
-                    Sparkplugs: 123,
-                    Solenoid:   77
-                }
-             }
-        }";
-
-        private static readonly string _dataCopyOf2 =
-        @"{
-            Cars:
-            [
-                {
-                    Make:   'Chevy',
-                    Model:  'Corvette',
-                    Year:   1964,
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                },
-                {
-                   Make:   'Pontiac',
-                   Model:  'Firebird',
-                   Year:   1969,
-                   Color:  'Green',
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                },
-                {
-                   Make:   'Audi',
-                   Model:  'S8',
-                   Year:   2020,
-                   Color:  'Black',
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                }
-            ]
         }";
 
         #endregion

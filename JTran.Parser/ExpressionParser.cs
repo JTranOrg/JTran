@@ -9,19 +9,19 @@ namespace JTran.Parser
     /*****************************************************************************/
     /*****************************************************************************/
     /// <summary>
-    /// Parse an expression into a list of tokens
+    /// Parse an expression string into a flat list of tokens
     /// </summary>
-    public class Parser
+    public class ExpressionParser
     {
         private static readonly IDictionary<string, string> _transformOperators = new Dictionary<string, string> { {"and", "&&" }, { "or", "||"} };
-        private static readonly IList<string> _operators = new List<string> { "[", "]", "*", "/", "++", "--", "+=", "-=", "*=", "/=", "+", "-", "%", "<", "<=", ">", ">=", "=", "==", "===", "!=", "!==", "!", "||", "&&", "??", "?", ":", "(", ")", "~", "^", ">>", "<<", ",", "=>", "=:", "and", "or", "=" };
+        private static readonly IList<string> _operators = new List<string> { "[", "]", "*", "/", "++", "--", "+=", "-=", "*=", "/=", "+", "-", "%", "<", "<=", ">", ">=", "=", "==", "===", "!=", "!==", "!", "||", "&&", "??", "?", ":", "(", ")", "~", "^", ">>", "<<", ",", ".", "=>", "=:", "and", "or", "=" };
         
         private readonly List<Token> _sb = new List<Token>();
 
         private Token? _token = null;
 
         /*****************************************************************************/
-        public Parser()
+        public ExpressionParser()
         {  
         }
 
@@ -53,8 +53,16 @@ namespace JTran.Parser
                 // Numeric literals
                 else if(ch.IsNumberChar())
                 {
-                    if(this._token?.Type == Token.TokenType.Number || this._token?.Type == Token.TokenType.Text)
+                    if(this._token?.Type == Token.TokenType.Number)
+                    {
                         this._token.Value += ch;
+                    }
+                    else if(this._token?.Type == Token.TokenType.Text && ch == '.')
+                    {
+                        this.PushToken();
+                        this._token = new Token { Value = ch.ToString(), Type  = Token.TokenType.Operator };
+                        this.PushToken();
+                    }
                     else
                     {
                         this.PushToken();

@@ -8,7 +8,7 @@
  *          Purpose: Element to change scope                  
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
- *    Creation Date: 08 Jan 2024                                             
+ *    Creation Date: 8 Jan 2024                                             
  *                                                                          
  *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
@@ -46,4 +46,5 @@ namespace JTran
 
             base.Evaluate(output, newContext, wrap);
         }
-    }}
+    }
+}

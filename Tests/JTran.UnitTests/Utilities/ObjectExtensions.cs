@@ -25,7 +25,7 @@ namespace JTran.UnitTests
             if(obj is IDictionary dict2)
             {
                 foreach(var key in dict2.Keys)
-                    result.Add(key.ToString(), dict2[key]);
+                    result.Add(key.ToString(), dict2![key]);
             }
             else if(obj is IEnumerable list)
             {

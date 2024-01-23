@@ -30,7 +30,7 @@ using JTran.Expressions;
 using JTran.Json;
 using JTran.Parser;
 
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -125,7 +125,7 @@ namespace JTran
         }            
         
         /****************************************************************************/
-        internal string Transform(string data, TransformerContext context, ExtensionFunctions? extensionFunctions)
+        internal string Transform(string data, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             using var input = new MemoryStream(UTF8Encoding.UTF8.GetBytes(data));
             var output = new JsonStringWriter();
@@ -169,31 +169,22 @@ namespace JTran
 
             if(checkStr.Length != 0 && !string.IsNullOrWhiteSpace(checkStr.Substring(1, checkStr.Length - 2)))
             { 
-                var parser  = new JTranParser();
-                var tokens  = parser.Parse(source);
-                var tokens2 = Precompiler.Precompile(tokens);
+                var compiler = new Compiler();
+                var token    = Precompile(checkStr);
+                var i = 0;
+                IEnumerable<Token> tokens = token;
 
-                var start = 1;
-                var end   = tokens2.Count;
-
-                if(tokens2.Count > 1 && tokens2[1].Value == "(")
+                if(token.Type != Token.TokenType.CommaDelimited)
+                    tokens = new [] { token };
+                
+                foreach(var child in tokens)
                 {
-                    ++start;
-                    --end;
-                }
-
-                for(var i = start; i < end; i += 2)
-                {
-                    var token = tokens2[i];
-
-                    var compiler = new Compiler();
-
-                    if(token is ExpressionToken exprToken)
-                        result.Add(compiler.InnerCompile(exprToken.Children));
-                    else if(IsExplicitParam(isExplicitParam, i - 2))
-                        result.Add(new Value(token));
+                    if(IsExplicitParam(isExplicitParam, i))
+                        result.Add(new Value(child));
                     else
-                        result.Add(compiler.InnerCompile(new Token[] { token }));
+                        result.Add(compiler.InnerCompile(new Token[] { child }));
+
+                    ++i;
                 }
             }
 
@@ -203,7 +194,16 @@ namespace JTran
         #region Private 
 
         /****************************************************************************/
-        private void Transform(Stream data, IJsonWriter output, TransformerContext context, ExtensionFunctions? extensionFunctions)
+        private static Token Precompile(string source) 
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(source);
+
+            return Precompiler.Precompile(tokens);
+        }
+
+        /****************************************************************************/
+        private void Transform(Stream data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             var parser  = new Json.Parser(new JsonModelBuilder());
             var expando = parser.Parse(data) as ExpandoObject;
@@ -216,7 +216,7 @@ namespace JTran
         }                
 
         /****************************************************************************/
-        private void TransformObject(object data, IJsonWriter output, TransformerContext context, ExtensionFunctions? extensionFunctions)
+        private void TransformObject(object data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
 

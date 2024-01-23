@@ -17,6 +17,8 @@
  *                                                                          
  ****************************************************************************/
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -35,16 +37,21 @@ namespace JTran.Expressions
     /// </summary>
     internal static class Precompiler
     {
-        private readonly static IDictionary<string, string> _beginBoundary = new Dictionary<string, string>
+        private readonly static IDictionary<string, string> _boundary = new Dictionary<string, string>
         {
             { "[", "]" },
             { "(", ")" }
         };
 
-        /*****************************************************************************/
-        internal static IList<Token> Precompile(IEnumerable<Token> tokens)
+        private readonly static IDictionary<string, string> _delimiters = new Dictionary<string, string>
         {
-            var output = InnerPrecompile(new Queue<Token>(tokens), false, null, out Token last);
+            { ",", "," }
+        };
+
+        /*****************************************************************************/
+        internal static Token Precompile(IEnumerable<Token> tokens)
+        {
+            var output = InnerPrecompile(new Queue<Token>(tokens), null);
 
             return output;
         }
@@ -52,270 +59,256 @@ namespace JTran.Expressions
         #region Private 
 
         /*****************************************************************************/
-        internal static void ReduceExpressions(List<Token> tokens)
-        {              
-            var right = 0;
-            var left = -1;
-
-            while(right < tokens.Count)
-            {
-                var token = tokens[right];
-
-                if(token.IsEndBoundary)
-                { 
-                    if(left != -1 && right - left > 1)
-                    { 
-                        tokens.RemoveAt(right);
-                        ReduceExpression(tokens, left, right - left);
-                        right = left;
-                    }
-                    else if(token.IsComma)
-                    { 
-                        tokens.RemoveAt(right);
-                        left = -1;
-                        continue;
-                    }
-
-                    left = -1;
-                }
-                else if(token.IsConditional || token.IsTertiary)
-                { 
-                    if(left != -1 && right - left > 1)
-                    { 
-                        ReduceExpression(tokens, left, right - left);
-                        right = left + 1;
-                    }
-
-                    left = -1;
-                }
-                else if(left == -1 && !token.IsBoundary)
-                    left = right;
-
-                ++right;
-            }
-
-            if(left != -1)
-                ReduceExpression(tokens, left, right - left);
-
-            return;
-        }
-
-        /*****************************************************************************/
-        private static void CheckPrecedence(List<Token> tokens)
-        {        
-            // Find all * and / and turn into subexpressions
-            while(tokens.Count > 3)
-            {
-                var index = tokens.IndexOfAny( t=> t.Type == Token.TokenType.Operator && "*/%".Contains(t.Value)); 
-
-                if(index < 1 || tokens.Count <= index+1)
-                    break;
-
-                ReduceExpression(tokens, index-1, 3);
-            }
-        }
-
-        /*****************************************************************************/
-        private static void ReduceExpression(List<Token> tokens, int start, int numItems)
-        {
-            if(numItems > 1) 
-            {
-                var newToken = new ExpressionToken();
-
-                for(var i = 0; i < numItems; ++i)
-                    newToken.Children.Add(tokens[start + i]);
-
-                // Remove from token list
-                for(var i = 0; i < numItems; ++i)
-                    tokens.RemoveAt(start);
-
-                // Insert new token into token list
-                tokens.Insert(start, newToken);
-
-                CheckPrecedence(newToken.Children);
-            }
-
-            if(tokens.Count == 5 && tokens[1].Value == "?" && tokens[3].Value == ":")
-            {
-                var newToken = new ExpressionToken();
-
-                newToken.Type = Token.TokenType.Tertiary;
-
-                newToken.Children.Add(tokens[0]);
-                newToken.Children.Add(tokens[2]);
-                newToken.Children.Add(tokens[4]);
-
-                tokens.Clear();
-                tokens.Add(newToken);
-            }
-
-            return;
-        }
-
-        /*****************************************************************************/
-        private static List<Token> InnerPrecompile(Queue<Token> tokens, bool conditional, string? endBoundary, out Token last)
+        private static Token InnerPrecompile(Queue<Token> tokens, string? endBoundary = null, Func<Token, bool>? endIt = null)
         {
             var outputTokens = new List<Token>();
+            var left = -1;
+            Token? commaDelimited = null;
+            Token? multiPart = null;
 
-            last = null;
-
-            while(tokens.Count > 0)
-            {
+            while(tokens.Count > 0) 
+            { 
                 var token = tokens.Peek();
 
-                last = token;
+                // Is it the end?
+                if(endIt != null && endIt(token))
+                    break;
 
-                tokens.Dequeue();
+               token = tokens.Dequeue();
 
-                if(token.IsOperator)
+                if(token.IsOperator && endBoundary == token.Value)
+                    break; 
+
+                if(multiPart != null && (token.IsOperator || _boundary.ContainsKey(token.Value)))
                 {
-                    if(_beginBoundary.ContainsKey(token.Value))
-                    {
-                        var expressionToken = new ExpressionToken();
+                    ReduceItem(outputTokens, left, multiPart, Token.TokenType.Multipart);
+                    multiPart = null;
+                }
 
-                        expressionToken.Children = InnerPrecompile(tokens, false, _beginBoundary[token.Value], out last);
+                // Turn the contents of "()" or "[]" into a single expression
+                if(_boundary.ContainsKey(token.Value))
+                { 
+                    var newToken  = InnerPrecompile(tokens, _boundary[token.Value]);
+                    var lastToken = outputTokens.LastOrDefault();
 
-                        if(token.Value == "[")
-                        {
-                            if(last.Value != "]")
-                                throw new Transformer.SyntaxException("Missing \"]\" in array indexer expression");
+                    // Is this a function call?
+                    if(lastToken != null && lastToken.Type == Token.TokenType.Text && token.Value == "(")
+                    { 
+                        lastToken.Type = Token.TokenType.Function;
 
-                            var previous = outputTokens.LastOrDefault();
-
-                            if(previous != null && previous.Type == Token.TokenType.Text)
-                            {
-                                var array = new ExpressionToken(Token.TokenType.Array);
-
-                                array.Value = previous.Value;
-                                expressionToken.Type = Token.TokenType.ArrayIndexer;
-                                array.Children.Add(expressionToken);
-
-                                outputTokens.RemoveAt(outputTokens.Count - 1);
-                                outputTokens.Add(array);
-                            }
-                            else if(previous != null && previous.Type == Token.TokenType.Array)
-                            {
-                                var array = previous as ExpressionToken;
-
-                                expressionToken.Type = Token.TokenType.ArrayIndexer;
-                                array!.Children.Add(expressionToken);
-                            }
+                        if(newToken != null)
+                        { 
+                            if(newToken.Type == Token.TokenType.CommaDelimited) 
+                                lastToken.Merge(newToken);
                             else
-                            { 
-                                outputTokens.Add(token);
-                                outputTokens.Add(ExpressionOrSingle(expressionToken));
-                                outputTokens.Add(last);
-                            }
+                                lastToken.Add(newToken);
+                        }
+
+                        continue;
+                    }
+
+                    // Is this an array indexer?
+                    else if(lastToken != null && token.Value == "[" && (lastToken.Type == Token.TokenType.Text || lastToken.Type == Token.TokenType.Array))
+                    { 
+                        lastToken.Type = Token.TokenType.Array;
+
+                        if(token.IsExpression && token.Count > 0)
+                        {
+                            token.Type = Token.TokenType.ArrayIndexer;
+                            lastToken.Add(newToken);
                         }
                         else
-                        { 
-                            outputTokens.Add(ExpressionOrSingle(expressionToken));
-                        }
+                            lastToken.Add(new Token("", Token.TokenType.ArrayIndexer) { newToken });
 
                         continue;
                     }
 
-                    if(token.IsEndBoundary && (endBoundary == null || endBoundary == ","))
-                        break;
-
-                    if(token.IsOperator && endBoundary == token?.Value)
-                        goto ReduceExpression;
-
-                    if(token.IsConditional)
-                    {
-                        PopExpression(tokens, outputTokens, token, true, out last);
-                        continue;
-                    }
-                 }
-
-                // Is it a function call?
-                else if(token.Type == Token.TokenType.Text && tokens.Count > 0 && tokens.Peek().IsBeginParen)
-                {
-                    var functionToken = new ExpressionToken();
-
-                    functionToken.Value = token.Value;
-                    functionToken.Type = Token.TokenType.Function;
-
-                    outputTokens.Add(functionToken);
-
-                    tokens.Dequeue(); // Pop off the begin parenthesis
-
-                    // Add parameters
-                    while(true)
+                    // Is this an explicit array?
+                    else if(token.Value == "[")
                     { 
-                        functionToken.Children = InnerPrecompile(tokens, false, ")", out last);
+                        var array = new Token("", Token.TokenType.ExplicitArray);
 
-                      //  functionToken.Children.Add(ExpressionOrSingle(expressionToken));
-                       // outputTokens.Add(last);
+                        array.Merge(newToken);
 
-                        if(!last.IsComma)
-                        {
-                            if(!last.IsEndParen)
-                                throw new Transformer.SyntaxException("Missing \")\" in function call");
-
-                            break;
-                        }
+                        newToken = array;
                     }
 
+                    outputTokens.Add(newToken);
+                    continue;
+                }
+               
+                // Parse everything before the comma
+                else if(token.Value == ",")
+                { 
+                    var previous = commaDelimited;
+
+                    commaDelimited = ReduceItem(outputTokens, left, commaDelimited, Token.TokenType.CommaDelimited);
+
+                    if(previous == null)
+                        left = left == -1 ? outputTokens.Count : left+1;
+
+                    continue;
+                }
+               
+                // Is this a multi-part?
+                else if(token.Value == ".")
+                { 
+                    left = ReduceMultipart(outputTokens, tokens, left);
                     continue;
                 }
 
                 outputTokens.Add(token);
+                
+                if(left == -1)
+                    left = outputTokens.Count - 1;
             }
 
-          ReduceExpression:
-            ReduceExpressions(outputTokens);
+            if(multiPart != null) 
+                ReduceItem(outputTokens, left, multiPart, Token.TokenType.Multipart);
 
-            return outputTokens;
+            if(commaDelimited != null) 
+                ReduceItem(outputTokens, left, commaDelimited, Token.TokenType.CommaDelimited);
+            else if(outputTokens.Count > 1) 
+                return Reduce(outputTokens);
+
+            if(outputTokens.Count == 0)
+                return null;
+
+            return outputTokens[0];
         }
 
-        private static Token ExpressionOrSingle(ExpressionToken expressionToken)
-        {
-            if(expressionToken.Children.Count == 1)
+        private static int ReduceMultipart(List<Token> outputTokens, Queue<Token> tokens, int left)
+        {    
+            var lastPart  = outputTokens.Last();
+
+            outputTokens.RemoveAt(outputTokens.Count-1);
+
+            var multiPart = outputTokens.LastOrDefault();
+
+            if(multiPart == null || multiPart.Type != Token.TokenType.Multipart)
             {
-                var result = expressionToken.Children[0];
-
-                if(result is ExpressionToken exprTokenInner)
-                    return ExpressionOrSingle(exprTokenInner);
-
-                return result;
+                multiPart = new Token("", Token.TokenType.Multipart);
+                outputTokens.Add(multiPart);
             }
-            return expressionToken;
+
+            multiPart.Add(lastPart);
+
+            if(!tokens.Peek().IsOperator)
+            { 
+                var result = InnerPrecompile(tokens, null, (t)=> !t.IsMultiDot && t.Type != Token.TokenType.Text);
+
+                multiPart.Merge(result);
+            }
+
+            return outputTokens.Count;
+        }
+
+        private static Token ReduceItem(List<Token> outputTokens, int left, Token? container, Token.TokenType type)
+        {        
+            left = left > 0 ? left : 0;
+
+            var numItems = outputTokens.Count - left;
+            Token? arrayItem = null;
+
+            if(numItems == 1)
+                arrayItem = outputTokens[left];
+            else
+                arrayItem = Reduce(outputTokens.Skip(left).ToList());
+
+            // Remove the items you just reduced
+            for(var i = 0; i < numItems; ++i)
+                outputTokens.RemoveAt(left);
+
+            if(container == null)
+            {
+                container = new Token("", type);
+                outputTokens.Add(container);
+            }
+
+            container.Add(arrayItem);
+
+            return container;
+        }
+
+        // Listed in operator precedence
+        private static List<string> _operators = new List<string>
+        {
+            "*", 
+            "/", 
+            "%", 
+            "+", 
+            "-", 
+            "<", 
+            ">", 
+            "<=", 
+            ">=", 
+            "==", 
+            "!=", 
+            "&&", 
+            "and",
+            "||", 
+            "or"
+        };
+
+        /*****************************************************************************/
+        private static Token Reduce(IList<Token> outputTokens)
+        {
+            foreach(var op in _operators)
+            { 
+                while(ReduceExpression(outputTokens, op))
+                    ;
+
+                if(outputTokens.Count < 3)
+                    break;
+            }
+
+            if(outputTokens.Count == 5 && outputTokens[1].Value == "?" && outputTokens[3].Value == ":")
+            {
+                var newToken = new Token("", Token.TokenType.Tertiary);
+
+                newToken.Add(outputTokens[0]);
+                newToken.Add(outputTokens[2]);
+                newToken.Add(outputTokens[4]);
+
+                return newToken;
+            }
+
+            return outputTokens.First();
         }
 
         /*****************************************************************************/
-        private static void PopExpression(Queue<Token> tokens, IList<Token> outputTokens, Token token, bool conditional, out Token last)
+        private static bool ReduceExpression(IList<Token> outputTokens, string checkOp)
         {
-            var expressionToken = new ExpressionToken() { Children = new List<Token>(outputTokens) };
+            if(outputTokens.Count >= 3)
+            { 
+                for(var i = 1; i < outputTokens.Count(); ++i)
+                { 
+                    var op = outputTokens[i];
 
-            outputTokens.Clear();
-            outputTokens.Add(ExpressionOrSingle(expressionToken));
-            outputTokens.Add(token);
+                    if(!op.IsOperator || checkOp != op.Value)
+                        continue;
 
-            expressionToken = new ExpressionToken();
+                    var leftToken = outputTokens[i-1];
 
-            expressionToken.Children = InnerPrecompile(tokens, conditional, null, out last);
+                    outputTokens.RemoveAt(i-1);
+                    outputTokens.RemoveAt(i-1);
 
-            outputTokens.Add(ExpressionOrSingle(expressionToken));
-        }
+                    var rightToken = outputTokens[i-1];
+                    var exprToken = new Token("", Token.TokenType.Expression);
 
-        /*****************************************************************************/
-        internal static void HandleTertiary(Queue<Token> tokens, IList<Token> outputTokens, Token token)
-        {
-            PopExpression(tokens, outputTokens, token, false, out Token last);
+                    outputTokens.RemoveAt(i-1);
+                    
+                    exprToken.Add(leftToken);
+                    exprToken.Add(op);
+                    exprToken.Add(rightToken);
 
-            if(last.Value != ":")
-                throw new Transformer.SyntaxException("Missing \":\" in tertiary expression");
+                    outputTokens.Insert(i-1, exprToken);
 
-            outputTokens.Add(last);
+                    return true;
+                }
+            }
 
-            var expressionToken = new ExpressionToken();
-
-            expressionToken.Children = InnerPrecompile(tokens, false, null, out Token last2);
-
-            outputTokens.Add(ExpressionOrSingle(expressionToken));
-
-            return;
+            return false;
         }
 
         #endregion

@@ -80,4 +80,12 @@
     <Folder Include="Sources\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Development\Projects\JTranOrg\JTran\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Development\Projects\JTranOrg\JTran\.editorconfig" />
+  </ItemGroup>
+
 </Project>

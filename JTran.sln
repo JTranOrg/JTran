@@ -11,6 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.UnitTests", "Tests\JT
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{80330D33-A39E-4719-85D2-E8CE358224E4}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -47,11 +48,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rota", "Rota", "{BD20283D-F
 		Rota\readme.md = Rota\readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rota.Transform.Test", "Rota\Rota.Transform.Test\Rota.Transform.Test.csproj", "{CFA44AFB-429D-4152-B40D-D17776D0B9E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rota.Transform.Test", "Rota\Rota.Transform.Test\Rota.Transform.Test.csproj", "{CFA44AFB-429D-4152-B40D-D17776D0B9E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transforms", "Rota\Transforms\Transforms.csproj", "{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transforms", "Rota\Transforms\Transforms.csproj", "{99E43A73-B7D1-4F93-A100-3FEAD37B84B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JTran.Random", "JTran.Random\JTran.Random.csproj", "{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Random", "JTran.Random\JTran.Random.csproj", "{0C37A5EE-C27E-4681-9C4E-6402C5F00B5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

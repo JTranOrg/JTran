@@ -6,7 +6,7 @@ using JTran.Expressions;
 
 using JTran.Extensions;
 using JTran.Json;
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
@@ -156,6 +156,18 @@ namespace JTran.UnitTests
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Customer.FirstName"));
+            var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("Bob", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_Addition_multipart2_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Customer.FirstName + Customer.LastName"));
             var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
 
@@ -164,7 +176,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_Addition_multipart2_Success()
+        public void Compiler_Addition_multipart3_Success()
         {
             var expression = Compile("$Customer.FirstName + $Customer.LastName");
 
@@ -602,6 +614,29 @@ namespace JTran.UnitTests
 
             var list = ((IEnumerable<object>)result).ToList();
             Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(1, int.Parse(list![0].ToString()!));
+            Assert.AreEqual(2, int.Parse(list![1].ToString()!));
+            Assert.AreEqual(3, int.Parse(list![2].ToString()!));
+        }
+
+
+        [TestMethod]
+        public void Compiler_Array_Success2()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("[a || b ? 1 : 99, iif(a && b, 2, 98), x - 6 + y]");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {a = true, b = true, c = true, x = 9, y = 0} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.IsTrue(result is IEnumerable<object>);
+
+            var list = ((IEnumerable<object>)result).ToList();
+            Assert.AreEqual(3, list.Count);
             Assert.AreEqual(1, int.Parse(list[0].ToString()));
             Assert.AreEqual(2, int.Parse(list[1].ToString()));
             Assert.AreEqual(3, int.Parse(list[2].ToString()));
@@ -625,11 +660,11 @@ namespace JTran.UnitTests
 
             Assert.IsTrue(result is IEnumerable<object>);
 
-            var list = ((IEnumerable<object>)result).ToList();
+            var list = ((IEnumerable<object>)result).ToList()!;
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(v1, int.Parse(list[0].ToString()));
-            Assert.AreEqual(v2, int.Parse(list[1].ToString()));
-            Assert.AreEqual(v3, int.Parse(list[2].ToString()));
+            Assert.AreEqual(v1, int.Parse(list[0]!.ToString()!));
+            Assert.AreEqual(v2, int.Parse(list[1]!.ToString()!));
+            Assert.AreEqual(v3, int.Parse(list[2]!.ToString()!));
         }
 
         #endregion

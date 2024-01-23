@@ -567,16 +567,6 @@ namespace JTran.UnitTests
              Year: '#(BestYear(3))'
         }";
 
-        private static readonly string _transformFunctionAfter =
-        @"{
-             Year: '#(BestYear(3))',
-
-             '#function(BestYear)': 
-             {
-                return:       1964
-             }
-        }";
-
         private static readonly string _transformFunctionParams =
         @"{
              '#function(BestYear, add)': 
@@ -1533,68 +1523,31 @@ namespace JTran.UnitTests
             ArrayName: 'bob'
         }";
 
-        private static readonly string _data2 =
+        private static readonly string _dataNoEmployees =
         @"{
-              Customers:
-              [
-                  {
-                      Surname:     'Smith',
-                      Address:     '123 Elm St',   
-                      Residents:
-                     [
-                        {
-                             Name:   'John',
-                             Age:     34
-                        },
-                        {
-                             Name:   'Mary',
-                             Age:     32
-                        }
-                     ]
-                 },
-                  {
-                      Surname:     'Anderson',
-                      Address:     '375 Maple Ave',   
-                      Residents:
-                     [
-                        {
-                             Name:   'Fred',
-                             Age:     41
-                        },
-                        {
-                             Name:   'Linda',
-                             Age:     39
-                        }
-                     ]
-                 }
-              ]
-            }";
-
-            private static readonly string _dataNoEmployees =
-            @"{
-                Customers:
-                [
-                    {
-                        Surname: 'Smith',
-                        Name:    'John'
-                    },
-                    {
-                        Surname: 'Jones',
-                        Name:    'Bob'
-                    }
-               ],
-               Employees:
-               [
-                 {
-                     Surname: 'Anderson',
-                     Name:    'Linda'
-                 },
-                 {
-                     Surname:   'Gonzales',
-                     Name:      'Pedro'
-                 }
-               ]
-            }";
+            Customers:
+            [
+                {
+                    Surname: 'Smith',
+                    Name:    'John'
+                },
+                {
+                    Surname: 'Jones',
+                    Name:    'Bob'
+                }
+            ],
+            Employees:
+            [
+                {
+                    Surname: 'Anderson',
+                    Name:    'Linda'
+                },
+                {
+                    Surname:   'Gonzales',
+                    Name:      'Pedro'
+                }
+            ]
+        }";
 
         private static readonly string _data4 =
         @"{

@@ -7,7 +7,7 @@
 
   "#variable(hiscar)":  
   {
-    "Make": "Audi"
+    "Make": "Aud"
   },
 
   "#foreach([$mycar, $hercar.Make, $hiscar.Make + 'i'], Cars)":
