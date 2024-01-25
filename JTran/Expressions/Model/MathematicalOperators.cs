@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: MathematicalOperarator.cs					    		        

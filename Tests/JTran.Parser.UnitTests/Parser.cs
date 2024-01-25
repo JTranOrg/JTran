@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Parser;
 using JTranParser = JTran.Parser.ExpressionParser;
+using System.Xml.Linq;
 
 namespace JTran.Parser.UnitTests
 {
@@ -165,6 +166,39 @@ namespace JTran.Parser.UnitTests
         }
 
         [TestMethod]
+        [DataRow("Type3")]
+        [DataRow("$Type3")]
+        [DataRow("Ty1pe3")]
+        [DataRow("$Ty1pe3")]
+        [DataRow("T2x4x5x")]
+        public void Expression_name_w_number(string val)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(val);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(1,    tokens.Count);
+            Assert.AreEqual(val,  tokens[0].Value);
+            Assert.AreEqual(Token.TokenType.Text, tokens[0].Type);
+        }        
+        
+        [TestMethod]
+        [DataRow("floor(ceiling(3.5))", 7, 4)]
+        [DataRow("ceiling(2.88, 34.99, 3.5)", 8, 6)]
+        [DataRow("floor(2.11, ceiling(3.5))", 9, 6)]
+        [DataRow("-14 * .53 + 3.5", 5, 4)]
+        [DataRow("-14 - -.53 - 3.5", 5, 4)]
+        public void Expression_name_w_number2(string expr, int count, int index)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(expr);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(count,    tokens.Count);
+            Assert.AreEqual("3.5", tokens[index].Value);
+        }
+        
+        [TestMethod]
         public void Expression_Multi_Success()
         {
             var parser = new JTranParser();
@@ -201,6 +235,20 @@ namespace JTran.Parser.UnitTests
             Assert.AreEqual(",",   tokens[5].Value);
             Assert.AreEqual("4",   tokens[6].Value);
             Assert.AreEqual(")",   tokens[7].Value);
+        }
+
+        [TestMethod]
+        public void Expression_Multipart_success()
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse("Customer.Name.First");
+   
+            Assert.AreEqual(5,          tokens.Count);
+            Assert.AreEqual("Customer", tokens[0].Value);
+            Assert.AreEqual(".",        tokens[1].Value);
+            Assert.AreEqual("Name",     tokens[2].Value);
+            Assert.AreEqual(".",        tokens[3].Value);
+            Assert.AreEqual("First",    tokens[4].Value);
         }
 
         [TestMethod]
@@ -264,6 +312,29 @@ namespace JTran.Parser.UnitTests
             Assert.IsNotNull(tokens);
             Assert.AreEqual(5, tokens.Count);
             Assert.AreEqual(Token.TokenType.Operator, tokens[2].Type);
+        }
+
+        [TestMethod]
+        public void Expression_array_indexer_and_multipart()
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse("Customer[City == 'Seattle'].FirstName");
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(8, tokens.Count);
+            Assert.AreEqual(".", tokens[6].Value);
+            Assert.AreEqual("FirstName", tokens[7].Value);
+        }
+
+        [TestMethod]
+        [DataRow("normalizespace(RemoveEnding(RemoveAnyEnding(RemoveEnding($name, ')'), $keywords.keywords), '('))", 21)]
+        public void Expression_complex(string expr, int count)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(expr);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(count, tokens.Count);
         }
     }
 }

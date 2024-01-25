@@ -22,7 +22,7 @@ namespace JTran
         {
             _name = name == null ? null : CreateValue(name);
 
-            var parms = CompiledTransform.ParseElementParams("iif", val, new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("iif", val, new List<bool> {false} );
 
             if(parms.Count < 3)
                 throw new Transformer.SyntaxException("Missing expressions for #iif");

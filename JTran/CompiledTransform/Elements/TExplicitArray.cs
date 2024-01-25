@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
+
 
 namespace JTran
 {
@@ -55,7 +54,7 @@ namespace JTran
                 { 
                     if(output.InObject)
                     { 
-                        var name = this.Name.Evaluate(context)?.ToString();
+                        var name = this.Name?.Evaluate(context)?.ToString();
 
                         if(string.IsNullOrWhiteSpace(name))
                             throw new Transformer.SyntaxException("Array name evaluates to null or empty string");

@@ -23,13 +23,12 @@ namespace JTran.Json
     {
         private string? _currentLine;
         private int     _position = -1;
-        private char?    _back;
+        private char?   _back;
         private char    _last = '\0';
         private readonly TextReader _reader;
 
         internal CharacterReader(Stream stream) 
         { 
-            //_reader = new StreamReader(stream);
             _reader = new StreamReader(stream, Encoding.UTF8, true, 8 * 1024);
         }
 
@@ -50,7 +49,7 @@ namespace JTran.Json
             if(_currentLine == null && _position != -1)
                 throw new ArgumentOutOfRangeException(nameof(ReadNext));
 
-            while(_position == -1 || _position >= _currentLine.Length)
+            while(_position == -1 || _position >= (_currentLine?.Length ?? 0))
             {
                 _currentLine = _reader.ReadLine();
                 ++lineNumber;
@@ -65,7 +64,7 @@ namespace JTran.Json
                 break;
             }
 
-            return _last = _currentLine[_position++];
+            return _last = _currentLine![_position++];
         
         }
 

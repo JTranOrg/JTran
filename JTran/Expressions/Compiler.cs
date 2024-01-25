@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: Compiler.cs					    		        
@@ -66,9 +66,6 @@ namespace JTran.Expressions
             return CreateExpression(stokens, out string lastChar);
         }
         
-        private const string _beginBoundary = @"[(";
-        private const string _endBoundary   = @"]),:";
-
         /*****************************************************************************/
         public IExpression CreateArrayExpression(Token token)
         {
@@ -172,7 +169,7 @@ namespace JTran.Expressions
                         }
 
                         leftExpr  = new ComplexExpression { Left = leftExpr, Operator = op, Right = rightExpr };
-                        op    = newOp;
+                        op        = newOp;
                         rightExpr = CreateExpression(tokens, out lastToken);
 
                         continue;

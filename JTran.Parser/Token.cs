@@ -21,6 +21,7 @@ namespace JTran.Parser
            this.Type  = tokenType;
         }
 
+        public int       Id    { get; set; } = 0;
         public string    Value { get; set; } = "";
         public TokenType Type  { get; set; } = TokenType.Text;
 
@@ -38,11 +39,13 @@ namespace JTran.Parser
         public bool IsComma        => this.IsOperator && this.Value == ",";
         public bool IsBeginParen   => this.IsOperator && this.Value == "(";
         public bool IsEndParen     => this.IsOperator && this.Value == ")";
+        public bool IsBeginArray   => this.IsOperator && this.Value == "[";
         public bool IsMultiDot     => this.IsOperator && this.Value == ".";
         public bool IsConditional  => this.IsOperator && _conditionals.ContainsKey(this.Value);
         public bool IsTertiary     => this.IsOperator && "?:".Contains(this.Value);
         public bool IsMathematical => this.IsOperator && _mathOperators.ContainsKey(this.Value);
         public bool IsExpression   => this.Type >= TokenType.Expression;
+        public bool IsLiteral      => this == null ? false : this?.Type == TokenType.Literal || this?.Type == TokenType.DLiteral;
 
         /*****************************************************************************/
         public enum TokenType

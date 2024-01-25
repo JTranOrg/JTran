@@ -1,5 +1,6 @@
-﻿using System;
+﻿using System;   
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 using JTran.Extensions;
@@ -19,6 +20,7 @@ namespace JTran.Parser
         private readonly List<Token> _sb = new List<Token>();
 
         private Token? _token = null;
+        private int _index = 0;
 
         /*****************************************************************************/
         public ExpressionParser()
@@ -42,7 +44,7 @@ namespace JTran.Parser
                     ;
                 else if(this.CheckStringLiteral('\"', ch, prev, Token.TokenType.DLiteral))
                     ;
-                else if(this._token?.Type == Token.TokenType.Literal || this._token?.Type == Token.TokenType.DLiteral)
+                else if(this._token?.IsLiteral ?? false)
                 {
                     this._token.Value += ch;
                 }
@@ -53,20 +55,30 @@ namespace JTran.Parser
                 // Numeric literals
                 else if(ch.IsNumberChar())
                 {
-                    if(this._token?.Type == Token.TokenType.Number)
-                    {
-                        this._token.Value += ch;
-                    }
-                    else if(this._token?.Type == Token.TokenType.Text && ch == '.')
-                    {
-                        this.PushToken();
-                        this._token = new Token { Value = ch.ToString(), Type  = Token.TokenType.Operator };
-                        this.PushToken();
-                    }
-                    else
-                    {
-                        this.PushToken();
-                        this._token = new Token { Value = ch.ToString(), Type  = Token.TokenType.Number };
+                    switch(this._token?.Type)
+                    { 
+                        case Token.TokenType.Number:
+                            this._token.Value += ch;
+                            break;
+
+                        case Token.TokenType.Text when(ch == '.' && (!string.IsNullOrWhiteSpace(this._token?.Value) || (prev != null && char.IsPunctuation(prev!.Value)))):
+                        {
+                            this.PushToken();
+                            this._token = CreateToken(ch.ToString(), Token.TokenType.Operator);
+                            this.PushToken();
+                            break;
+                        }
+
+                        case Token.TokenType.Text when(!string.IsNullOrWhiteSpace(this._token?.Value)):
+                            this._token.Value += ch;
+                            break;
+
+                        default:
+                        { 
+                            this.PushToken();
+                            this._token = CreateToken(ch.ToString(), Token.TokenType.Number);
+                            break;
+                        }
                     }
                 }
                 // Valid punctuation
@@ -77,17 +89,17 @@ namespace JTran.Parser
                     else
                     {
                         this.PushToken();
-                        this._token = new Token { Value = ch.ToString(), Type  = Token.TokenType.Punctuation };
+                        this._token = CreateToken(ch.ToString(), Token.TokenType.Punctuation);
                     }
                 }
                 else if(_punctuation.Contains(ch))
                 {
                     this.PushToken();
-                    this.PushToken(new Token(ch.ToString(), Token.TokenType.Literal));
+                    this.PushToken(CreateToken(ch.ToString(), Token.TokenType.Literal));
                 }
                 else if(this._token == null)
                 {
-                    this._token = new Token(ch.ToString());
+                    this._token = CreateToken(ch.ToString());
                 }
                 else 
                 {
@@ -107,7 +119,7 @@ namespace JTran.Parser
 
         #region Private 
 
-        private readonly Regex opRegex   = new Regex(@"/[!=<>\|&/\*\^\+\~\?\:]/");
+        private static Regex opRegex = new Regex(@"/[!=<>\|&/\*\^\+\~\?\:]/");
         private const string _punctuation = @"[](),";
 
         /*****************************************************************************/
@@ -123,17 +135,23 @@ namespace JTran.Parser
             {
                 if(_operators.Contains(token.Value))
                 {
-                    this._sb.Add(new Token(token.Value, Token.TokenType.Operator)); 
+                    this._sb.Add(CreateToken(token.Value, Token.TokenType.Operator)); 
                 }
-                else if((token.Type == Token.TokenType.Literal || token.Type == Token.TokenType.DLiteral) && token.Value.IsQuoted())
-                    this._sb.Add(new Token(token.Value.Substring(1, token.Value.Length - 2), Token.TokenType.Literal)); 
+                else if(token.IsLiteral && token.Value.IsQuoted())
+                    this._sb.Add(CreateToken(token.Value.Substring(1, token.Value.Length - 2), Token.TokenType.Literal)); 
                 else if(token.Type == Token.TokenType.Text && double.TryParse(token.Value, out double dval))
-                    this._sb.Add(new Token(token.Value, Token.TokenType.Number)); 
+                    this._sb.Add(CreateToken(token.Value, Token.TokenType.Number)); 
                 else
-                    this._sb.Add(new Token(token.Value, token.Type)); 
+                    this._sb.Add(CreateToken(token.Value, token.Type)); 
             }
 
-            this._token = new Token("");
+            this._token = CreateToken("");
+        }
+
+        /*****************************************************************************/
+        private Token CreateToken(string val, Token.TokenType type = Token.TokenType.Text)
+        {
+            return new Token { Value = val, Type = type, Id = ++_index };
         }
 
         /*****************************************************************************/
@@ -144,7 +162,7 @@ namespace JTran.Parser
                 if(this._token?.Type == tokenType)
                 {
                     // End of literal
-                    this.PushToken(new Token(this._token.Value + ch, Token.TokenType.Literal));
+                    this.PushToken(CreateToken(this._token.Value + ch, Token.TokenType.Literal));
                 }
                 else
                 {
@@ -152,7 +170,7 @@ namespace JTran.Parser
                     this.PushToken();
 
                     // Beginning of literal
-                    this._token  = new Token { Value = ch.ToString(), Type = tokenType };
+                    this._token  = CreateToken(ch.ToString(), tokenType);
                 }
 
                 return true;

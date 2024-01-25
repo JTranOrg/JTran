@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: Precompiler.cs					    		        
@@ -86,13 +86,13 @@ namespace JTran.Expressions
                 }
 
                 // Turn the contents of "()" or "[]" into a single expression
-                if(_boundary.ContainsKey(token.Value))
+                if(token.IsOperator && _boundary.ContainsKey(token.Value))
                 { 
                     var newToken  = InnerPrecompile(tokens, _boundary[token.Value]);
                     var lastToken = outputTokens.LastOrDefault();
 
                     // Is this a function call?
-                    if(lastToken != null && lastToken.Type == Token.TokenType.Text && token.Value == "(")
+                    if(lastToken != null && lastToken.Type == Token.TokenType.Text && token.IsBeginParen)
                     { 
                         lastToken.Type = Token.TokenType.Function;
 
@@ -108,7 +108,7 @@ namespace JTran.Expressions
                     }
 
                     // Is this an array indexer?
-                    else if(lastToken != null && token.Value == "[" && (lastToken.Type == Token.TokenType.Text || lastToken.Type == Token.TokenType.Array))
+                    else if(lastToken != null && token.IsBeginArray && (lastToken.Type == Token.TokenType.Text || lastToken.Type == Token.TokenType.Array))
                     { 
                         lastToken.Type = Token.TokenType.Array;
 
@@ -124,7 +124,7 @@ namespace JTran.Expressions
                     }
 
                     // Is this an explicit array?
-                    else if(token.Value == "[")
+                    else if(token.IsBeginArray)
                     { 
                         var array = new Token("", Token.TokenType.ExplicitArray);
 
@@ -138,7 +138,7 @@ namespace JTran.Expressions
                 }
                
                 // Parse everything before the comma
-                else if(token.Value == ",")
+                else if(token.IsComma)
                 { 
                     var previous = commaDelimited;
 
@@ -151,7 +151,7 @@ namespace JTran.Expressions
                 }
                
                 // Is this a multi-part?
-                else if(token.Value == ".")
+                else if(token.IsMultiDot)
                 { 
                     left = ReduceMultipart(outputTokens, tokens, left);
                     continue;
@@ -195,12 +195,15 @@ namespace JTran.Expressions
 
             if(!tokens.Peek().IsOperator)
             { 
-                var result = InnerPrecompile(tokens, null, (t)=> !t.IsMultiDot && t.Type != Token.TokenType.Text);
+                var result = InnerPrecompile(tokens, null, (t)=> !t.IsMultiDot && t.Type != Token.TokenType.Text && !t.IsBeginArray);
 
-                multiPart.Merge(result);
+                if(result.Type == Token.TokenType.Multipart)
+                    multiPart.Merge(result);
+                else                
+                    multiPart.Add(result);
             }
 
-            return outputTokens.Count;
+            return outputTokens.Count - 1;
         }
 
         private static Token ReduceItem(List<Token> outputTokens, int left, Token? container, Token.TokenType type)
@@ -210,7 +213,9 @@ namespace JTran.Expressions
             var numItems = outputTokens.Count - left;
             Token? arrayItem = null;
 
-            if(numItems == 1)
+            if(numItems == 0)
+                arrayItem = outputTokens[0];
+            else if(numItems == 1)
                 arrayItem = outputTokens[left];
             else
                 arrayItem = Reduce(outputTokens.Skip(left).ToList());
@@ -231,31 +236,29 @@ namespace JTran.Expressions
         }
 
         // Listed in operator precedence
-        private static List<string> _operators = new List<string>
+        private static List<IEnumerable<string>> _operators = new List<IEnumerable<string>>
         {
-            "*", 
-            "/", 
-            "%", 
-            "+", 
-            "-", 
-            "<", 
-            ">", 
-            "<=", 
-            ">=", 
-            "==", 
-            "!=", 
-            "&&", 
-            "and",
-            "||", 
-            "or"
+            new [] { "*", "/", "%" }, 
+            new [] { "%" }, 
+            new [] { "+", "-" }, 
+            new [] { "<" }, 
+            new [] { ">" }, 
+            new [] { "<=" },  
+            new [] { ">=" },  
+            new [] { "==" },  
+            new [] { "!=" },  
+            new [] { "&&" },  
+            new [] { "and" }, 
+            new [] { "||" },  
+            new [] { "or" }
         };
 
         /*****************************************************************************/
         private static Token Reduce(IList<Token> outputTokens)
         {
-            foreach(var op in _operators)
+            foreach(var ops in _operators)
             { 
-                while(ReduceExpression(outputTokens, op))
+                while(ReduceExpression(outputTokens, ops))
                     ;
 
                 if(outputTokens.Count < 3)
@@ -277,7 +280,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        private static bool ReduceExpression(IList<Token> outputTokens, string checkOp)
+        private static bool ReduceExpression(IList<Token> outputTokens, IEnumerable<string> checkOps)
         {
             if(outputTokens.Count >= 3)
             { 
@@ -285,7 +288,7 @@ namespace JTran.Expressions
                 { 
                     var op = outputTokens[i];
 
-                    if(!op.IsOperator || checkOp != op.Value)
+                    if(!op.IsOperator || !checkOps.Contains(op.Value))
                         continue;
 
                     var leftToken = outputTokens[i-1];

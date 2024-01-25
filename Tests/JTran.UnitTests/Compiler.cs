@@ -104,6 +104,20 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [DataRow("-14 * .53 + 3.5", -3.92)]
+        [DataRow("-14 - -.53 - 3.5", -16.97)]
+        public void Compiler_complex_bool_Success(string expr, double val)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse(expr));
+            var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(val, Convert.ToDouble(expression.Evaluate(context)));
+        }
+
+        [TestMethod]
         public void Compiler_Addition_Success()
         {
             var parser     = new JTranParser();
@@ -277,7 +291,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_Multple_Ands_Success()
+        public void Compiler_Multiple_Ands_Success()
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
@@ -520,6 +534,7 @@ namespace JTran.UnitTests
         [DataRow("12 - 3 / (4 - 1)", 11)]
         [DataRow("12 - 3 * 3 / (4 - 1)", 9)]
         [DataRow("12 - 3 * 3 % (4 - 2)", 11)]
+        [DataRow("8 / 2 * 2", 8)]
         public void Compiler_precedence(string expressionStr, double result)
         {
             var parser     = new JTranParser();

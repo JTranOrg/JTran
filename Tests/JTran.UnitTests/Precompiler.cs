@@ -17,7 +17,7 @@ namespace JTran.UnitTests
     public class PrecompilerTests
     {
         [TestMethod]
-        [DataRow("10 - 3 + (9 - 1)", "-")]
+        [DataRow("10 - 3 + (9 - 1)", "+")]
         [DataRow("10 - 3 * (3 - 1)", "-")]
         [DataRow("10 - 3 * 3 - 1",   "-")]
         [DataRow("5 * 3 - (3 + 1)",  "-")]
@@ -100,6 +100,20 @@ namespace JTran.UnitTests
             Assert.AreEqual("bob",   parm[2].Value);
 
             Assert.AreEqual("$Age",  function[1].Value);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_func_wParams2()
+        {
+            var function = TestExpression("max(Husband.Birthdate, Wife.Birthdate)");
+
+            Assert.AreEqual(Token.TokenType.Function, function.Type);
+
+            Assert.AreEqual("max",  function.Value);
+            Assert.AreEqual(2,      function.Count);
+
+            Assert.AreEqual("Husband",  function[0][0].Value);
+            Assert.AreEqual("Wife",     function[1][0].Value);
         }
 
         [TestMethod]
@@ -373,6 +387,25 @@ namespace JTran.UnitTests
 
             AssertExpression(expr2[0][0], "City", "==", "Seattle");
         }
+
+        [TestMethod]
+        public void Precompiler_Precompile_multipart5_expression()
+        {
+            var expr = TestExpression("Cars[Make == 'Chevy'].Tickets[Location == 'WA']");
+
+            Assert.AreEqual(Token.TokenType.Multipart, expr.Type);
+
+            Assert.AreEqual(2, expr.Count);
+
+            var expr1 = expr[0];
+            var expr2 = expr[1];
+
+            Assert.AreEqual("Cars",   expr1.Value);
+            Assert.AreEqual("Tickets",   expr2.Value);
+
+            AssertExpression(expr1[0][0], "Make", "==", "Chevy");
+            AssertExpression(expr2[0][0], "Location", "==", "WA");
+        }        
         
         [TestMethod]
         public void Precompiler_Precompile_function_params_success()
@@ -567,6 +600,35 @@ namespace JTran.UnitTests
    
             Assert.AreEqual(Token.TokenType.CommaDelimited, token.Type);
             Assert.AreEqual(numParams, token.Count);
+        }
+        
+        [TestMethod]
+        [DataRow("a(b(c(d($name, ')'), $keywords.stuff), '('))")]
+        public void Precompiler_Precompile_complex(string expr)
+        {
+            var token = Test(expr);
+
+            Assert.AreEqual(Token.TokenType.Function, token.Type);
+            Assert.AreEqual("a", token.Value);
+            Assert.AreEqual(1, token.Count);
+
+            var parm1 = token[0];
+
+            Assert.AreEqual(Token.TokenType.Function, parm1.Type);
+            Assert.AreEqual("b", parm1.Value);
+            Assert.AreEqual(2, parm1.Count);
+
+            var parm2 = parm1[0];
+
+            Assert.AreEqual(Token.TokenType.Function, parm2.Type);
+            Assert.AreEqual("c", parm2.Value);
+            Assert.AreEqual(2, parm2.Count);
+
+            var parm3 = parm2[0];
+
+            Assert.AreEqual(Token.TokenType.Function, parm3.Type);
+            Assert.AreEqual("d", parm3.Value);
+            Assert.AreEqual(2, parm3.Count);
         }
 
         #endregion
