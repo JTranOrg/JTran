@@ -1280,7 +1280,7 @@ namespace JTran.UnitTests
             'Name':        'Fred',
             '#foreach(Automobiles, Cars)':
             {
-                Brand:    '#(Make))',
+                Brand:    '#(Make)',
                 Model:    '#(Model)',
                 Year:     '#(Year)',
                 Color:    '#(Color)',

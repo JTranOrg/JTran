@@ -98,6 +98,7 @@
     <None Remove="Test Transforms\map\map_property.jtran" />
     <None Remove="Test Transforms\map\variablecontent.jtran" />
     <None Remove="Test Transforms\noelements.jtran" />
+    <None Remove="Test Transforms\SyntaxErrors\expression1.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\foreach2.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\includenotfound.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\variable.jtran" />
@@ -194,6 +195,7 @@
     <EmbeddedResource Include="Test Transforms\foreachbreak.jtran" />
     <EmbeddedResource Include="Test Transforms\list.jtran" />
     <EmbeddedResource Include="Test Transforms\iterate.jtran" />
+    <EmbeddedResource Include="Test Transforms\SyntaxErrors\expression1.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable2.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\includenotfound.jtran" />

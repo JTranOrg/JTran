@@ -34,6 +34,7 @@ namespace JTran.Parser
         }
 
         public bool IsOperator     => this?.Type == TokenType.Operator;
+        public bool IsPunctuation  => this?.Type == TokenType.Punctuation;
         public bool IsBoundary     => this.IsOperator && _allBoundaries.ContainsKey(this.Value);
         public bool IsEndBoundary  => this.IsOperator && _endBoundary.ContainsKey(this.Value);
         public bool IsComma        => this.IsOperator && this.Value == ",";

@@ -410,7 +410,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_function_params_success()
         {
-            var token = TestExpression("include(a, b, c))");
+            var token = TestExpression("include(a, b, c)");
    
             Assert.AreEqual("include", token.Value);
             Assert.AreEqual(Token.TokenType.Function, token.Type);
@@ -629,6 +629,13 @@ namespace JTran.UnitTests
             Assert.AreEqual(Token.TokenType.Function, parm3.Type);
             Assert.AreEqual("d", parm3.Value);
             Assert.AreEqual(2, parm3.Count);
+        }
+        
+        [TestMethod]
+        [DataRow("bob !!!*** ted")]
+        public void Precompiler_Precompile_error(string expr)
+        {
+            Assert.ThrowsException<Transformer.SyntaxException>(()=> Test(expr));
         }
 
         #endregion

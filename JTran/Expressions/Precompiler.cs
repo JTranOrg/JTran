@@ -48,6 +48,28 @@ namespace JTran.Expressions
             { ",", "," }
         };
 
+        private readonly static IDictionary<string, bool> _validOperators = new Dictionary<string, bool>
+        {
+            { "*", true },
+            { "/", true },
+            { "%", true }, 
+            { "+", true }, 
+            { "-", true },
+            { "<", true },
+            { ">", true },
+            { "<=", true }, 
+            { ">=", true },  
+            { "==", true },  
+            { "!=", true }, 
+            { "&&", true },  
+            { "and", true },
+            { "||", true },  
+            { "or", true },
+            { ",", true },
+            { "?", true },
+            { ":", true }
+        };
+
         /*****************************************************************************/
         internal static Token Precompile(IEnumerable<Token> tokens)
         {
@@ -157,6 +179,9 @@ namespace JTran.Expressions
                     continue;
                 }
 
+                else if((token.IsOperator || token.IsPunctuation) && !_validOperators.ContainsKey(token.Value))
+                    throw new Transformer.SyntaxException($"Invalid operator: {token.Value}");
+
                 outputTokens.Add(token);
                 
                 if(left == -1)
@@ -247,10 +272,8 @@ namespace JTran.Expressions
             new [] { ">=" },  
             new [] { "==" },  
             new [] { "!=" },  
-            new [] { "&&" },  
-            new [] { "and" }, 
-            new [] { "||" },  
-            new [] { "or" }
+            new [] { "&&", "and" }, 
+            new [] { "||", "or" }
         };
 
         /*****************************************************************************/

@@ -33,5 +33,17 @@ namespace JTran.Transform.UnitTests
             Assert.IsTrue(ex.Data.Contains("LineNumber"));
             Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
         }
+
+        [TestMethod]
+        [DataRow("expression1", "customers", "Invalid operator", 5)]
+        public async Task SyntaxErrorTests_expression_parser(string transform, string data, string msg, long lineNumber)
+        {
+            var ex = await Assert.ThrowsExceptionAsync<Transformer.SyntaxException>( async ()=> await TransformerTest.Test("SyntaxErrors." + transform, data));
+
+            Assert.IsNotNull(ex);
+            Assert.IsTrue(ex.Message.Contains(msg));
+            Assert.IsTrue(ex.Data.Contains("LineNumber"));
+            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
+        }
     }
 }
