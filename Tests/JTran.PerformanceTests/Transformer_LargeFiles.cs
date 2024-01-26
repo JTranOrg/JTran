@@ -1,8 +1,7 @@
+using System;
 using System.Text;
 
 using Newtonsoft.Json;
-
-using JTran.Common;
 
 namespace JTran.PerformanceTests
 {
@@ -64,7 +63,8 @@ namespace JTran.PerformanceTests
                     Address      = person.StreetNumber + " " + person.StreetName,
                     City         = person.City,
                     State        = person.State,
-                    ZipCode      = person.ZipCode
+                    ZipCode      = person.ZipCode,
+                    Age          = (int)(DateTime.Now.Ticks & 11111) + 20
                 });
             }
 
@@ -89,6 +89,7 @@ namespace JTran.PerformanceTests
             public string City        { get; set; } = "";
             public string State       { get; set; } = "";
             public string ZipCode     { get; set; } = "";
+            public int    Age         { get; set; } = 0;
         }
 
         private JTran.Transformer CreateTransformer(string transform)
@@ -98,12 +99,17 @@ namespace JTran.PerformanceTests
 
         private static readonly string _transformForEach1 =
         @"{
+            '#variable(var1)':   20,
+            '#variable(var2)':   '#((2 + 3) * (9 / 3))',
+            '#variable(var3)':   5,
+
             '#foreach(Customers, Customers)':
             {
                 'Name':       '#(FirstName + MiddleName + LastName)',
                 'Birthdate':  '#(Birthdate)',
                 'Address1':   '#(Address)',
-                'Address2':   '#(City + State + ZipCode)'
+                'Address2':   '#(City + State + ZipCode)',
+                'Age':        '#(Age + $var2 + $var3 - $var1)'
             }
         }";
 

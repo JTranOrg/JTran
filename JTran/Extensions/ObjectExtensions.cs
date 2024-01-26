@@ -21,9 +21,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 
 namespace JTran.Extensions
 {
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class GroupKey : Dictionary<string, object>
+    {
+        public override string ToString()
+        {
+            return string.Join(";;", this.Select(v=> v.Key.ToString() + ",," + v.Value.ToString()));
+        }
+    }
+
     /****************************************************************************/
     /****************************************************************************/
     internal static class ObjectExtensions
@@ -37,6 +48,21 @@ namespace JTran.Extensions
                 return list[0];
 
             return results;
+        }
+
+        /****************************************************************************/
+        internal static GroupKey GetGroupByKey(this object obj, IEnumerable<string> fields)
+        {
+            var result = new GroupKey();
+
+            foreach(var field in fields)
+            { 
+                var val = obj.GetSingleValue(field, null);
+
+                result.TryAdd(field, val); 
+            }
+
+            return result;
         }
 
         /****************************************************************************/

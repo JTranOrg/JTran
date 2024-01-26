@@ -71,7 +71,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
-    <ProjectReference Include="..\..\JTran.Parser\JTran.Parser.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>
 

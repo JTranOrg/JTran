@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Extensions;
 using JTran.Json;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace JTran.UnitTests
 {
@@ -51,6 +52,17 @@ namespace JTran.UnitTests
             var obj = _data1.JsonToExpando();
 
             Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
+        }
+
+        [TestMethod]
+        public void ObjectExtensions_GroupKey_Success()
+        {
+            var obj = new { Make = "Chevy", Model = "Corvette", Year = 1956 };
+            var ex  = obj.GetGroupByKey(new [] { "Make", "Model" });
+
+            Assert.AreEqual("Chevy", ex["Make"]);
+            Assert.AreEqual("Corvette", ex["Model"]);
+            Assert.ThrowsException<KeyNotFoundException>(()=> ex["Year"]);
         }
 
         #region Data

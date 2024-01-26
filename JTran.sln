@@ -37,8 +37,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.PerformanceTests", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Parser.UnitTests", "Tests\JTran.Parser.UnitTests\JTran.Parser.UnitTests.csproj", "{5CDF702B-BE08-477D-A2F6-15110D2C26E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Parser", "JTran.Parser\JTran.Parser.csproj", "{849BB978-09AC-414B-BFA4-8288748D6607}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Common", "JTran.Common\JTran.Common.csproj", "{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Transform.UnitTests", "Tests\JTran.Transform.UnitTests\JTran.Transform.UnitTests.csproj", "{3363902B-2E4A-4377-81DA-2F62D0DEA851}"
@@ -96,10 +94,6 @@ Global
 		{5CDF702B-BE08-477D-A2F6-15110D2C26E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CDF702B-BE08-477D-A2F6-15110D2C26E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CDF702B-BE08-477D-A2F6-15110D2C26E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{849BB978-09AC-414B-BFA4-8288748D6607}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{849BB978-09AC-414B-BFA4-8288748D6607}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{849BB978-09AC-414B-BFA4-8288748D6607}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{849BB978-09AC-414B-BFA4-8288748D6607}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE12A1AC-C62D-43E5-AD30-75AC0370A4F1}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -7,6 +7,8 @@ using System.Linq;
 
 using JTran.Extensions;
 using JTran.Expressions;
+using JTran.Parser;
+using System.Text.RegularExpressions;
 
 namespace JTran
 {
@@ -144,24 +146,62 @@ namespace JTran
     /****************************************************************************/
     internal class TForEachGroup : TContainer
     {
-        private readonly IExpression _expression;
-        private readonly IExpression _name;
-        private readonly IExpression _groupBy;
+        private readonly IExpression  _expression;
+        private readonly IExpression? _name;
+        private readonly IEnumerable<string>? _groupBy;
 
         /****************************************************************************/
         internal TForEachGroup(string name) 
         {
             var parms = CompiledTransform.ParseElementParams("foreachgroup", name, new List<bool> {false, true} )!;
 
-            _expression = parms[0];
-            _groupBy    = parms.Count > 1 ? new Value(parms[1]) : null;
-            _name       = parms.Count > 2 ? new Value(parms.Last()) : null;
+            _expression = parms![0];
+            _name       = parms.Count > 2 ? new Value(parms.Last()!) : null;
+
+            if(parms.Count > 1)
+            { 
+                var groupBy = (parms[1] as Value)!.Evaluate(null) as Token;
+
+                if(groupBy!.Type == Token.TokenType.ExplicitArray)
+                    _groupBy = groupBy.Select(x => x.Value );
+                else 
+                    _groupBy = new List<string> { groupBy.Value };
+            }
         }
 
         /****************************************************************************/
         internal protected TForEachGroup(string expression, bool expr) 
         {
             _expression = Compiler.Compile(expression);
+        }
+
+        /****************************************************************************/
+        private class GroupByComparer : IEqualityComparer<GroupKey>
+        {
+            private readonly IEnumerable<string> _fields;
+
+            public GroupByComparer(IEnumerable<string> fields)
+            {
+                _fields = fields;
+            }
+
+            public bool Equals(GroupKey x, GroupKey y)
+            {
+                foreach(var field in _fields)
+                {
+                    var compare = x[field].CompareTo(y[field], out Type t);
+
+                    if(compare != 0)
+                        return false;
+                }
+
+                return true;
+            }
+
+            public int GetHashCode(GroupKey obj)
+            {
+                return obj.ToString().GetHashCode();
+            }
         }
 
         /****************************************************************************/
@@ -176,21 +216,45 @@ namespace JTran
             }
 
             // Get the groups
-            var groupBy = _groupBy.Evaluate(context).ToString().Trim();
+            IEnumerable<ExpandoObject>? groups;
 
-            var groups = list.GroupBy
-            (
-                (item)=> item.GetSingleValue(groupBy, null),
-                (item)=> item,
-                (groupValue, items) => { 
-                                            IDictionary<string, object> item = new ExpandoObject(); 
+            if(_groupBy.Count() == 1)
+            {
+                var groupBy = _groupBy.First();
+
+                groups = list.GroupBy
+                (
+                    (item)=> item.GetSingleValue(groupBy, null),
+                    (item)=> item,
+                    (groupValue, items) => {    
+                                                var newObj = new ExpandoObject();
+
+                                                newObj.TryAdd(groupBy, groupValue);
+                                                newObj.TryAdd("__groupItems", items); 
                                                     
-                                            item[groupBy] = groupValue; 
-                                            item["__groupItems"] = items; 
+                                                return newObj; 
+                                            }
+                );
+            }
+            else
+            { 
+                groups = list.GroupBy
+                (
+                    (item)=> item.GetGroupByKey(_groupBy!),
+                    (item)=> item,
+                    (groupValue, items) => {    
+                                                var newObj = new ExpandoObject();
+
+                                                foreach(var item in groupValue)
+                                                    newObj.TryAdd(item.Key, item.Value);
+
+                                                newObj.TryAdd("__groupItems", items); 
                                                     
-                                            return item as ExpandoObject; 
-                                        }
-            );
+                                                return newObj;
+                    },
+                    new GroupByComparer(_groupBy)
+                );
+            }
 
             var numGroups = groups.Count();
 
