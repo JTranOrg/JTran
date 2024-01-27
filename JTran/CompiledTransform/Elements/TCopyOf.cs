@@ -18,7 +18,7 @@ namespace JTran
         {
             _name = name == null ? null : CreateValue(name);
 
-            var parms = CompiledTransform.ParseElementParams("copyof", val, new List<bool> {false} );
+            var parms = CompiledTransform.ParseElementParams("copyof", val, CompiledTransform.SingleFalse );
 
             if(parms.Count == 0)
                 throw new Transformer.SyntaxException("Missing expression for #copyof");

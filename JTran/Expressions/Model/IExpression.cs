@@ -63,9 +63,9 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class Value : IExpression
     {
-        private object _value;
+        private object? _value;
 
-        public Value(object val)
+        public Value(object? val)
         {
             _value = val;
         }
@@ -212,10 +212,10 @@ namespace JTran.Expressions
                 data = result;
             }
 
-            if(result is IList<object> outList3)
+            if(result is IEnumerable<object> outList3)
             { 
-                if(outList3.Count == 1)
-                    return outList3[0];
+                if(outList3.IsSingle())
+                    return outList3.First();
 
                 return outList3;
             }
@@ -257,13 +257,18 @@ namespace JTran.Expressions
 
                 return rtnVal;
             }
-            else if(context.Data is IList<object> list)
+            else if(context.Data is IEnumerable<object> enm)
             { 
                 // If expression result is integer then return nth value of array
                 try
                 { 
                     if(int.TryParse(_expr.Evaluate(context).ToString(), out int index))
-                        return list[index];
+                    {
+                        if(enm is IList<object> list)
+                            return list[index];
+
+                        return enm.Skip(index).Take(1).Single();
+                    }
                 }
                 catch
                 {
@@ -271,7 +276,7 @@ namespace JTran.Expressions
                 }
 
                 // Evaluate each item in list against expression
-                foreach(var child in list)
+                foreach(var child in enm)
                 { 
                     if(_expr.EvaluateToBool(new ExpressionContext(child, context)))
                         result.Add(child);

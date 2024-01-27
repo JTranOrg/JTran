@@ -1083,15 +1083,6 @@ namespace JTran.UnitTests
              }
         }";
 
-        private static readonly string _transformForEachNoObjectCopy =
-        @"{
-            '#foreach(Cars, Cars)':
-            {
-                '#noobject':   '#copyof(@)',
-                'Driver':      'Fred Flintstone'
-             }
-        }";
-
         private static readonly string _transformRemoveAny2 =
         "{\r\n" + 
         "   \"#variable(punc)\":" + 

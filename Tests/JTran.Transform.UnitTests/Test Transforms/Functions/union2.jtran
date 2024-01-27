@@ -1,0 +1,24 @@
+{
+  "#variable(Chevy)":  
+  {
+    "#foreach(Chevy, Cars)": 
+    {
+      "#noobject": "#copyof(@)",
+      "Make":  "Chevy"
+    }
+  },
+
+  "#variable(Pontiac)":  
+  {
+    "#foreach(Pontiac, Cars)": 
+    {
+      "#noobject": "#copyof(@)",
+      "Make":  "Pontiac"
+    }
+  },
+
+  "#foreach(union($Chevy.Cars, $Pontiac.Cars), Cars)": 
+  {
+    "#noobject": "#copyof(@)"
+  }
+}

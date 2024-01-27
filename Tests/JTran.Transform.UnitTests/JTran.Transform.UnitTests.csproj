@@ -41,6 +41,7 @@
     <None Remove="Sample Data\Functions\iif.json" />
     <None Remove="Sample Data\Functions\sortmultiple.json" />
     <None Remove="Sample Data\Functions\sortnumbers.json" />
+    <None Remove="Sample Data\Functions\union.json" />
     <None Remove="Sample Data\Include\include.json" />
     <None Remove="Sample Data\JTranFunctions\after.json" />
     <None Remove="Sample Data\JTranFunctions\after2.json" />
@@ -49,6 +50,7 @@
     <None Remove="Sample Data\map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
     <None Remove="Sample Data\sort.json" />
+    <None Remove="Test Transforms\Arrays\variable.jtran" />
     <None Remove="Test Transforms\coalesce.jtran" />
     <None Remove="Test Transforms\coalescenumber.jtran" />
     <None Remove="Test Transforms\CopyOf\array_noobject.jtran" />
@@ -82,6 +84,8 @@
     <None Remove="Test Transforms\Functions\sortmultipledesc.jtran" />
     <None Remove="Test Transforms\Functions\sortnumbers.jtran" />
     <None Remove="Test Transforms\Functions\sortnumbersdesc.jtran" />
+    <None Remove="Test Transforms\Functions\union.jtran" />
+    <None Remove="Test Transforms\Functions\union2.jtran" />
     <None Remove="Test Transforms\Iif\iif.jtran" />
     <None Remove="Test Transforms\Iif\iif2.jtran" />
     <None Remove="Test Transforms\Include\include.jtran" />
@@ -121,6 +125,7 @@
     <EmbeddedResource Include="Sample Data\ForEachGroup\foreachgroup2_expected.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\drivers.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\only1_group.json" />
+    <EmbeddedResource Include="Sample Data\Functions\union.json" />
     <EmbeddedResource Include="Sample Data\Functions\iif.json" />
     <EmbeddedResource Include="Sample Data\Functions\sortmultiple.json" />
     <EmbeddedResource Include="Sample Data\Functions\sortnumbers.json" />
@@ -133,6 +138,7 @@
     <EmbeddedResource Include="Sample Data\ForEach\nested.json" />
     <EmbeddedResource Include="Sample Data\Include\include.json" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
+    <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof3.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\empty2.jtran" />
@@ -148,6 +154,8 @@
     <EmbeddedResource Include="Test Transforms\ForEach\explicit_array2.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\explicit_array.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\foreach4.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\union2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Functions\union.jtran" />
     <EmbeddedResource Include="Test Transforms\Iif\iif2.jtran" />
     <EmbeddedResource Include="Test Transforms\Iif\iif.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\include.jtran" />

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
+using System.Linq;
 
 using JTran.Expressions;
 
@@ -16,9 +15,9 @@ namespace JTran
         /****************************************************************************/
         internal TThrow(string name, object val)
         {
-            var parms = CompiledTransform.ParseElementParams("throw", name, new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("throw", name, CompiledTransform.FalseTrue );
 
-            _code = parms.Count > 0 ? parms[0] : null;
+            _code = parms.Any() ? parms[0] : null;
 
             _message = CreateValue(val);
         }
@@ -98,9 +97,9 @@ namespace JTran
         /****************************************************************************/
         internal TCatch(string name) 
         {
-            var parms = CompiledTransform.ParseElementParams("catch", name, new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("catch", name, CompiledTransform.FalseTrue );
 
-            _expression = parms.Count > 0 ? parms[0] : null;
+            _expression = parms.Any() ? parms[0] : null;
         }
 
         /****************************************************************************/

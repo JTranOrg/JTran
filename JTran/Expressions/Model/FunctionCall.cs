@@ -69,34 +69,32 @@ namespace JTran.Expressions
 
             var tfunc = context.GetFunction(_functionName);
             
-            if(tfunc != null)
-            {
-                var output      = new JsonStringWriter();
-                var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
-                var index       = 0;
+            if(tfunc == null)
+                throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
+
+            var output      = new JsonStringWriter();
+            var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
+            var index       = 0;
                 
-                foreach(var argName in tfunc.Parameters)
-                {
-                    if(index >= _parameters.Count)
-                        break;
+            foreach(var argName in tfunc.Parameters)
+            {
+                if(index >= _parameters.Count)
+                    break;
 
-                    funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
-                }
-
-                output.StartObject();
-                tfunc.Evaluate(output, funcContext, (f)=> f());
-                output.EndObject();
-
-                var exp = output.ToString().JsonToExpando();
-                var dict = exp as IDictionary<string, object>;
-
-                if(dict.ContainsKey("return"))
-                    return dict["return"];
-
-                return exp;
+                funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
             }
 
-            throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
+            output.StartObject();
+            tfunc.Evaluate(output, funcContext, (f)=> f());
+            output.EndObject();
+
+            var exp = output.ToString().JsonToExpando();
+            var dict = exp as IDictionary<string, object>;
+
+            if(dict.ContainsKey("return"))
+                return dict["return"];
+
+            return exp;
         }
 
         /*****************************************************************************/

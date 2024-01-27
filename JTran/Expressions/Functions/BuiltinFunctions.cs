@@ -630,7 +630,7 @@ namespace JTran.Expressions
 
             if(val is IEnumerable<object> list)
             {
-                if(list.Count() == 0)
+                if(!list.Any())
                     throw new Transformer.UserError(errorMessage);
 
                 return val;
@@ -720,19 +720,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public IList<object> sequence(object from, object to)
+        public IEnumerable<object> sequence(object from, object to)
         {
             return sequence(from, to, 1d);
         }
 
         /*****************************************************************************/
-        public IList<object> sequence(object from, object to, object increment)
+        public IEnumerable<object> sequence(object from, object to, object increment)
         {
             if(!double.TryParse(from.ToString(), out double dFrom))
-                return new List<object>();
+                return Array.Empty<object>();
 
             if(!double.TryParse(to.ToString(), out double dTo))
-                return new List<object>();
+                return Array.Empty<object>();
 
             double dIncrement = 1d;
 

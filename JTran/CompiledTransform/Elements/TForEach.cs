@@ -22,7 +22,7 @@ namespace JTran
         /****************************************************************************/
         internal TForEach(string name) 
         {
-            var parms = CompiledTransform.ParseElementParams("foreach", name, new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("foreach", name, CompiledTransform.FalseTrue );
 
             if(parms.Count < 1)
                 throw new Transformer.SyntaxException("Missing expression for #foreach");
@@ -53,7 +53,7 @@ namespace JTran
             arrayName = string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
 
             if(arrayName != null && !(result is IEnumerable<object>))
-                result = new List<object> { result };
+                result = new [] { result };
 
             // If the result of the expression is an array
             if(result is IEnumerable<object> list && list.Any())
@@ -153,7 +153,7 @@ namespace JTran
         /****************************************************************************/
         internal TForEachGroup(string name) 
         {
-            var parms = CompiledTransform.ParseElementParams("foreachgroup", name, new List<bool> {false, true} )!;
+            var parms = CompiledTransform.ParseElementParams("foreachgroup", name, CompiledTransform.FalseTrue )!;
 
             _expression = parms![0];
             _name       = parms.Count > 2 ? new Value(parms.Last()!) : null;
@@ -165,7 +165,7 @@ namespace JTran
                 if(groupBy!.Type == Token.TokenType.ExplicitArray)
                     _groupBy = groupBy.Select(x => x.Value );
                 else 
-                    _groupBy = new List<string> { groupBy.Value };
+                    _groupBy = new [] { groupBy.Value };
             }
         }
 
@@ -218,7 +218,7 @@ namespace JTran
             // Get the groups
             IEnumerable<ExpandoObject>? groups;
 
-            if(_groupBy.Count() == 1)
+            if(_groupBy.IsSingle())
             {
                 var groupBy = _groupBy.First();
 

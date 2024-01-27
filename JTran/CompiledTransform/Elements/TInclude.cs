@@ -21,7 +21,7 @@ namespace JTran
         {
             _name = name == null ? null : CreateValue(name);
 
-            var parms = CompiledTransform.ParseElementParams("include", val, new List<bool> { false, true } );
+            var parms = CompiledTransform.ParseElementParams("include", val, CompiledTransform.FalseTrue );
 
             if(parms.Count == 0)
                 throw new Transformer.SyntaxException("Missing expression for #include");
@@ -78,7 +78,7 @@ namespace JTran
         {
             _name = name == null ? null : CreateValue(name);
 
-            var parms = CompiledTransform.ParseElementParams("exclude", val, new List<bool> { false, true } );
+            var parms = CompiledTransform.ParseElementParams("exclude", val, CompiledTransform.FalseTrue );
 
             if(parms.Count == 0)
                 throw new Transformer.SyntaxException("Missing expression for #exclude");
@@ -100,7 +100,7 @@ namespace JTran
                 { 
                     var properties = expObject.Where( kv=> !_properties.ContainsKey(kv.Key));
 
-                    if(properties.Count() > 0)
+                    if(properties.Any())
                     { 
                         if(name != null)
                             writer.WriteContainerName(name);

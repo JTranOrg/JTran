@@ -1,0 +1,21 @@
+{
+  "#variable(cars)": 
+  [
+    {
+      "Make":         "Chevy",
+      "Model":        "Camaro",
+      "Description":  "cool!"
+    },
+    {
+      "Make":         "Pontiac",
+      "Model":        "Firebird",
+      "Description":  "cool!"
+    }
+  ],
+
+  "#foreach($cars[Description == 'cool!'], Cars)":
+  {
+    "Make":   "#(Make)",
+    "Model":  "#(Model)"
+  }
+}

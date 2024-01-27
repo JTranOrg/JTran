@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JTran.Common.Extensions
+namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
@@ -43,6 +43,26 @@ namespace JTran.Common.Extensions
             }
 
             return -1;
+        }        
+        
+        /****************************************************************************/
+        /// <summary>
+        /// Determines if list has a single item
+        /// </summary>
+        internal static bool IsSingle<T>(this IEnumerable<T>? list)
+        {
+            var items = 0;
+
+            if(list == null) 
+                return false;
+
+            foreach(var item in list) 
+            { 
+                if(++items > 1)
+                    return false;
+            }
+
+            return items == 1;
         }   
     }
 }

@@ -142,9 +142,9 @@ namespace JTran.Expressions
                         var tertiary  = new TertiaryExpression();
                         var exprToken = token;
 
-                        tertiary.Conditional = InnerCompile(new List<Token> { exprToken[0] });
-                        tertiary.IfTrue      = InnerCompile(new List<Token> { exprToken[1] });
-                        tertiary.IfFalse     = InnerCompile(new List<Token> { exprToken[2] });
+                        tertiary.Conditional = InnerCompile(new [] { exprToken[0] });
+                        tertiary.IfTrue      = InnerCompile(new [] { exprToken[1] });
+                        tertiary.IfFalse     = InnerCompile(new [] { exprToken[2] });
                         
                         leftExpr = tertiary;
                         rightExpr = null;
@@ -242,7 +242,7 @@ namespace JTran.Expressions
             { 
                 foreach(var child in token)
                 {
-                    var param = InnerCompile(new List<Token> { child });
+                    var param = InnerCompile(new [] { child });
 
                     if(param != null)
                         func.AddParameter(param);

@@ -1,10 +1,6 @@
-using System.Reflection;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JTran.Transform.UnitTests
 {
@@ -12,6 +8,35 @@ namespace JTran.Transform.UnitTests
     [TestCategory("Functions")]
     public class FunctionTests
     {
+        #region union
+ 
+        [TestMethod]
+        [DataRow("union", "union", null, null)]
+        [DataRow("union2", "union", "Chevy", "Pontiac")]
+        public async Task Functions_union(string transform, string data, string make1, string make2)
+        {
+            var jobj  = await Test(transform, data);
+            var array = jobj["Cars"] as JArray;
+
+            Assert.AreEqual(6, array!.Count);
+
+            Assert.AreEqual("Linda",  array[0]["Driver"].ToString());
+            Assert.AreEqual("Bob",    array[1]["Driver"].ToString());
+            Assert.AreEqual("John",   array[2]["Driver"].ToString());
+            Assert.AreEqual("Mary",   array[3]["Driver"].ToString());
+            Assert.AreEqual("Oliver", array[4]["Driver"].ToString());
+            Assert.AreEqual("Elena",  array[5]["Driver"].ToString());
+
+            Assert.AreEqual(make1, array[0]["Make"]?.ToString());
+            Assert.AreEqual(make1, array[1]["Make"]?.ToString());
+            Assert.AreEqual(make1, array[2]["Make"]?.ToString());
+            Assert.AreEqual(make2, array[3]["Make"]?.ToString());
+            Assert.AreEqual(make2, array[4]["Make"]?.ToString());
+            Assert.AreEqual(make2, array[5]["Make"]?.ToString());
+        }
+
+        #endregion
+
         #region coalesce
  
         [TestMethod]

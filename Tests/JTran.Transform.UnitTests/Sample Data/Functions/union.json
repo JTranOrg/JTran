@@ -1,0 +1,44 @@
+{
+  "Chevy":
+  [
+    {
+      "Model":    "Corvette",
+      "Year":     1956,
+      "Color":    "Black",
+      "Driver":   "Linda"
+    },
+    {
+      "Model":    "Camaro",
+      "Year":     1969,
+      "Color":    "Green",
+      "Driver":   "Bob"
+    },
+    {
+      "Model":    "Silverado",
+      "Year":     2017,
+      "Color":    "Red",
+      "Driver":   "John"
+    }
+  ],
+  "Pontiac":
+  [
+    {
+      "Model":    "Firebird",
+      "Year":     1969,
+      "Color":    "Blue",
+      "Driver":   "Mary"
+    },
+    {
+      "Model":    "GTO",
+      "Year":     1970,
+      "Color":    "Black",
+      "Driver":   "Oliver"
+    },
+    {
+      "Model":    "GTO",
+      "Year":     1971,
+      "Color":    "Blue",
+      "Driver":   "Elena"
+    }
+  ]
+}

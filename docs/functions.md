@@ -345,12 +345,14 @@ These functions operate on a list of values
 - [contains](#contains_list)
 - [empty](#empty)  
 - [first](#first)
+- [join](#join)
 - [last](#last)
 - [count](#count)
 - [min](#min)
 - [min](#min)
 - [sort](#sort)
 - [sum](#sum)
+- [union](#union)
 
 ##### <a id="any">any</a>(expr)
 
@@ -401,6 +403,16 @@ Then this expression:
     #(avg(Employees.Salary))
 
 Result is 950<br><br>
+
+##### <a id="join">join</a>(expr, separator)
+
+Converts a list of items into a separated list
+
+Then this expression:
+
+    #(join([1, 2, 3], ', '))
+
+Result is "1, 2, 3"<br><br>
 
 ##### <a id="max">max</a>(expr)
 
@@ -613,6 +625,69 @@ Using the data from the previous example:
     #(sum(Employees.Salary))
 
 Result is 1900<br><br>
+
+##### <a id="union">union</a>(expr)
+
+Combines a list of expressions into a single collection
+
+Given this data:
+
+    {
+        FulltimeEmployees
+        [
+            { 
+                Name: "Zelda",
+                Salary: 900
+            },
+            { 
+                Name: "Fred",
+                Salary: 1000
+            }
+        ],
+
+        TempEmployees
+        [
+            { 
+                Name: "Amanda",
+                Salary: 800
+            },
+            { 
+                Name: "Frank",
+                Salary: 700
+            }
+        ]
+    }
+
+Then this jtran:
+
+    #foreach(union(FulltimeEmployees, TempEmployees, AllEmployees))
+    {
+        "copyof(@)": "#noobject"
+    }
+
+Results in:
+
+    {
+        AllEmployees:
+        [
+            { 
+                Name: "Zelda",
+                Salary: 900
+            },
+            { 
+                Name: "Fred",
+                Salary: 1000
+            },
+            { 
+                Name: "Amanda",
+                Salary: 800
+            },
+            { 
+                Name: "Frank",
+                Salary: 700
+            }        
+        ]
+    }
 
 #### DateTime Functions
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Dynamic;
+using System.Linq;
 
 namespace JTran
 {
@@ -23,7 +24,7 @@ namespace JTran
            if(output.InObject && string.IsNullOrWhiteSpace(name))
                throw new Transformer.SyntaxException("Property name evaluates to null or empty string");
 
-            if(this.Children.Count != 0 && this.Children[0] is IPropertyCondition)
+            if(this.Children.Any() && this.Children[0] is IPropertyCondition)
             {
                 if(this.Children.EvaluateConditionals(context, out object result))
                 {

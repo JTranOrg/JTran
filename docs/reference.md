@@ -252,6 +252,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[foreachgroup](#foreachgroup)</strong> - Iterates over an array and creates groups of subarrays
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
+- <strong>[iif](#iif)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[include (as a property)](#include (as a property))</strong> - Outputs the specified properties of an object 
 - <strong>[iterate](#iterate)</strong> - Create an array by looping over the contents
@@ -911,6 +912,13 @@ Would then output this:
     }
 
 <br>
+
+#### #iif
+Evaluates the first parameter as a condition and returns the second parameter if true otherwise the third
+
+    "#iif(7 == 8, 'frank', 'bob'))"
+
+Result is "bob"<br><br>
 
 #### #elseif
 

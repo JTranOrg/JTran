@@ -99,6 +99,26 @@ namespace JTran.UnitTests
             Assert.AreEqual("Cadillac", (result as IDictionary<string, object>)["Model"]);
         }
 
+        [TestMethod]
+        public void AggregateFunctions_join_Success()
+        {
+            var expression = Compile("join([1, 2, 3], ', ')");
+            var context    = CreateContext(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }}  );
+            var result     = expression.Evaluate(context);
+   
+            Assert.AreEqual("1, 2, 3", result.ToString());
+        }
+
+        [TestMethod]
+        public void AggregateFunctions_join2_Success()
+        {
+            var expression = Compile("join(['bob', 'fred', 'linda'], ', ')");
+            var context    = CreateContext(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }}  );
+            var result     = expression.Evaluate(context);
+   
+            Assert.AreEqual("bob, fred, linda", result.ToString());
+        }
+
         private IExpression Compile(string expr)
         {
             var parser   = new JTranParser();

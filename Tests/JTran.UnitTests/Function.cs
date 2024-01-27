@@ -72,6 +72,23 @@ namespace JTran.UnitTests
 
             Assert.AreEqual(result, Convert.ToBoolean(func.Evaluate(parameters, context)));
         }
+        [TestMethod]
+        public void Function_guid_success()
+        {
+            var func       = new Function(new BuiltinFunctions(), "guid");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression>();
+
+            var result1 = func.Evaluate(parameters, context).ToString();
+            var result2 = func.Evaluate(parameters, context).ToString();
+
+            Assert.IsTrue(Guid.TryParse(result1, out Guid val1));
+            Assert.IsTrue(Guid.TryParse(result2, out Guid val2));
+
+            Assert.AreNotEqual(Guid.Empty, val1);
+            Assert.AreNotEqual(Guid.Empty, val2);
+            Assert.AreNotEqual(val1, val2);
+        }
 
         [TestMethod]
         [DataRow("", true)]

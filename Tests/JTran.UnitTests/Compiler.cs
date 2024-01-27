@@ -1027,6 +1027,19 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Compiler_function_sequence_empty_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("sequence('bob', 2, -2)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var list       = new List<double>((expression.Evaluate(context) as IList<object>).Select( i=> double.Parse(i.ToString())));
+   
+            Assert.AreEqual(0,  list.Count);
+        }
+
+        [TestMethod]
         public void Compiler_function_lowercase_Success()
         {
             var parser     = new JTranParser();

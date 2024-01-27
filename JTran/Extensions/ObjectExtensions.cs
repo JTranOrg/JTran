@@ -40,6 +40,15 @@ namespace JTran.Extensions
     internal static class ObjectExtensions
     {
         /****************************************************************************/
+        internal static IEnumerable<T> EnsureEnumerable<T>(this T obj)
+        {
+            if(obj is IEnumerable<T> list)
+                return list;
+
+            return new [] {obj};
+        }
+
+        /****************************************************************************/
         internal static object GetSingleValue(this object obj, string expression, ExpressionContext context)
         {
             var results = obj.GetValue(expression, context);

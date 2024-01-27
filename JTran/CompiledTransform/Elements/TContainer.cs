@@ -60,6 +60,9 @@ namespace JTran
         {
             TToken? result = null;
             
+            if(name == null)
+                name = "";
+            
             if(name.StartsWith("#template"))
                 return AddTemplate(new TTemplate(name));
 
@@ -128,7 +131,7 @@ namespace JTran
             { 
                 name = name.SubstringBefore("(").Trim();
 
-                throw new Transformer.SyntaxException($"Unknown element name: {name} at line number ???");
+                throw new Transformer.SyntaxException($"Unknown element name: {name}");
             }
 
             else

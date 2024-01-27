@@ -27,5 +27,7 @@ namespace JTran
                 this.Data["LineNumber"] = _lineNumber.ToString();
             }
         }
+
+        public override string Message => base.Message + $" at line {_lineNumber}";
     }
 }

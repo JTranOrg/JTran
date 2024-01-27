@@ -43,6 +43,10 @@ namespace JTran
         private readonly Dictionary<string, CompiledTransform> _loadedIncludes = new();
         private readonly IDictionary<string, string>? _includeSource;
 
+        internal static IReadOnlyList<bool> SingleFalse { get; } = new List<bool>() { false };
+        internal static IReadOnlyList<bool> SingleTrue  { get; } = new List<bool>() { true };
+        internal static IReadOnlyList<bool> FalseTrue   { get; } = new List<bool>() { false, true };
+
         /****************************************************************************/
         internal protected CompiledTransform(IDictionary<string, string>? includeSource)
         {
@@ -155,14 +159,14 @@ namespace JTran
         #endregion
         
         /****************************************************************************/
-        internal static IList<IExpression> ParseElementParams(string elementName, string source, IList<bool> isExplicitParam) 
+        internal static IList<IExpression> ParseElementParams(string elementName, string source, IReadOnlyList<bool> isExplicitParam) 
         {
-            var result  = new List<IExpression>();
-
             source = source.Trim();
 
             if(!source.StartsWith("#" + elementName))
                 throw new Transformer.SyntaxException("Error in parsing element parameters");
+
+            var result  = new List<IExpression>();
 
             // Check for no params
             var checkStr = source.Substring(("#" + elementName).Length);
@@ -228,9 +232,9 @@ namespace JTran
         }        
 
         /****************************************************************************/
-        private static bool IsExplicitParam(IList<bool> isExplicitParam, int index)
+        private static bool IsExplicitParam(IReadOnlyList<bool> isExplicitParam, int index)
         {
-            if(isExplicitParam == null || isExplicitParam.Count == 0)
+            if(isExplicitParam == null || !isExplicitParam.Any())
                 return false;
 
             if(index >= isExplicitParam.Count)

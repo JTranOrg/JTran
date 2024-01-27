@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Collections;
 using JTran.Extensions;
 using System;
 using System.Collections;
@@ -104,12 +105,7 @@ namespace JTran.Expressions
                 return null;
 
             if(val is IEnumerable<object> list)
-            { 
-                if(list.Count() == 0)
-                    return null;
-
-                return list.Last();
-            }
+                return list.LastOrDefault();
 
             return val;
         }
@@ -121,14 +117,38 @@ namespace JTran.Expressions
                 return null;
 
             if(val is IEnumerable<object> list)
-            { 
-                if(list.Count() == 0)
-                    return null;
-
-                return list.First();
-            }
+                return list.FirstOrDefault();
 
             return val;
+        }
+
+        /*****************************************************************************/
+        public string? join(object val, string separator)
+        {
+            if(val is null)
+                return null;
+
+            if(val is IEnumerable<object> list)
+                return string.Join(separator, list);
+
+            return val.ToString();
+        }
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public object? union(params object[] lists)
+        {
+            var union = new Union<object>();
+
+            foreach(var parm in lists) 
+            {
+                if(parm != null)
+                { 
+                    union.Add(parm.EnsureEnumerable());
+                }
+            }
+
+            return union;
         }
 
         /*****************************************************************************/
@@ -140,7 +160,7 @@ namespace JTran.Expressions
 
             if(expr is IEnumerable<object> list)
             {
-                if(list.Count() == 1 || sortFields.Length == 0)
+                if(list.IsSingle() || sortFields.Length == 0)
                     return list;
 
                 var copy = new List<object>(list);

@@ -13,7 +13,7 @@ namespace JTran
         /****************************************************************************/
         internal TFunction(string name) 
         {
-            var parms   = CompiledTransform.ParseElementParams("function", name, new List<bool> {true} );
+            var parms   = CompiledTransform.ParseElementParams("function", name, CompiledTransform.SingleTrue );
             var context = new ExpressionContext(new {});
 
             this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim();

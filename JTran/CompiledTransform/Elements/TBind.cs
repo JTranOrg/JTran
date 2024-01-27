@@ -33,7 +33,7 @@ namespace JTran
         /****************************************************************************/
         internal TBind(string name) 
         {
-            var parms = CompiledTransform.ParseElementParams("bind", name, new List<bool> {false} );
+            var parms = CompiledTransform.ParseElementParams("bind", name, CompiledTransform.SingleFalse );
 
             _expression = parms[0];
         }

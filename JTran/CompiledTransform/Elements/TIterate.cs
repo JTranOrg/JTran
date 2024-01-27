@@ -16,7 +16,7 @@ namespace JTran
         /****************************************************************************/
         internal TIterate(string name) 
         {
-            var parms = CompiledTransform.ParseElementParams("iterate", name, new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("iterate", name, CompiledTransform.FalseTrue );
 
             if(parms.Count < 1)
                 throw new Transformer.SyntaxException("Missing expression for #iterate");
