@@ -17,9 +17,11 @@
  * 
  ****************************************************************************/
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -92,12 +94,18 @@ namespace JTran
         {
             if(_docRepositories?.ContainsKey(repoName) ?? false)
             { 
-                var doc = _docRepositories[repoName].GetDocument(docName);
-                    
-                return doc.JsonToExpando();
+                try
+                { 
+                    using var doc = _docRepositories[repoName].GetDocumentStream(docName);
+
+                    return doc.JsonToExpando();
+                }
+                catch(Exception ex)
+                {
+                }
             }
 
-            return null;
+            throw new FileNotFoundException($"Document not found {repoName}/{docName}");  
         }
 
         /*****************************************************************************/

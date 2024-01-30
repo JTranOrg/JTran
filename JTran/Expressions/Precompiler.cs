@@ -150,7 +150,8 @@ namespace JTran.Expressions
                     { 
                         var array = new Token("", Token.TokenType.ExplicitArray);
 
-                        array.Merge(newToken);
+                        if(newToken != null)
+                            array.Merge(newToken);
 
                         newToken = array;
                     }

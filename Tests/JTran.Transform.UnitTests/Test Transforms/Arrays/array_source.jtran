@@ -1,0 +1,7 @@
+{
+  "#foreach(@, Cars)":
+  {
+    "Make":   "#(Make)",
+    "Model":  "#(Model)"
+  }
+}

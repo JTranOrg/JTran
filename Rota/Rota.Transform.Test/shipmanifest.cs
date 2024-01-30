@@ -17,7 +17,6 @@ namespace Rota.Transform.Test
 
             Assert.AreEqual(4, pods!.Count());
         }
-
         
         #region Private
 

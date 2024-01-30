@@ -773,15 +773,12 @@ namespace JTran.Expressions
         [IgnoreParameterCount]
         public double coalescenumber(string primary, params string[] fields)
         {
-            if(double.TryParse(primary, out double d))
-                if(d != 0d)
-                    return d;
+            if(double.TryParse(primary, out double d) && d != 0d)
+                return d;
 
             foreach(string field in fields)
             {
-                if(double.TryParse(field, out double d2))
-
-                if(d2 != 0d)
+                if(double.TryParse(field, out double d2) && d2 != 0d)
                     return d2;
             }
 

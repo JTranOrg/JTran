@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using JTran.Expressions;
+using System.Text;
 
 namespace JTran.UnitTests
 {
@@ -870,20 +871,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("Wilma", jobj["Driver"]!.ToString());
         }
         
-        /*[TestMethod] public void CompiledTransform_Transform_function_removeany_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformRemoveAny);
-            var result      = transformer.Transform(_dataRemoveAny, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformRemoveAny, result);
-
-            var obj = JObject.Parse(result);
-
-            Assert.IsNotNull(obj);
-
-            Assert.AreEqual("4255551212", obj["Phone"]);
-        }*/
-
         [TestMethod]
         public void CompiledTransform_Transform_function_removeany2_Success()
         {
@@ -987,6 +974,11 @@ namespace JTran.UnitTests
             public string GetDocument(string name)
             {
                 return this.Documents[name];
+            }
+
+            public Stream GetDocumentStream(string name)
+            {
+                return new MemoryStream(UTF8Encoding.Default.GetBytes(this.Documents[name]));
             }
 
             public IDictionary<string, string> Documents { get; set;  } = new Dictionary<string, string>();

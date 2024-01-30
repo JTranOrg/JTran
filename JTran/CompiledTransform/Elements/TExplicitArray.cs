@@ -5,7 +5,7 @@ namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class TExplicitArray : TContainer
+    internal class TExplicitArray : TBaseArray
     {
         /****************************************************************************/
         internal TExplicitArray(string? name)
@@ -43,8 +43,6 @@ namespace JTran
             return obj;
         }
 
-        internal IValue? Name  { get; set; }
-
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
@@ -54,12 +52,10 @@ namespace JTran
                 { 
                     if(output.InObject)
                     { 
-                        var name = this.Name?.Evaluate(context)?.ToString();
+                        var name = WriteContainerName(output, context);
 
                         if(string.IsNullOrWhiteSpace(name))
                             throw new Transformer.SyntaxException("Array name evaluates to null or empty string");
-            
-                        output.WriteContainerName(name);
                     }
 
                     output.StartArray();

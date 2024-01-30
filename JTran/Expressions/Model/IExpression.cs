@@ -85,7 +85,7 @@ namespace JTran.Expressions
             return EvaluateToBool(_value, context);
         }
 
-        internal static bool EvaluateToBool(object value, ExpressionContext context)
+        internal static bool EvaluateToBool(object? value, ExpressionContext context)
         {
             if(value is bool bval)
                 return bval;  
@@ -93,10 +93,10 @@ namespace JTran.Expressions
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  
 
-            if(double.TryParse(value.ToString(), out double dval))
+            if(double.TryParse(value?.ToString(), out double dval))
                 return dval != 0d;
 
-            return !string.IsNullOrWhiteSpace(value.ToString());
+            return !string.IsNullOrWhiteSpace(value?.ToString());
         }
     }
 

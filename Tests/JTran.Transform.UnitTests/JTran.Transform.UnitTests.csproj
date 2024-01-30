@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Sample Data\Arrays\array_source.json" />
+    <None Remove="Sample Data\Arrays\automobiles.json" />
     <None Remove="Sample Data\automobiles.json" />
     <None Remove="Sample Data\car1.json" />
     <None Remove="Sample Data\car2.json" />
@@ -50,6 +52,8 @@
     <None Remove="Sample Data\map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
     <None Remove="Sample Data\sort.json" />
+    <None Remove="Test Transforms\Arrays\array_output.jtran" />
+    <None Remove="Test Transforms\Arrays\array_source.jtran" />
     <None Remove="Test Transforms\Arrays\variable.jtran" />
     <None Remove="Test Transforms\coalesce.jtran" />
     <None Remove="Test Transforms\coalescenumber.jtran" />
@@ -110,6 +114,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
+    <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
     <EmbeddedResource Include="Sample Data\automobiles.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\empty.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\copyof3.json" />
@@ -138,6 +144,8 @@
     <EmbeddedResource Include="Sample Data\ForEach\nested.json" />
     <EmbeddedResource Include="Sample Data\Include\include.json" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
+    <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
+    <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof3.jtran" />

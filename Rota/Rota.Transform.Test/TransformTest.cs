@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 
+using JTran;
 using JTran.Common;
 using Newtonsoft.Json.Linq;
 
@@ -23,7 +24,8 @@ namespace Rota.Transform.Test
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            var result = transformer.Transform(data);
+            var context = new TransformerContext() { DocumentRepositories = new Dictionary<string, IDocumentRepository> { { "docs", new DocumentRepository() } }, Arguments = null};
+            var result = transformer.Transform(data, context);
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
             Assert.AreNotEqual(result, transform);
@@ -52,5 +54,25 @@ namespace Rota.Transform.Test
 
             return stream!.ReadStringAsync();
         }
+
+        public class DocumentRepository : IDocumentRepository
+        { 
+            private static string _path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location.Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "")), "Transforms\\Documents");
+
+            public DocumentRepository()
+            {
+            }
+
+            public string GetDocument(string name)
+            {
+                return File.ReadAllText(Path.Combine(_path, name));
+            }
+
+            public Stream GetDocumentStream(string name)
+            {
+                return File.OpenRead(Path.Combine(_path, name + ".json"));
+            }
+        }
+
     }
 }

@@ -406,13 +406,13 @@ Result is 950<br><br>
 
 ##### <a id="join">join</a>(expr, separator)
 
-Converts a list of items into a separated list
+Converts a list of items into a separated string, e.g. csv
 
-Then this expression:
+This expression:
 
     #(join([1, 2, 3], ', '))
 
-Result is "1, 2, 3"<br><br>
+Results in "1, 2, 3"<br><br>
 
 ##### <a id="max">max</a>(expr)
 
@@ -434,7 +434,7 @@ Given this data:
 
 Then this expression:
 
-    #(max(Employees))
+    #(max(Employees.Salary))
 
 Result is 1000<br><br>
 
@@ -458,7 +458,7 @@ Given this data:
 
 Then this expression:
 
-    #(min(Employees))
+    #(min(Employees.Salary))
 
 Result is 900<br><br>
 

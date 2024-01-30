@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -8,17 +7,15 @@ using System.Linq;
 using JTran.Extensions;
 using JTran.Expressions;
 using JTran.Parser;
-using System.Text.RegularExpressions;
 
 namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class TForEach : TContainer
+    internal class TForEach : TBaseArray
     {
         private readonly IExpression _expression;
-        private readonly IExpression? _name;
-
+        
         /****************************************************************************/
         internal TForEach(string name) 
         {
@@ -28,7 +25,22 @@ namespace JTran
                 throw new Transformer.SyntaxException("Missing expression for #foreach");
 
             _expression = parms[0];
-            _name       = parms.Count > 1 ? parms[1] : null;
+
+            var arrayName = parms.Count > 1 ? (parms[1] as Value) : null;
+
+            if(arrayName != null)
+            { 
+                if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
+                { 
+                    this.IsOutputArray = true;
+                    this.Name = new SimpleValue("[]");
+                }
+                else
+                { 
+                    this.IsOutputArray = false;
+                    this.Name = new SimpleValue(arrayName!.Evaluate(null));
+                }
+            }
         }
 
         /****************************************************************************/
@@ -47,12 +59,8 @@ namespace JTran
 
             if(result is IEnumerable<object> tryList && !tryList.Any())
                 return;
-
-            var arrayName = _name == null ? null : _name.Evaluate(context)?.ToString()?.Trim();
-            
-            arrayName = string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
-
-            if(arrayName != null && !(result is IEnumerable<object>))
+           
+            if(!(result is IEnumerable<object>))
                 result = new [] { result };
 
             // If the result of the expression is an array
@@ -60,15 +68,14 @@ namespace JTran
             {       
                 wrap( ()=> 
                 { 
-                    if(arrayName != null && arrayName != "{}")
-                        output.WriteContainerName(arrayName);
+                    var arrayName = WriteContainerName(output, context);
 
-                    if(arrayName != null && arrayName != "{}")
+                    if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
                         output.StartArray();
                 
                     EvaluateChildren(output, arrayName, list, context);
 
-                    if(arrayName != null && arrayName != "{}")
+                    if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
                         output.EndArray();
                 });
             }
@@ -144,10 +151,9 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class TForEachGroup : TContainer
+    internal class TForEachGroup : TBaseArray
     {
         private readonly IExpression  _expression;
-        private readonly IExpression? _name;
         private readonly IEnumerable<string>? _groupBy;
 
         /****************************************************************************/
@@ -156,7 +162,7 @@ namespace JTran
             var parms = CompiledTransform.ParseElementParams("foreachgroup", name, CompiledTransform.FalseTrue )!;
 
             _expression = parms![0];
-            _name       = parms.Count > 2 ? new Value(parms.Last()!) : null;
+            this.Name = parms.Count > 2 ? new SimpleValue(parms.Last()!) : null;
 
             if(parms.Count > 1)
             { 
@@ -264,13 +270,10 @@ namespace JTran
             wrap( ()=>
             { 
                 // Check to see if we're outputting to an array
-                if(_name != null)
-                {
-                    var arrayName = _name.Evaluate(context).ToString().Trim();
+                var arrayName = this.WriteContainerName(output, context);
                 
-                    output.WriteContainerName(arrayName);
+                if(arrayName != null)
                     output.StartArray();
-                }
 
                 // Iterate thru the groups
                 foreach(var groupScope in groups)
@@ -292,7 +295,7 @@ namespace JTran
 
                 }
 
-                if(_name != null)
+                if(arrayName != null)
                 { 
                     output.EndArray();
                     output.WriteRaw("\r\n");

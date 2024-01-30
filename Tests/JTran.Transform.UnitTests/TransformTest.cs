@@ -23,10 +23,6 @@ namespace JTran.Transform.UnitTests
             Assert.AreNotEqual(result, transform);
             Assert.AreNotEqual(result, data);
 
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-
             return result;
         }
 

@@ -118,10 +118,7 @@ namespace JTran
             BaseEvaluate(output, context, (fnc)=> fnc());
             output.EndArray();
                         
-            var result = "{ 'result': " + output.ToString() + "}"; // ??? temporary
-            dynamic dyn = result.JsonToExpando();
-
-            return dyn.result;
+            return output.ToString().JsonToExpando();
         }
 
         /****************************************************************************/

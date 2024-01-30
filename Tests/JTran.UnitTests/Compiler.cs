@@ -652,9 +652,9 @@ namespace JTran.UnitTests
 
             var list = ((IEnumerable<object>)result).ToList();
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(1, int.Parse(list[0].ToString()));
-            Assert.AreEqual(2, int.Parse(list[1].ToString()));
-            Assert.AreEqual(3, int.Parse(list[2].ToString()));
+            Assert.AreEqual(1, int.Parse(list?[0]?.ToString()));
+            Assert.AreEqual(2, int.Parse(list?[1]?.ToString()));
+            Assert.AreEqual(3, int.Parse(list?[2]?.ToString()));
         }
 
         [TestMethod]

@@ -21,6 +21,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -34,10 +35,21 @@ namespace JTran.Json
     public static class ExpandoExtensions
     {
         /****************************************************************************/
-        public static ExpandoObject JsonToExpando(this string s)
+        public static object JsonToExpando(this string s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
-            var exp = parser.Parse(s) as ExpandoObject;
+            var exp = parser.Parse(s);
+
+            exp.SetParent();
+
+            return exp;
+        }
+
+        /****************************************************************************/
+        public static object JsonToExpando(this Stream s)
+        {
+            var parser = new Json.Parser(new JsonModelBuilder());
+            var exp = parser.Parse(s);
 
             exp.SetParent();
 
@@ -53,7 +65,22 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static ExpandoObject SetParent(this ExpandoObject obj)
+        internal static object SetParent(this object obj)
+        {
+            if(obj is ExpandoObject exp)
+                return exp.SetParent();
+
+            if(obj is IEnumerable<object> list)
+            { 
+                foreach(var item in list)
+                    item.SetParent();
+            }
+
+            return obj;
+        }
+
+        /****************************************************************************/
+        private static ExpandoObject SetParent(this ExpandoObject obj)
         {
             var dict = obj as IDictionary<string, object>;
 

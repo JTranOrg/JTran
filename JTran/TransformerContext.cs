@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 using System.Collections.Generic;
+using System.IO;
 
 namespace JTran
 {
@@ -34,5 +35,6 @@ namespace JTran
     public interface IDocumentRepository
     {
         string GetDocument(string name);
+        Stream GetDocumentStream(string name);
     }
 }

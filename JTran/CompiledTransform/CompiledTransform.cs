@@ -47,6 +47,8 @@ namespace JTran
         internal static IReadOnlyList<bool> SingleTrue  { get; } = new List<bool>() { true };
         internal static IReadOnlyList<bool> FalseTrue   { get; } = new List<bool>() { false, true };
 
+        private bool _outputArray = false;
+
         /****************************************************************************/
         internal protected CompiledTransform(IDictionary<string, string>? includeSource)
         {
@@ -112,7 +114,17 @@ namespace JTran
 
             return;
         }
-        
+
+        internal override TToken CreateObject(string name, object? previous)
+        {
+            var result = base.CreateObject(name, previous);
+
+            if(result is TBaseArray array && array.IsOutputArray)
+                _outputArray = true;
+
+            return result;
+        }
+
         #endregion
 
         #region Transform 
@@ -210,7 +222,7 @@ namespace JTran
         private void Transform(Stream data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             var parser  = new Json.Parser(new JsonModelBuilder());
-            var expando = parser.Parse(data) as ExpandoObject;
+            var expando = parser.Parse(data);
 
             expando!.SetParent();
 
@@ -224,9 +236,13 @@ namespace JTran
         {
             var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
 
-            output.StartObject();
+            if(!_outputArray)
+                output.StartObject();
+
             this.Evaluate(output, newContext, f=> f());
-            output.EndObject();
+
+            if(!_outputArray)
+                output.EndObject();
     
             return;
         }        
@@ -317,7 +333,7 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal interface IValue 
+    internal interface IValue
     {
         object Evaluate(ExpressionContext context);
     }
