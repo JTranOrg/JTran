@@ -15,6 +15,8 @@ namespace JTran
     /****************************************************************************/
     internal class TVariable : TProperty, IVariable
     {
+        private ExpressionContext? _context;
+
         /****************************************************************************/
         internal TVariable(string name, object val) : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val)
         {
@@ -26,12 +28,15 @@ namespace JTran
             var name = this.Name.Evaluate(context).ToString();
 
             context.SetVariable(name, this);
+
+            _context = context;
         }
 
         /****************************************************************************/
         public object GetActualValue(ExpressionContext context)
         {
-            return this.Value.Evaluate(context);
+            // Use the context when first evaluated. The param is the context where the var is being used
+            return this.Value.Evaluate(_context!);
         }
     }
 

@@ -17,7 +17,9 @@
  * 
  ****************************************************************************/
 
+using JTran.Extensions;
 using System;
+using System.ComponentModel;
 
 namespace JTran
 {
@@ -28,33 +30,66 @@ namespace JTran
         public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
         /****************************************************************************/
-        internal protected IValue CreateValue(object? value)
+        internal protected IValue CreateValue(object? value, bool name)
         {
-            return CreateValue(value?.ToString());
+            return CreateValue(value?.ToString(), name);
         }  
         
         internal TContainer? Parent { get; set; }
 
         /****************************************************************************/
-        private IValue CreateValue(string? sval)
+        private IValue CreateSimpleValue(string? sval)
+        {
+            if(double.TryParse(sval, out double val))
+                return new NumberValue(val);
+
+            return new SimpleValue(sval);
+        }
+
+        /****************************************************************************/
+        private IValue CreateValue(string? sval, bool name)
         {
             if(sval == null)
                 return new SimpleValue(sval);
 
-            if(!sval.StartsWith("#("))
-            { 
-                if(double.TryParse(sval, out double val))
-                    return new NumberValue(val);
+            if(!sval.StartsWith("#") || sval.Length == 1) // Allow "#" as a string literal
+                return CreateSimpleValue(sval);
 
-                return new SimpleValue(sval);
+            var elementName = sval.SubstringBefore("(");
+
+            if(elementName == "#")
+            { 
+                var expr = sval.Substring(2, sval.Length - 3);
+
+                return new ExpressionValue(expr);
             }
 
-            if(!sval.EndsWith(")"))
-                throw new Transformer.SyntaxException("Missing closing parenthesis");
+            if(name)
+            { 
+                switch(elementName)
+                {
+                    case "#arrayitem":  
+                    case "#mapitem":    
+                    case "#if":         
+                    case "#else":       
+                    case "#elseif":     return CreateSimpleValue(sval);
+                    default:            break;
+                }
+            }
 
-            var expr = sval.Substring(2, sval.Length - 3);
+            else
+            { 
+                switch(elementName)
+                {
+                    case "#include":    return new TIncludeExcludeProperty(sval, true);
+                    case "#exclude":    return new TIncludeExcludeProperty(sval, false);
+                    case "#innerjoin":  return new TInnerJoinProperty(sval);
+                    case "#outerjoin":   
+                    default:            break;
+                }
+            }
 
-            return new ExpressionValue(expr);
+            throw new Transformer.SyntaxException($"Unknown element name: {elementName}");    
         }   
     }
 }

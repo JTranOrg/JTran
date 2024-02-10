@@ -1,6 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace JTran.Transform.UnitTests
@@ -21,6 +19,15 @@ namespace JTran.Transform.UnitTests
             var expected = await TransformerTest.LoadSample("ForEachGroup." + transform + "_expected");
 
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse(expected), JObject.Parse(result)));
+        }
+        [TestMethod]
+        [DataRow("foreachgroup_output",   "drivers_array")]
+        public async Task ForEachGroup2_success(string transform, string data)
+        {
+            var result   = await TransformerTest.Test("ForEachGroup." + transform, "ForEachGroup." + data);
+            var expected = await TransformerTest.LoadSample("ForEachGroup." + transform + "_expected");
+
+            Assert.IsTrue(JToken.DeepEquals(JArray.Parse(expected), JArray.Parse(result)));
         }
     }
 }

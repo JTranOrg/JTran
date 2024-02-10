@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace JTran.Extensions
 {
@@ -53,7 +54,7 @@ namespace JTran.Extensions
         {
             var results = obj.GetValue(expression, context);
 
-            if(results is IList list)
+            if(results is IList list) // ??? IEnumerable
                 return list[0];
 
             return results;
@@ -116,7 +117,7 @@ namespace JTran.Extensions
                     return obj;
             }
 
-            var results = new List<object>();
+            var results = new List<object>(); // ??? inefficient
             var isList  = false;
 
             obj.GetValue(results, expression, context, ref isList);
@@ -355,6 +356,12 @@ namespace JTran.Extensions
         /****************************************************************************/
         internal static object GetPropertyValue(this object obj, string name)       
         {
+            if(obj == null)
+                return null;
+
+            // Resolve ancestors
+            obj = obj.EvaluateAncestors(ref name);
+
             if(obj == null)
                 return null;
 

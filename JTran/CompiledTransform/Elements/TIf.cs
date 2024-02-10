@@ -27,6 +27,8 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
+            context.PreviousCondition = false;
+
             if(_expression.EvaluateToBool(context))
             { 
                 context.PreviousCondition = true;

@@ -1,0 +1,37 @@
+[
+  {
+    Name: "John Smith",
+    Make: "Chevy",
+    Model: "Corvette",
+    Year: 1964,
+    Color: "Blue"
+  },
+  {
+    Name: "Fred Jones",
+    Make: "Pontiac",
+    Model: "Firebird",
+    Year: 1964,
+    Color: "Blue"
+  },
+  {
+    Name: "Mary Anderson",
+    Make: "Chevy",
+    Model: "Camaro",
+    Year: 1969,
+    Color: "Green"
+  },
+  {
+    Name: "Amanda Ramirez",
+    Make: "Pontiac",
+    Model: "GTO",
+    Year: 1971,
+    Color: "Black"
+  },
+  {
+    Name: "William Lee",
+    Make: "Audi",
+    Model: "RS5",
+    Year: 2023,
+    Color: "Red"
+  }
+]

@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using JTran.Collections;
 using JTran.Extensions;
 using JTran.Json;
 
@@ -36,7 +37,6 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly object                                    _data;
         private readonly IDictionary<string, object>               _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
@@ -49,7 +49,8 @@ namespace JTran
                                    IDictionary<string, TTemplate>? templates          = null,
                                    IDictionary<string, TFunction>? functions          = null)
         {
-            _data            = data;
+            this.Data = data;
+
             _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
@@ -67,7 +68,8 @@ namespace JTran
                                    IDictionary<string, TTemplate> templates = null,
                                    IDictionary<string, TFunction> functions = null)
         {
-            _data             = data;
+            this.Data = data;
+
             _variables        = new Dictionary<string, object>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
@@ -80,7 +82,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object                           Data               => _data;
+        internal object                           Data               { get; set; }
         internal string                           Name               { get; }
         internal bool                             PreviousCondition  { get; set; }
         internal ExtensionFunctions?              ExtensionFunctions { get; }
@@ -96,9 +98,19 @@ namespace JTran
             { 
                 try
                 { 
-                    using var doc = _docRepositories[repoName].GetDocumentStream(docName);
+                    var repo = _docRepositories[repoName];
+
+                    if(repo is IDocumentRepository2 repo2)
+                    { 
+                        using var doc2 = repo2.GetDocumentStream(docName);
+
+                        return doc2.JsonToExpando();
+                    }
+
+                    var doc = repo.GetDocument(docName);
 
                     return doc.JsonToExpando();
+
                 }
                 catch(Exception ex)
                 {
@@ -171,18 +183,16 @@ namespace JTran
         /*****************************************************************************/
         internal object GetDataValue(string name)
         { 
-            if(_data == null)
+            if(this.Data == null)
                 return null;
 
             if(name == "@")
-                return _data;
+                return this.Data;
 
-            var otype = _data.GetType();
+            if(this.Data is ExpandoObject)
+                return this.Data.GetPropertyValue(name);
 
-            if(_data is ExpandoObject)
-                return GetDataValue(_data, name);
-
-            if(_data is ICollection<object> dict1)
+            if(this.Data is ICollection<object> dict1)
             { 
                 if(dict1.Count > 0 && dict1.First() is KeyValuePair<string, object>)
                 { 
@@ -196,7 +206,7 @@ namespace JTran
                 }
             }
 
-            if(_data is ICollection<KeyValuePair<string, object>> dict2)
+            if(this.Data is ICollection<KeyValuePair<string, object>> dict2)
             { 
                 foreach(var kv in dict2)
                 {
@@ -207,7 +217,7 @@ namespace JTran
                 return null;
             }
 
-            if(_data is IDictionary dict)
+            if(this.Data is IDictionary dict)
             { 
                 foreach(var key in dict.Keys)
                 {
@@ -218,36 +228,26 @@ namespace JTran
                 return null;
             }
 
-            if(_data is IEnumerable<object> list)
+            if(this.Data is IEnumerable<object> list)
             {
-                var result = new List<object>();
+                var result = new ChildEnumerable<object, object>(list, name);
 
-                foreach(var child in list)
-                { 
-                    var childResult = GetDataValue(child, name);
-
-                    if(childResult is IEnumerable<object> childList)
-                        result.AddRange(childList);
-                    else
-                        result.Add(childResult);
-                }
-
-                if(result.Count == 0)
+                if(!result.Any())
                     return null;
 
-                if(result.Count == 1)
-                    return result[0];
+                if(result.IsSingle())
+                    return result.First();
 
                 return result;
             }
 
-            return GetDataValue(_data, name);
+            return GetDataValue(this.Data, name);
         }
 
         /*****************************************************************************/
         private object GetDataValue(object data, string name)
         { 
-            var val = data.GetValue(name, this);
+            var val = data.GetPropertyValue(name);
 
             if(val == null)
                 return null;

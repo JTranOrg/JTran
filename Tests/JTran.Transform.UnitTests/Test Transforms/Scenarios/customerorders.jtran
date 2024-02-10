@@ -1,0 +1,289 @@
+{
+  "#variable(firstnames)": 
+  [
+    "Michelle",
+    "Bob",
+    "Ted",
+    "Fred",
+    "George",
+    "Sam",
+    "Mary",
+    "Linda",
+    "Wilma",
+    "William",
+    "Patrick",
+    "Chris",
+    "Zoe",
+    "Tom",
+    "Marina",
+    "Kim",
+    "Amanda",
+    "Robin",
+    "Sofie",
+    "David",
+    "Betty"
+  ],
+
+  "#variable(lastnames)": 
+  [
+    "Martinez",
+    "Anderson",
+    "James",
+    "Ro",
+    "Valeris",
+    "Talbot",
+    "Renton",
+    "Wyatt",
+    "Li",
+    "Nguyen",
+    "Omobo",
+    "Andrushko",
+    "Wilson",
+    "Morrison",
+    "Taylor",
+    "Jordan",
+    "Khatun",
+    "Sang",
+    "Chen",
+    "Kumar",
+    "Cohen",
+    "Reyes",
+    "Santos",
+    "Kara",
+    "Miller",
+    "Thomas",
+    "Moore",
+    "Jackson"
+  ],
+
+  "#variable(statuses)": 
+  [
+    "Received",
+    "Pending",
+    "Fulfilled",
+    "Shipped",
+    "Cancelled"
+  ],
+
+  "#variable(cities)": 
+  [
+    "Springfield",
+    "Hesperia",
+    "Quincy",
+    "Monroe",
+    "Olympia",
+    "Shohomish",
+    "Conroe",
+    "San Mateo",
+    "San Jacinto",
+    "San Diego",
+    "San Francisco",
+    "Seattle",
+    "Spokane",
+    "Carmel",
+    "Renton",
+    "Brockton",
+    "Edinburg",
+    "Green Bay",
+    "Hillsboro",
+    "Davie",
+    "Greeley",
+    "Tyler",
+    "Concord",
+    "Ventura",
+    "Napa",
+    "Pueblo",
+    "Everett",
+    "Gresham",
+    "Beaumont",
+    "Odessa",
+    "Elgin",
+    "Westminster",
+    "Clearwater",
+    "Berkeley",
+    "Fairfield",
+    "Wilmington",
+    "Rochester",
+    "Clovis",
+    "Columbia",
+    "Meridian",
+    "Miramar",
+    "Torrance",
+    "Thornton",
+    "Mesquite",
+    "Palmdale",
+    "Clarksville"
+  ],
+
+  "#variable(states)": 
+  [
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY"  
+  ],
+
+  "#variable(streetnames)": 
+  [
+    "Elm St",
+    "Main St",
+    "Maple Ave",
+    "Terrace Cir",
+    "Pine St",
+    "Oak Lane",
+    "1st Ave",
+    "Amherst Ave",
+    "Yosemite Cir",
+    "Colorado Drive",
+    "Earheart St",
+    "Woodward Blvd",
+    "Parkview Ave",
+    "Forest Ave",
+    "Index Road",
+    "Ravenwood Drive",
+    "Fircrest Lane",
+    "Adams Drive"
+  ],
+
+  "#variable(products)": 
+  [
+    {
+      "id":               "1",
+      "name ":            "Motherboard",
+      "price":            "327.89",
+      "volume":           "1.2",
+      "weight":           "2.3",
+      "depth":            "14",
+      "width":            "12",
+      "height":           "4"
+    },
+    {
+      "id":               "2",
+      "name ":            "Power Supply",
+      "price":            "189.45",
+      "volume":           "1.1",
+      "weight":           "4.7",
+      "depth":            "10",
+      "width":            "11",
+      "height":           "9"
+    },
+    {
+      "id":               "3",
+      "name ":            "Case",
+      "price":            "127.55",
+      "volume":           "4.5",
+      "weight":           "2.7",
+      "depth":            "18",
+      "width":            "12",
+      "height":           "31"
+    },
+    {
+      "id":               "4",
+      "name ":            "Memory",
+      "price":            "254.37",
+      "volume":           ".34",
+      "weight":           ".51",
+      "depth":            "9",
+      "width":            "5",
+      "height":           "3"
+    },
+    {
+      "id":               "5",
+      "name ":            "SSD",
+      "price":            "205.99",
+      "volume":           ".41",
+      "weight":           ".49",
+      "depth":            "7",
+      "width":            "8",
+      "height":           "5"
+    },
+    {
+      "id":               "6",
+      "name ":            "CPU",
+      "price":            "817.29",
+      "volume":           ".31",
+      "weight":           ".29",
+      "depth":            "6",
+      "width":            "6",
+      "height":           "7"
+    }
+  ],
+
+  "#iterate(53, customers)": 
+  {
+    "id":               "#(guid())",
+    "FirstName":        "#(pickrandom($firstnames))",
+    "LastName":         "#(pickrandom($lastnames))",
+    "Address":          
+    {
+      "Street":         "#(randominteger(417, 78392) + ' ' + pickrandom($streetnames))",
+      "City":           "#(pickrandom($cities))",
+      "State":          "#(pickrandom($states))",
+      "Zip":            "#(randominteger(11283, 99874))",
+      "PhoneNumber":    "#('(' + randominteger(201, 987) + ') ' + randominteger(201, 987) + '-' + randominteger(1027, 9981))"
+    },
+
+    "#iterate(17, orders)": 
+    {
+      "id":             "#(guid())",
+      "date":           "#(formatdatetime(adddays(currentdatetime(), randominteger(-365, -1)), 'yyyy-MM-dd'))",
+      "status":         "#(pickrandom($statuses))",
+
+      "#iterate(32, items)": 
+      {
+        "#variable(product)":  "#(pickrandomunique($products, 'products'))",
+
+        "id":           "#(guid())",
+        "product_id":   "#($product.id)",
+        "quantity":     "#(randominteger(1, 100))",
+        "price":        "#(precision($product.price, 2))"
+      }
+    }
+  }
+}

@@ -30,6 +30,19 @@
       "pod_attachment":   "external",
       "maxpods":          "42"
     }
+    {
+      "name":             "Excelsior",
+      "class":            "Light Freighter",
+      "registration":     "Terra",
+      "year_built":       "2371",
+      "length":           "9m",
+      "width":            "23m",
+      "height":           "12m",
+      "numengines":       "1",
+      "maxwarp":          "4.5",
+      "pod_attachment":   "external",
+      "maxpods":          "20"
+    }
   ],
 
   "ship":  "#copyof(pickrandomunique($ships, 'ships'))",

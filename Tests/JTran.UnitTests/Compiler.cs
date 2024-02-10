@@ -703,19 +703,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Number_int_array_Success()
+        [DataRow("0", 21)]
+        [DataRow("1", 35)]
+        [DataRow("2", 62)]
+        public void Compiler_Array_Indexer_Number_int_array_Success(string index, int expected)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[0]");
+            var tokens     = parser.Parse($"Cars[{index}]");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = new List<int> {21, 35, 62} } ));
+            var context    = new ExpressionContext(CreateTestData(new {Cars = new List<int> {21, 35, 62}, bob = 2 } ));
    
             Assert.IsNotNull(expression);
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(21m, decimal.Parse(result.ToString()));
+            Assert.AreEqual(expected, int.Parse(result!.ToString()));
         }
 
         [TestMethod]
@@ -778,9 +781,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
 
-            Assert.AreEqual(3, (result as IList).Count);
+            Assert.AreEqual(3, result!.Count);
         }
 
         [TestMethod]
@@ -794,8 +797,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
-            decimal amount = decimal.Parse(result.Amount.ToString());
+            var result = expression.Evaluate(context);
+            dynamic dyn = result;
+            decimal amount = decimal.Parse(dyn.Amount.ToString());
 
             Assert.AreEqual(120M, amount);
         }
@@ -811,7 +815,7 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            var result = expression.Evaluate(context) as IList<object>;
+            var result = (expression.Evaluate(context) as IEnumerable<object>).ToList();
 
             Assert.IsNotNull(result);
             dynamic firstTicket = result[0];

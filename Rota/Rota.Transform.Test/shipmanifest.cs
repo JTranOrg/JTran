@@ -22,7 +22,7 @@ namespace Rota.Transform.Test
 
         public async Task<string> Test(string transform, string data)
         {
-            var result = await TransformerTest.TestStaticData(transform, data, extFunctions: new List<object> { new JTran.Random.RandomExtensions() } );           
+            var result = await TransformerTest.TestStaticData(transform, data);           
             var jobj   = JObject.Parse(result)!;
 
             Assert.IsNotNull(jobj);

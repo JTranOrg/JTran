@@ -114,7 +114,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.MultiplyOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left * right; }
-        protected override double DoDoubleMath(double left, double right)   { return left * right; }
+        protected override double  DoDoubleMath(double left, double right)      { return left * right; }
         protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
         protected override string  DoStringMath(string left, string right)      { return left; }
     }
@@ -126,19 +126,19 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.DivisionOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left / right; }
-        protected override double DoDoubleMath(double left, double right)   { return left / right; }
+        protected override double  DoDoubleMath(double left, double right)      { return left / right; }
         protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
         protected override string  DoStringMath(string left, string right)      { return left; }
     }
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class ModulusOperator : MathematicalOperator
+    internal class ModuloOperator : MathematicalOperator
     {
         public override int Precedence => OperatorPrecendence.ModulusOperator;
 
         protected override long    DoLongMath(long left, long right)            { return left % right; }
-        protected override double DoDoubleMath(double left, double right)   { return left % right; }
+        protected override double  DoDoubleMath(double left, double right)      { return left % right; }
         protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
         protected override string  DoStringMath(string left, string right)      { return left; }
     }

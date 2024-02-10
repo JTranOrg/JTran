@@ -61,6 +61,10 @@ namespace JTran.Expressions
 
                     throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {tex.InnerException.Message}", tex.InnerException);
                 }
+                catch(Transformer.SyntaxException) 
+                {
+                    throw;
+                }
                 catch(Exception ex) 
                 {
                     throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {ex.InnerException.Message}", ex);

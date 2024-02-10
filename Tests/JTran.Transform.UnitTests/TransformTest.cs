@@ -8,16 +8,22 @@ namespace JTran.Transform.UnitTests
 {
     public static class TransformerTest
     {
-        public static async Task<string> Test(string transformName, string sampleName, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null)
+        public static async Task<string> Test(string transformName, string sampleName, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
+        {
+            var data = await LoadSample(sampleName);
+
+            return await TestData(transformName, data, extFunctions, dataTransform, includeSource, context);
+        }
+
+        public static async Task<string> TestData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
         {
             var transform   = await LoadTransform(transformName);
-            var data        = await LoadSample(sampleName);
             var transformer = new JTran.Transformer(transform, extFunctions, includeSource: includeSource);
 
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            var result = transformer.Transform(data);
+            var result = transformer.Transform(data, context);
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
             Assert.AreNotEqual(result, transform);
@@ -26,7 +32,7 @@ namespace JTran.Transform.UnitTests
             return result;
         }
 
-        public static async Task<string> TestList(string transformName, IEnumerable list, string listName)
+        public static async Task<string> TestList(string transformName, IEnumerable list, string listName, TransformerContext? context = null)
         {
             var transform   = await LoadTransform(transformName);
             var transformer = new JTran.Transformer(transform, null);
@@ -34,7 +40,7 @@ namespace JTran.Transform.UnitTests
 
             using(var output = new MemoryStream())
             { 
-                transformer.Transform(list, listName, output);
+                transformer.Transform(list, listName, output, context: context);
 
                 result = await output.ReadStringAsync();
             }

@@ -3,15 +3,15 @@ using System;
 using System.Collections.Generic;
 
 using JTran.Expressions;
+using JTran.Parser;
 
 namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class TIterate : TContainer
+    internal class TIterate : TBaseArray
     {
         private readonly IExpression _expression;
-        private readonly IExpression? _name;
 
         /****************************************************************************/
         internal TIterate(string name) 
@@ -22,7 +22,22 @@ namespace JTran
                 throw new Transformer.SyntaxException("Missing expression for #iterate");
 
             _expression = parms[0];
-            _name       = parms.Count > 1 ? parms[1] : null;
+
+            var arrayName = parms.Count > 1 ? (parms[1] as Value) : null;
+
+            if(arrayName != null)
+            { 
+                if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
+                { 
+                    this.IsOutputArray = true;
+                    this.Name = new SimpleValue("[]");
+                }
+                else
+                { 
+                    this.IsOutputArray = false;
+                    this.Name = new SimpleValue(arrayName!.Evaluate(null));
+                }
+            }
         }
 
         /****************************************************************************/
@@ -43,16 +58,12 @@ namespace JTran
                 throw new Transformer.SyntaxException("#iterate expression must resolve to number");
 
             var numItems = (long)Math.Floor(d);
-            var arrayName = _name == null ? null : _name.Evaluate(context)?.ToString()?.Trim();
-            
-            arrayName = string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
 
             wrap( ()=> 
             { 
-                if(arrayName != null && arrayName != "{}")
-                    output.WriteContainerName(arrayName);
+                var arrayName = WriteContainerName(output, context);
 
-                if(arrayName != null && arrayName != "{}")
+                if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
                     output.StartArray();
                 
                 for(int i = 0; i < numItems; ++i)
@@ -72,7 +83,7 @@ namespace JTran
                     }
                 }
 
-                if(arrayName != null && arrayName != "{}")
+                if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
                     output.EndArray();
             });
         }

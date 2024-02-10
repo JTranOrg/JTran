@@ -31,7 +31,7 @@ namespace JTran
         /****************************************************************************/
         internal TMessage(object val)
         {
-            _message = CreateValue(val);
+            _message = CreateValue(val, true);
         }
 
         /****************************************************************************/

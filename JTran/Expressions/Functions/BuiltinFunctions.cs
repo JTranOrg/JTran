@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
@@ -492,17 +493,22 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string? removeany(string val, IEnumerable<object> list)
+        public string? removeany(string val, object list)
         {
             if(val == null)
                 return null;
             
-            foreach(var r1 in list)
+            if(list is IEnumerable<object> listOfThingsToRemove)
             { 
-                var newVal = val?.Replace(r1.ToString(), "");
+                foreach(var r1 in listOfThingsToRemove)
+                { 
+                    var newVal = val?.Replace(r1.ToString(), "");
 
-                val = newVal;
+                    val = newVal;
+                }
             }
+            else
+                return val;
 
             return val;
         }
@@ -563,7 +569,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public IEnumerable<string> split(string? val, string separator)
+        public IEnumerable<object> split(string? val, string separator)
         {
             if(string.IsNullOrWhiteSpace(val)) 
                 return Enumerable.Empty<string>();
@@ -586,6 +592,9 @@ namespace JTran.Expressions
         {
             if(val == null)
                 return true;
+
+            if(val is IDictionary<string, object> exp)
+                return !exp.Any( kv=> !kv.Key.StartsWith("_jtran"));
 
             if(val is bool)
                 return false;

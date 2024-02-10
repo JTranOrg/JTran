@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Sample Data\Arrays\arrayitem.json" />
     <None Remove="Sample Data\Arrays\array_source.json" />
     <None Remove="Sample Data\Arrays\automobiles.json" />
     <None Remove="Sample Data\automobiles.json" />
@@ -34,9 +35,11 @@
     <None Remove="Sample Data\ExtensionFunctions\empty.json" />
     <None Remove="Sample Data\ForEachGroup\drivers.json" />
     <None Remove="Sample Data\ForEachGroup\drivers2.json" />
+    <None Remove="Sample Data\ForEachGroup\drivers_array.json" />
     <None Remove="Sample Data\ForEachGroup\foreachgroup1_expected.json" />
     <None Remove="Sample Data\ForEachGroup\foreachgroup2_expected.json" />
     <None Remove="Sample Data\ForEachGroup\foreachgroup3_expected.json" />
+    <None Remove="Sample Data\ForEachGroup\foreachgroup_output_expected.json" />
     <None Remove="Sample Data\ForEachGroup\multiple_fields_expected.json" />
     <None Remove="Sample Data\ForEachGroup\no_array_name_expected.json" />
     <None Remove="Sample Data\ForEachGroup\only1_group.json" />
@@ -44,14 +47,19 @@
     <None Remove="Sample Data\Functions\sortmultiple.json" />
     <None Remove="Sample Data\Functions\sortnumbers.json" />
     <None Remove="Sample Data\Functions\union.json" />
+    <None Remove="Sample Data\IncludeExclude\exclude_expected.json" />
+    <None Remove="Sample Data\IncludeExclude\soldiers.json" />
     <None Remove="Sample Data\Include\include.json" />
+    <None Remove="Sample Data\Include\include_expected.json" />
     <None Remove="Sample Data\JTranFunctions\after.json" />
     <None Remove="Sample Data\JTranFunctions\after2.json" />
     <None Remove="Sample Data\JTranFunctions\nested.json" />
-    <None Remove="Sample Data\map\address.json" />
-    <None Remove="Sample Data\map\emptydata.json" />
+    <None Remove="Sample Data\Map\address.json" />
+    <None Remove="Sample Data\Map\addresses.json" />
+    <None Remove="Sample Data\Map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
     <None Remove="Sample Data\sort.json" />
+    <None Remove="Test Transforms\Arrays\arrayitem.jtran" />
     <None Remove="Test Transforms\Arrays\array_output.jtran" />
     <None Remove="Test Transforms\Arrays\array_source.jtran" />
     <None Remove="Test Transforms\Arrays\variable.jtran" />
@@ -76,6 +84,7 @@
     <None Remove="Test Transforms\ForEachGroup\foreachgroup1.jtran" />
     <None Remove="Test Transforms\ForEachGroup\foreachgroup2.jtran" />
     <None Remove="Test Transforms\ForEachGroup\foreachgroup3.jtran" />
+    <None Remove="Test Transforms\ForEachGroup\foreachgroup_output.jtran" />
     <None Remove="Test Transforms\ForEachGroup\multiple_fields.jtran" />
     <None Remove="Test Transforms\ForEachGroup\no_array_name.jtran" />
     <None Remove="Test Transforms\ForEach\explicit_array.jtran" />
@@ -90,22 +99,34 @@
     <None Remove="Test Transforms\Functions\sortnumbersdesc.jtran" />
     <None Remove="Test Transforms\Functions\union.jtran" />
     <None Remove="Test Transforms\Functions\union2.jtran" />
+    <None Remove="Test Transforms\If\if.jtran" />
     <None Remove="Test Transforms\Iif\iif.jtran" />
     <None Remove="Test Transforms\Iif\iif2.jtran" />
+    <None Remove="Test Transforms\IncludeExclude\exclude.jtran" />
+    <None Remove="Test Transforms\IncludeExclude\exclude2.jtran" />
+    <None Remove="Test Transforms\IncludeExclude\include.jtran" />
+    <None Remove="Test Transforms\IncludeExclude\include2.jtran" />
     <None Remove="Test Transforms\Include\include.jtran" />
     <None Remove="Test Transforms\Include\otherfile.jtran" />
     <None Remove="Test Transforms\iterate.jtran" />
+    <None Remove="Test Transforms\iterate_output.jtran" />
+    <None Remove="Test Transforms\Joins\innerjoin.jtran" />
     <None Remove="Test Transforms\JTranFunctions\after.jtran" />
     <None Remove="Test Transforms\JTranFunctions\nested.jtran" />
-    <None Remove="Test Transforms\map\map.jtran" />
-    <None Remove="Test Transforms\map\map2.jtran" />
-    <None Remove="Test Transforms\map\map3.jtran" />
-    <None Remove="Test Transforms\map\map4.jtran" />
-    <None Remove="Test Transforms\map\map_expressions.jtran" />
-    <None Remove="Test Transforms\map\map_expressions2.jtran" />
-    <None Remove="Test Transforms\map\map_property.jtran" />
-    <None Remove="Test Transforms\map\variablecontent.jtran" />
+    <None Remove="Test Transforms\Map\map5.jtran" />
+    <None Remove="Test Transforms\Variables\variable.jtran" />
+    <None Remove="Test Transforms\Map\map.jtran" />
+    <None Remove="Test Transforms\Map\map2.jtran" />
+    <None Remove="Test Transforms\Map\map3.jtran" />
+    <None Remove="Test Transforms\Map\map4.jtran" />
+    <None Remove="Test Transforms\Map\map_expressions.jtran" />
+    <None Remove="Test Transforms\Map\map_expressions2.jtran" />
+    <None Remove="Test Transforms\Map\map_property.jtran" />
+    <None Remove="Test Transforms\Map\variablecontent.jtran" />
     <None Remove="Test Transforms\noelements.jtran" />
+    <None Remove="Test Transforms\Scenarios\customerorders.jtran" />
+    <None Remove="Test Transforms\Scenarios\sales_report.jtran" />
+    <None Remove="Test Transforms\Scenarios\sales_report_by_month.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\expression1.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\foreach2.jtran" />
     <None Remove="Test Transforms\SyntaxErrors\includenotfound.jtran" />
@@ -114,6 +135,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Sample Data\Arrays\arrayitem.json" />
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
     <EmbeddedResource Include="Sample Data\automobiles.json" />
@@ -123,7 +145,9 @@
     <EmbeddedResource Include="Sample Data\CopyOf\copyof1.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\array_noobject.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\expression.json" />
+    <EmbeddedResource Include="Sample Data\ForEachGroup\drivers_array.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\drivers2.json" />
+    <EmbeddedResource Include="Sample Data\ForEachGroup\foreachgroup_output_expected.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\foreachgroup1_expected.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\no_array_name_expected.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\multiple_fields_expected.json" />
@@ -142,8 +166,13 @@
     <EmbeddedResource Include="Sample Data\car1.json" />
     <EmbeddedResource Include="Sample Data\ExtensionFunctions\empty.json" />
     <EmbeddedResource Include="Sample Data\ForEach\nested.json" />
+    <EmbeddedResource Include="Sample Data\IncludeExclude\exclude_expected.json" />
+    <EmbeddedResource Include="Sample Data\IncludeExclude\soldiers.json" />
+    <EmbeddedResource Include="Sample Data\IncludeExclude\include_expected.json" />
     <EmbeddedResource Include="Sample Data\Include\include.json" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
+    <EmbeddedResource Include="Sample Data\Map\address.json" />
+    <EmbeddedResource Include="Test Transforms\Arrays\arrayitem.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
@@ -154,6 +183,7 @@
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof1.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\expression.jtran" />
+    <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup_output.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup2.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup1.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\no_array_name.jtran" />
@@ -164,14 +194,21 @@
     <EmbeddedResource Include="Test Transforms\ForEach\foreach4.jtran" />
     <EmbeddedResource Include="Test Transforms\Functions\union2.jtran" />
     <EmbeddedResource Include="Test Transforms\Functions\union.jtran" />
+    <EmbeddedResource Include="Test Transforms\If\if.jtran" />
     <EmbeddedResource Include="Test Transforms\Iif\iif2.jtran" />
     <EmbeddedResource Include="Test Transforms\Iif\iif.jtran" />
+    <EmbeddedResource Include="Test Transforms\IncludeExclude\exclude.jtran" />
+    <EmbeddedResource Include="Test Transforms\IncludeExclude\exclude2.jtran" />
+    <EmbeddedResource Include="Test Transforms\IncludeExclude\include2.jtran" />
+    <EmbeddedResource Include="Test Transforms\IncludeExclude\include.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\include.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\otherfile.jtran" />
+    <EmbeddedResource Include="Test Transforms\iterate_output.jtran" />
+    <EmbeddedResource Include="Test Transforms\Joins\innerjoin.jtran" />
     <EmbeddedResource Include="Test Transforms\JTranFunctions\after2.jtran" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\after.json" />
-    <EmbeddedResource Include="Sample Data\map\emptydata.json" />
-    <EmbeddedResource Include="Sample Data\map\address.json" />
+    <EmbeddedResource Include="Sample Data\Map\emptydata.json" />
+    <EmbeddedResource Include="Sample Data\Map\addresses.json" />
     <EmbeddedResource Include="Sample Data\cars.json" />
     <EmbeddedResource Include="Sample Data\simpleperson.json" />
     <EmbeddedResource Include="Sample Data\customers4.json" />
@@ -196,14 +233,16 @@
     <EmbeddedResource Include="Test Transforms\JTranFunctions\after.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\JTranFunctions\nested.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map3.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map2.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map_expressions.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map_expressions2.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map_property.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\map4.jtran" />
-    <EmbeddedResource Include="Test Transforms\map\variablecontent.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map5.jtran" />
+    <EmbeddedResource Include="Test Transforms\Variables\variable.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map3.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map_expressions.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map_expressions2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map_property.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\map4.jtran" />
+    <EmbeddedResource Include="Test Transforms\Map\variablecontent.jtran" />
     <EmbeddedResource Include="Test Transforms\noelements.jtran" />
     <EmbeddedResource Include="Test Transforms\foreach3.jtran" />
     <EmbeddedResource Include="Test Transforms\foreach2.jtran" />
@@ -211,6 +250,9 @@
     <EmbeddedResource Include="Test Transforms\foreachbreak.jtran" />
     <EmbeddedResource Include="Test Transforms\list.jtran" />
     <EmbeddedResource Include="Test Transforms\iterate.jtran" />
+    <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_month.jtran" />
+    <EmbeddedResource Include="Test Transforms\Scenarios\sales_report.jtran" />
+    <EmbeddedResource Include="Test Transforms\Scenarios\customerorders.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\expression1.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable2.jtran" />
     <EmbeddedResource Include="Test Transforms\SyntaxErrors\variable.jtran" />
@@ -227,6 +269,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
+    <ProjectReference Include="..\..\JTran.Random\JTran.Random.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>
 

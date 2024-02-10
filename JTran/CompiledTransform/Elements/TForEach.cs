@@ -15,7 +15,8 @@ namespace JTran
     internal class TForEach : TBaseArray
     {
         private readonly IExpression _expression;
-        
+        private bool _hasConditionals = false;        
+
         /****************************************************************************/
         internal TForEach(string name) 
         {
@@ -26,21 +27,8 @@ namespace JTran
 
             _expression = parms[0];
 
-            var arrayName = parms.Count > 1 ? (parms[1] as Value) : null;
-
-            if(arrayName != null)
-            { 
-                if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
-                { 
-                    this.IsOutputArray = true;
-                    this.Name = new SimpleValue("[]");
-                }
-                else
-                { 
-                    this.IsOutputArray = false;
-                    this.Name = new SimpleValue(arrayName!.Evaluate(null));
-                }
-            }
+            if(parms.Count > 1)
+                SetName(parms[1]);
         }
 
         /****************************************************************************/
@@ -63,8 +51,10 @@ namespace JTran
             if(!(result is IEnumerable<object>))
                 result = new [] { result };
 
+            _hasConditionals = this.Children.Any() && this.Children[0] is IPropertyCondition;
+
             // If the result of the expression is an array
-            if(result is IEnumerable<object> list && list.Any())
+            if(result is IEnumerable<object> list)
             {       
                 wrap( ()=> 
                 { 
@@ -107,13 +97,27 @@ namespace JTran
         private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions);
-            var bBreak = false;
+
+            if(_hasConditionals)
+            {
+                try
+                {
+                    if(this.Children.EvaluateConditionals(newContext, out object result))
+                        output.WriteItem(result);
+                
+                    return false;
+                }
+                catch(Break)
+                {
+                    return true;
+                }
+            }
 
             try
             { 
+                // First test if the child will ever write anything at all
                 var testWriter = new JsonTestWriter();
 
-                // First test if the child will ever write anything at all
                 base.Evaluate(testWriter, newContext, (fnc)=> fnc());
                     
                 if(testWriter.NumWrites == 0) 
@@ -127,13 +131,14 @@ namespace JTran
             // Clear out any variables created during test run above
             newContext.ClearVariables();
 
+            var bBreak = false;
+
             base.Evaluate(output, newContext, (fnc)=> 
             {
                 if(arrayName != null)
                     output.StartObject();
-
                 try
-                { 
+                {
                     fnc();
                 }
                 catch(Break)
@@ -162,13 +167,15 @@ namespace JTran
             var parms = CompiledTransform.ParseElementParams("foreachgroup", name, CompiledTransform.FalseTrue )!;
 
             _expression = parms![0];
-            this.Name = parms.Count > 2 ? new SimpleValue(parms.Last()!) : null;
+            
+            if(parms.Count > 2)
+                SetName(parms.Last());
 
             if(parms.Count > 1)
             { 
                 var groupBy = (parms[1] as Value)!.Evaluate(null) as Token;
 
-                if(groupBy!.Type == Token.TokenType.ExplicitArray)
+                if(groupBy!.Type == Token.TokenType.ExplicitArray) 
                     _groupBy = groupBy.Select(x => x.Value );
                 else 
                     _groupBy = new [] { groupBy.Value };

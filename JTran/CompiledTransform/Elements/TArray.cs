@@ -1,5 +1,6 @@
 ﻿using System;
 using JTran.Expressions;
+using JTran.Parser;
 
 namespace JTran
 {
@@ -38,6 +39,26 @@ namespace JTran
 
             return arrayName;
         }
+      
+        /****************************************************************************/
+        internal protected void SetName(IExpression expr)
+        {
+            var arrayName = expr as Value;
+
+            if(arrayName != null)
+            { 
+                if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
+                { 
+                    this.IsOutputArray = true;
+                    this.Name = new SimpleValue("[]");
+                }
+                else
+                { 
+                    this.IsOutputArray = false;
+                    this.Name = new SimpleValue(arrayName!.Evaluate(null));
+                }
+            }
+        }
     }
 
     /****************************************************************************/
@@ -49,7 +70,7 @@ namespace JTran
         { 
            name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
 
-           this.Name = CreateValue(name);
+           this.Name = CreateValue(name, true);
         }
 
         /****************************************************************************/

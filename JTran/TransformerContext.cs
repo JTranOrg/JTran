@@ -35,6 +35,12 @@ namespace JTran
     public interface IDocumentRepository
     {
         string GetDocument(string name);
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    public interface IDocumentRepository2 : IDocumentRepository
+    {
         Stream GetDocumentStream(string name);
     }
 }

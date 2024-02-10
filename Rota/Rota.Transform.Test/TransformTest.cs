@@ -19,7 +19,7 @@ namespace Rota.Transform.Test
         public static async Task<string> TestStaticData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null)
         {
             var transform   = await LoadTransform(transformName);
-            var transformer = new JTran.Transformer(transform, extFunctions, includeSource: includeSource);
+            var transformer = new JTran.Transformer(transform, new List<object> { new JTran.Random.RandomExtensions() }, includeSource: includeSource);
 
             if(dataTransform != null) 
                 data = dataTransform(data);
@@ -55,7 +55,7 @@ namespace Rota.Transform.Test
             return stream!.ReadStringAsync();
         }
 
-        public class DocumentRepository : IDocumentRepository
+        public class DocumentRepository : IDocumentRepository2
         { 
             private static string _path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location.Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "")), "Transforms\\Documents");
 
@@ -65,7 +65,7 @@ namespace Rota.Transform.Test
 
             public string GetDocument(string name)
             {
-                return File.ReadAllText(Path.Combine(_path, name));
+                return File.ReadAllText(Path.Combine(_path, name + ".json"));
             }
 
             public Stream GetDocumentStream(string name)

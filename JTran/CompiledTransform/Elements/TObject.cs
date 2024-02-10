@@ -11,7 +11,7 @@ namespace JTran
         /****************************************************************************/
         internal TObject(string name)
         {
-            this.Name = CreateValue(name);
+            this.Name = CreateValue(name, true);
         }
 
         internal IValue Name  { get; set; }

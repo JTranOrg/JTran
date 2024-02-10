@@ -105,12 +105,8 @@ namespace JTran.Expressions
 
                 switch(token.Type)
                 {
-                    case Token.TokenType.Expression:
-                        expr = InnerCompile(token);
-                        break;
-
-                    case Token.TokenType.Function:
-                        expr = CreateFunction(token);
+                    case Token.TokenType.Literal:
+                        expr = new Value(token.Value);
                         break;
 
                     case Token.TokenType.Text:
@@ -133,8 +129,12 @@ namespace JTran.Expressions
                         expr = CreateMultipartValue(token);
                         break;
 
-                    case Token.TokenType.Literal:
-                        expr = new Value(token.Value);
+                    case Token.TokenType.Expression:
+                        expr = InnerCompile(token);
+                        break;
+
+                    case Token.TokenType.Function:
+                        expr = CreateFunction(token);
                         break;
 
                     case Token.TokenType.Tertiary:
@@ -298,30 +298,46 @@ namespace JTran.Expressions
             }
         }
 
+        private static IOperator _equalOperator            = new EqualOperator();
+        private static IOperator _notEqualOperator         = new NotEqualOperator();
+        private static IOperator _greaterThanOperator      = new GreaterThanOperator();
+        private static IOperator _greaterThanEqualOperator = new GreaterThanEqualOperator();
+        private static IOperator _lessThanOperator         = new LessThanOperator();
+        private static IOperator _lessThanEqualOperator    = new LessThanEqualOperator();
+        private static IOperator _additionOperator         = new AdditionOperator();
+        private static IOperator _subtractionOperator      = new SubtractionOperator();
+        private static IOperator _multiplyOperator         = new MultiplyOperator();
+        private static IOperator _divisionOperator         = new DivisionOperator();
+        private static IOperator _moduloOperator           = new ModuloOperator();
+        private static IOperator _andOperator              = new AndOperator();
+        private static IOperator _orOperator               = new OrOperator();
+
+        private static Dictionary<string, IOperator> _operators = new Dictionary<string, IOperator>
+        {          
+            { "==",  _equalOperator            },
+            { "!=",  _notEqualOperator         },
+            { ">" ,  _greaterThanOperator      },
+            { ">=",  _greaterThanEqualOperator },
+            { "<" ,  _lessThanOperator         },
+            { "<=",  _lessThanEqualOperator    },
+            { "+" ,  _additionOperator         },
+            { "-" ,  _subtractionOperator      },
+            { "*" ,  _multiplyOperator         },
+            { "/" ,  _divisionOperator         },
+            { "%" ,  _moduloOperator           },
+            { "&&",  _andOperator              },
+            { "and", _andOperator              },
+            { "||",  _orOperator               },
+            { "or",  _orOperator               }
+        };
+
         /*****************************************************************************/
         private static IOperator CreateOperator(string op)
         {
-            switch(op)
-            {
-                case "==":  return new EqualOperator();
-                case "!=":  return new NotEqualOperator();
-                case ">":   return new GreaterThanOperator();
-                case ">=":  return new GreaterThanEqualOperator();
-                case "<":   return new LessThanOperator();
-                case "<=":  return new LessThanEqualOperator();
-                case "+":   return new AdditionOperator();
-                case "-":   return new SubtractionOperator();
-                case "*":   return new MultiplyOperator();
-                case "/":   return new DivisionOperator();
-                case "%":   return new ModulusOperator();
-                case "&&":  return new AndOperator();
-                case "and": return new AndOperator();
-                case "||":  return new OrOperator();
-                case "or":  return new OrOperator();
-
-                default:
-                    throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
-            }
+            if(!_operators.ContainsKey(op))
+                throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
+            
+            return _operators[op];
         }
 
         #endregion

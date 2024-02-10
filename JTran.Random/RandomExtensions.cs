@@ -12,7 +12,7 @@ namespace JTran.Random
         /// <summary>
         /// Randomly picks a single item from the list
         /// </summary>
-        public object PickRandom(object parm)
+        public object pickrandom(object parm)
         {
             var list = EnsureList(parm);
             var index = _random.Next(0, list.Count());
@@ -23,7 +23,7 @@ namespace JTran.Random
         /// <summary>
         /// Randomly picks a single item from the list but never returns the same item
         /// </summary>
-        public object PickRandomUnique(object parm, string name)
+        public object pickrandomunique(object parm, string name)
         {
             var list = EnsureList(parm);
 
@@ -50,7 +50,7 @@ namespace JTran.Random
         /// <summary>
         /// Randomly picks a floating point number between two values
         /// </summary>
-        public double RandomNumber(double from, double to)
+        public double randomnumber(double from, double to)
         {
             return from + ((to - from) * _random.NextDouble());
         }
@@ -58,10 +58,12 @@ namespace JTran.Random
         /// <summary>
         /// Randomly picks an integral point number between two values
         /// </summary>
-        public int RandomInteger(int from, int to)
+        public int randominteger(int from, int to)
         {
             return _random.Next(from, to);
         }
+
+        #region Private
 
         private IEnumerable<object> EnsureList(object obj)
         {
@@ -73,5 +75,7 @@ namespace JTran.Random
 
             return new List<object> { obj };
         }
+
+        #endregion
     }
 }

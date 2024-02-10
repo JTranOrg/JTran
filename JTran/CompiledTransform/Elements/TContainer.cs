@@ -232,28 +232,13 @@ namespace JTran
                 }   
 
                 if(sval.StartsWith("#copyof"))
-                { 
-                    if(name.StartsWith("#noobject"))
-                        return new TCopyOf(null, sval);
-
                     return new TCopyOf(name, sval);
-                }
-
+ 
                 if(sval.StartsWith("#include"))
-                { 
-                    if(name.StartsWith("#noobject"))
-                        return new TInclude(null, sval);
-
-                    return new TInclude(name, sval);
-                }
+                    return new TIncludeExclude(name, sval, true);
 
                 if(sval.StartsWith("#exclude"))
-                { 
-                    if(name.StartsWith("#noobject"))
-                        return new TExclude(null, sval);
-
-                    return new TExclude(name, sval);
-                }
+                    return new TIncludeExclude(name, sval, false);
 
                 if(sval.StartsWith("#iif"))
                 { 

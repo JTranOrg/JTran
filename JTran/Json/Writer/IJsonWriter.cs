@@ -224,7 +224,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void StartObject()
+        public virtual void StartObject()
         {
             StartChild();
             WriteLine("{");
@@ -233,7 +233,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void EndObject()
+        public virtual void EndObject()
         {
             EndContainer();
             _stack.Pop();

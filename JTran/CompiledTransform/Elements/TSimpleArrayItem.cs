@@ -13,7 +13,7 @@ namespace JTran
         /****************************************************************************/
         internal TSimpleArrayItem(object? val) 
         {
-            _val = CreateValue(val);
+            _val = CreateValue(val, false);
         }
 
         /****************************************************************************/

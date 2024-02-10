@@ -130,7 +130,7 @@ namespace JTran
         #region Transform 
 
         /****************************************************************************/
-        internal void Transform(Stream input, Stream output, TransformerContext context, ExtensionFunctions? extensionFunctions)
+        internal void Transform(Stream input, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {           
             using(var writer = new JsonStreamWriter(output))
             { 
@@ -154,7 +154,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal void Transform(IEnumerable list, string listName, Stream output, TransformerContext context, ExtensionFunctions? extensionFunctions)
+        internal void Transform(IEnumerable list, string listName, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             IDictionary<string, object> expando = new ExpandoObject();
 

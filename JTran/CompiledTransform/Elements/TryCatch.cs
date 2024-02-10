@@ -19,7 +19,7 @@ namespace JTran
 
             _code = parms.Any() ? parms[0] : null;
 
-            _message = CreateValue(val);
+            _message = CreateValue(val, true); // It's not a name per se but we want it to evaluate to a simple string nevertheless
         }
 
         /****************************************************************************/
@@ -69,6 +69,8 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
+            context.PreviousCondition = false;
+
             try
             { 
                 var newOutput = new JsonStringWriter();

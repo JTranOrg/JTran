@@ -1,7 +1,7 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using JTran.Common;
 
 namespace JTran.Transform.UnitTests
 {
@@ -37,11 +37,23 @@ namespace JTran.Transform.UnitTests
              Assert.AreEqual("Firebirdbob", array![1]!["Model"]!.ToString());
         }
 
+        [TestMethod]
+        [DataRow("arrayitem", "arrayitem")]
+        public async Task Arrays_arrayitem(string transform, string data)
+        {
+            var json  = await Test(transform, data, new { Fred = "Fred", Dude = "Jabberwocky" } );
+            var array = json["Persons"]  as JArray;
+
+            Assert.AreEqual(5,              array.Count());
+            Assert.AreEqual("JohnSmith",    array[0]["Name"]);
+            Assert.AreEqual("King Jalusa",  array[4]["Name"]);
+        }
+
         #region Private
 
-        public async Task<JObject> Test(string transform, string data)
+        public async Task<JObject> Test(string transform, string data, object? parms = null)
         {
-            var result = await TransformerTest.Test("Arrays." + transform, "Arrays." + data);           
+            var result = await TransformerTest.Test("Arrays." + transform, "Arrays." + data, context: parms == null ? null : new TransformerContext { Arguments = parms!.ToDictionary() });           
             var jobj   = JObject.Parse(result)!;
 
             Assert.IsNotNull(jobj);

@@ -43,11 +43,6 @@ namespace JTran.Expressions
             { "(", ")" }
         };
 
-        private readonly static IDictionary<string, string> _delimiters = new Dictionary<string, string>
-        {
-            { ",", "," }
-        };
-
         private readonly static IDictionary<string, bool> _validOperators = new Dictionary<string, bool>
         {
             { "*", true },
@@ -83,189 +78,169 @@ namespace JTran.Expressions
         /*****************************************************************************/
         private static Token InnerPrecompile(Queue<Token> tokens, string? endBoundary = null, Func<Token, bool>? endIt = null)
         {
-            var outputTokens = new List<Token>();
-            var left = -1;
-            Token? commaDelimited = null;
-            Token? multiPart = null;
+            if(tokens.Count == 0)
+                return null;
 
-            while(tokens.Count > 0) 
-            { 
+            var result = new Token("", Token.TokenType.Text);
+
+            while(tokens.Count > 0)
+            {
                 var token = tokens.Peek();
 
                 // Is it the end?
                 if(endIt != null && endIt(token))
                     break;
 
-               token = tokens.Dequeue();
+                token = tokens.Dequeue();
 
-                if(token.IsOperator && endBoundary == token.Value)
-                    break; 
+                if(token.IsOperator && token.Value == endBoundary)
+                    break;
 
-                if(multiPart != null && (token.IsOperator || _boundary.ContainsKey(token.Value)))
-                {
-                    ReduceItem(outputTokens, left, multiPart, Token.TokenType.Multipart);
-                    multiPart = null;
-                }
-
-                // Turn the contents of "()" or "[]" into a single expression
-                if(token.IsOperator && _boundary.ContainsKey(token.Value))
+                // Turn the contents of "[]" into a single token
+                if(token.IsBeginArray)
                 { 
-                    var newToken  = InnerPrecompile(tokens, _boundary[token.Value]);
-                    var lastToken = outputTokens.LastOrDefault();
-
-                    // Is this a function call?
-                    if(lastToken != null && lastToken.Type == Token.TokenType.Text && token.IsBeginParen)
-                    { 
-                        lastToken.Type = Token.TokenType.Function;
-
-                        if(newToken != null)
-                        { 
-                            if(newToken.Type == Token.TokenType.CommaDelimited) 
-                                lastToken.Merge(newToken);
-                            else
-                                lastToken.Add(newToken);
-                        }
-
-                        continue;
-                    }
-
-                    // Is this an array indexer?
-                    else if(lastToken != null && token.IsBeginArray && (lastToken.Type == Token.TokenType.Text || lastToken.Type == Token.TokenType.Array))
-                    { 
-                        lastToken.Type = Token.TokenType.Array;
-
-                        if(token.IsExpression && token.Count > 0)
-                        {
-                            token.Type = Token.TokenType.ArrayIndexer;
-                            lastToken.Add(newToken);
-                        }
-                        else
-                            lastToken.Add(new Token("", Token.TokenType.ArrayIndexer) { newToken });
-
-                        continue;
-                    }
-
-                    // Is this an explicit array?
-                    else if(token.IsBeginArray)
-                    { 
-                        var array = new Token("", Token.TokenType.ExplicitArray);
-
-                        if(newToken != null)
-                            array.Merge(newToken);
-
-                        newToken = array;
-                    }
-
-                    outputTokens.Add(newToken);
+                    HandleArray(tokens, result);
                     continue;
                 }
-               
-                // Parse everything before the comma
+
+                // Turn the contents of "()" into a single token
+                else if(token.IsBeginParen)
+                { 
+                    HandleParens(tokens, result);
+                    continue;
+                }
+
                 else if(token.IsComma)
-                { 
-                    var previous = commaDelimited;
-
-                    commaDelimited = ReduceItem(outputTokens, left, commaDelimited, Token.TokenType.CommaDelimited);
-
-                    if(previous == null)
-                        left = left == -1 ? outputTokens.Count : left+1;
-
+                {                   
+                    result = Reduce(result, 2);
+                    HandleComma(tokens, result);
                     continue;
                 }
-               
-                // Is this a multi-part?
+
                 else if(token.IsMultiDot)
-                { 
-                    left = ReduceMultipart(outputTokens, tokens, left);
+                {                    
+                    HandleMultipart(tokens, result);
                     continue;
                 }
 
+                // Check for invalid operators
                 else if((token.IsOperator || token.IsPunctuation) && !_validOperators.ContainsKey(token.Value))
                     throw new Transformer.SyntaxException($"Invalid operator: {token.Value}");
 
-                outputTokens.Add(token);
-                
-                if(left == -1)
-                    left = outputTokens.Count - 1;
+                // Reduce expressions before a tertiary operator
+                else if(token.IsTertiary)
+                { 
+                    Reduce(result, 2);
+                }
+
+                // Is it an expression
+                else if(token.IsOperator)
+                { 
+                    if(result.Count == 0)
+                        throw new Transformer.SyntaxException($"Missing left operand before {token.Value}");
+
+                    result.Type = Token.TokenType.Expression;
+                }
+
+                result.Add(token);
             }
 
-            if(multiPart != null) 
-                ReduceItem(outputTokens, left, multiPart, Token.TokenType.Multipart);
+            result = Reduce(result);
 
-            if(commaDelimited != null) 
-                ReduceItem(outputTokens, left, commaDelimited, Token.TokenType.CommaDelimited);
-            else if(outputTokens.Count > 1) 
-                return Reduce(outputTokens);
-
-            if(outputTokens.Count == 0)
-                return null;
-
-            return outputTokens[0];
+            return result.Count == 1 ? result[0] : result;
         }
 
-        private static int ReduceMultipart(List<Token> outputTokens, Queue<Token> tokens, int left)
-        {    
-            var lastPart  = outputTokens.Last();
-
-            outputTokens.RemoveAt(outputTokens.Count-1);
-
-            var multiPart = outputTokens.LastOrDefault();
-
-            if(multiPart == null || multiPart.Type != Token.TokenType.Multipart)
-            {
-                multiPart = new Token("", Token.TokenType.Multipart);
-                outputTokens.Add(multiPart);
-            }
-
-            multiPart.Add(lastPart);
-
-            if(!tokens.Peek().IsOperator)
-            { 
-                var result = InnerPrecompile(tokens, null, (t)=> !t.IsMultiDot && t.Type != Token.TokenType.Text && !t.IsBeginArray);
-
-                if(result.Type == Token.TokenType.Multipart)
-                    multiPart.Merge(result);
-                else                
-                    multiPart.Add(result);
-            }
-
-            return outputTokens.Count - 1;
-        }
-
-        private static Token ReduceItem(List<Token> outputTokens, int left, Token? container, Token.TokenType type)
+        /*****************************************************************************/
+        private static void HandleMultipart(Queue<Token> tokens, Token result)
         {        
-            left = left > 0 ? left : 0;
+            var newToken = InnerPrecompile(tokens, endIt: (t)=> t.IsOperator && !t.IsMultiDot && !t.IsBeginBoundary);
 
-            var numItems = outputTokens.Count - left;
-            Token? arrayItem = null;
+            var last = result.Last();
 
-            if(numItems == 0)
-                arrayItem = outputTokens[0];
-            else if(numItems == 1)
-                arrayItem = outputTokens[left];
-            else
-                arrayItem = Reduce(outputTokens.Skip(left).ToList());
+            result.RemoveAt(result.Count - 1);
 
-            // Remove the items you just reduced
-            for(var i = 0; i < numItems; ++i)
-                outputTokens.RemoveAt(left);
+            var multipart = new Token("", Token.TokenType.Multipart);
 
-            if(container == null)
-            {
-                container = new Token("", type);
-                outputTokens.Add(container);
-            }
+            result.Add(multipart);
 
-            container.Add(arrayItem);
-
-            return container;
+            multipart.Add(last);
+            multipart.MergeOrAdd(newToken, Token.TokenType.Multipart);
         }
 
+        /*****************************************************************************/
+        private static void HandleComma(Queue<Token> tokens, Token result)
+        {    
+            var newToken = InnerPrecompile(tokens, endIt: (t)=> t.IsEndBoundary);
+
+            result.Type = Token.TokenType.CommaDelimited;
+                            
+            result.MergeOrAdd(newToken, Token.TokenType.CommaDelimited);
+        }
+
+        /*****************************************************************************/
+        private static void HandleParens(Queue<Token> tokens, Token result)
+        {
+            var last = result.LastOrDefault();
+
+            var newToken = InnerPrecompile(tokens, Token.EndParen);
+
+            if(last != null && last.Type == Token.TokenType.Text)
+            {
+                last.Type = Token.TokenType.Function;
+
+                // No params?
+                if(newToken.Value == "" && newToken.Type == Token.TokenType.Text)
+                    return;
+
+                if(newToken.Type == Token.TokenType.CommaDelimited)
+                    last.Merge(newToken);
+                else
+                    last.Add(newToken);
+            }
+            else
+                result.Add(newToken);
+
+            return;
+        }        
+        
+        /*****************************************************************************/
+        private static void HandleArray(Queue<Token> tokens, Token result)
+        {
+            var newToken = InnerPrecompile(tokens, Token.EndArray);
+            var last     = result.LastOrDefault();
+
+            if(last != null && (last.Type == Token.TokenType.Text || last.Type == Token.TokenType.Array))
+            { 
+                last.Add(new Token("", Token.TokenType.ArrayIndexer) { newToken });
+                last.Type = Token.TokenType.Array;
+            }
+            else
+            { 
+                var array = new Token("", Token.TokenType.ExplicitArray);
+
+                array.MergeOrAdd(newToken, Token.TokenType.CommaDelimited);
+                result.Add(array);
+            }
+
+            return;
+        }
+
+        /*****************************************************************************/
+        private static Token MergeOrAdd(this Token token, Token merge, Token.TokenType type) 
+        {
+            if(merge.Type == type)
+                token.Merge(merge);
+            else
+                token.Add(merge);
+
+            return token;
+        }
+
+        /*****************************************************************************/
         // Listed in operator precedence
         private static List<IEnumerable<string>> _operators = new List<IEnumerable<string>>
         {
             new [] { "*", "/", "%" }, 
-            new [] { "%" }, 
             new [] { "+", "-" }, 
             new [] { "<" }, 
             new [] { ">" }, 
@@ -278,35 +253,41 @@ namespace JTran.Expressions
         };
 
         /*****************************************************************************/
-        private static Token Reduce(IList<Token> outputTokens)
+        private static Token Reduce(Token token, int numOperators = 3)
         {
             foreach(var ops in _operators)
             { 
-                while(ReduceExpression(outputTokens, ops))
+                while(ReduceExpression(token, ops, numOperators))
                     ;
 
-                if(outputTokens.Count < 3)
+                if(token.Count < 3)
                     break;
             }
 
-            if(outputTokens.Count == 5 && outputTokens[1].Value == "?" && outputTokens[3].Value == ":")
+            if(token.Count == 5 && token[1].Value == "?" && token[3].Value == ":")
             {
                 var newToken = new Token("", Token.TokenType.Tertiary);
 
-                newToken.Add(outputTokens[0]);
-                newToken.Add(outputTokens[2]);
-                newToken.Add(outputTokens[4]);
+                newToken.Add(token[0]);
+                newToken.Add(token[2]);
+                newToken.Add(token[4]);
 
-                return newToken;
+                token.RemoveAt(0);
+                token.RemoveAt(0);
+                token.RemoveAt(0);
+                token.RemoveAt(0);
+                token.RemoveAt(0);
+
+                token.Add(newToken);
             }
 
-            return outputTokens.First();
+            return token;
         }
 
         /*****************************************************************************/
-        private static bool ReduceExpression(IList<Token> outputTokens, IEnumerable<string> checkOps)
+        private static bool ReduceExpression(IList<Token> outputTokens, IEnumerable<string> checkOps, int numOperators)
         {
-            if(outputTokens.Count >= 3)
+            if(outputTokens.Count > numOperators)
             { 
                 for(var i = 1; i < outputTokens.Count(); ++i)
                 { 
@@ -314,6 +295,9 @@ namespace JTran.Expressions
 
                     if(!op.IsOperator || !checkOps.Contains(op.Value))
                         continue;
+
+                    if((outputTokens.Count - i) < 2)
+                        throw new Transformer.SyntaxException($"Missing operand after {op}");
 
                     var leftToken = outputTokens[i-1];
 

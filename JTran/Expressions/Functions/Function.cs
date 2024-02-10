@@ -239,7 +239,23 @@ namespace JTran.Expressions
             var parameters = new List<object>();
 
             foreach(var parameter in inputParameters)
-                parameters.Add(literals ? (parameter as DataValue).Name : parameter.Evaluate(context));
+            { 
+                object? name = null;
+
+                if(literals)
+                {
+                    if(parameter is MultiPartDataValue multiPart)
+                        name = multiPart.JoinLiteral(context);
+                    else if(parameter is DataValue val)
+                        name = val.Name;
+                    else
+                        throw new Transformer.SyntaxException("Unknown value type");
+                }
+                else
+                    name = parameter.Evaluate(context);
+
+                parameters.Add(name);
+            }
 
             return parameters;
         }

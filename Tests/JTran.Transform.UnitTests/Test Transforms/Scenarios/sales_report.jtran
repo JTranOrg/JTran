@@ -1,0 +1,8 @@
+{
+  "#foreachgroup(customers.orders[status != 'cancelled'].items[price > 0], product_id, products)": 
+  {
+    "product_id":    "#(product_id)",
+    "units":         "#(sum(currentgroup().quantity))",
+    "sales":         "#('$' + precision(sum(currentgroup().price), 2)"
+  }
+}

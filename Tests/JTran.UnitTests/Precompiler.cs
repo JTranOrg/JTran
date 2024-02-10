@@ -17,6 +17,78 @@ namespace JTran.UnitTests
     public class PrecompilerTests
     {
         [TestMethod]
+        [DataRow("bob")]
+        [DataRow("$bob")]
+        [DataRow("//bob")]
+        public void Precompiler_Precompile_single(string expressionStr)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(0, token.Count);
+            Assert.AreEqual(expressionStr, token.Value);
+            Assert.AreEqual(Token.TokenType.Text, token.Type);
+        }
+
+        [TestMethod]
+        [DataRow("10 - 3", "-")]
+        [DataRow("10 + 3", "+")]
+        public void Precompiler_Precompile_simple_expr(string expressionStr, string op)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(3, token.Count);
+            Assert.AreEqual(Token.TokenType.Expression, token.Type);
+
+            var expr = token[1];
+
+            Assert.AreEqual(op, expr.Value);
+        }
+
+        [TestMethod]
+        [DataRow("10 - (3 + 1)", "-")]
+        [DataRow("10 + (3 - 1)", "+")]
+        public void Precompiler_Precompile_parens(string expressionStr, string op)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(3, token.Count);
+            Assert.AreEqual(Token.TokenType.Expression, token.Type);
+
+            var exprOp = token[1];
+
+            Assert.AreEqual(op, exprOp.Value);
+
+            var expr = token[2];
+
+            Assert.AreEqual(3, expr.Count);
+            Assert.AreEqual(Token.TokenType.Expression, expr.Type);
+        }
+
+        [TestMethod]
+        [DataRow("(a + b) - (3 + 1)", "-")]
+        [DataRow("(b - a) + (3 - 1)", "+")]
+        public void Precompiler_Precompile_parens_2(string expressionStr, string op)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(3, token.Count);
+            Assert.AreEqual(Token.TokenType.Expression, token.Type);
+
+            var exprOp = token[1];
+
+            Assert.AreEqual(op, exprOp.Value);
+
+            var expr1 = token[0];
+            var expr2 = token[2];
+
+            Assert.AreEqual(3, expr1.Count);
+            Assert.AreEqual(3, expr2.Count);
+            Assert.AreEqual(Token.TokenType.Expression, expr1.Type);
+            Assert.AreEqual(Token.TokenType.Expression, expr2.Type);
+        }
+
+        [TestMethod]
+        [DataRow("10 - 3 + 3", "+")]
         [DataRow("10 - 3 + (9 - 1)", "+")]
         [DataRow("10 - 3 * (3 - 1)", "-")]
         [DataRow("10 - 3 * 3 - 1",   "-")]
@@ -44,7 +116,7 @@ namespace JTran.UnitTests
         {
             var expr = TestExpression(expressionStr);
 
-            AssertExpression(expr, "Name", op, "bob");
+            AssertExpression(expr, "Name", op, "'bob'");
         }
 
         [TestMethod]
@@ -82,14 +154,49 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Precompiler_Precompile_func_wParams()
+        public void Precompiler_Precompile_func_1Param()
         {
-            var function = TestExpression("getcity(Name == 'bob', $Age)");
+            var function = TestExpression("getcity(Name)");
+
+            Assert.AreEqual(Token.TokenType.Function, function.Type);
+            Assert.AreEqual("getcity",  function.Value);
+            Assert.AreEqual(1,          function.Count);
+
+            var parm = function[0];
+
+            Assert.AreEqual(0, parm.Count);
+            Assert.AreEqual("Name", parm.Value);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_func_2Params()
+        {
+            var function = TestExpression("getcity(Name, State)");
+
+            Assert.AreEqual(Token.TokenType.Function, function.Type);
+            Assert.AreEqual("getcity",  function.Value);
+            Assert.AreEqual(2,          function.Count);
+
+            var parm1 = function[0];
+
+            Assert.AreEqual(0, parm1.Count);
+            Assert.AreEqual("Name", parm1.Value);
+
+            var parm2 = function[1];
+
+            Assert.AreEqual(0, parm2.Count);
+            Assert.AreEqual("State", parm2.Value);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_func_wExpression()
+        {
+            var function = TestExpression("getcity(Name == 'bob')");
 
             Assert.AreEqual(Token.TokenType.Function, function.Type);
 
             Assert.AreEqual("getcity",  function.Value);
-            Assert.AreEqual(2,          function.Count);
+            Assert.AreEqual(1,          function.Count);
 
             var parm = function[0];
 
@@ -98,6 +205,24 @@ namespace JTran.UnitTests
             Assert.AreEqual("==",    parm[1].Value);
             Assert.IsTrue(parm[1].IsOperator);
             Assert.AreEqual("bob",   parm[2].Value);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_func_wNoParams()
+        {
+            var function = Test("getcity()");
+
+            AssertFunction(function, "getcity", 0);
+        }
+
+        [TestMethod]
+        public void Precompiler_Precompile_func_wParams()
+        {
+            var result = Test("getcity(Name == 'bob', $Age)");
+
+            var function = AssertFunction(result, "getcity", 2);
+
+            var parm = AssertExpression(function[0], "Name", "==", "'bob'");
 
             Assert.AreEqual("$Age",  function[1].Value);
         }
@@ -105,7 +230,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void Precompiler_Precompile_func_wParams2()
         {
-            var function = TestExpression("max(Husband.Birthdate, Wife.Birthdate)");
+            var function = Test("max(Husband.Birthdate, Wife.Birthdate)");
 
             Assert.AreEqual(Token.TokenType.Function, function.Type);
 
@@ -186,8 +311,20 @@ namespace JTran.UnitTests
 
             Assert.AreEqual(expectedOp, op.Value);
 
-            AssertExpression(t1, "Name", "==", "bob");
-            AssertExpression(t2, "City", "==", "San Francisco");
+            AssertExpression(t1, "Name", "==", "'bob'");
+            AssertExpression(t2, "City", "==", "'San Francisco'");
+        }
+
+        [TestMethod]
+        [DataRow("a == b ? 1 : 99")]
+        [DataRow("a || b ? 1 : 99")]
+        [DataRow("[a || b ? 1 : 99, 3]")]
+        [DataRow("[a || b ? 1 : 99, iif(a && b, 2, 98), x - 6 + y]")]
+        public void Precompiler_Precompile_tertiary2(string expression)
+        {
+            var result = Test(expression);
+            
+            Assert.AreEqual(expression, result.ToString());
         }
 
         [TestMethod]
@@ -261,9 +398,19 @@ namespace JTran.UnitTests
             Assert.AreEqual("&&",                       exprToken3[1].Value);
             Assert.AreEqual(Token.TokenType.Expression, exprToken3[2].Type);
 
-            AssertExpression(exprToken3[0], "Name", "==", "bob");
-            AssertExpression(exprToken3[2], "City", "==", "Seattle");
-            AssertExpression(exprToken1[2], "State", "==", "WA");
+            AssertExpression(exprToken3[0], "Name", "==", "'bob'");
+            AssertExpression(exprToken3[2], "City", "==", "'Seattle'");
+            AssertExpression(exprToken1[2], "State", "==", "'WA'");
+        }
+
+        [TestMethod]
+        [DataRow("a ? b : c")]
+        [DataRow("Name == 'bob' || City == 'Seattle' && State == 'WA' ? 'Jones' : 'Anderson'")]
+        public void Precompiler_Precompile_tertiary(string expression)
+        {
+            var expr = Test(expression);
+
+            Assert.AreEqual(expression, expr.ToString());
         }
 
         [TestMethod]
@@ -323,52 +470,37 @@ namespace JTran.UnitTests
             Assert.AreEqual(Token.TokenType.Tertiary, tertiary2.Type);
             Assert.AreEqual(3,   exprToken1.Count);
 
-            Assert.AreEqual("Name",          exprToken1[0].Value);
-            Assert.AreEqual("==",            exprToken1[1].Value);
-            Assert.AreEqual("bob",           exprToken1[2].Value);
+            AssertExpression(exprToken1, "Name", "==", "'bob'");
 
             Assert.AreEqual("Anderson",     tertiary2[1].Value);
             Assert.AreEqual("Bell",         tertiary2[2].Value);
 
-            var exprToken3 = tertiary2[0];
-
-            Assert.AreEqual("City",          exprToken3[0].Value);
-            Assert.AreEqual("==",            exprToken3[1].Value);
-            Assert.AreEqual("Chicago",       exprToken3[2].Value);
-
+            AssertExpression(tertiary2[0], "City", "==", "'Chicago'");
         }
 
         [TestMethod]
-        public void Precompiler_Precompile_multipart_expression()
+        [DataRow("a.b")]
+        [DataRow("a.b.c")]
+        [DataRow("$a.b.c")]
+        [DataRow("a[b]")]
+        [DataRow("a[b.c]")]
+        [DataRow("a[b.c.d]")]
+        [DataRow("a.b + c.d")]
+        [DataRow("a.b + c.d - e.f")]
+        [DataRow("a[b == 'c'].d")]
+        [DataRow("a[b] + c[d]")]
+        [DataRow("a[b] + c[d] - e[f]")]
+        [DataRow("a[b].c + c[d]")]
+        [DataRow("a[b].c * d[e].f")]
+        [DataRow("g[h].i[k]")]
+        [DataRow("g[h].i[k.m[n]]")]
+        [DataRow("g[h].i[j == k.m[n != p]]")]
+        [DataRow("a[b].c + d[e].f - g[h].i[j == k.m[n != p]]")]
+        public void Precompiler_Precompile_multipart_expression(string exprStr)
         {
-            var expr = Test("Customer.Name.Last");
+            var expr = Test(exprStr);
 
-            Assert.AreEqual(Token.TokenType.Multipart, expr.Type);
-
-            Assert.AreEqual("Customer", expr[0].Value);
-            Assert.AreEqual("Name", expr[1].Value);
-            Assert.AreEqual("Last", expr[2].Value);
-        }
-
-        [TestMethod]
-        public void Precompiler_Precompile_multipart2_expression()
-        {
-            var expr = Test("$Customer.Name.Last");
-
-            Assert.AreEqual("$Customer", expr[0].Value);
-            Assert.AreEqual("Name", expr[1].Value);
-            Assert.AreEqual("Last", expr[2].Value);
-        }
-
-        [TestMethod]
-        public void Precompiler_Precompile_multipart3_expression()
-        {
-            var expr = TestExpression("$Customer.FirstName + $Customer.LastName");
-
-            Assert.AreEqual(3,                          expr.Count);
-            Assert.AreEqual(Token.TokenType.Multipart,  expr[0].Type);
-            Assert.AreEqual("+",                        expr[1].Value);
-            Assert.AreEqual(Token.TokenType.Multipart,  expr[2].Type);
+            Assert.AreEqual(exprStr, expr.ToString());
         }
 
         [TestMethod]
@@ -385,7 +517,7 @@ namespace JTran.UnitTests
             Assert.AreEqual(Token.TokenType.Array, expr2.Type);
             Assert.AreEqual("Customer",   expr2.Value);
 
-            AssertExpression(expr2[0][0], "City", "==", "Seattle");
+            AssertExpression(expr2[0][0], "City", "==", "'Seattle'");
         }
 
         [TestMethod]
@@ -403,8 +535,8 @@ namespace JTran.UnitTests
             Assert.AreEqual("Cars",   expr1.Value);
             Assert.AreEqual("Tickets",   expr2.Value);
 
-            AssertExpression(expr1[0][0], "Make", "==", "Chevy");
-            AssertExpression(expr2[0][0], "Location", "==", "WA");
+            AssertExpression(expr1[0][0], "Make", "==", "'Chevy'");
+            AssertExpression(expr2[0][0], "Location", "==", "'WA'");
         }        
         
         [TestMethod]
@@ -513,59 +645,14 @@ namespace JTran.UnitTests
         #region Array Indexers
 
         [TestMethod]
-        public void Precompiler_Precompile_array_indexer_single()
+        [DataRow("Customers[1]")]
+        [DataRow("Customers[Surname == 'Smith']")]
+        [DataRow("Customers[1][2]")]
+        public void Precompiler_Precompile_array_indexer(string exprStr)
         {
-            var array = Test("Customers[1]");
+            var expr = Test(exprStr);
 
-            Assert.AreEqual(1, array.Count);
-
-            var arrayIndexer = array[0];
-
-            Assert.AreEqual(Token.TokenType.Array, array.Type);
-            Assert.AreEqual(Token.TokenType.ArrayIndexer, arrayIndexer.Type);
-
-            Assert.AreEqual("Customers", array.Value);
-            Assert.AreEqual(1, int.Parse(arrayIndexer[0].Value));
-        }
-
-        [TestMethod]
-        public void Precompiler_Precompile_array_indexer_single_expression()
-        {
-            var array = Test("Customers[Surname == 'Smith']");
-
-            Assert.AreEqual(1, array.Count);
-
-            var arrayIndexer = array[0];
-
-            Assert.AreEqual(Token.TokenType.Array, array.Type);
-            Assert.AreEqual(Token.TokenType.ArrayIndexer, arrayIndexer.Type);
-
-            Assert.AreEqual("Customers", array.Value);
-            var expr1 = arrayIndexer[0];
-
-            Assert.AreEqual(3, expr1.Count);
-            Assert.AreEqual("Surname", expr1[0].Value);
-            Assert.AreEqual("==",      expr1[1].Value);
-            Assert.AreEqual("Smith",   expr1[2].Value);
-        }
-
-        [TestMethod]
-        public void Precompiler_Precompile_array_indexer_two()
-        {
-           var array = Test("Customers[1][2]");
-
-            Assert.AreEqual(2, array.Count);
-
-            var arrayIndexer1 = array[0];
-            var arrayIndexer2 = array[1];
-
-            Assert.AreEqual(Token.TokenType.Array, array.Type);
-            Assert.AreEqual(Token.TokenType.ArrayIndexer, arrayIndexer1.Type);
-            Assert.AreEqual(Token.TokenType.ArrayIndexer, arrayIndexer2.Type);
-
-            Assert.AreEqual("Customers", array.Value);
-            Assert.AreEqual(1, int.Parse(arrayIndexer1[0].Value));
-            Assert.AreEqual(2, int.Parse(arrayIndexer2[0].Value));
+            Assert.AreEqual(exprStr, expr.ToString());
         }
 
         #endregion
@@ -573,8 +660,30 @@ namespace JTran.UnitTests
         #region ExplicitArray
 
         [TestMethod]
+        [DataRow("[1]")]
+        [DataRow("[1, 2]")]
+        [DataRow("[1, 2, 3]")]
+        public void Precompiler_ExplicitArray_simple(string expression)
+        {
+            var expr = Test(expression);
+
+            Assert.AreEqual(expression, expr.ToString());
+        }
+
+        [TestMethod]
+        [DataRow("[a == b]")]
+        [DataRow("[a == b, c != d]")]
+        [DataRow("[a > b, c <= d, e >= f]")]
+        public void Precompiler_ExplicitArray_expressions(string expression)
+        {
+            var expr = Test(expression);
+
+            Assert.AreEqual(expression, expr.ToString());
+        }
+
+        [TestMethod]
         [DataRow("([1, 2, 3], 'bob')")]
-        public void Precompiler_ExplicitArray_success(string expression)
+        public void Precompiler_ExplicitArray_success_parms(string expression)
         {
             var token = Test(expression);
 
@@ -584,6 +693,10 @@ namespace JTran.UnitTests
 
             Assert.AreEqual(Token.TokenType.ExplicitArray, array!.Type);
             Assert.AreEqual(3, array!.Count);
+
+            var bob = token[1];
+
+            Assert.AreEqual("bob", bob.Value);
         }
 
         #endregion
@@ -601,10 +714,43 @@ namespace JTran.UnitTests
             Assert.AreEqual(Token.TokenType.CommaDelimited, token.Type);
             Assert.AreEqual(numParams, token.Count);
         }
+
+        [TestMethod]
+        [DataRow("a(b(c(d(e, f), g(h, i), j, k)))")]
+        public void Precompiler_Precompile_nested_functions(string expr)
+        {
+            var tk = Test(expr);
+            var a  = AssertFunction(tk,   "a", 1);
+            var b  = AssertFunction(a[0], "b", 1);
+            var c  = AssertFunction(b[0], "c", 4);
+            var d  = AssertFunction(c[0], "d", 2);
+                         AssertText(d[0], "e");
+                         AssertText(d[1], "f");
+            var g  = AssertFunction(c[1], "g", 2);
+                         AssertText(g[0], "h");
+                         AssertText(g[1], "i");
+                         AssertText(c[2], "j");
+                         AssertText(c[3], "k");
+        }
+        
+        [TestMethod]
+        [DataRow("a(b(c(d(e, ')'), f), '('))")]
+        public void Precompiler_Precompile_complex(string expr)
+        {
+            var tk = Test(expr);
+            var a  = AssertFunction(tk,   "a", 1);
+            var b  = AssertFunction(a[0], "b", 2);
+            var c  = AssertFunction(b[0], "c", 2);
+            var d  = AssertFunction(c[0], "d", 2);
+                         AssertText(d[0], "e");
+                      AssertLiteral(d[1], ")");
+                         AssertText(c[1], "f");
+                      AssertLiteral(b[1], "(");
+        }
         
         [TestMethod]
         [DataRow("a(b(c(d($name, ')'), $keywords.stuff), '('))")]
-        public void Precompiler_Precompile_complex(string expr)
+        public void Precompiler_Precompile_complex1a(string expr)
         {
             var token = Test(expr);
 
@@ -629,10 +775,117 @@ namespace JTran.UnitTests
             Assert.AreEqual(Token.TokenType.Function, parm3.Type);
             Assert.AreEqual("d", parm3.Value);
             Assert.AreEqual(2, parm3.Count);
+        }                
+        
+        [TestMethod]
+        [DataRow("a.b == c.d")]
+        public void Precompiler_Precompile_expr_multipart(string expression)
+        {
+            var result = Test(expression);
+            
+            Assert.AreEqual(expression, result.ToString());
+            AssertExpression(result, "a.b", "==", "c.d");
+        }
+        
+        [TestMethod]
+        [DataRow("innerjoin(a.b == c.d)")]
+        public void Precompiler_Precompile_complex2(string expression)
+        {
+            var result = Test(expression);
+            var fn     = AssertFunction(result, "innerjoin", 1);
+            
+            Assert.AreEqual(expression, result.ToString());
+            AssertExpression(fn[0], "a.b", "==", "c.d");
+        }
+        
+        [TestMethod]
+        [DataRow("a.b[x == 7] == c[y == 5].d")]
+        public void Precompiler_Precompile_complex3(string expr)
+        {
+            var token = Test(expr);
+
+            Assert.AreEqual(Token.TokenType.Expression, token.Type);
+            Assert.AreEqual(3, token.Count);
+
+            var left  = token[0];
+            var right = token[2];
+
+            Assert.AreEqual("==", token[1].Value);
+            Assert.AreEqual(Token.TokenType.Multipart, left.Type);
+            Assert.AreEqual(Token.TokenType.Multipart, right.Type);
+            Assert.AreEqual("a", left[0].Value);
+            Assert.AreEqual("c", right[0].Value);
+        }
+        
+        [TestMethod]
+        [DataRow("fn(a.b[x == 7] == c[y == 5].d, e)")]
+        public void Precompiler_Precompile_complex3a(string expr)
+        {
+            var token = Test(expr);
+
+            Assert.AreEqual(Token.TokenType.Function, token.Type);
+            Assert.AreEqual("fn", token.Value);
+            Assert.AreEqual(2, token.Count);
+            
+            var parm1 = token[0];
+
+            Assert.AreEqual(Token.TokenType.Expression, parm1.Type);
+            Assert.AreEqual(3, parm1.Count);
+
+            var left  = parm1[0];
+            var right = parm1[2];
+
+            Assert.AreEqual("==", parm1[1].Value);
+            Assert.AreEqual(Token.TokenType.Multipart, left.Type);
+            Assert.AreEqual(Token.TokenType.Multipart, right.Type);
+            Assert.AreEqual("a", left[0].Value);
+            Assert.AreEqual("c", right[0].Value);
+            
+            var parm2 = token[1];
+
+            Assert.AreEqual(Token.TokenType.Text, parm2.Type);
+            Assert.AreEqual(0, parm2.Count);
+        }
+        
+        [TestMethod]
+        [DataRow("innerjoin($Drivers, $Cars, left.CarId == right.Id)")]
+        public void Precompiler_Precompile_complex4(string expr)
+        {
+            var token = Test(expr);
+
+            Assert.AreEqual(Token.TokenType.Function, token.Type);
+            Assert.AreEqual("innerjoin", token.Value);
+            Assert.AreEqual(3, token.Count);
+
+            var parm1 = token[0];
+
+            Assert.AreEqual(Token.TokenType.Text, parm1.Type);
+            Assert.AreEqual("$Drivers", parm1.Value);
+
+            var parm2 = token[1];
+
+            Assert.AreEqual(Token.TokenType.Text, parm2.Type);
+            Assert.AreEqual("$Cars", parm2.Value);
+
+            var parm3 = token[2];
+
+            Assert.AreEqual(Token.TokenType.Expression, parm3.Type);
+            Assert.AreEqual(3, parm3.Count);
+
+            var left  = parm3[0];
+            var right = parm3[2];
+
+            Assert.AreEqual("==", parm3[1].Value);
+            Assert.AreEqual(Token.TokenType.Multipart, left.Type);
+            Assert.AreEqual(Token.TokenType.Multipart, right.Type);
+            Assert.AreEqual("left", left[0].Value);
+            Assert.AreEqual("right", right[0].Value);
         }
         
         [TestMethod]
         [DataRow("bob !!!*** ted")]
+        [DataRow("bob > ted + ")]
+        [DataRow("+ bob > ted")]
         public void Precompiler_Precompile_error(string expr)
         {
             Assert.ThrowsException<Transformer.SyntaxException>(()=> Test(expr));
@@ -640,13 +893,47 @@ namespace JTran.UnitTests
 
         #endregion
 
-        private void AssertExpression(Token expr, string left, string op, string right)
+        #region Private
+
+        private Token AssertFunction(Token? token, string value, int numParams)
         {
-            Assert.IsNotNull(expr);
-            Assert.AreEqual(3,     expr.Count);
-            Assert.AreEqual(left,  expr[0].Value);
+            return AssertToken(token, value, numParams, Token.TokenType.Function);
+        }
+
+        private Token AssertText(Token? token, string value)
+        {
+            return AssertNonContainer(token, value, Token.TokenType.Text);
+        }
+
+        private Token AssertLiteral(Token? token, string value)
+        {
+            return AssertNonContainer(token, value, Token.TokenType.Literal);
+        }
+
+        private Token AssertToken(Token? token, string value, int numParams, Token.TokenType type)
+        {
+            Assert.IsNotNull(token);
+            Assert.AreEqual(type, token.Type);
+            Assert.AreEqual(value, token.Value);
+            Assert.AreEqual(numParams, token.Count);
+
+            return token!;
+        }
+
+        private Token AssertNonContainer(Token? token, string value, Token.TokenType type)
+        {
+            return AssertToken(token, value, 0, type);
+        }
+
+        private Token AssertExpression(Token? expr, string left, string op, string right)
+        {
+            AssertToken(expr, "", 3, Token.TokenType.Expression);
+
+            Assert.AreEqual(left,  expr![0].ToString());
             Assert.AreEqual(op,    expr[1].Value);
-            Assert.AreEqual(right, expr[2].Value);
+            Assert.AreEqual(right, expr[2].ToString());
+
+            return expr!;
         }        
                
         private Token TestExpression(string expression)
@@ -667,7 +954,8 @@ namespace JTran.UnitTests
             Assert.IsNotNull(token);
 
             return token;
-
         }
+
+        #endregion
     }
 }

@@ -967,9 +967,9 @@ Result is "bob"<br><br>
 ###### Transform
 
     {
-        Driver:      "#(Driver.Name)",
+        Driver:     "#(Driver.Name)",
 
-        "#if(Car.Make == 'Chevy')"v
+        "#if(Car.Make == 'Chevy')"
         {
             Car:    "#('Chevy ' + Car.Make)"
         },
@@ -1004,8 +1004,6 @@ Result is "bob"<br><br>
         Car: "Dodge Charger"
     }
 
-Because json doesn't allow more than one property with the same name if you needed to output more than #if/#else in the same scope you can simply use #elseif with a different condition that evaluates to true. 
-
 ###### Transform
     {
         "#if(Car.Make == 'Chevy')":
@@ -1021,7 +1019,7 @@ Because json doesn't allow more than one property with the same name if you need
         {
             Car:    "#('Audi ' + Car.Make)"
         },
-        "#elseif(1==1)": // If this was simply #else and then it would clash with the #else above and it would be invalid json
+        "#else(2)": // Because json doesn't allow two elements of the same name in the same scope we can pass #else an unused parameter to differentiate
         {
             Car:    "#(Car.Model + Car.Make)"
         }

@@ -20,7 +20,7 @@ namespace JTran
         /****************************************************************************/
         internal TIif(string name, string val) 
         {
-            _name = name == null ? null : CreateValue(name);
+            _name = name == null ? null : CreateValue(name, true);
 
             var parms = CompiledTransform.ParseElementParams("iif", val, CompiledTransform.SingleFalse );
 

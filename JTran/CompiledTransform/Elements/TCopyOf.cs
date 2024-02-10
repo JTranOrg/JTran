@@ -14,9 +14,9 @@ namespace JTran
         private readonly IValue _name;
 
         /****************************************************************************/
-        internal TCopyOf(string name, string val) 
+        internal TCopyOf(string? name, string val) 
         {
-            _name = name == null ? null : CreateValue(name);
+            _name = name == null || name == "#noobject" ? null : CreateValue(name, true);
 
             var parms = CompiledTransform.ParseElementParams("copyof", val, CompiledTransform.SingleFalse );
 

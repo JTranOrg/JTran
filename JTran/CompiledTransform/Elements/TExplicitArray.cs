@@ -10,7 +10,7 @@ namespace JTran
         /****************************************************************************/
         internal TExplicitArray(string? name)
         {
-            this.Name = name != null ? CreateValue(name) : null;
+            this.Name = name != null ? CreateValue(name, true) : null;
         }
 
         /****************************************************************************/

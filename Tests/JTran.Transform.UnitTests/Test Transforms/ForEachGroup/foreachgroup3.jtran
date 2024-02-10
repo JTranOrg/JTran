@@ -7,7 +7,7 @@
   
     "#foreach(currentgroup(), Drivers)":
     {
-        "#(noobject)": "#copyof(@)"
+        "#noobject": "#copyof(@)"
     }
   }
 }

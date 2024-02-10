@@ -1,0 +1,8 @@
+{
+  "#iterate(3, [])":  
+  {
+     "Id":        "#(position())",
+     "FirstName": "Fred",
+     "LastName":  "Flintstone"
+  }
+}

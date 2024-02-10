@@ -82,7 +82,8 @@ namespace JTran.Collections
             /****************************************************************************/
             public void Dispose()
             {
-                // Not needed
+                if(_currentEnumerator != null)
+                    _currentEnumerator.Dispose();
             }
 
             /****************************************************************************/
@@ -93,6 +94,7 @@ namespace JTran.Collections
                     if(++_listIndex >= _lists.Count)
                         return false;
 
+                    Dispose();
                     _currentEnumerator = _lists[_listIndex].GetEnumerator();
                 }
 

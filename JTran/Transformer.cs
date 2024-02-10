@@ -58,7 +58,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public string Transform(string data, TransformerContext context = null)
+        public string Transform(string data, TransformerContext? context = null)
         {
             return _transform.Transform(data, context, _extensionFunctions);
         }
@@ -70,13 +70,13 @@ namespace JTran
         /// <param name="input">Contains the source json data</param>
         /// <param name="output">A stream to write the results to</param>
         /// <param name="context">A transformer context</param>
-        public void Transform(Stream input, Stream output, TransformerContext context = null)
+        public void Transform(Stream input, Stream output, TransformerContext? context = null)
         {
              _transform.Transform(input, output, context, _extensionFunctions);
         }
 
         /****************************************************************************/
-        public void Transform(IEnumerable list, string listName, Stream output, TransformerContext context = null)
+        public void Transform(IEnumerable list, string listName, Stream output, TransformerContext? context = null)
         {
              _transform.Transform(list, listName, output, context, _extensionFunctions);
         }

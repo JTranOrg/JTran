@@ -1,0 +1,19 @@
+{
+  "#variable(items)":    
+  {
+      "#foreach(customers.orders[status != 'cancelled'].items[price > 0], products)": 
+      {
+        "#noobject":     "#copyof(@)",
+        "yearmo":        "#(formatdatetime(//date, 'yyyyMM')",
+        "month":         "#(formatdatetime(//date, 'MMM')",
+        "year":          "#(formatdatetime(//date, 'yyy')"
+      }
+  },
+
+  "#foreachgroup(sort($items.products, 'year', 'month'), [year, month], products)": 
+  {
+    "month": "#(string(month) + ' ' + string(year))",
+    "units": "#(sum(currentgroup().quantity))",
+    "sales": "#('$' + precision(sum(currentgroup().price), 2)"
+  }
+}

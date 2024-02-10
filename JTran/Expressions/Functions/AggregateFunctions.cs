@@ -48,13 +48,25 @@ namespace JTran.Expressions
             if(val is ICollection<object> list)
                 return list.Count;
 
+            if(val is IEnumerable<object> enm)
+                return enm.Count();
+
             return 1;
         }
 
         /*****************************************************************************/
         public bool any(object val)
         {
-            return count(val) > 0;
+            if(val is null)
+                return false;
+
+            if(val is ExpandoObject)
+                return true;
+
+            if(val is IEnumerable<object> enm)
+                return enm.Any();
+
+            return true;
         }
 
         /*****************************************************************************/
@@ -93,7 +105,7 @@ namespace JTran.Expressions
                 return null;
 
             if(val is IEnumerable<object> list)
-                return list.Reverse().ToList();
+                return list.Reverse();
 
             return new String(val.ToString().Reverse().ToArray());
         }
@@ -233,7 +245,7 @@ namespace JTran.Expressions
             /*****************************************************************************/
             private class SortField
             {
-                internal string Name      { get; set; }
+                internal string Name      { get; set; } = "";
                 internal bool   Ascending { get; set; } = true;
             }
         }

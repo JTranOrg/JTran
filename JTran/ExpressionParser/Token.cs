@@ -30,23 +30,40 @@ namespace JTran.Parser
         /*****************************************************************************/
         public override string ToString()
         {
-            return this.Value;
+            switch(Type)
+            {
+                case TokenType.Literal:        return "'" + this.Value + "'";
+                case TokenType.Function:       return this.Value + "(" + string.Join(", ", _children.Select(c=> c.ToString())) + ")";
+                case TokenType.Expression:     return this[0].ToString() + " " + this[1].ToString() + " " + this[2].ToString();
+                case TokenType.Tertiary:       return this[0].ToString() + " ? " + this[1].ToString() + " : " + this[2].ToString();
+                case TokenType.ArrayIndexer: 
+                case TokenType.ExplicitArray:  return "[" + string.Join(", ", _children.Select(c=> c.ToString())) + "]";
+                case TokenType.Multipart:      return string.Join(".", _children.Select(c=> c.ToString()));
+                case TokenType.Array:          return this.Value + string.Join("", _children.Select(c=> c.ToString()));
+
+                default:                       return this.Value;
+            }
         }
 
-        public bool IsOperator     => this?.Type == TokenType.Operator;
-        public bool IsPunctuation  => this?.Type == TokenType.Punctuation;
-        public bool IsBoundary     => this.IsOperator && _allBoundaries.ContainsKey(this.Value);
-        public bool IsEndBoundary  => this.IsOperator && _endBoundary.ContainsKey(this.Value);
-        public bool IsComma        => this.IsOperator && this.Value == ",";
-        public bool IsBeginParen   => this.IsOperator && this.Value == "(";
-        public bool IsEndParen     => this.IsOperator && this.Value == ")";
-        public bool IsBeginArray   => this.IsOperator && this.Value == "[";
-        public bool IsMultiDot     => this.IsOperator && this.Value == ".";
-        public bool IsConditional  => this.IsOperator && _conditionals.ContainsKey(this.Value);
-        public bool IsTertiary     => this.IsOperator && "?:".Contains(this.Value);
-        public bool IsMathematical => this.IsOperator && _mathOperators.ContainsKey(this.Value);
-        public bool IsExpression   => this.Type >= TokenType.Expression;
-        public bool IsLiteral      => this == null ? false : this?.Type == TokenType.Literal || this?.Type == TokenType.DLiteral;
+        /*****************************************************************************/
+        public const string BeginParen = "(";
+        public const string BeginArray = "[";
+        public const string EndParen = ")";
+        public const string EndArray = "]";
+
+        /*****************************************************************************/
+        public bool IsOperator       => this?.Type == TokenType.Operator;
+        public bool IsPunctuation    => this?.Type == TokenType.Punctuation;
+        public bool IsComma          => this.IsOperator && this.Value == ",";
+        public bool IsBeginParen     => this.IsOperator && this.Value == BeginParen;
+        public bool IsEndParen       => this.IsOperator && this.Value == EndParen;
+        public bool IsBeginArray     => this.IsOperator && this.Value == BeginArray;
+        public bool IsBeginBoundary  => this.IsOperator && (this.Value == BeginArray || this.Value == BeginParen);
+        public bool IsEndBoundary    => this.IsOperator && (this.Value == EndArray || this.Value == EndParen || this.Value == ",");
+        public bool IsMultiDot       => this.IsOperator && this.Value == ".";
+        public bool IsTertiary       => this.IsOperator && "?:".Contains(this.Value);
+        public bool IsExpression     => this.Type >= TokenType.Expression;
+        public bool IsLiteral        => this == null ? false : this?.Type == TokenType.Literal || this?.Type == TokenType.DLiteral;
 
         /*****************************************************************************/
         public enum TokenType
@@ -96,7 +113,7 @@ namespace JTran.Parser
             if(_children == null)
                 _children = new List<Token>();
 
-            _children.Add(item);
+            _children.Insert(index, item);
         }
 
         public void RemoveAt(int index)
@@ -170,38 +187,6 @@ namespace JTran.Parser
             if(_children == null)
                 _children = new List<Token>();
         }
-        private static IDictionary<string, bool> _endBoundary = new Dictionary<string, bool>
-        {
-            { "]", true },
-            { ")", true },
-            { ",", true }
-        };
-
-        private static IDictionary<string, bool> _allBoundaries = new Dictionary<string, bool>
-        {
-            { "]", true },
-            { ")", true },
-            { "[", true },
-            { "(", true },
-            { ",", true }
-        };
-
-        private static IDictionary<string, bool> _mathOperators = new Dictionary<string, bool>
-        {
-            { "*", true },
-            { "/", true },
-            { "+", true },
-            { "-", true },
-            { "%", true }
-        };
-
-        private static IDictionary<string, bool> _conditionals = new Dictionary<string, bool>
-        {
-            { "&&",  true },
-            { "and", true },
-            { "||",  true },
-            { "or",  true }
-        };
 
         #endregion
     }

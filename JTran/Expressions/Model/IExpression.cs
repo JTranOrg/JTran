@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -23,6 +23,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Text;
+using JTran.Collections;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -157,6 +159,7 @@ namespace JTran.Expressions
     {
         private readonly IList<IExpression> _parts = new List<IExpression>();
 
+        /*****************************************************************************/
         public MultiPartDataValue(IExpression? initial)
         {
             if(initial != null)
@@ -170,44 +173,61 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public string JoinLiteral(ExpressionContext context)
+        {   
+            var parts      = new List<string>();
+            var numParts   = _parts.Count;
+            var newContext = new ExpressionContext("", context);
+
+            foreach(var part in _parts)
+            {
+                if(part is MultiPartDataValue multiPart)
+                    parts.Add(multiPart.JoinLiteral(context));
+                else if(part is DataValue val)
+                    parts.Add(val.Name);
+                else
+                    parts.Add(part.Evaluate(newContext).ToString());
+            }
+
+            return string.Join('.', parts);
+        }
+
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
             var numParts = _parts.Count;
             var data     = context.Data;
-            var result   = new List<object>();
+            object? result = null;
             
             for(var i = 0; i < numParts; ++i)
             {
-                var expr = _parts[i].Evaluate(new ExpressionContext(data, context));
+                var expr = _parts[i].Evaluate(new ExpressionContext(data!, context));
 
                 if(expr == null)
                 {
                     return null;
                 }
 
-                result.Clear();
-
                 if(expr is IEnumerable<object> outList2)
                 { 
-                    result.AddRange(outList2);
+                    result = outList2;
                 }
                 else if(expr is string || expr is ExpandoObject)
                 {
-                    result.Add(expr);
+                    result = expr;
                 }
                 else if(expr.IsDictionary())
                 {
                     data = expr;
-                    result.Add(expr);
+                    result = expr;
                     continue;
                 }
                 else if(expr is IEnumerable outEnumerable)
                 { 
-                    foreach(var item in outEnumerable)
-                        result.Add(item);
+                    result = new EnumerableWrapper(outEnumerable); 
                 }
                 else
-                    result.Add(expr);
+                    result = expr;
 
                 data = result;
             }
@@ -248,8 +268,6 @@ namespace JTran.Expressions
             if(context.Data == null)
                 return null;
 
-            var result = new List<object>();
-
             if(context.Data.IsDictionary())
             {
                 var indexVal = _expr.Evaluate(context).ToString();
@@ -257,33 +275,31 @@ namespace JTran.Expressions
 
                 return rtnVal;
             }
-            else if(context.Data is IEnumerable<object> enm)
+
+            IEnumerable<object>? enm = null;
+
+            if(context.Data is IEnumerable<object> enm2)
+                enm = enm2;
+            else
+                enm = new [] {context.Data};
+
+            // If expression result is integer then return nth value of array
+            try
             { 
-                // If expression result is integer then return nth value of array
-                try
-                { 
-                    if(int.TryParse(_expr.Evaluate(context).ToString(), out int index))
-                    {
-                        if(enm is IList<object> list)
-                            return list[index];
-
-                        return enm.Skip(index).Take(1).Single();
-                    }
-                }
-                catch
+                if(int.TryParse(_expr.Evaluate(context).ToString(), out int index))
                 {
+                    if(enm is IList<object> list)
+                        return list[index];
 
-                }
-
-                // Evaluate each item in list against expression
-                foreach(var child in enm)
-                { 
-                    if(_expr.EvaluateToBool(new ExpressionContext(child, context)))
-                        result.Add(child);
+                    return enm.Skip(index).Take(1).Single();
                 }
             }
+            catch
+            {
 
-            return result;
+            }
+
+            return new WhereClause<object>(enm, _expr, new ExpressionContext(enm, context));
         }
 
         /*****************************************************************************/

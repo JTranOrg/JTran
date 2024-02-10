@@ -506,24 +506,6 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CompiledTransform_Transform_include_Success()
-        {
-            var transformer = CompiledTransform.Compile(_tranformInclude);
-            var result      = transformer.Transform(_dataSoldiers, null, null);
-
-            Assert.AreNotEqual(_tranformInclude, result);
-            Assert.AreNotEqual(_dataSoldiers, result);
-            Assert.IsNotNull(JObject.Parse(result));
-
-            var platoon = JsonConvert.DeserializeObject<Platoon>(result);
-
-            Assert.AreEqual("Carl",             platoon.PlatoonSergeant.FirstName);
-            Assert.AreEqual("Lipton",           platoon.PlatoonSergeant.LastName);
-            Assert.AreEqual("First Sergeant",   platoon.PlatoonSergeant.Rank);
-            Assert.AreEqual("",                 platoon.PlatoonSergeant.DOB);
-        }
-
-        [TestMethod]
         public void CompiledTransform_Transform_exclude_Success()
         {
             var transformer = CompiledTransform.Compile(_tranformExclude);
@@ -1298,13 +1280,6 @@ namespace JTran.UnitTests
             public string Rank      { get; set; } = "";
             public string DOB       { get; set; } = "";
         }
-
-        private static readonly string _tranformInclude =
-        @"{
-            '#variable(PlatoonSergeant)':   'Lipton',
-
-            PlatoonSergeant:  '#include(Soldiers[LastName == $PlatoonSergeant], LastName, FirstName, Rank)',
-        }";
 
         private static readonly string _tranformExclude =
         @"{

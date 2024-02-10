@@ -1,12 +1,19 @@
-using System;
 using System.Text;
-
 using Newtonsoft.Json;
+
+using JTran.Common;
 
 namespace JTran.PerformanceTests
 {
     public class TransformerTests
     {
+        private static Transformer? _transformer;
+
+        static TransformerTests()
+        { 
+            _transformer = CreateTransformer(_transformForEach1);
+        }
+
         [Theory]
         [InlineData(10)]
         [InlineData(100)]
@@ -16,16 +23,16 @@ namespace JTran.PerformanceTests
         //[InlineData(2000000)]
         public async Task Transform_Transform_large_file(int numItems)
         {
-            var transformer = CreateTransformer(_transformForEach1);
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
             TimeSpan duration = TimeSpan.Zero;
 
-          //  using var dataSource = CreateLargeDataSource(numItems);
+           // using var dataSource = CreateLargeDataSource(numItems);
 
-          //  await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
+            //await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
 
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
 
-          //  dataSource.Seek(0, SeekOrigin.Begin);
+           // dataSource.Seek(0, SeekOrigin.Begin);
 
             var dtStart = DateTime.Now;
 
@@ -39,42 +46,70 @@ namespace JTran.PerformanceTests
 
             await Task.CompletedTask;
         }
+        
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(200000)]
+        //[InlineData(2000000)]
+        public void Transform_Transform_eval_only(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
+
+            _transformer.Transform(input, output);
+        }
 
         #region Private
 
         private Stream CreateLargeDataSource(int numItems = 100000)
         {
-            var customers = new CustomerContainer
+            var orgs = new OrgContainer
             {
-                Customers = new()
+                Organizations = new()
             };
 
-            for(int i = 0; i < numItems; ++i)
+            for(int c = 0; c < 7; ++c)
             { 
-                var person = CreateRandomPerson();
+                var org = CreateRandomOrg();
 
-                customers.Customers.Add(new Customer
+                for(int i = 0; i < numItems; ++i)
                 { 
-                    Id           = Guid.NewGuid().ToString(),
-                    FirstName    = person.FirstName,
-                    MiddleName   = person.MiddleName,
-                    LastName     = "\\" + person.Surname + "\\",
-                    Birthdate    = person.Birthdate,
-                    Address      = person.StreetNumber + " " + person.StreetName,
-                    City         = person.City,
-                    State        = person.State,
-                    ZipCode      = person.ZipCode,
-                    Age          = (int)(DateTime.Now.Ticks & 11111) + 20
-                });
+                    var person = CreateRandomPerson();
+
+                    org.Customers.Add(new Customer
+                    { 
+                        Id           = Guid.NewGuid().ToString(),
+                        FirstName    = person.FirstName,
+                        MiddleName   = person.MiddleName,
+                        LastName     = "\\" + person.Surname + "\\",
+                        Birthdate    = person.Birthdate,
+                        Address      = person.StreetNumber + " " + person.StreetName,
+                        City         = person.City,
+                        State        = person.State,
+                        ZipCode      = person.ZipCode,
+                        Age          = (int)(DateTime.Now.Ticks & 11111) + 20
+                    });
+                }
+
+                orgs.Organizations.Add(org);
             }
 
-            var cstr = JsonConvert.SerializeObject(customers, Formatting.Indented);
+            var cstr = JsonConvert.SerializeObject(orgs, Formatting.Indented);
 
             return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
         }
 
-        public class CustomerContainer
+        public class OrgContainer
         {
+            public List<Organization> Organizations   { get; set; } = new List<Organization>();
+        }        
+        
+        public class Organization
+        {
+            public string         Name        { get; set; }
             public List<Customer> Customers   { get; set; } = new List<Customer>();
         }        
         
@@ -92,18 +127,20 @@ namespace JTran.PerformanceTests
             public int    Age         { get; set; } = 0;
         }
 
-        private JTran.Transformer CreateTransformer(string transform)
+        private static JTran.Transformer CreateTransformer(string transform)
         {
             return new JTran.Transformer(transform, null);
         }
 
         private static readonly string _transformForEach1 =
         @"{
-            '#variable(var1)':   20,
-            '#variable(var2)':   '#((2 + 3) * (9 / 3))',
-            '#variable(var3)':   5,
+            '#variable(var1)':      20,
+            '#variable(var2)':      '#((2 + 3) * (9 / 3))',
+            '#variable(var3)':      5,
+            '#variable(surname)':   'bobyoursuncle',
+            '#variable(org)':       'blah',
 
-            '#foreach(Customers, Customers)':
+            '#foreach(Organizations[Name != $org][1].Customers[Surname != $surname], Customers)':
             {
                 'Name':       '#(FirstName + MiddleName + LastName)',
                 'Birthdate':  '#(Birthdate)',
@@ -124,6 +161,15 @@ namespace JTran.PerformanceTests
         private Random _randomStreetNumber = new Random();
         private Random _randomBirthdate    = new Random();
         private Random _randomZip          = new Random();
+        private Random _randomOrg          = new Random();
+
+        private Organization CreateRandomOrg()
+        {
+            return new Organization
+            { 
+                Name = GetRandomValue(_randomOrg, _orgs),
+            };
+        }
 
         private Person CreateRandomPerson()
         {
@@ -160,6 +206,20 @@ namespace JTran.PerformanceTests
             public string ZipCode       { get;set; } = "";
             public string Birthdate     { get;set; } = "";
         }
+
+        private static string[] _orgs = new string[]
+        {
+            "Smith Airlines",
+            "City of Springfield",
+            "Acme Widgets",
+            "General Consulting",
+            "Helios Systems",
+            "Rota Logistics Cooperative",
+            "Rigel ",
+            "State of Washington",
+            "Oregon Fish and Wildlife",
+            "Zero Point Technologies",
+        };
 
         #region Surnames
 

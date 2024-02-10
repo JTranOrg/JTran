@@ -867,24 +867,6 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("Array")]
-        public void Transformer_Transform_Array_foreach_Succeeds()
-        {
-            var transformer = new JTran.Transformer(_transformArrayForEach, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
-            var result      = transformer.Transform(_data4, context);
-   
-            Assert.AreNotEqual(_transformArrayForEach, _data4);
-
-            var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
-
-            Assert.AreEqual(5,              array.Count());
-            Assert.AreEqual("JohnSmith",    array[0]["Name"]);
-            Assert.AreEqual("King Jalusa",  array[4]["Name"]);
-        }
-
-        [TestMethod]
-        [TestCategory("Array")]
         public void Transformer_Transform_Array_foreach_emptyarray_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayForEachEmptyArray, null);
@@ -996,31 +978,6 @@ namespace JTran.UnitTests
             {
                 '#arrayitem(1)':    'Fred',
                 '#arrayitem(2)':    '#(FirstName)'
-            }
-        }";
-
-        private static readonly string _transformArrayForEach =
-        @"{
-            '#array(Persons)':
-            {
-                '#foreach(Customers, {})':
-                {
-                   'Name': '#(Name + Surname)'
-                },
-                '#if(any(Customers[Name == $Fred]))':
-                {
-                    '#arrayitem':
-                    {
-                        'Name': 'King Jalusa'
-                    }
-                },
-                '#if(any(Customers[Name == $Dude]))':
-                {
-                    '#arrayitem':
-                    {
-                        'Name': 'King Krakatoa'
-                    }
-                }
             }
         }";
 

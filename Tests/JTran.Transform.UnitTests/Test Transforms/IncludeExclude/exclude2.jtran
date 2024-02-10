@@ -1,0 +1,6 @@
+{
+  "#variable(LastName)":        "Lipton",
+  "#variable(PlatoonSergeant)": "#exclude(@[LastName == $LastName], DOB)",
+
+  "PlatoonSergeant":            "#($PlatoonSergeant)"
+}

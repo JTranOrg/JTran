@@ -11,8 +11,8 @@ namespace JTran
         /****************************************************************************/
         internal TProperty(string name, object val)
         {
-            this.Name  = CreateValue(name);
-            this.Value = CreateValue(val);
+            this.Name  = CreateValue(name, true);
+            this.Value = CreateValue(val, false);
         }
 
         internal IValue Name  { get; set; }
@@ -53,11 +53,16 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
+            context.PreviousCondition = false;
+
             if(_expression.EvaluateToBool(context))
             { 
                 this.If = true;
                 this.EvaluatedValue = this.Value.Evaluate(context);
+                context.PreviousCondition = true;
             }
+            else
+                this.If = false;
         }
     }
 
@@ -100,8 +105,8 @@ namespace JTran
                 this.If = true;
                 this.EvaluatedValue = this.Value.Evaluate(context);
             }
+            else
+                this.If = false;
         }
     }
-
-
 }

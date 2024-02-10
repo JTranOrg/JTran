@@ -1,0 +1,6 @@
+{
+  "#variable(LastName)":        "Lipton",
+  "#variable(PlatoonSergeant)": "#include(@[LastName == $LastName], LastName, FirstName, Rank)",
+
+  "PlatoonSergeant":            "#($PlatoonSergeant)"
+}
