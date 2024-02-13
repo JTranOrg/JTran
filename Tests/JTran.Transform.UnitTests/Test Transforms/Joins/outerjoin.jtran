@@ -1,0 +1,62 @@
+{
+  "#variable(Cars)": 
+  [
+    {
+      "Id":     1,
+      "Make":   "Chevy",
+      "Model":  "Camaro",
+      "Year":   1969
+    },
+    {
+      "Id":     2,
+      "Make":   "Pontiac",
+      "Model":  "Firebird",
+      "Year":   1970
+    },
+    {
+      "Id":     3,
+      "Make":   "Audi",
+      "Model":  "RS5",
+      "Year":   2024
+    }
+  ],
+
+  "#variable(Drivers)": 
+  [
+    {
+      "CarId":      1,
+      "FirstName":  "Linda",
+      "LastName":   "Martinez",
+      "From":       "Seattle, WA",
+      "Age":        28
+    },
+    {
+      "CarId":      3,
+      "FirstName":  "Bob",
+      "LastName":   "Yumigata",
+      "From":       "Los Angeles, CA",
+      "Age":        32
+    },
+    {
+      "CarId":      33,
+      "FirstName":  "Bob",
+      "LastName":   "Newhart",
+      "From":       "Hollywood, CA",
+      "Age":        76
+    },
+    {
+      "CarId":      2,
+      "FirstName":  "Frank",
+      "LastName":   "Anderson",
+      "From":       "Casper, WY",
+      "Age":        34
+    }
+  ],
+
+  "#variable(joined_drivers)": "#outerjoin($Drivers, $Cars, left.CarId == right.Id)",
+
+  "#foreach($joined_drivers, [])": 
+  {
+    "#noobject": "#copyof(@)"
+  }
+}

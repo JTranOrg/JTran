@@ -18,19 +18,19 @@ namespace JTran.Json
     /// </summary>
     internal interface IJsonModelBuilder
     {
-        object AddObject(string name, object parent, object? previous);
-        object AddArray(string name, object parent);
-        object AddText(string name, string val, object parent, object? previous);
-        object AddBoolean(string name, bool val, object parent, object? previous);
-        object AddNumber(string name, double val, object parent, object? previous);
-        object AddNull(string name, object parent, object? previous);
+        object AddObject(string name, object parent, object? previous, long lineNumber);
+        object AddArray(string name, object parent, long lineNumber);
+        object AddText(string name, string val, object parent, object? previous, long lineNumber);
+        object AddBoolean(string name, bool val, object parent, object? previous, long lineNumber);
+        object AddNumber(string name, double val, object parent, object? previous, long lineNumber);
+        object AddNull(string name, object parent, object? previous, long lineNumber);
 
-        object AddObject(object? parent);
-        object AddArray(object? parent);
-        object AddText(string val, object parent);
-        object AddBoolean(bool val, object parent);
-        object AddNumber(double val, object parent);
-        object AddNull(object parent);
+        object AddObject(object? parent, long lineNumber);
+        object AddArray(object? parent, long lineNumber);
+        object AddText(string val, object parent, long lineNumber);
+        object AddBoolean(bool val, object parent, long lineNumber);
+        object AddNumber(double val, object parent, long lineNumber);
+        object AddNull(object parent, long lineNumber);
     }
     
     /****************************************************************************/
@@ -43,7 +43,7 @@ namespace JTran.Json
         #region Properties
 
         /****************************************************************************/
-        public object AddObject(string name, object? parent, object? _)
+        public object AddObject(string name, object? parent, object? _, long lineNumber)
         {
             var newObj = new ExpandoObject();
 
@@ -55,7 +55,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddArray(string name, object parent)
+        public object AddArray(string name, object parent, long lineNumber)
         {
             var newArr = new List<object>();
 
@@ -66,7 +66,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddText(string name, string val, object parent, object? previous)      
+        public object AddText(string name, string val, object parent, object? previous, long lineNumber)      
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -75,7 +75,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddBoolean(string name, bool val, object parent, object? previous)     
+        public object AddBoolean(string name, bool val, object parent, object? previous, long lineNumber)     
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -84,7 +84,7 @@ namespace JTran.Json
         }
         
         /****************************************************************************/
-        public object AddNumber(string name, double val, object parent, object? previous)    
+        public object AddNumber(string name, double val, object parent, object? previous, long lineNumber)    
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, val);
@@ -93,7 +93,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddNull(string name, object parent, object? previous)                
+        public object AddNull(string name, object parent, object? previous, long lineNumber)                
         { 
             if(parent is ExpandoObject ex)
                 ex.TryAdd(name, null);
@@ -106,7 +106,7 @@ namespace JTran.Json
         #region Array Items
 
         /****************************************************************************/
-        public object AddObject(object? parent)
+        public object AddObject(object? parent, long lineNumber)
         {
             var newObj = new ExpandoObject();
 
@@ -117,7 +117,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddArray(object? parent)
+        public object AddArray(object? parent, long lineNumber)
         {
             var newArr = new List<object>();
 
@@ -128,7 +128,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddText(string val, object parent)      
+        public object AddText(string val, object parent, long lineNumber)      
         { 
             if(parent is IList<object> list)
                 list.Add(val);
@@ -137,7 +137,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddBoolean(bool val, object parent)     
+        public object AddBoolean(bool val, object parent, long lineNumber)     
         { 
             if(parent is IList<object> list)
                 list.Add(val);
@@ -146,7 +146,7 @@ namespace JTran.Json
         }
         
         /****************************************************************************/
-        public object AddNumber(double val, object parent)    
+        public object AddNumber(double val, object parent, long lineNumber)    
         { 
             if(parent is IList<object> list)
                 list.Add(val);
@@ -155,7 +155,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public object AddNull(object parent)                
+        public object AddNull(object parent, long lineNumber)                
         { 
             if(parent is IList<object> list)
                 list.Add(null);

@@ -59,6 +59,7 @@
     <None Remove="Sample Data\Map\emptydata.json" />
     <None Remove="Sample Data\simpleperson.json" />
     <None Remove="Sample Data\sort.json" />
+    <None Remove="Sample Data\Templates\after.json" />
     <None Remove="Test Transforms\Arrays\arrayitem.jtran" />
     <None Remove="Test Transforms\Arrays\array_output.jtran" />
     <None Remove="Test Transforms\Arrays\array_source.jtran" />
@@ -111,9 +112,14 @@
     <None Remove="Test Transforms\iterate.jtran" />
     <None Remove="Test Transforms\iterate_output.jtran" />
     <None Remove="Test Transforms\Joins\innerjoin.jtran" />
+    <None Remove="Test Transforms\Joins\innerjoin2.jtran" />
+    <None Remove="Test Transforms\Joins\outerjoin.jtran" />
     <None Remove="Test Transforms\JTranFunctions\after.jtran" />
     <None Remove="Test Transforms\JTranFunctions\nested.jtran" />
     <None Remove="Test Transforms\Map\map5.jtran" />
+    <None Remove="Test Transforms\Templates\after.jtran" />
+    <None Remove="Test Transforms\Templates\after2.jtran" />
+    <None Remove="Test Transforms\Templates\aselement.jtran" />
     <None Remove="Test Transforms\Variables\variable.jtran" />
     <None Remove="Test Transforms\Map\map.jtran" />
     <None Remove="Test Transforms\Map\map2.jtran" />
@@ -172,6 +178,7 @@
     <EmbeddedResource Include="Sample Data\Include\include.json" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
     <EmbeddedResource Include="Sample Data\Map\address.json" />
+    <EmbeddedResource Include="Sample Data\Templates\after.json" />
     <EmbeddedResource Include="Test Transforms\Arrays\arrayitem.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
@@ -204,8 +211,9 @@
     <EmbeddedResource Include="Test Transforms\Include\include.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\otherfile.jtran" />
     <EmbeddedResource Include="Test Transforms\iterate_output.jtran" />
+    <EmbeddedResource Include="Test Transforms\Joins\outerjoin.jtran" />
     <EmbeddedResource Include="Test Transforms\Joins\innerjoin.jtran" />
-    <EmbeddedResource Include="Test Transforms\JTranFunctions\after2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Joins\innerjoin2.jtran" />
     <EmbeddedResource Include="Sample Data\JTranFunctions\after.json" />
     <EmbeddedResource Include="Sample Data\Map\emptydata.json" />
     <EmbeddedResource Include="Sample Data\Map\addresses.json" />
@@ -234,6 +242,9 @@
     <EmbeddedResource Include="Test Transforms\ForEach\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\JTranFunctions\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map5.jtran" />
+    <EmbeddedResource Include="Test Transforms\Templates\after.jtran" />
+    <EmbeddedResource Include="Test Transforms\Templates\aselement.jtran" />
+    <EmbeddedResource Include="Test Transforms\Templates\after2.jtran" />
     <EmbeddedResource Include="Test Transforms\Variables\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map3.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map2.jtran" />

@@ -16,10 +16,10 @@ namespace JTran
         private readonly TToken _property;
 
         /****************************************************************************/
-        internal TIncludeExclude(string? name, string val, bool include) 
+        internal TIncludeExclude(string? name, string val, bool include, long lineNumber) 
         {
-            _name = name == null || name == "#noobject" ? null : CreateValue(name, true);
-            _property = new TIncludeExcludeProperty(val, include);
+            _name = name == null || name == "#noobject" ? null : CreateValue(name, true, 0);
+            _property = new TIncludeExcludeProperty(val, include, lineNumber);
         }
 
         /****************************************************************************/

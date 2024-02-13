@@ -51,15 +51,15 @@ namespace JTran
     /****************************************************************************/
     internal class TMapItem : TProperty, IPropertyCondition
     {
-        private readonly IExpression _expression;
+        private readonly IExpression? _expression;
 
         /****************************************************************************/
-        internal TMapItem(string name, object val) : this(name, val, "#mapitem") 
+        internal TMapItem(string name, object val, long lineNumber) : this(name, val, "#mapitem", lineNumber) 
         {
         }
 
         /****************************************************************************/
-        internal protected TMapItem(string name, object val, string elementName) : base(name, val)  
+        internal protected TMapItem(string name, object val, string elementName, long lineNumber) : base(name, val, lineNumber)  
         {
             name = name.Substring(elementName.Length);
 

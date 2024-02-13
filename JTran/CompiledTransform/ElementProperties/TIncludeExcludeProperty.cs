@@ -17,7 +17,7 @@ namespace JTran
         private readonly bool _include;
 
         /****************************************************************************/
-        internal TIncludeExcludeProperty(string val, bool include) 
+        internal TIncludeExcludeProperty(string val, bool include, long lineNumber) 
         {
             var name  = include ? "include" : "exclude";
             var parms = CompiledTransform.ParseElementParams(name, val, CompiledTransform.FalseTrue);
@@ -25,7 +25,7 @@ namespace JTran
             _include = include;
 
             if(parms.Count == 0)
-                throw new Transformer.SyntaxException($"Missing expression for #{name}");
+                throw new Transformer.SyntaxException($"Missing expression for #{name}") { LineNumber = lineNumber};
 
             _expression = parms[0];
             _properties = parms.Skip(1).Select( s=> s.ToString()).ToDictionary( k=> k, v=> v);

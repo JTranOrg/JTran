@@ -58,6 +58,17 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        public static string SubstringAfter(this string str, string part)
+        {            
+            var index = str.IndexOf(part);
+
+            if(index == -1)
+                return str;
+
+            return str.Substring(index + part.Length);
+        }
+
+        /****************************************************************************/
         public static bool TryParseDateTime(this string sdate, out DateTime dtValue)
         {
             dtValue = DateTime.MinValue;

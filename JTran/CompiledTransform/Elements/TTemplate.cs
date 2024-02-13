@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
+using JTran.Expressions;
 using JTran.Extensions;
 using JTran.Json;
 
@@ -70,7 +71,48 @@ namespace JTran
                 newContext.SetVariable(paramName, (jsonParams as IDictionary<string, object>)[paramName].ToString());
 
             template.Evaluate(output, newContext, wrap);
-        }    
+        }
     }
 
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class TCallTemplateProperty : IValue
+    {
+        private readonly string _templateName;
+        private readonly IList<IExpression> _parms;
+        private readonly long _lineNumber;
+
+        /****************************************************************************/
+        internal TCallTemplateProperty(string name, long lineNumber) 
+        {
+            var parms = CompiledTransform.ParseElementParams("calltemplate", name, CompiledTransform.TrueFalse);
+
+            _parms        = parms.Skip(1).ToList();
+            _templateName = parms[0].Evaluate(new ExpressionContext(null)).ToString();
+            _lineNumber   = lineNumber;
+        }
+
+        /****************************************************************************/
+        public object Evaluate(ExpressionContext context)
+        {
+            var template = context.GetTemplate(_templateName);
+
+            if(template == null)
+                throw new Transformer.SyntaxException($"An element or template with that name was not found: {_templateName}") { LineNumber = _lineNumber};
+
+            var numParms = template.Parameters.Count;
+            var newContext = new ExpressionContext(context.Data, context);
+
+            for(var i = 0; i < numParms; ++i)
+                newContext.SetVariable(template.Parameters[i], _parms[i].Evaluate(context));
+
+            var output = new JsonStringWriter();
+
+            output.StartObject();
+            template.Evaluate(output, newContext, (f)=> f());
+            output.EndObject();
+
+            return output.ToString().JTranToExpando();
+        }
+    }
 }

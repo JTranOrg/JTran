@@ -18,7 +18,7 @@ namespace JTran
         private ExpressionContext? _context;
 
         /****************************************************************************/
-        internal TVariable(string name, object val) : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val)
+        internal TVariable(string name, object val, long lineNumber) : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
         {
         }
 
@@ -127,9 +127,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        protected override TToken CreatePropertyToken(string name, object val, object? previous)
+        protected override TToken CreatePropertyToken(string name, object val, object? previous, long lineNumber)
         {
-            return new TSimpleArrayItem(val);
+            return new TSimpleArrayItem(val, lineNumber);
         }
     }
 }

@@ -1,8 +1,5 @@
 {
-    "#calltemplate(DisplayName)":
-    {
-        "name": "bob"
-    },
+    "customer":  "#calltemplate(DisplayName, 'bob')",
 
     "#template(DisplayName, name)": 
     {

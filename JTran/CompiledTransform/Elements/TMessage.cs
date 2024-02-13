@@ -29,9 +29,9 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TMessage(object val)
+        internal TMessage(object val, long lineNumber)
         {
-            _message = CreateValue(val, true);
+            _message = CreateValue(val, true, lineNumber);
         }
 
         /****************************************************************************/

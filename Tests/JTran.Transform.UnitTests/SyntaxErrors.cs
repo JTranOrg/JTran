@@ -9,7 +9,7 @@ namespace JTran.Transform.UnitTests
     public class SyntaxErrorTests
     {
         [TestMethod]
-        [DataRow("variable2", "customers", "Unknown element", 4)]
+        [DataRow("variable2", "customers", "An element or template with that name was not found", 4)]
         [DataRow("foreach2", "customers3", "Missing expression for #foreach", 2)]
         [DataRow("includenotfound", "customers3", "#include: file not found", 2)]
         public async Task SyntaxErrorTests_throw(string transform, string data, string msg, long lineNumber)

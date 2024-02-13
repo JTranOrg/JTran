@@ -9,9 +9,9 @@ namespace JTran
     internal class TObject : TContainer
     {
         /****************************************************************************/
-        internal TObject(string name)
+        internal TObject(string name, long lineNumber)
         {
-            this.Name = CreateValue(name, true);
+            this.Name = CreateValue(name, true, lineNumber);
         }
 
         internal IValue Name  { get; set; }

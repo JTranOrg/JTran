@@ -70,7 +70,7 @@ namespace JTran
         { 
            name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
 
-           this.Name = CreateValue(name, true);
+           this.Name = CreateValue(name, true, 0);
         }
 
         /****************************************************************************/
@@ -96,7 +96,7 @@ namespace JTran
     internal class TArrayItem : TObject
     {
         /****************************************************************************/
-        internal TArrayItem(string name) : base(name)
+        internal TArrayItem(string name, long lineNumber) : base(name, lineNumber)
         {
         }
     }

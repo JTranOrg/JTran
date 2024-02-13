@@ -17,15 +17,6 @@ namespace JTran.Transform.UnitTests
         }
 
         [TestMethod]
-        [DataRow("after2", "after")]
-        public async Task Functions_after2(string transform, string data)
-        {
-            var result = await Test(transform, data);
-
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
-        }
-
-        [TestMethod]
         [DataRow("nested", "nested")]
         public async Task Functions_nested(string transform, string data)
         {

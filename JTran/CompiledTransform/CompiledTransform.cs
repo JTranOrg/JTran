@@ -46,6 +46,7 @@ namespace JTran
         internal static IReadOnlyList<bool> SingleFalse { get; } = new List<bool>() { false };
         internal static IReadOnlyList<bool> SingleTrue  { get; } = new List<bool>() { true };
         internal static IReadOnlyList<bool> FalseTrue   { get; } = new List<bool>() { false, true };
+        internal static IReadOnlyList<bool> TrueFalse   { get; } = new List<bool>() { true, false};
 
         private bool _outputArray = false;
 
@@ -115,9 +116,9 @@ namespace JTran
             return;
         }
 
-        internal override TToken CreateObject(string name, object? previous)
+        internal override TToken CreateObject(string name, object? previous, long lineNumber)
         {
-            var result = base.CreateObject(name, previous);
+            var result = base.CreateObject(name, previous, lineNumber);
 
             if(result is TBaseArray array && array.IsOutputArray)
                 _outputArray = true;

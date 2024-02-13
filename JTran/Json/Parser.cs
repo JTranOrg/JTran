@@ -90,7 +90,7 @@ namespace JTran.Json
 
         private object BeginObject(string? name, object parent, object? previous) 
         {
-            var ex = name == null ? _modelBuilder.AddObject(parent) : _modelBuilder.AddObject(name, parent, previous);
+            var ex = name == null ? _modelBuilder.AddObject(parent, _lineNumber) : _modelBuilder.AddObject(name, parent, previous, _lineNumber);
             var previousTokenType = JsonToken.TokenType.BeginObject;
             object? runningPrevious = null;
 
@@ -128,7 +128,7 @@ namespace JTran.Json
 
         private object BeginArray(string? name, object parent) 
         {
-            var array = name == null ? _modelBuilder.AddArray(parent) : _modelBuilder.AddArray(name, parent);
+            var array = name == null ? _modelBuilder.AddArray(parent, _lineNumber) : _modelBuilder.AddArray(name, parent, _lineNumber);
 
             while(true)
             {
@@ -157,10 +157,10 @@ namespace JTran.Json
                         continue;
                     }
 
-                    case JsonToken.TokenType.Number:    _modelBuilder.AddNumber(double.Parse(token.Value.ToString()), array); continue;
-                    case JsonToken.TokenType.Null:      _modelBuilder.AddNull(array);                                         continue;
-                    case JsonToken.TokenType.Boolean:   _modelBuilder.AddBoolean(token.Value.ToString() == "true", array);    continue;
-                    case JsonToken.TokenType.Text:      _modelBuilder.AddText(token.Value.ToString(), array);                 continue;
+                    case JsonToken.TokenType.Number:    _modelBuilder.AddNumber(double.Parse(token.Value.ToString()), array, _lineNumber); continue;
+                    case JsonToken.TokenType.Null:      _modelBuilder.AddNull(array, _lineNumber);                                         continue;
+                    case JsonToken.TokenType.Boolean:   _modelBuilder.AddBoolean(token.Value.ToString() == "true", array, _lineNumber);    continue;
+                    case JsonToken.TokenType.Text:      _modelBuilder.AddText(token.Value.ToString(), array, _lineNumber);                 continue;
 
                     default:
                         throw new JsonParseException($"Unexpected token: {token.Value}", _lineNumber);
@@ -182,10 +182,10 @@ namespace JTran.Json
 
                 switch(token.Type)
                 {
-                    case JsonToken.TokenType.Text:        return _modelBuilder.AddText(name, token.Value.ToString(), parent, previous);      
-                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, double.Parse(token.Value.ToString()), parent, previous);       
-                    case JsonToken.TokenType.Boolean:     return _modelBuilder.AddBoolean(name, token.Value.ToString() == "true", parent, previous);       
-                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent, previous);       
+                    case JsonToken.TokenType.Text:        return _modelBuilder.AddText(name, token.Value.ToString(), parent, previous, _lineNumber);      
+                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, double.Parse(token.Value.ToString()), parent, previous, _lineNumber);       
+                    case JsonToken.TokenType.Boolean:     return _modelBuilder.AddBoolean(name, token.Value.ToString() == "true", parent, previous, _lineNumber);       
+                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent, previous, _lineNumber);       
                     case JsonToken.TokenType.BeginObject: return BeginObject(name, parent, previous);
                     case JsonToken.TokenType.BeginArray:  return BeginArray(name, parent);
 

@@ -1,0 +1,16 @@
+{
+    "customer": 
+    {
+        "#calltemplate(DisplayName)":
+        {
+            "name": "bob",
+            "year": 1965
+        }
+    },
+
+    "#template(DisplayName, name, year)": 
+    {
+        "FirstName":  "#($name)",
+        "Year":       "#($year)"
+    }
+}

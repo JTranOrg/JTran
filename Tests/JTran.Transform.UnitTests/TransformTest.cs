@@ -57,7 +57,8 @@ namespace JTran.Transform.UnitTests
         internal static Task<string> LoadTransform(string name)
         {
             var files = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.Transform.UnitTests.Test_Transforms.{name}.jtran");
+            var path = $"JTran.Transform.UnitTests.Test_Transforms.{name}.jtran";
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
             
             if(stream == null)
                 throw new FileNotFoundException(name);

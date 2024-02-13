@@ -13,13 +13,13 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TThrow(string name, object val)
+        internal TThrow(string name, object val, long lineNumber)
         {
             var parms = CompiledTransform.ParseElementParams("throw", name, CompiledTransform.FalseTrue );
 
             _code = parms.Any() ? parms[0] : null;
 
-            _message = CreateValue(val, true); // It's not a name per se but we want it to evaluate to a simple string nevertheless
+            _message = CreateValue(val, true, lineNumber); // It's not a name per se but we want it to evaluate to a simple string nevertheless
         }
 
         /****************************************************************************/

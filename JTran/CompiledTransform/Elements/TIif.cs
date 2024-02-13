@@ -18,9 +18,9 @@ namespace JTran
         private readonly IExpression _else;
 
         /****************************************************************************/
-        internal TIif(string name, string val) 
+        internal TIif(string name, string val, long lineNumber) 
         {
-            _name = name == null ? null : CreateValue(name, true);
+            _name = name == null ? null : CreateValue(name, true, lineNumber);
 
             var parms = CompiledTransform.ParseElementParams("iif", val, CompiledTransform.SingleFalse );
 

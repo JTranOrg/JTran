@@ -56,7 +56,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateObject(string name, object? previous)
+        internal virtual TToken CreateObject(string name, object? previous, long lineNumber)
         {
             TToken? result = null;
             
@@ -91,7 +91,7 @@ namespace JTran
                 result = new TIterate(name);
 
             else if(name.StartsWith("#arrayitem"))
-                result = new TArrayItem(name);
+                result = new TArrayItem(name, lineNumber);
 
             else if(name.StartsWith("#array"))
                 result = new TArray(name);
@@ -135,7 +135,7 @@ namespace JTran
             }
 
             else
-                result = new TObject(name);
+                result = new TObject(name, lineNumber);
 
             if(result != null)
             { 
@@ -147,14 +147,14 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateArray(string? name)
+        internal virtual TToken CreateArray(string? name, long lineNumber)
         {
             TToken? result;
 
             if(name?.StartsWith("#variable") ?? false)
                 result = new TVariableArray(name);
             else 
-                result = new TExplicitArray(name);
+                result = new TExplicitArray(name, lineNumber);
 
             this.Children.Add(result);
 
@@ -162,9 +162,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateProperty(string name, object? val, object? previous)
+        internal virtual TToken CreateProperty(string name, object? val, object? previous, long lineNumber)
         {
-            var result = CreatePropertyToken(name, val, previous);
+            var result = CreatePropertyToken(name, val, previous, lineNumber);
 
             if(result != null)
             { 
@@ -176,7 +176,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        protected virtual TToken CreatePropertyToken(string name, object child, object? previous)
+        protected virtual TToken CreatePropertyToken(string name, object child, object? previous, long lineNumber)
         {   
             if(!string.IsNullOrEmpty(name)) 
             { 
@@ -191,34 +191,34 @@ namespace JTran
                     return new TBreak();
 
                 if(name.StartsWith("#variable"))
-                    return new TVariable(name, child);
+                    return new TVariable(name, child, lineNumber);
 
                 if(name.StartsWith("#message"))
-                    return new TMessage(child);
+                    return new TMessage(child, lineNumber);
 
                 if(name.StartsWith("#throw"))
-                    return new TThrow(name, child);
+                    return new TThrow(name, child, lineNumber);
 
                 var sval = child.ToString();
 
                 if(name.StartsWith("#mapitem"))
                 {                
                     if(this is TMap && (previous is TMapItem || previous == null))
-                        return new TMapItem(name, child);
+                        return new TMapItem(name, child, lineNumber);
 
                     throw new Transformer.SyntaxException("#mapitem must be a child of #map");
                 }
 
                 if(name.StartsWith("#arrayitem"))
-                    return new TSimpleArrayItem(child);
+                    return new TSimpleArrayItem(child, lineNumber);
 
                 if(name.StartsWith("#if"))
-                    return new TPropertyIf(name, child);
+                    return new TPropertyIf(name, child, lineNumber);
 
                 if(name.StartsWith("#elseif"))
                 { 
                     if(previous is TPropertyIf || previous is TElseIf)
-                        return new TPropertyElseIf(name, child);
+                        return new TPropertyElseIf(name, child, lineNumber);
 
                     throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
                 }
@@ -226,7 +226,7 @@ namespace JTran
                 if(name.StartsWith("#else"))
                 { 
                     if(previous is TPropertyIf || previous is TPropertyElseIf)
-                        return new TPropertyElse(name, child);
+                        return new TPropertyElse(name, child, lineNumber);
 
                     throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
                 }   
@@ -235,32 +235,18 @@ namespace JTran
                     return new TCopyOf(name, sval);
  
                 if(sval.StartsWith("#include"))
-                    return new TIncludeExclude(name, sval, true);
+                    return new TIncludeExclude(name, sval, true, lineNumber);
 
                 if(sval.StartsWith("#exclude"))
-                    return new TIncludeExclude(name, sval, false);
+                    return new TIncludeExclude(name, sval, false, lineNumber);
 
                 if(sval.StartsWith("#iif"))
                 { 
-                    return new TIif(name, sval);
-                }
-
-                if(name.StartsWith("#") && !name.StartsWith("#("))
-                { 
-                    name = name.SubstringBefore("(").Trim();
-
-                    throw new Transformer.SyntaxException($"Unknown element name: {name}");
-                }
-
-                if(sval.StartsWith("#") && !sval.StartsWith("#("))
-                { 
-                    sval = sval.SubstringBefore("(").Trim();
-
-                    throw new Transformer.SyntaxException($"Unknown element name: {sval}");
+                    return new TIif(name, sval, lineNumber);
                 }
             }
 
-            return new TProperty(name, child);
+            return new TProperty(name, child, lineNumber);
        }
     }
 }

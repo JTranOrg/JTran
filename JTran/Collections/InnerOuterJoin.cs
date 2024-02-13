@@ -21,26 +21,27 @@ using JTran.Expressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
 
 namespace JTran.Collections
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class InnerJoin : IEnumerable<object>
+    internal class InnerOuterJoin : IEnumerable<object>
     {
         private readonly object _left;
         private readonly object _right;
         private readonly IExpression _expression;
         private readonly ExpressionContext _context;
+        private readonly bool _inner;
 
         /****************************************************************************/
-        internal InnerJoin(object left, object right, IExpression expression, ExpressionContext context) 
+        internal InnerOuterJoin(object left, object right, IExpression expression, ExpressionContext context, bool inner) 
         {
             _left       = left;
             _right      = right;
             _expression = expression;
             _context    = context;
+            _inner      = inner;
         }
 
         #region IEnumerable
@@ -48,13 +49,13 @@ namespace JTran.Collections
         /****************************************************************************/
         public IEnumerator<object> GetEnumerator()
         {
-            return new Enumerator(_left, _right, _expression, _context);
+            return new Enumerator(_left, _right, _expression, _context, _inner);
         }
 
         /****************************************************************************/
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new Enumerator(_left, _right, _expression, _context);
+            return new Enumerator(_left, _right, _expression, _context, _inner);
         }
 
         #endregion
@@ -70,12 +71,14 @@ namespace JTran.Collections
             private readonly IEnumerator<object> _rightEnum;
 
             private object? _current;
+            private readonly bool _inner;
 
             /****************************************************************************/
-            internal Enumerator(object left, object right, IExpression expression, ExpressionContext context) 
+            internal Enumerator(object left, object right, IExpression expression, ExpressionContext context, bool inner) 
             {
                 _expression = expression;
                 _context    = context;
+                _inner      = inner;
 
                 if(left is IEnumerable<object> leftEnum)
                     _leftEnum = leftEnum.GetEnumerator();
@@ -128,6 +131,21 @@ namespace JTran.Collections
                             _current = eval;
                             return true;
                         }
+                    }
+
+                    // If it's an outer join add the left without a right
+                    if(!_inner)
+                    {
+                        IDictionary<string, object> dict = eval;
+
+                        if(!eval.TryAdd("left", _leftEnum.Current))
+                            dict["left"] = _leftEnum.Current;
+
+                        if(!eval.TryAdd("right", null))
+                            dict["right"] = null;
+
+                        _current = eval;
+                        return true;
                     }
                 }
 

@@ -19,47 +19,67 @@ namespace JTran.Transform.UnitTests
 
             Assert.AreEqual(3, drivers!.Count);
 
-            var driver = drivers[0] as JObject;
-            var left   = driver!["left"] as JObject;
-            var right  = driver["right"] as JObject;
+            AssertDriver(drivers[0], "Linda", "Martinez", "Seattle, WA",     "Chevy",   "Camaro",   1969);
+            AssertDriver(drivers[1], "Bob",   "Yumigata", "Los Angeles, CA", "Audi",    "RS5",      2024);
+            AssertDriver(drivers[2], "Frank", "Anderson", "Casper, WY",      "Pontiac", "Firebird", 1970);
+        }   
+        
+        [TestMethod]
+        [DataRow("innerjoin2", "customers")]
+        public async Task InnerJoin_success2(string transform, string data)
+        {
+            var result = await TransformerTest.Test("Joins." + transform, data);
 
-            Assert.IsNotNull(driver);
+            var drivers = JArray.Parse(result);
 
-            Assert.AreEqual("Chevy",          right!["Make"]);
-            Assert.AreEqual("Camaro",         right!["Model"]);
-            Assert.AreEqual(1969,             right!["Year"]);
-                    
-            Assert.AreEqual("Linda",          left!["FirstName"]);
-            Assert.AreEqual("Martinez",       left!["LastName"]);
-            Assert.AreEqual("Seattle, WA",    left!["From"]);
+            Assert.AreEqual(5, drivers!.Count);
 
-            driver = drivers[1] as JObject;
-            left   = driver!["left"] as JObject;
-            right  = driver["right"] as JObject;
+            AssertDriver(drivers[0], "Linda",  "Martinez", "Seattle, WA",     "Chevy",   "Camaro",   1969);
+            AssertDriver(drivers[1], "Bob",    "Yumigata", "Los Angeles, CA", "Audi",    "RS5",      2024);
+            AssertDriver(drivers[2], "Frank",  "Anderson", "Casper, WY",      "Pontiac", "Firebird", 1970);
+            AssertDriver(drivers[3], "John",   "Li",       "Chicago, IL",     "Chevy",   "Camaro",   1969);
+            AssertDriver(drivers[4], "Greg",   "House",    "Princeton, NJ",   "Pontiac", "Firebird", 1970);
+        }   
+        
+        [TestMethod]
+        [DataRow("outerjoin", "customers")]
+        public async Task OuterJoin_success(string transform, string data)
+        {
+            var result = await TransformerTest.Test("Joins." + transform, data);
 
-            Assert.IsNotNull(driver);
+            var drivers = JArray.Parse(result);
 
-            Assert.AreEqual("Audi",            right!["Make"]);
-            Assert.AreEqual("RS5",              right!["Model"]);
-            Assert.AreEqual(2024,               right!["Year"]);
-                    
-            Assert.AreEqual("Bob",              left!["FirstName"]);
-            Assert.AreEqual("Yumigata",         left!["LastName"]);
-            Assert.AreEqual("Los Angeles, CA",  left!["From"]);
+            Assert.AreEqual(4, drivers!.Count);
 
-            driver = drivers[2] as JObject;
-            left   = driver!["left"] as JObject;
-            right  = driver["right"] as JObject;
+            AssertDriver(drivers[0], "Linda", "Martinez", "Seattle, WA",     "Chevy",   "Camaro",   1969);
+            AssertDriver(drivers[1], "Bob",   "Yumigata", "Los Angeles, CA", "Audi",    "RS5",      2024);
+            AssertDriver(drivers[2], "Bob",   "Newhart",  "Hollywood, CA",   null,      null,       null);
+            AssertDriver(drivers[3], "Frank", "Anderson", "Casper, WY",      "Pontiac", "Firebird", 1970);
+        }   
+        
+        private void AssertDriver(object result, string firstName, string lastName, string from, string? make, string? model, int? year)
+        {       
+            var left  = (result as JObject)!["left"] as JObject;
+            var right = (result as JObject)!["right"] as JObject;
 
-            Assert.IsNotNull(driver);
+            Assert.IsNotNull(left);
 
-            Assert.AreEqual("Pontiac",            right!["Make"]);
-            Assert.AreEqual("Firebird",           right!["Model"]);
-            Assert.AreEqual(1970,                 right!["Year"]);
-                    
-            Assert.AreEqual("Frank",              left!["FirstName"]);
-            Assert.AreEqual("Anderson",           left!["LastName"]);
-            Assert.AreEqual("Casper, WY",         left!["From"]);
-        }                                         
+            Assert.AreEqual(firstName, left["FirstName"]);
+            Assert.AreEqual(lastName,  left["LastName"]);
+            Assert.AreEqual(from,      left["From"]);
+
+            if(make == null)
+            {
+                Assert.IsTrue(string.IsNullOrEmpty(right?["Make"]?.ToString()));
+                Assert.IsTrue(string.IsNullOrEmpty(right?["Model"]?.ToString()));
+                Assert.IsNull(right?["Year"]);
+            }
+            else
+            { 
+                Assert.AreEqual(make,      right?["Make"]);
+                Assert.AreEqual(model,     right?["Model"]);
+                Assert.AreEqual(year,      right?["Year"]);
+            }
+        }
     }
 }

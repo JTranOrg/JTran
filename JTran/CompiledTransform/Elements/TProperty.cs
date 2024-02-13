@@ -9,10 +9,10 @@ namespace JTran
     internal class TProperty : TToken
     {
         /****************************************************************************/
-        internal TProperty(string name, object val)
+        internal TProperty(string name, object val, long lineNumber)
         {
-            this.Name  = CreateValue(name, true);
-            this.Value = CreateValue(val, false);
+            this.Name  = CreateValue(name, true, lineNumber);
+            this.Value = CreateValue(val, false, lineNumber);
         }
 
         internal IValue Name  { get; set; }
@@ -35,7 +35,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TPropertyIf(string name, object val) : this(name, val, "#if(") 
+        internal TPropertyIf(string name, object val, long lineNumber) : this(name, val, "#if(", lineNumber) 
         {
         }
 
@@ -43,7 +43,7 @@ namespace JTran
         public bool   If             { get; set; } = false;
 
         /****************************************************************************/
-        internal protected TPropertyIf(string name, object val, string elementName) : base(name, val) 
+        internal protected TPropertyIf(string name, object val, string elementName, long lineNumber) : base(name, val, lineNumber) 
         {
             name = name.Substring(elementName.Length);
 
@@ -71,7 +71,7 @@ namespace JTran
     internal class TPropertyElseIf : TPropertyIf
     {
         /****************************************************************************/
-        internal TPropertyElseIf(string name, object val) : base(name, val, "#elseif(")
+        internal TPropertyElseIf(string name, object val, long lineNumber) : base(name, val, "#elseif(", lineNumber)
         {
         }
 
@@ -90,7 +90,7 @@ namespace JTran
     internal class TPropertyElse : TProperty, IPropertyCondition
     {
         /****************************************************************************/
-        internal TPropertyElse(string name, object val)  : base(name, val)
+        internal TPropertyElse(string name, object val, long lineNumber)  : base(name, val, lineNumber)
         {
         }
 

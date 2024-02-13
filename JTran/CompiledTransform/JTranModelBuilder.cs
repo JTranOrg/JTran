@@ -46,7 +46,7 @@ namespace JTran
         #region Properties
 
         /****************************************************************************/
-        public object AddObject(string name, object? parent, object? previous)
+        public object AddObject(string name, object? parent, object? previous, long lineNumber)
         {
             if(parent == null)
             { 
@@ -58,13 +58,13 @@ namespace JTran
             }
 
             if(parent is TContainer container)
-                return container.CreateObject(name, previous);
+                return container.CreateObject(name, previous, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddArray(string name, object parent)
+        public object AddArray(string name, object parent, long lineNumber)
         {
             if(parent == null)
             { 
@@ -76,43 +76,43 @@ namespace JTran
             }
 
             if(parent is TContainer container)
-                return container.CreateArray(name);
+                return container.CreateArray(name, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddText(string name, string val, object parent, object? previous)      
+        public object AddText(string name, string val, object parent, object? previous, long lineNumber)      
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val, previous);
+                return container.CreateProperty(name, val, previous, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddBoolean(string name, bool val, object parent, object? previous)     
+        public object AddBoolean(string name, bool val, object parent, object? previous, long lineNumber)     
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val, previous);
+                return container.CreateProperty(name, val, previous, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
         
         /****************************************************************************/
-        public object AddNumber(string name, double val, object parent, object? previous)    
+        public object AddNumber(string name, double val, object parent, object? previous, long lineNumber)    
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(name, val, previous);
+                return container.CreateProperty(name, val, previous, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddNull(string name, object parent, object? previous)                
+        public object AddNull(string name, object parent, object? previous, long lineNumber)                
         {
             if(parent is TContainer container)
-                return container.CreateProperty(name, null, previous);
+                return container.CreateProperty(name, null, previous, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
@@ -122,55 +122,55 @@ namespace JTran
         #region Array Items
 
         /****************************************************************************/
-        public object AddObject(object? parent)
+        public object AddObject(object? parent, long lineNumber)
         {
             if(parent is TContainer container)
-                return container.CreateObject(null, null);
+                return container.CreateObject(null, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddArray(object? parent)
+        public object AddArray(object? parent, long lineNumber)
         {
             if(parent is TContainer container)
-                return container.CreateArray(null);
+                return container.CreateArray(null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddText(string val, object parent)      
+        public object AddText(string val, object parent, long lineNumber)      
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(null, val, null);
+                return container.CreateProperty(null, val, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddBoolean(bool val, object parent)     
+        public object AddBoolean(bool val, object parent, long lineNumber)     
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(null, val, null);
+                return container.CreateProperty(null, val, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
         
         /****************************************************************************/
-        public object AddNumber(double val, object parent)    
+        public object AddNumber(double val, object parent, long lineNumber)    
         { 
             if(parent is TContainer container)
-                return container.CreateProperty(null, val, null);
+                return container.CreateProperty(null, val, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }
 
         /****************************************************************************/
-        public object AddNull(object parent)                
+        public object AddNull(object parent, long lineNumber)                
         { 
             if(parent is TContainer container)
-                return container.CreateProperty("", null, null);
+                return container.CreateProperty("", null, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }

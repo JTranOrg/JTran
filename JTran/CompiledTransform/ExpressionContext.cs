@@ -42,7 +42,7 @@ namespace JTran
         private readonly ExpressionContext?                        _parent;
 
         /*****************************************************************************/
-        internal ExpressionContext(object                          data, 
+        internal ExpressionContext(object?                         data, 
                                    string                          name = "", 
                                    TransformerContext?             transformerContext = null, 
                                    ExtensionFunctions?             extensionFunctions = null,
@@ -82,7 +82,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object                           Data               { get; set; }
+        internal object?                          Data               { get; set; }
         internal string                           Name               { get; }
         internal bool                             PreviousCondition  { get; set; }
         internal ExtensionFunctions?              ExtensionFunctions { get; }
