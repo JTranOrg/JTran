@@ -10,6 +10,7 @@ using JTranParser = JTran.Parser.ExpressionParser;
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 
 namespace JTran.UnitTests
 {
@@ -749,9 +750,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result.Make);
+            Assert.AreEqual("Dodge", result!["Make"]);
         }
 
         [TestMethod]
@@ -765,9 +766,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result.Make);
+            Assert.AreEqual("Dodge", result!["Make"]);
         }
 
         [TestMethod]
@@ -797,9 +798,8 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            var result = expression.Evaluate(context);
-            dynamic dyn = result;
-            decimal amount = decimal.Parse(dyn.Amount.ToString());
+            var result = expression.Evaluate(context) as JsonObject;
+            decimal amount = decimal.Parse(result["Amount"].ToString());
 
             Assert.AreEqual(120M, amount);
         }
@@ -815,18 +815,18 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            var result = (expression.Evaluate(context) as IEnumerable<object>).ToList();
+            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
 
             Assert.IsNotNull(result);
-            dynamic firstTicket = result[0];
-            dynamic firstAmount = firstTicket.Amount;
-            decimal dFirstAmount = decimal.Parse(firstAmount.ToString());
-            dynamic secondTicket = result[1];
-            dynamic secondAmount = secondTicket.Amount;
-            decimal dSecondAmount = decimal.Parse(secondAmount.ToString());
+            var firstTicket     = result[0] as JsonObject;
+            var firstAmount     = firstTicket!["Amount"]!;
+            var dFirstAmount    = double.Parse(firstAmount!.ToString());
+            var secondTicket    = result[1] as JsonObject;
+            var secondAmount    = secondTicket!["Amount"]!;
+            var dSecondAmount   = double.Parse(secondAmount!.ToString());
 
-            Assert.AreEqual(180M, dFirstAmount);
-            Assert.AreEqual(400M, dSecondAmount);
+            Assert.AreEqual(180d, dFirstAmount);
+            Assert.AreEqual(400d, dSecondAmount);
         }
 
         #endregion
@@ -1411,7 +1411,7 @@ namespace JTran.UnitTests
 
         private static object CreateTestData(object obj)
         {
-            return JObject.FromObject(obj).ToString().JsonToExpando();
+            return JObject.FromObject(obj).ToString().ToJsonObject();
         }
 
         private static bool EvaluateToBool(string sExpr)

@@ -51,14 +51,16 @@ namespace JTran.UnitTests
             Assert.AreEqual("false",                            Test("  false,").Value);
         }
 
-        private JsonToken Test(string text)
+        private (JsonToken.TokenType Type, object? Value) Test(string text)
         {
             using var json = new MemoryStream(UTF8Encoding.Default.GetBytes(text));
             var reader     = new CharacterReader(json);
             var tokenizer  = new JsonTokenizer();
             var lineNumber = 0L;
 
-            return tokenizer.ReadNextToken(reader, ref lineNumber);
+            var type = tokenizer.ReadNextToken(reader, ref lineNumber);
+
+            return(type, tokenizer.TokenValue);
         }
     }
 }

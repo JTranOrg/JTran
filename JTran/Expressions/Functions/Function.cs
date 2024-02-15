@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
@@ -220,7 +219,7 @@ namespace JTran.Expressions
                     parmType = parmType.GenericTypeArguments[0];
                 else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
                 {
-                    if(currentParam is ExpandoObject exParam)
+                    if(currentParam is JsonObject exParam)
                         return exParam.ToObject(parmType);
                 }
 

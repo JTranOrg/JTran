@@ -10,20 +10,20 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using JTran.Collections;
-using JTran.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
+
+using JTran.Collections;
+using JTran.Extensions;
 
 namespace JTran.Expressions
 {
@@ -39,7 +39,7 @@ namespace JTran.Expressions
             if(val is null)
                 return 0;
 
-            if(val is ExpandoObject)
+            if(val is JsonObject)
                 return 1;
 
             if(val is ICollection coll)
@@ -60,7 +60,7 @@ namespace JTran.Expressions
             if(val is null)
                 return false;
 
-            if(val is ExpandoObject)
+            if(val is JsonObject)
                 return true;
 
             if(val is IEnumerable<object> enm)

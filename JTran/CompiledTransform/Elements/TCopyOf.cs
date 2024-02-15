@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 
 using JTran.Expressions;
 
@@ -36,7 +35,7 @@ namespace JTran
             { 
                 if(name != null)
                 { 
-                    if(newScope is ExpandoObject expObject)
+                    if(newScope is JsonObject expObject)
                     { 
                         writer.WriteContainerName(name);
                         writer.WriteItem(expObject);

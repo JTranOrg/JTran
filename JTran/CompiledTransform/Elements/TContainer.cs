@@ -63,79 +63,99 @@ namespace JTran
             if(name == null)
                 name = "";
             
-            if(name.StartsWith("#template"))
-                return AddTemplate(new TTemplate(name));
+            var elementName = name.SubstringBefore("(");
 
-            if(name.StartsWith("#function"))
-                return AddFunction(new TFunction(name));
-
-            if(name.StartsWith("#variable"))
-                result = new TVariableObject(name);
-
-            else if(name.StartsWith("#map("))
-                result = new TMap(name);
-
-            else if(name.StartsWith("#calltemplate"))
-                result = result = new TCallTemplate(name);
-
-            else if(name.StartsWith("#bind"))
-                result = new TBind(name);
-
-            else if(name.StartsWith("#foreachgroup"))
-                result = new TForEachGroup(name);
-
-            else if(name.StartsWith("#foreach"))
-                result = new TForEach(name);
-
-            else if(name.StartsWith("#iterate"))
-                result = new TIterate(name);
-
-            else if(name.StartsWith("#arrayitem"))
-                result = new TArrayItem(name, lineNumber);
-
-            else if(name.StartsWith("#array"))
-                result = new TArray(name);
-
-            else if(name.StartsWith("#try"))
-               result = new TTry();
-
-            else if(name.StartsWith("#catch"))
+            switch(elementName)
             { 
-                if(previous is TTry || previous is TCatch)
-                    result = new TCatch(name);
+                case "#template":
+                    return AddTemplate(new TTemplate(name));
 
-               else
-                    throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
+                case "#function":
+                    return AddFunction(new TFunction(name));
+
+                case "#variable":
+                    result = new TVariableObject(name);
+                    break;
+
+                case "#map":
+                    result = new TMap(name);
+                    break;
+
+                case "#calltemplate":
+                    result = result = new TCallTemplate(name);
+                    break;
+
+                case "#bind":
+                    result = new TBind(name);
+                    break;
+
+                case "#foreachgroup":
+                    result = new TForEachGroup(name);
+                    break;
+
+                case "#foreach":
+                    result = new TForEach(name, lineNumber);
+                    break;
+
+                case "#iterate":
+                    result = new TIterate(name);
+                    break;
+
+                case "#arrayitem":
+                    result = new TArrayItem(name, lineNumber);
+                    break;
+
+                case "#array":
+                    result = new TArray(name);
+                    break;
+
+                case "#try":
+                    result = new TTry();
+                    break;
+
+                case "#catch":
+                { 
+                    if(previous is TTry || previous is TCatch)
+                        result = new TCatch(name);
+                    else
+                        throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
+
+                    break;
+                }
+
+                case "#if":
+                    result = new TIf(name);
+                    break;
+
+                case "#elseif":
+                { 
+                    if(previous is TIf || previous is TElseIf)
+                        result = new TElseIf(name);
+                    else
+                        throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
+
+                    break;
+                }
+
+                case "#else":
+                { 
+                    if(previous is TIf || previous is TElseIf)
+                        result = new TElse(name);
+                    else 
+                        throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+
+                    break;
+                }
+
+                default:
+                { 
+                    if(name.StartsWith("#") && !name.StartsWith("#("))
+                        throw new Transformer.SyntaxException($"Unknown element name: {elementName}");
+
+                    result = new TObject(name, lineNumber);
+                    break;
+                }
             }
-
-            else if(name.StartsWith("#if"))
-                result = new TIf(name);
-
-            else if(name.StartsWith("#elseif"))
-            { 
-                if(previous is TIf || previous is TElseIf)
-                    result = new TElseIf(name);
-                else
-                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
-            }
-
-            else if(name.StartsWith("#else"))
-            { 
-                if(previous is TIf || previous is TElseIf)
-                    result = new TElse(name);
-                else 
-                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
-            }
-
-            else if(name.StartsWith("#") && !name.StartsWith("#("))
-            { 
-                name = name.SubstringBefore("(").Trim();
-
-                throw new Transformer.SyntaxException($"Unknown element name: {name}");
-            }
-
-            else
-                result = new TObject(name, lineNumber);
 
             if(result != null)
             { 
@@ -180,69 +200,79 @@ namespace JTran
         {   
             if(!string.IsNullOrEmpty(name)) 
             { 
-                if(name.StartsWith("#include"))
+                switch(name.SubstringBefore("("))
                 { 
-                    this.CompiledTransform.LoadInclude(child.ToString(), this);
+                    case "#include":
+                    { 
+                        this.CompiledTransform.LoadInclude(child.ToString(), this, lineNumber);
 
-                    return null;
+                        return null;
+                    }
+
+                    case "#break":
+                        return new TBreak();
+
+                    case "#variable":
+                        return new TVariable(name, child, lineNumber);
+
+                    case "#message":
+                        return new TMessage(child, lineNumber);
+
+                    case "#throw":
+                        return new TThrow(name, child, lineNumber);
+
+                    case "#mapitem":
+                    {                
+                        if(this is TMap && (previous is TMapItem || previous == null))
+                            return new TMapItem(name, child, lineNumber);
+
+                        throw new Transformer.SyntaxException("#mapitem must be a child of #map");
+                    }
+
+                    case "#arrayitem":
+                        return new TSimpleArrayItem(child, lineNumber);
+
+                    case "#if":
+                        return new TPropertyIf(name, child, lineNumber);
+
+                    case "#elseif":
+                    { 
+                        if(previous is TPropertyIf || previous is TElseIf)
+                            return new TPropertyElseIf(name, child, lineNumber);
+
+                        throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
+                    }
+
+                    case "#else":
+                    { 
+                        if(previous is TPropertyIf || previous is TPropertyElseIf)
+                            return new TPropertyElse(name, child, lineNumber);
+
+                        throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+                    }   
+
+                    default:
+                        break;
                 }
-
-                if(name.StartsWith("#break"))
-                    return new TBreak();
-
-                if(name.StartsWith("#variable"))
-                    return new TVariable(name, child, lineNumber);
-
-                if(name.StartsWith("#message"))
-                    return new TMessage(child, lineNumber);
-
-                if(name.StartsWith("#throw"))
-                    return new TThrow(name, child, lineNumber);
 
                 var sval = child.ToString();
 
-                if(name.StartsWith("#mapitem"))
-                {                
-                    if(this is TMap && (previous is TMapItem || previous == null))
-                        return new TMapItem(name, child, lineNumber);
-
-                    throw new Transformer.SyntaxException("#mapitem must be a child of #map");
-                }
-
-                if(name.StartsWith("#arrayitem"))
-                    return new TSimpleArrayItem(child, lineNumber);
-
-                if(name.StartsWith("#if"))
-                    return new TPropertyIf(name, child, lineNumber);
-
-                if(name.StartsWith("#elseif"))
+                switch(sval.SubstringBefore("("))
                 { 
-                    if(previous is TPropertyIf || previous is TElseIf)
-                        return new TPropertyElseIf(name, child, lineNumber);
-
-                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
-                }
-
-                if(name.StartsWith("#else"))
-                { 
-                    if(previous is TPropertyIf || previous is TPropertyElseIf)
-                        return new TPropertyElse(name, child, lineNumber);
-
-                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
-                }   
-
-                if(sval.StartsWith("#copyof"))
-                    return new TCopyOf(name, sval);
+                    case "#copyof":
+                        return new TCopyOf(name, sval);
  
-                if(sval.StartsWith("#include"))
-                    return new TIncludeExclude(name, sval, true, lineNumber);
+                    case "#include":
+                        return new TIncludeExclude(name, sval, true, lineNumber);
 
-                if(sval.StartsWith("#exclude"))
-                    return new TIncludeExclude(name, sval, false, lineNumber);
+                    case "#exclude":
+                        return new TIncludeExclude(name, sval, false, lineNumber);
 
-                if(sval.StartsWith("#iif"))
-                { 
-                    return new TIif(name, sval, lineNumber);
+                    case "#iif":
+                        return new TIif(name, sval, lineNumber);
+
+                    default:
+                        break;
                 }
             }
 

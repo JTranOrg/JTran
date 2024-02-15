@@ -240,7 +240,7 @@ namespace JTran.UnitTests
 
         private object CreateTestData(object obj)
         {
-            return JObject.FromObject(obj).ToString().JsonToExpando();
+            return JObject.FromObject(obj).ToString().ToJsonObject();
         }
     }
 }

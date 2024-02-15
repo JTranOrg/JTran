@@ -20,7 +20,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -79,17 +78,17 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal void LoadInclude(string fileName, TContainer? parent = null)
+        internal void LoadInclude(string fileName, TContainer? parent, long lineNumber)
         {
             if(_includeSource == null)
-                throw new Transformer.SyntaxException($"#include: file not found: {fileName}");
+                throw new Transformer.SyntaxException($"#include: file not found: {fileName}") { LineNumber = lineNumber};
 
             fileName = fileName.ToLower();
 
             if(!_loadedIncludes.ContainsKey(fileName))
             {
                 if(!_includeSource.ContainsKey(fileName))   
-                    throw new Transformer.SyntaxException($"#include: file not found: {fileName}");
+                    throw new Transformer.SyntaxException($"#include: file not found: {fileName}") { LineNumber = lineNumber};
 
                 var include = _includeSource[fileName];
 
@@ -103,7 +102,7 @@ namespace JTran
                 }
                 catch(Exception ex)
                 {
-                    throw new Transformer.SyntaxException($"#include: error loading file: {fileName}", ex);
+                    throw new Transformer.SyntaxException($"#include: error loading file: {fileName}", ex) { LineNumber = lineNumber};
                 }
             }
 
@@ -157,7 +156,7 @@ namespace JTran
         /****************************************************************************/
         internal void Transform(IEnumerable list, string listName, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            IDictionary<string, object> expando = new ExpandoObject();
+            IDictionary<string, object> expando = new JsonObject();
 
             expando[listName] = list;
 

@@ -18,7 +18,6 @@
  ****************************************************************************/
 
 using System;
-using System.Dynamic;
 using System.Runtime.CompilerServices;
 
 using JTran.Json;
@@ -35,7 +34,7 @@ namespace JTran.Extensions
         public static T ToObject<T>(this string str) where T : new()
         {          
             var parser = new Json.Parser(new JsonModelBuilder());
-            var expObj = parser.Parse(str) as ExpandoObject;
+            var expObj = parser.Parse(str) as JsonObject;
 
             return expObj.ToObject<T>();
         }

@@ -13,7 +13,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ObjectExtensions_GetValue_Success()
         {
-            var obj = _data1.JsonToExpando();
+            var obj = _data1.ToJsonObject();
 
             Assert.AreEqual("John",  obj.GetValue("FirstName", null));
             Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null));
@@ -24,7 +24,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ObjectExtensions_GetValue_Fail()
         {
-            var obj = _data1.JsonToExpando();
+            var obj = _data1.ToJsonObject();
 
             Assert.IsNull(obj.GetValue("Car.DontHaveThisProp", null));
         }
@@ -32,7 +32,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ObjectExtensions_GetValue_wGGParent_Success()
         {
-            var obj = _datagg1.JsonToExpando();
+            var obj = _datagg1.ToJsonObject();
             var driver = obj.GetValue("parent.Driver", null);
 
             Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null));
@@ -42,7 +42,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ObjectExtensions_GetValue_var_Success()
         {
-            var obj = _data1.JsonToExpando();
+            var obj = _data1.ToJsonObject();
 
             Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
         }
@@ -50,7 +50,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ObjectExtensions_GetValue_varObject_Success()
         {
-            var obj = _data1.JsonToExpando();
+            var obj = _data1.ToJsonObject();
 
             Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
         }

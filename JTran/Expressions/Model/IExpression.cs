@@ -21,9 +21,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Text;
+
 using JTran.Collections;
 using JTran.Extensions;
 
@@ -35,6 +34,7 @@ namespace JTran.Expressions
     {
         object Evaluate(ExpressionContext context);
         bool   EvaluateToBool(ExpressionContext context);
+        bool   IsConditional(ExpressionContext context);
     }
 
     /*****************************************************************************/
@@ -54,6 +54,12 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
+        {
+            return false;
+        }
+
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
         {
             return false;
         }
@@ -100,6 +106,12 @@ namespace JTran.Expressions
 
             return !string.IsNullOrWhiteSpace(value?.ToString());
         }
+        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return _value is bool;
+        }
     }
 
     /*****************************************************************************/
@@ -124,6 +136,12 @@ namespace JTran.Expressions
         public bool EvaluateToBool(ExpressionContext context)
         {
             return _value > 0d;
+        }
+                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -150,6 +168,12 @@ namespace JTran.Expressions
             object val = this.Evaluate(context);
 
             return Value.EvaluateToBool(val, context);
+        }
+                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return context.Data is bool;
         }
     }
 
@@ -212,7 +236,7 @@ namespace JTran.Expressions
                 { 
                     result = outList2;
                 }
-                else if(expr is string || expr is ExpandoObject)
+                else if(expr is string || expr is JsonObject)
                 {
                     result = expr;
                 }
@@ -247,6 +271,12 @@ namespace JTran.Expressions
         public bool EvaluateToBool(ExpressionContext context)
         {
             return Convert.ToBoolean(Evaluate(context));
+        }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -284,19 +314,27 @@ namespace JTran.Expressions
                 enm = new [] {context.Data};
 
             // If expression result is integer then return nth value of array
-            try
+            if(!_expr.IsConditional(context))
             { 
-                if(int.TryParse(_expr.Evaluate(context).ToString(), out int index))
-                {
-                    if(enm is IList<object> list)
-                        return list[index];
+                try
+                { 
+                    var result = _expr.Evaluate(context);
 
-                    return enm.Skip(index).Take(1).Single();
+                    if(!(result is JsonObject || result is IEnumerable<object>))
+                    { 
+                        if(int.TryParse(result.ToString(), out int index))  
+                        {
+                            if(enm is IList<object> list)
+                                return list[index];
+
+                            return enm.Skip(index).Take(1).Single();
+                        }
+                    }
                 }
-            }
-            catch
-            {
+                catch
+                {
 
+                }
             }
 
             return new WhereClause<object>(enm, _expr, new ExpressionContext(enm, context));
@@ -306,6 +344,12 @@ namespace JTran.Expressions
         public bool EvaluateToBool(ExpressionContext context)
         {
             return Convert.ToBoolean(Evaluate(context));
+        }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -332,6 +376,12 @@ namespace JTran.Expressions
             object val = context.GetVariable(_name, context);
 
             return Value.EvaluateToBool(val, context);
+        }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -369,5 +419,12 @@ namespace JTran.Expressions
 
             return this.Operator.EvaluateToBool(this.Left, this.Right, context);
         }
+                                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return this.Operator is ComparisonOperator;
+        }
+
     }
 }

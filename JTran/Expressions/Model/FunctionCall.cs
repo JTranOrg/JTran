@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -92,7 +92,7 @@ namespace JTran.Expressions
             tfunc.Evaluate(output, funcContext, (f)=> f());
             output.EndObject();
 
-            var exp = output.ToString().JsonToExpando();
+            var exp = output.ToString().ToJsonObject();
             var dict = exp as IDictionary<string, object>;
 
             if(dict.ContainsKey("return"))
@@ -111,6 +111,12 @@ namespace JTran.Expressions
         public void AddParameter(IExpression expr)
         {
             _parameters.Add(expr);
+        }
+
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 }

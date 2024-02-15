@@ -101,7 +101,7 @@ namespace JTran
             BaseEvaluate(output, context, (fnc)=> fnc());
             output.EndObject();
 
-            return output.ToString().JsonToExpando();
+            return output.ToString().ToJsonObject();
         }
     }
 
@@ -123,7 +123,7 @@ namespace JTran
             BaseEvaluate(output, context, (fnc)=> fnc());
             output.EndArray();
                         
-            return output.ToString().JsonToExpando();
+            return output.ToString().ToJsonObject();
         }
 
         /****************************************************************************/

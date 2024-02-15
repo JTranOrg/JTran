@@ -70,9 +70,7 @@ namespace JTran
                 { 
                     try
                     { 
-                        dynamic dyn = context.Data;
-
-                        dyn._jtran_position = i;
+                        (context.Data as JsonObject)!["_jtran_position"] = i;
 
                         if(EvaluateChild(output, arrayName, context.Data, context))
                             break;

@@ -65,7 +65,7 @@ namespace JTran
             base.Evaluate(paramsOutput, newContext, (fnc)=> fnc()); 
             paramsOutput.EndObject();
 
-            var jsonParams = paramsOutput.ToString().JTranToExpando(); // ???
+            var jsonParams = paramsOutput.ToString().JTranToJsonObject(); // ???
 
             foreach(var paramName in template.Parameters)
                 newContext.SetVariable(paramName, (jsonParams as IDictionary<string, object>)[paramName].ToString());
@@ -112,7 +112,7 @@ namespace JTran
             template.Evaluate(output, newContext, (f)=> f());
             output.EndObject();
 
-            return output.ToString().JTranToExpando();
+            return output.ToString().JTranToJsonObject();
         }
     }
 }

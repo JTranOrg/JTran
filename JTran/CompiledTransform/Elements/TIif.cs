@@ -1,10 +1,6 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
+﻿using System;
 
 using JTran.Expressions;
-using JTran.Extensions;
 
 namespace JTran
 {

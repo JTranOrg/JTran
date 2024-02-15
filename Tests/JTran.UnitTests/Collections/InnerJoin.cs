@@ -50,9 +50,9 @@ namespace JTran.UnitTests
 
             var right = new List<Automobile> 
             { 
-                new Automobile { Id = "1", Make = "Chevy",         Model = "Camaro",   Year = 1970 },
-                new Automobile { Id = "2", Make = "Pontiac",       Model = "Firebird", Year = 1969 },
-                new Automobile { Id = "3", Make = "Audi",          Model = "RS5",      Year = 2024 }
+                new Automobile { Id = "1", Make = "Chevy",   Model = "Camaro",   Year = 1970 },
+                new Automobile { Id = "2", Make = "Pontiac", Model = "Firebird", Year = 1969 },
+                new Automobile { Id = "3", Make = "Audi",    Model = "RS5",      Year = 2024 }
             };
  
             var result = Test(left, right, 5);
@@ -66,8 +66,8 @@ namespace JTran.UnitTests
 
         private void AssertDriver(object result, string name, string model)
         {       
-            var left   = (result as dynamic).left as Driver;
-            var right = (result as dynamic).right as Automobile;
+            var left   = (result as JsonObject)!["left"] as Driver;
+            var right  = (result as JsonObject)!["right"] as Automobile;
 
             Assert.IsNotNull(left);
             Assert.IsNotNull(right);

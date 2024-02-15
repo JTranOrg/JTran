@@ -1,4 +1,5 @@
 ﻿
+using JTran.Parser;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -14,15 +15,20 @@ namespace JTran.Json
     /// </summary>
     internal class JsonTokenizer
     {
-        internal JsonToken ReadNextToken(ICharacterReader reader, ref long lineNumber) 
+        internal object? TokenValue      { get; set; }
+        internal long    TokenLineNumber { get; set; } = 0L;
+
+        internal JsonToken.TokenType ReadNextToken(ICharacterReader reader, ref long lineNumber) 
         {
             var ch = '\0';
 
             StringBuilder? sb = null;
-            var token = new JsonToken(lineNumber);
+
             var doubleQuoted = false;
             var singleQuoted = false;
             var previousChar = '\0';
+
+            this.TokenLineNumber = lineNumber;
 
             try
             { 
@@ -34,15 +40,17 @@ namespace JTran.Json
                         break;
                 }
 
+                this.TokenLineNumber = lineNumber;
+
                 switch(ch)
                 {
-                    case '\0': token.Type = JsonToken.TokenType.EOF;         token.Value = "end of file"; return token;
-                    case '{':  token.Type = JsonToken.TokenType.BeginObject; token.Value = "{"; return token;
-                    case '}':  token.Type = JsonToken.TokenType.EndObject;   token.Value = "}"; return token;
-                    case '[':  token.Type = JsonToken.TokenType.BeginArray;  token.Value = "["; return token;
-                    case ']':  token.Type = JsonToken.TokenType.EndArray;    token.Value = "]"; return token;
-                    case ':':  token.Type = JsonToken.TokenType.Property;    token.Value = ":"; return token;
-                    case ',':  token.Type = JsonToken.TokenType.Comma;       token.Value = ","; return token;
+                    case '\0': this.TokenValue = "end of file"; return JsonToken.TokenType.EOF;         
+                    case '{':  this.TokenValue = "{";           return JsonToken.TokenType.BeginObject; 
+                    case '}':  this.TokenValue = "}";           return JsonToken.TokenType.EndObject;   
+                    case '[':  this.TokenValue = "[";           return JsonToken.TokenType.BeginArray;  
+                    case ']':  this.TokenValue = "]";           return JsonToken.TokenType.EndArray;    
+                    case ':':  this.TokenValue = ":";           return JsonToken.TokenType.Property;    
+                    case ',':  this.TokenValue = ",";           return JsonToken.TokenType.Comma;       
                     default:   break;
                 }
 
@@ -59,6 +67,8 @@ namespace JTran.Json
                 while(true)
                 {
                     ch = reader.ReadNext(ref lineNumber);
+
+                    this.TokenLineNumber = lineNumber;
 
                     if(escape)
                     {
@@ -100,7 +110,7 @@ namespace JTran.Json
                         }
 
                         if(ch == '\"' || ch == '\'')
-                            throw new JsonParseException("Missing end quotes", lineNumber); 
+                            throw new JsonParseException("Missing end quotes", lineNumber-1); 
                     }
 
                   Append:
@@ -117,36 +127,34 @@ namespace JTran.Json
 
             if(sb != null)
             { 
-                var val = sb.ToString();
-
-                token.Value = val;
+                this.TokenValue = sb.ToString();
 
                 if(!doubleQuoted && !singleQuoted)
                 {
-                    switch (val)
+                    switch (this.TokenValue)
                     { 
-                        case "null":  token.Type = JsonToken.TokenType.Null;    break;
-                        case "true":  token.Type = JsonToken.TokenType.Boolean;  break;
-                        case "false": token.Type = JsonToken.TokenType.Boolean; break;
+                        case "null":  return JsonToken.TokenType.Null;    
+                        case "true":  return JsonToken.TokenType.Boolean; 
+                        case "false": return JsonToken.TokenType.Boolean; 
+
                         default: 
                         {
-                            if(double.TryParse(val, out double dVal))
+                            if(double.TryParse(this.TokenValue?.ToString(), out double dVal))
                             { 
-                                token.Type  = JsonToken.TokenType.Number; 
-                                token.Value = dVal;
-                            }
-                            else
-                                token.Type = JsonToken.TokenType.Text; 
+                                this.TokenValue = dVal;
 
-                            break;
+                                return JsonToken.TokenType.Number; 
+                            }
+
+                            return JsonToken.TokenType.Text; 
                         }
                     }
                 }
                 else
-                    token.Type = JsonToken.TokenType.Text; 
+                    return JsonToken.TokenType.Text; 
             }
 
-            return token;
+            return JsonToken.TokenType.Unknown;
         }    
     }
 
@@ -167,19 +175,11 @@ namespace JTran.Json
         }
     }
 
-    internal struct JsonToken
+    internal static class JsonToken
     {
-        public JsonToken(long lineNumber)
-        {
-            this.LineNumber = lineNumber;
-        }
-
-        internal TokenType Type       { get; set; } = TokenType.EOF;
-        internal object    Value      { get; set; } = "";
-        internal long      LineNumber { get; }
-
         internal enum TokenType
         {
+            Unknown,
             EOF,
             Text,
             Number,

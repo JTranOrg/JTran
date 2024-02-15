@@ -61,7 +61,15 @@ namespace JTran
             { 
                 var expr = sval.Substring(2, sval.Length - 3);
 
-                return new ExpressionValue(expr);
+                try
+                { 
+                    return new ExpressionValue(expr);
+                }
+                catch(JsonParseException ex)
+                {
+                    ex.LineNumber = lineNumber;
+                    throw ex;
+                }
             }
 
             if(name)
@@ -99,7 +107,7 @@ namespace JTran
                 }
             }
 
-            throw new Transformer.SyntaxException($"Unknown element name: {elementName}");    
+            throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber };    
         }   
     }
 }

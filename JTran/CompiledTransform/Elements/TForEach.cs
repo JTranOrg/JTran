@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 
 using JTran.Extensions;
@@ -18,12 +17,12 @@ namespace JTran
         private bool _hasConditionals = false;        
 
         /****************************************************************************/
-        internal TForEach(string name) 
+        internal TForEach(string name, long lineNumber) 
         {
             var parms = CompiledTransform.ParseElementParams("foreach", name, CompiledTransform.FalseTrue );
 
             if(parms.Count < 1)
-                throw new Transformer.SyntaxException("Missing expression for #foreach");
+                throw new Transformer.SyntaxException("Missing expression for #foreach") { LineNumber = lineNumber };
 
             _expression = parms[0];
 
@@ -229,7 +228,7 @@ namespace JTran
             }
 
             // Get the groups
-            IEnumerable<ExpandoObject>? groups;
+            IEnumerable<JsonObject>? groups;
 
             if(_groupBy.IsSingle())
             {
@@ -240,7 +239,7 @@ namespace JTran
                     (item)=> item.GetSingleValue(groupBy, null),
                     (item)=> item,
                     (groupValue, items) => {    
-                                                var newObj = new ExpandoObject();
+                                                var newObj = new JsonObject();
 
                                                 newObj.TryAdd(groupBy, groupValue);
                                                 newObj.TryAdd("__groupItems", items); 
@@ -256,7 +255,7 @@ namespace JTran
                     (item)=> item.GetGroupByKey(_groupBy!),
                     (item)=> item,
                     (groupValue, items) => {    
-                                                var newObj = new ExpandoObject();
+                                                var newObj = new JsonObject();
 
                                                 foreach(var item in groupValue)
                                                     newObj.TryAdd(item.Key, item.Value);
@@ -287,7 +286,7 @@ namespace JTran
                 {
                     var newContext = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
 
-                    newContext.CurrentGroup = (groupScope as dynamic).__groupItems;
+                    newContext.CurrentGroup = groupScope["__groupItems"] as IList<object>;
 
                     base.Evaluate(output, newContext, (fnc)=>
                     {

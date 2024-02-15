@@ -20,7 +20,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -104,12 +103,12 @@ namespace JTran
                     { 
                         using var doc2 = repo2.GetDocumentStream(docName);
 
-                        return doc2.JsonToExpando();
+                        return doc2.ToJsonObject();
                     }
 
                     var doc = repo.GetDocument(docName);
 
-                    return doc.JsonToExpando();
+                    return doc.ToJsonObject();
 
                 }
                 catch(Exception ex)
@@ -189,7 +188,7 @@ namespace JTran
             if(name == "@")
                 return this.Data;
 
-            if(this.Data is ExpandoObject)
+            if(this.Data is JsonObject)
                 return this.Data.GetPropertyValue(name);
 
             if(this.Data is ICollection<object> dict1)

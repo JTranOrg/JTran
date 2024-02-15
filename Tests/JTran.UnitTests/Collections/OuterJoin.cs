@@ -38,8 +38,9 @@ namespace JTran.UnitTests
 
         private void AssertDriver(object result, string name, string model)
         {       
-            var left   = (result as dynamic).left as Driver;
-            var right = (result as dynamic).right as Automobile;
+            var jobj  = result as JsonObject;
+            var left  = jobj!["left"] as Driver;
+            var right = jobj["right"] as Automobile;
 
             Assert.IsNotNull(left);
 

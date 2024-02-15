@@ -1,20 +1,16 @@
-﻿using System;
-using System.Dynamic;
-using System.IO;
-
+﻿
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
-using System.Xml.Linq;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
+[assembly: InternalsVisibleTo("JTran.PerformanceTests")]
 
 namespace JTran.Json
 {   
     /****************************************************************************/
     /****************************************************************************/
     /// <summary>
-    /// Create an object model (ExpandoObject or jtran)
+    /// Create an object model (JsonObject or jtran)
     /// </summary>
     internal interface IJsonModelBuilder
     {
@@ -36,7 +32,7 @@ namespace JTran.Json
     /****************************************************************************/
     /****************************************************************************/
     /// <summary>
-    /// Create a JTran data object model (an ExpandoObject)
+    /// Create a JTran data object model (an JsonObject)
     /// </summary>
     internal class JsonModelBuilder : IJsonModelBuilder
     {
@@ -45,10 +41,10 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddObject(string name, object? parent, object? _, long lineNumber)
         {
-            var newObj = new ExpandoObject();
+            var newObj = new JsonObject();
 
             if(parent != null)
-                if(parent is ExpandoObject ex)
+                if(parent is JsonObject ex)
                     ex.TryAdd(name, newObj);
 
             return newObj;
@@ -59,7 +55,7 @@ namespace JTran.Json
         {
             var newArr = new List<object>();
 
-            if(parent is ExpandoObject ex)
+            if(parent is JsonObject ex)
                 ex.TryAdd(name, newArr);
 
             return newArr;
@@ -68,7 +64,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddText(string name, string val, object parent, object? previous, long lineNumber)      
         { 
-            if(parent is ExpandoObject ex)
+            if(parent is JsonObject ex)
                 ex.TryAdd(name, val);
 
             return val; 
@@ -77,7 +73,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddBoolean(string name, bool val, object parent, object? previous, long lineNumber)     
         { 
-            if(parent is ExpandoObject ex)
+            if(parent is JsonObject ex)
                 ex.TryAdd(name, val);
 
             return val; 
@@ -86,7 +82,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddNumber(string name, double val, object parent, object? previous, long lineNumber)    
         { 
-            if(parent is ExpandoObject ex)
+            if(parent is JsonObject ex)
                 ex.TryAdd(name, val);
 
             return val; 
@@ -95,7 +91,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddNull(string name, object parent, object? previous, long lineNumber)                
         { 
-            if(parent is ExpandoObject ex)
+            if(parent is JsonObject ex)
                 ex.TryAdd(name, null);
 
             return (object)null; 
@@ -108,7 +104,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddObject(object? parent, long lineNumber)
         {
-            var newObj = new ExpandoObject();
+            var newObj = new JsonObject();
 
             if(parent is IList<object> list)
                 list.Add(newObj);

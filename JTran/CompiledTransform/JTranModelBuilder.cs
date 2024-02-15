@@ -18,9 +18,7 @@
  ****************************************************************************/
 
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using JTran.Json;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]

@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
+
 using System.IO;
 
 using JTran.Extensions;
@@ -110,7 +110,7 @@ namespace JTran
         /****************************************************************************/
         public void WriteItem(object item, bool newContainer = true)
         {
-            if(item is ExpandoObject expObject)
+            if(item is JsonObject expObject)
             { 
                 if(newContainer)
                     StartContainer();
@@ -130,7 +130,7 @@ namespace JTran
         /****************************************************************************/
         public void WriteProperties(object item)
         {
-            if(item is ExpandoObject expObject)
+            if(item is JsonObject expObject)
             { 
                expObject.ChildrenToJson(this);
             }
@@ -154,7 +154,7 @@ namespace JTran
         {
             StartChild();
 
-            if(val is ExpandoObject expObject)
+            if(val is JsonObject expObject)
             { 
                 this.WriteContainerName(name);
                 

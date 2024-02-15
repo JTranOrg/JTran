@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 18 Jun 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2023 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
@@ -657,10 +656,7 @@ namespace JTran.Expressions
         {
             try
             { 
-                dynamic dyn      = context.Data;
-                long    position = dyn._jtran_position;
-
-                return position;
+                return long.Parse((context.Data as JsonObject)!["_jtran_position"].ToString());
             }
             catch
             {
@@ -717,10 +713,7 @@ namespace JTran.Expressions
         {
             try
             { 
-                dynamic dyn      = context.Data;
-                string  name = dyn._jtran_name;
-
-                return name;
+                return (context.Data as JsonObject)!["_jtran_name"].ToString();
             }
             catch
             {

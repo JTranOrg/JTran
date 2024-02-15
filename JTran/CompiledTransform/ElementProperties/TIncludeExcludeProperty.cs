@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 
 using JTran.Expressions;
@@ -43,13 +42,13 @@ namespace JTran
         {
             var newScope = _expression.Evaluate(context);
 
-            if(newScope is ExpandoObject expObject)
+            if(newScope is JsonObject expObject)
             { 
                 var properties = expObject.Where( kv=> _properties.ContainsKey(kv.Key) == _include);
 
                 if(properties.Any())
                 {
-                    var result = new ExpandoObject();
+                    var result = new JsonObject();
 
                     foreach(var kv in properties)
                         result.TryAdd(kv.Key, kv.Value);
@@ -68,7 +67,7 @@ namespace JTran
         {
             var newScope = _expression.Evaluate(context);
 
-            if(newScope is ExpandoObject expObject)
+            if(newScope is JsonObject expObject)
             { 
                 var properties = expObject.Where( kv=> _properties.ContainsKey(kv.Key) == _include);
 

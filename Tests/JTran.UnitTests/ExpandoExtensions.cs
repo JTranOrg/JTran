@@ -1,4 +1,3 @@
-using System.Dynamic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,7 +15,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ExpandoExtensions_ToJson_Success()
         {
-            var exp = _data1.JsonToExpando() as ExpandoObject;
+            var exp = _data1.ToJsonObject() as JsonObject;
             var json = exp.ToJson();
             
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse(json), JObject.Parse(_data1)));
@@ -28,7 +27,7 @@ namespace JTran.UnitTests
             var auto = new Automobile { Make = "Chevy", Model = "Camaro", Sold = DateTime.Parse("2023-12-06").ToString("o") };
             var json1 = JsonConvert.SerializeObject(auto);
 
-            var exp = json1.JsonToExpando() as ExpandoObject;
+            var exp = json1.ToJsonObject() as JsonObject;
             var json = exp.ToJson();
             var auto2 = JsonConvert.DeserializeObject<Automobile>(json);
 
@@ -84,7 +83,7 @@ namespace JTran.UnitTests
             };
             var json1 = JsonConvert.SerializeObject(auto);
 
-            var exp = json1.JsonToExpando() as ExpandoObject;
+            var exp = json1.ToJsonObject() as JsonObject;
             var obj = exp.ToObject<Automobile2>();
 
             Assert.IsNotNull(obj);

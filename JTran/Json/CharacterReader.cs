@@ -29,7 +29,7 @@ namespace JTran.Json
 
         internal CharacterReader(Stream stream) 
         { 
-            _reader = new StreamReader(stream, Encoding.UTF8, true, 8 * 1024);
+            _reader = new StreamReader(stream, Encoding.UTF8, true, 32 * 1024);
         }
 
        internal CharacterReader(string str) 

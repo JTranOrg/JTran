@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -20,9 +20,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace JTran.Extensions
 {
@@ -318,6 +316,30 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        public static bool GetParent(this object obj, ref object? parent)
+        {        
+            return obj.GetAncestor("_jtran_parent", ref parent); 
+        }
+
+        /****************************************************************************/
+        public static bool GetGrandParent(this object obj, ref object? parent)
+        {        
+            return obj.GetAncestor("_jtran_gparent", ref parent); 
+        }
+
+        /****************************************************************************/
+        private static bool GetAncestor(this object obj, string key, ref object? parent)
+        {        
+           if(obj is JsonObject jobj && jobj.ContainsKey(key))
+            { 
+                parent = (obj as JsonObject)![key];
+                return true;
+            }
+
+            return false; 
+        }
+
+        /****************************************************************************/
         private static object EvaluateAncestors(this object obj, ref string expression)
         {
             var result = obj;
@@ -327,27 +349,19 @@ namespace JTran.Extensions
             {
                 if(expression.StartsWith("//"))
                 {
-                    try
-                    { 
-                        result = (result as dynamic)._jtran_gparent;
+                    if(result!.GetGrandParent(ref result))
+                    {
                         expression = expression.Substring(2);
                         continue;
                     }
-                    catch
-                    {
-                        // Fall thru
-                    }
+                    
+                    // Fall thru
                 }
 
-                try
-                { 
-                    result = (result as dynamic)._jtran_parent;
+                if(result.GetParent(ref result))
                     expression = expression.Substring(1);
-                }
-                catch
-                {
+                else
                     return null;
-                }
             }
 
             return result;
@@ -365,10 +379,8 @@ namespace JTran.Extensions
             if(obj == null)
                 return null;
 
-            if(obj is ExpandoObject)
+            if(obj is JsonObject props)
             {
-                var props = obj as IDictionary<string, object>;
-
                 if(props.ContainsKey(name))
                     return props[name];
 

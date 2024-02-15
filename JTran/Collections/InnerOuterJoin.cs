@@ -20,7 +20,6 @@
 using JTran.Expressions;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 
 namespace JTran.Collections
 {
@@ -106,7 +105,7 @@ namespace JTran.Collections
             /****************************************************************************/
             public bool MoveNext()
             {
-                var eval = new ExpandoObject();
+                var eval = new JsonObject();
 
                 while(_leftEnum!.MoveNext())
                 {

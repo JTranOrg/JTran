@@ -71,18 +71,12 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class AndOperator : IOperator
+    internal class AndOperator : ComparisonOperator
     {
-        public int Precedence => OperatorPrecendence.AndOperator;
+        public override int Precedence => OperatorPrecendence.AndOperator;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
-        {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
             return left.EvaluateToBool(context) && right.EvaluateToBool(context);
         }
@@ -90,18 +84,12 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class OrOperator : IOperator
+    internal class OrOperator : ComparisonOperator
     {
-        public int Precedence => OperatorPrecendence.OrOperator;
+        public override int Precedence => OperatorPrecendence.OrOperator;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
-        {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
             return left.EvaluateToBool(context) || right.EvaluateToBool(context);
         }

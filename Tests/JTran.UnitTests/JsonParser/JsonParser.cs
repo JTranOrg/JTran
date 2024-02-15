@@ -9,7 +9,6 @@ using Newtonsoft.Json.Linq;
 
 using JTran.Common;
 using JTran.Json;
-using System.Dynamic;
 
 namespace JTran.UnitTests
 {
@@ -226,7 +225,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("missing_quotes3", 10)]
+        [DataRow("missing_quotes3", 13)]
         public void JsonParser_Parse_end_of_file(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
@@ -241,7 +240,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("missing_brace", 7)]
+        [DataRow("missing_brace", 6)]
         [DataRow("missing_comma", 7)]
         public void JsonParser_Parse_unexpected_token(string fileName, long lineNumber)
         {
@@ -264,7 +263,7 @@ namespace JTran.UnitTests
         {
             var data       = LoadSample(fileName, jtran);
             var parser     = new Json.Parser(new JsonModelBuilder());
-            var result     = parser.Parse(data) as ExpandoObject;
+            var result     = parser.Parse(data) as JsonObject;
 
             Assert.IsNotNull(result);
 

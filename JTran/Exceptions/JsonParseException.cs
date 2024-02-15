@@ -6,7 +6,7 @@ namespace JTran
     /****************************************************************************/
     public class JsonParseException : Exception
     {
-    private long _lineNumber = 0L;
+    private long _lineNumber = -1L;
 
         public JsonParseException(string msg, long lineNo) : base(msg)
         {

@@ -3,9 +3,9 @@
  *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
- *             File: ExpandoExtensions.cs					    		        
- *        Class(es): ExpandoExtensions				         		            
- *          Purpose: Extension methods for ExpandoObject                 
+ *             File: JsonObjectExtensions.cs					    		        
+ *        Class(es): JsonObjectExtensions				         		            
+ *          Purpose: Extension methods for JsonObject                 
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
@@ -20,7 +20,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
+
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -32,43 +32,43 @@ namespace JTran.Json
 {
     /****************************************************************************/
     /****************************************************************************/
-    public static class ExpandoExtensions
+    public static class JsonObjectExtensions
     {
         /****************************************************************************/
-        public static object JsonToExpando(this string s)
+        public static object ToJsonObject(this string s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
-            var exp = parser.Parse(s);
+            var jobj = parser.Parse(s);
 
-            exp.SetParent();
+            jobj.SetParent();
 
-            return exp;
+            return jobj;
         }
 
         /****************************************************************************/
-        public static object JsonToExpando(this Stream s)
+        public static object ToJsonObject(this Stream s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
-            var exp = parser.Parse(s);
+            var jobj = parser.Parse(s);
 
-            exp.SetParent();
+            jobj.SetParent();
 
-            return exp;
+            return jobj;
         }
 
         /****************************************************************************/
-        public static ExpandoObject JTranToExpando(this string s)
+        public static JsonObject JTranToJsonObject(this string s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
             
-            return parser.Parse(s) as ExpandoObject;
+            return parser.Parse(s) as JsonObject;
         }
 
         /****************************************************************************/
         internal static object SetParent(this object obj)
         {
-            if(obj is ExpandoObject exp)
-                return exp.SetParent();
+            if(obj is JsonObject jobj)
+                return jobj.SetParent();
 
             if(obj is IEnumerable<object> list)
             { 
@@ -80,16 +80,12 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        private static ExpandoObject SetParent(this ExpandoObject obj)
+        private static JsonObject SetParent(this JsonObject obj)
         {
-            var dict = obj as IDictionary<string, object>;
-
-            foreach(var val in dict)
+            foreach(var val in obj)
             {
                 if(val.Value != null)
                 { 
-                    var type = val.Value.GetType().Name;
-
                     if(!val.Key.StartsWith("_jtran_"))
                     {
                         SetChild(val.Value, obj, null, -1, val.Key);
@@ -101,7 +97,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public static string ToJson(this ExpandoObject obj)
+        public static string ToJson(this JsonObject obj)
         {            
             var writer = new JsonStringWriter();
 
@@ -111,14 +107,14 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static void ToJson(this ExpandoObject obj, IJsonWriter writer)
+        internal static void ToJson(this JsonObject obj, IJsonWriter writer)
         {
             if(obj == null)
                 return;
 
             writer.StartObject();
 
-            var dict     = (obj as IDictionary<string, object>).Where( kv=> !kv.Key.StartsWith("_jtran_") );
+            var dict     = obj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
             var numItems = dict.Count();
 
             foreach(var kv in dict)
@@ -132,12 +128,12 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static void ChildrenToJson(this ExpandoObject obj, IJsonWriter writer)
+        internal static void ChildrenToJson(this JsonObject obj, IJsonWriter writer)
         {
             if(obj == null)
                 return;
 
-            var dict     = (obj as IDictionary<string, object>).Where( kv=> !kv.Key.StartsWith("_jtran_") );
+            var dict     = obj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
             var numItems = dict.Count();
 
             foreach(var kv in dict)
@@ -157,10 +153,10 @@ namespace JTran.Json
 
                 writer.WriteList(list);
             }
-            else if(value is ExpandoObject expando)
+            else if(value is JsonObject jobj)
             {
                 writer.WriteContainerName(key);
-                expando.ToJson(writer);                   
+                jobj.ToJson(writer);                   
             }
             else
             {                       
@@ -169,13 +165,13 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public static T ToObject<T>(this ExpandoObject obj) where T : new()
+        public static T ToObject<T>(this JsonObject obj) where T : new()
         {
             return (T)obj.ToObject(typeof(T));
         }
 
         /****************************************************************************/
-        public static object ToObject(this ExpandoObject obj, Type t)
+        public static object ToObject(this JsonObject obj, Type t)
         {
             if(obj == null)
                 return null;
@@ -217,7 +213,7 @@ namespace JTran.Json
             if(val.GetType() == type)
                 return val;
 
-            if(val is ExpandoObject exp)
+            if(val is JsonObject exp)
                 return exp.ToObject(type);
 
             if(val is IEnumerable<object> array)
@@ -310,24 +306,22 @@ namespace JTran.Json
         /****************************************************************************/
         private static void SetChild(object child, object parent, object gparent, int index, string name)
         {
-            if(child is ExpandoObject expando)
+            if(child is JsonObject jobj)
             {
-                dynamic dyn = expando;
-
-                dyn._jtran_parent = parent;
+                jobj["_jtran_parent"] = parent;
 
                 if(gparent != null)
-                    dyn._jtran_gparent = gparent;
+                   jobj["_jtran_gparent"] = gparent;
 
                 if(index != -1)
-                    dyn._jtran_position = index;
+                    jobj["_jtran_position"] = index;
 
                 if(name != null)
-                    dyn._jtran_name = name;
+                    jobj["_jtran_name"] = name;
 
-                expando.SetParent();
+                jobj.SetParent();
             }
-            else if(child is IList list)
+            else if(child is IEnumerable<object> list)
             {
                 var childIndex = 0;
 
