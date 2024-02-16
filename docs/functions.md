@@ -662,7 +662,7 @@ Then this jtran:
 
     #foreach(union(FulltimeEmployees, TempEmployees, AllEmployees))
     {
-        "copyof(@)": "#noobject"
+        "#noobject":  "#copyof(@)"
     }
 
 Results in:

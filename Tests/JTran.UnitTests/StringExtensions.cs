@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using System.Drawing;
+
 using JTran.Extensions;
 using JTran.Json;
 
@@ -21,6 +23,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("James \\r\\n Franklin",  "James \r\n Franklin".FormatForJsonOutput());
             Assert.AreEqual("James \\\" Franklin",  "James \" Franklin".FormatForJsonOutput());
             Assert.AreEqual("James \\\"\\n Franklin",  "James \"\n Franklin".FormatForJsonOutput());
-        }
+        }        
     }
 }

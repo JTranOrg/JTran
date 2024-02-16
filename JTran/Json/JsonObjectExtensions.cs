@@ -88,7 +88,7 @@ namespace JTran.Json
                 { 
                     if(!val.Key.StartsWith("_jtran_"))
                     {
-                        SetChild(val.Value, obj, null, -1, val.Key);
+                        SetChild(val.Value, obj, null, val.Key);
                     }
                 }
             }
@@ -107,41 +107,16 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static void ToJson(this JsonObject obj, IJsonWriter writer)
+        internal static void ToJson(this object obj, IJsonWriter writer)
         {
             if(obj == null)
                 return;
 
             writer.StartObject();
 
-            var dict     = obj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
-            var numItems = dict.Count();
-
-            foreach(var kv in dict)
-            {
-                writer.StartChild();
-                ToJson(kv.Key, kv.Value, writer);
-                writer.EndChild();
-            }
+            obj.ChildrenToJson(writer);
 
             writer.EndObject();
-        }
-
-        /****************************************************************************/
-        internal static void ChildrenToJson(this JsonObject obj, IJsonWriter writer)
-        {
-            if(obj == null)
-                return;
-
-            var dict     = obj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
-            var numItems = dict.Count();
-
-            foreach(var kv in dict)
-            {
-                writer.StartChild();
-                ToJson(kv.Key, kv.Value, writer);
-                writer.EndChild();
-            }
         }
 
         /****************************************************************************/
@@ -158,10 +133,56 @@ namespace JTran.Json
                 writer.WriteContainerName(key);
                 jobj.ToJson(writer);                   
             }
+            else if(value  == null || value is string || !value.GetType().IsClass)
+                writer.WriteProperty(key, value);
             else
             {                       
-                writer.WriteProperty(key, value);
+                writer.WriteContainerName(key);
+                value.ToJson(writer);                   
             }
+        }
+
+        /****************************************************************************/
+        internal static void ChildrenToJson(this object obj, IJsonWriter writer)
+        {
+            if(obj is JsonObject jobj)
+            { 
+                var dict     = jobj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
+                var numItems = dict.Count();
+
+                foreach(var kv in dict)
+                {
+                    writer.StartChild();
+                    ToJson(kv.Key, kv.Value, writer);
+                    writer.EndChild();
+                }
+            }
+            else 
+            {
+                var type = obj.GetType();
+
+                if(!type.IsClass)
+                    throw new ArgumentException("Unknown property type");
+
+                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
+
+                foreach(var property in properties)
+                {
+                    try
+                    { 
+                        var value = property.GetGetMethod().Invoke(obj, null);
+
+                        writer.StartChild();
+                        ToJson(property.Name, value, writer);
+                        writer.EndChild();
+                    }
+                    catch
+                    {
+                        // Just ignore it
+                    }
+                }
+             }
+
         }
 
         /****************************************************************************/
@@ -304,7 +325,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        private static void SetChild(object child, object parent, object gparent, int index, string name)
+        private static void SetChild(object child, object parent, object gparent, string name)
         {
             if(child is JsonObject jobj)
             {
@@ -312,9 +333,6 @@ namespace JTran.Json
 
                 if(gparent != null)
                    jobj["_jtran_gparent"] = gparent;
-
-                if(index != -1)
-                    jobj["_jtran_position"] = index;
 
                 if(name != null)
                     jobj["_jtran_name"] = name;
@@ -326,7 +344,7 @@ namespace JTran.Json
                 var childIndex = 0;
 
                 foreach(var gchild in list)
-                    SetChild(gchild, child, parent, childIndex++, (childIndex - 1).ToString());
+                    SetChild(gchild, child, parent, (childIndex++ - 1).ToString());
             }
 
             return;

@@ -106,5 +106,77 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("Blue",            cars.Cars[0].Color);
             Assert.AreEqual("Fred Flintstone", cars.Cars[0].Driver);
         }
-    }
+
+        [TestMethod]
+        [DataRow("array_noobject2", "array_noobject2")]
+        public async Task CopyOf_array_noobject2(string transform, string data)
+        {
+            var result = await TransformerTest.Test("CopyOf." + transform, "CopyOf." + data);
+            var array  = JArray.Parse(result);
+
+            Assert.IsNotNull(array);
+
+            var cars = JsonConvert.DeserializeObject< List<Automobile4>>(result);
+
+            Assert.AreEqual(3, cars!.Count);
+            Assert.AreEqual("Chevy",           cars[0].Make);
+            Assert.AreEqual("Corvette",        cars[0].Model);
+            Assert.AreEqual(1964,              cars[0].Year);
+            Assert.AreEqual("Blue",            cars[0].Color);
+            Assert.AreEqual("Fred Flintstone", cars[0].Driver);
+            Assert.AreEqual(396,     cars[0].Engine!.Displacement);
+            Assert.AreEqual(8,       cars[0].Engine!.Cylinders);
+            Assert.AreEqual("Holly", cars[0].Engine!.Carburation);
+        }
+
+        [TestMethod]
+        [DataRow("array_noobject2", "array_noobject2")]
+        public async Task CopyOf_list(string transform, string data)
+        {
+            var list = new List<Automobile>() 
+            {
+                new Automobile { Make = "Chevy",   Model = "Corvette", Year = 1964, Color = "Blue" },
+                new Automobile { Make = "Pontiac", Model = "GTO",      Year = 1970, Color = "Black" }, 
+                new Automobile { Make = "Audi",    Model = "RS5",      Year = 2024, Color = "Green" } 
+            };
+
+            var result = await TransformerTest.TestList("CopyOf." + data, list);
+            var array  = JArray.Parse(result);
+
+            Assert.IsNotNull(array);
+
+            var cars = JsonConvert.DeserializeObject< List<Automobile3>>(result);
+
+            Assert.AreEqual(3, cars!.Count);
+            Assert.AreEqual("Chevy",           cars[0].Make);
+            Assert.AreEqual("Corvette",        cars[0].Model);
+            Assert.AreEqual(1964,              cars[0].Year);
+            Assert.AreEqual("Blue",            cars[0].Color);
+            Assert.AreEqual("Fred Flintstone", cars[0].Driver);
+        }
+
+        [TestMethod]
+        [DataRow("array_noobject2", "array_noobject3")]
+        public async Task CopyOf_array_noobject4(string transform, string data)
+        {
+            var result = await TransformerTest.Test("CopyOf." + transform, "CopyOf." + data);
+            var array  = JArray.Parse(result);
+
+            Assert.IsNotNull(array);
+
+            var cars = JsonConvert.DeserializeObject< List<Automobile5>>(result);
+
+            Assert.AreEqual(3, cars!.Count);
+            Assert.AreEqual("Chevy",           cars[0].Make);
+            Assert.AreEqual("Corvette",        cars[0].Model);
+            Assert.AreEqual(1964,              cars[0].Year);
+            Assert.AreEqual("Blue",            cars[0].Color);
+            Assert.AreEqual("Fred Flintstone", cars[0].Driver);
+
+            Assert.AreEqual(2, cars[0].Engines!.Count);
+            Assert.AreEqual(396,     cars![0].Engines![0]!.Displacement);
+            Assert.AreEqual(8,       cars![0].Engines![0]!.Cylinders);
+            Assert.AreEqual("Holly", cars![0].Engines![0]!.Carburation);
+        }
+   }
 }

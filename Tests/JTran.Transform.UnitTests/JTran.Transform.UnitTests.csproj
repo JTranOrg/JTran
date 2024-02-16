@@ -23,6 +23,8 @@
     <None Remove="Sample Data\coalesce.json" />
     <None Remove="Sample Data\coalescenumber.json" />
     <None Remove="Sample Data\CopyOf\array_noobject.json" />
+    <None Remove="Sample Data\CopyOf\array_noobject2.json" />
+    <None Remove="Sample Data\CopyOf\array_noobject3.json" />
     <None Remove="Sample Data\CopyOf\copyof1.json" />
     <None Remove="Sample Data\CopyOf\copyof2.json" />
     <None Remove="Sample Data\CopyOf\copyof3.json" />
@@ -67,6 +69,7 @@
     <None Remove="Test Transforms\coalesce.jtran" />
     <None Remove="Test Transforms\coalescenumber.jtran" />
     <None Remove="Test Transforms\CopyOf\array_noobject.jtran" />
+    <None Remove="Test Transforms\CopyOf\array_noobject2.jtran" />
     <None Remove="Test Transforms\CopyOf\copyof1.jtran" />
     <None Remove="Test Transforms\CopyOf\copyof2.jtran" />
     <None Remove="Test Transforms\CopyOf\copyof3.jtran" />
@@ -145,6 +148,8 @@
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
     <EmbeddedResource Include="Sample Data\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\CopyOf\array_noobject3.json" />
+    <EmbeddedResource Include="Sample Data\CopyOf\array_noobject2.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\empty.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\copyof3.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\copyof2.json" />
@@ -183,6 +188,7 @@
     <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
+    <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof3.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\empty2.jtran" />

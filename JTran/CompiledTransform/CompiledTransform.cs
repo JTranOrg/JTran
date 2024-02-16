@@ -154,18 +154,30 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal void Transform(IEnumerable list, string listName, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        internal void Transform(IEnumerable list, string? listName, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            IDictionary<string, object> expando = new JsonObject();
+            object data = list;
 
-            expando[listName] = list;
+            if(listName != null)
+            { 
+                var jobj = new JsonObject();
+
+                jobj[listName] = list;
+                data = jobj;
+            }
 
             using(var writer = new JsonStreamWriter(output))
             { 
-                TransformObject(expando, writer, context, extensionFunctions);
+                TransformObject(data, writer, context, extensionFunctions);
             }
     
             return;
+        }
+
+        /****************************************************************************/
+        internal void Transform(IEnumerable list, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {
+            Transform(list, null, output, context, extensionFunctions);
         }
 
         #endregion

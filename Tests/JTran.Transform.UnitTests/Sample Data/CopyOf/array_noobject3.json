@@ -1,0 +1,59 @@
+[
+  {
+    Make: "Chevy",
+    Model: "Corvette",
+    Year: 1964,
+    Color: "Blue",
+    "Engines": 
+    [
+      {
+        "Displacement":  396,
+        "Cylinders":     8,
+        "Carburation":   "Holly"
+      },
+      {
+        "Displacement":  327,
+        "Cylinders":     8,
+        "Carburation":   "Holly"
+      }
+    ]
+  },
+  {
+    Make: "Pontiac",
+    Model: "Firebird",
+    Year: 1969,
+    Color: "Green",
+    "Engines": 
+    [
+      {
+        "Displacement":  350,
+        "Cylinders":     8,
+        "Carburation":   "Jolly"
+      }
+    ]
+  },
+  {
+    Make: "Audi",
+    Model: "S8",
+    Year: 2020,
+    Color: "Black",
+    "Engines": 
+    [
+      {
+        "Displacement":  496,
+        "Cylinders":     10,
+        "Carburation":   "Injectors"
+      },
+      {
+        "Displacement": 396,
+        "Cylinders":     8,
+        "Carburation":   "Injectors"
+      },
+      {
+        "Displacement":  296,
+        "Cylinders":     6,
+        "Carburation":   "Injectors"
+      }
+   ]
+  }
+]

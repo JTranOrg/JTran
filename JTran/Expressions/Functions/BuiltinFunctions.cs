@@ -654,14 +654,7 @@ namespace JTran.Expressions
         [IgnoreParameterCount]
         public long position(ExpressionContext context)
         {
-            try
-            { 
-                return long.Parse((context.Data as JsonObject)!["_jtran_position"].ToString());
-            }
-            catch
-            {
-                return 0;
-            }
+            return context.Index;
         }
 
         /*****************************************************************************/

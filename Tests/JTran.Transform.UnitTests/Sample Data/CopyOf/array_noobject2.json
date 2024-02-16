@@ -1,0 +1,38 @@
+[
+  {
+    Make: "Chevy",
+    Model: "Corvette",
+    Year: 1964,
+    Color: "Blue",
+    "Engine": 
+    {
+      "Displacement":  396,
+      "Cylinders":     8,
+      "Carburation":   "Holly"
+    }
+  },
+  {
+    Make: "Pontiac",
+    Model: "Firebird",
+    Year: 1969,
+    Color: "Green",
+    "Engine": 
+    {
+      "Displacement":  350,
+      "Cylinders":     8,
+      "Carburation":   "Jolly"
+    }
+  },
+  {
+    Make: "Audi",
+    Model: "S8",
+    Year: 2020,
+    Color: "Black",
+    "Engine": 
+    {
+      "Displacement":  496,
+      "Cylinders":     10,
+      "Carburation":   "Injectors"
+    }
+  }
+]

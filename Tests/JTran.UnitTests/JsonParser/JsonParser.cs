@@ -105,8 +105,10 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(jobj);
 
-            Assert.IsNotNull(jobj["Cars"] as JArray);
-            Assert.AreEqual(3, (jobj["Cars"] as JArray)!.Count);
+            var array = jobj["Cars"] as JArray;
+
+            Assert.IsNotNull(array);
+            Assert.AreEqual(3, array!.Count);
         }
 
         [TestMethod]

@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 using JTran.Expressions;
+using JTran.Json;
 
 namespace JTran
 {
@@ -34,26 +38,9 @@ namespace JTran
             wrap( ()=>
             { 
                 if(name != null)
-                { 
-                    if(newScope is JsonObject expObject)
-                    { 
-                        writer.WriteContainerName(name);
-                        writer.WriteItem(expObject);
-                    }
-                    else if(newScope is IEnumerable<object> list)
-                    { 
-                        writer.WriteContainerName(name);
-                        writer.WriteList(list);
-                    }
-                    else
-                    { 
-                        writer.WriteProperty(name, newScope);
-                    }
-                }
+                    JsonObjectExtensions.ToJson(name, newScope, writer);
                 else
-                {
                     writer.WriteProperties(newScope);
-                }
             });
         }
     }

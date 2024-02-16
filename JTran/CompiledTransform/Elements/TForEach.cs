@@ -80,9 +80,11 @@ namespace JTran
         {
             try
             { 
+                var index = 0L;
+
                 foreach(var childScope in list)
                 { 
-                    if(EvaluateChild(output, arrayName, childScope, context))
+                    if(EvaluateChild(output, arrayName, childScope, context, ref index))
                         break;
                 }
             }
@@ -93,16 +95,18 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context)
+        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context, ref long index)
         {
-            var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions);
+            var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
 
             if(_hasConditionals)
             {
                 try
                 {
                     if(this.Children.EvaluateConditionals(newContext, out object result))
+                    { 
                         output.WriteItem(result);
+                    }
                 
                     return false;
                 }
@@ -131,6 +135,8 @@ namespace JTran
             newContext.ClearVariables();
 
             var bBreak = false;
+
+            ++index;
 
             base.Evaluate(output, newContext, (fnc)=> 
             {

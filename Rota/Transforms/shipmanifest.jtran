@@ -21,7 +21,7 @@
       "name":             "Rocinante",
       "class":            "Heavy Freighter",
       "registration":     "Rigel 5",
-      "year_built":       "2465",
+      "year_built":       2465,
       "length":           "120m",
       "width":            "28m",
       "height":           "14m",
@@ -29,7 +29,7 @@
       "maxwarp":          "5",
       "pod_attachment":   "external",
       "maxpods":          "42"
-    }
+    },
     {
       "name":             "Excelsior",
       "class":            "Light Freighter",

@@ -66,13 +66,13 @@ namespace JTran
                 if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
                     output.StartArray();
                 
+                var index = 0L;
+
                 for(int i = 0; i < numItems; ++i)
                 { 
                     try
                     { 
-                        (context.Data as JsonObject)!["_jtran_position"] = i;
-
-                        if(EvaluateChild(output, arrayName, context.Data, context))
+                        if(EvaluateChild(output, arrayName, context.Data, context, ref index))
                             break;
                     }
                     catch(AggregateException ex)
@@ -87,9 +87,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context)
+        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context, ref long index)
         {
-            var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions);
+            var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
             var bBreak = false;
 
            try
@@ -116,6 +116,8 @@ namespace JTran
 
             // Clear out any variables created during test run above
             newContext.ClearVariables();
+
+            ++index;
 
             base.Evaluate(output, newContext, (fnc)=> 
             {

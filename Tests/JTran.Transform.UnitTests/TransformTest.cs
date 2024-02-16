@@ -32,7 +32,7 @@ namespace JTran.Transform.UnitTests
             return result;
         }
 
-        public static async Task<string> TestList(string transformName, IEnumerable list, string listName, TransformerContext? context = null)
+        public static async Task<string> TestList(string transformName, IEnumerable list, string? listName = null, TransformerContext? context = null)
         {
             var transform   = await LoadTransform(transformName);
             var transformer = new JTran.Transformer(transform, null);
@@ -47,9 +47,18 @@ namespace JTran.Transform.UnitTests
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
 
-            var jobj = JObject.Parse(result);
+            if( listName != null)
+            { 
+                var jobj = JObject.Parse(result);
 
-            Assert.IsNotNull(jobj);
+                Assert.IsNotNull(jobj);
+            }
+            else
+            {
+                var array = JArray.Parse(result);
+
+                Assert.IsNotNull(array);
+            }
 
             return result;
         }

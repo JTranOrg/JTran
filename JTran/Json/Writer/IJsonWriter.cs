@@ -110,30 +110,27 @@ namespace JTran
         /****************************************************************************/
         public void WriteItem(object item, bool newContainer = true)
         {
-            if(item is JsonObject expObject)
+            if(item is IEnumerable<object> list)
+                WriteList(list);
+            else if(item is string || !item.GetType().IsClass)
+                WriteSimpleArrayItem(item);
+            else 
             { 
                 if(newContainer)
                     StartContainer();
                 else
                     StartChild();
 
-                expObject.ToJson(this);
+                item.ToJson(this);
 
-               EndChild();
+                EndChild();
             }
-            else if(item is IEnumerable<object> list)
-                WriteList(list);
-            else 
-                WriteSimpleArrayItem(item);
         }
 
         /****************************************************************************/
         public void WriteProperties(object item)
         {
-            if(item is JsonObject expObject)
-            { 
-               expObject.ChildrenToJson(this);
-            }
+            item.ChildrenToJson(this);
         }
 
         /****************************************************************************/

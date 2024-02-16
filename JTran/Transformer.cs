@@ -76,9 +76,15 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void Transform(IEnumerable list, string listName, Stream output, TransformerContext? context = null)
+        public void Transform(IEnumerable list, string? listName, Stream output, TransformerContext? context = null)
         {
              _transform.Transform(list, listName, output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public void Transform(IEnumerable list, Stream output, TransformerContext? context = null)
+        {
+             _transform.Transform(list, output, context, _extensionFunctions);
         }
 
         /****************************************************************************/

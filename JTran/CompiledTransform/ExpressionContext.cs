@@ -89,6 +89,7 @@ namespace JTran
         internal IDictionary<string, TFunction>?  Functions          { get; }
         internal IList<object>?                   CurrentGroup       { get; set; }
         internal Transformer.UserError?           UserError          { get; set; }
+        internal long                             Index              { get; set; } 
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
