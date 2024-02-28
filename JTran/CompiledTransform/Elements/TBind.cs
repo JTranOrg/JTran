@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 using System;
-using System.Collections.Generic;
 
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran
@@ -31,9 +31,9 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TBind(string name) 
+        internal TBind(CharacterSpan name) 
         {
-            var parms = CompiledTransform.ParseElementParams("bind", name, CompiledTransform.SingleFalse );
+            var parms = CompiledTransform.ParseElementParams("#bind", name, CompiledTransform.SingleFalse );
 
             _expression = parms[0];
         }

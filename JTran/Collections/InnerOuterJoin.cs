@@ -17,6 +17,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Common;
 using JTran.Expressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -102,6 +103,9 @@ namespace JTran.Collections
                 _rightEnum.Dispose();
             }
 
+            private static readonly CharacterSpan _left  = CharacterSpan.FromString("left");
+            private static readonly CharacterSpan _right = CharacterSpan.FromString("right");
+
             /****************************************************************************/
             public bool MoveNext()
             {
@@ -115,13 +119,13 @@ namespace JTran.Collections
 
                     while(_rightEnum!.MoveNext()) 
                     { 
-                        IDictionary<string, object> dict = eval;
+                        IDictionary<CharacterSpan, object> dict = eval;
 
-                        if(!eval.TryAdd("left", _leftEnum.Current))
-                            dict["left"] = _leftEnum.Current;
+                        if(!eval.TryAdd(_left, _leftEnum.Current))
+                            dict[_left] = _leftEnum.Current;
 
-                        if(!eval.TryAdd("right", _rightEnum.Current))
-                            dict["right"] = _rightEnum.Current;
+                        if(!eval.TryAdd(_right, _rightEnum.Current))
+                            dict[_right] = _rightEnum.Current;
 
                         _context.Data = eval;
 
@@ -135,13 +139,11 @@ namespace JTran.Collections
                     // If it's an outer join add the left without a right
                     if(!_inner)
                     {
-                        IDictionary<string, object> dict = eval;
+                        if(!eval.TryAdd(_left, _leftEnum.Current))
+                            eval[_left] = _leftEnum.Current;
 
-                        if(!eval.TryAdd("left", _leftEnum.Current))
-                            dict["left"] = _leftEnum.Current;
-
-                        if(!eval.TryAdd("right", null))
-                            dict["right"] = null;
+                        if(!eval.TryAdd(_right, null))
+                            eval[_right] = null;
 
                         _current = eval;
                         return true;

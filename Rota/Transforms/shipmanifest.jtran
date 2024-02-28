@@ -1,5 +1,6 @@
 {
   "#variable(origins)":   "#(document(docs, origins))",
+  "#variable(ships)":     "#(document(docs, ships))",
 
   "#variable(nature_of_goods)": 
   [
@@ -15,43 +16,15 @@
     "Chemicals (volatile)"
   ],
 
-  "#variable(ships)": 
-  [
-    {
-      "name":             "Rocinante",
-      "class":            "Heavy Freighter",
-      "registration":     "Rigel 5",
-      "year_built":       2465,
-      "length":           "120m",
-      "width":            "28m",
-      "height":           "14m",
-      "numengines":       "2",
-      "maxwarp":          "5",
-      "pod_attachment":   "external",
-      "maxpods":          "42"
-    },
-    {
-      "name":             "Excelsior",
-      "class":            "Light Freighter",
-      "registration":     "Terra",
-      "year_built":       "2371",
-      "length":           "9m",
-      "width":            "23m",
-      "height":           "12m",
-      "numengines":       "1",
-      "maxwarp":          "4.5",
-      "pod_attachment":   "external",
-      "maxpods":          "20"
-    }
-  ],
+  "#variable(ship)":     "#(pickrandomunique($ships, 'ships'))",
 
-  "ship":  "#copyof(pickrandomunique($ships, 'ships'))",
+  "ship":  "#copyof($ship)",
 
-  "#iterate(4, pods)": 
+  "#iterate($ship.maxpods, pods)": 
   {
     "id":               "#(guid())",
     "index":            "#(position() + 1)",
-    "origin":           "Terra",
+    "origin":           "#(pickrandom($origins))",
     "destination":      "#(pickrandom($origins))",
 
     "#iterate(randominteger(2, 8), containers)": 

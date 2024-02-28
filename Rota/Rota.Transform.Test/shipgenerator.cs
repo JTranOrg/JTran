@@ -3,19 +3,14 @@ using Newtonsoft.Json.Linq;
 namespace Rota.Transform.Test
 {
     [TestClass]
-    public class ShipManifestTests
+    public class ShipGeneratorTests
     {
         [TestMethod]
-        public async Task ShipManifest_success()
+        public async Task ShipGenerator_success()
         {
-            var result = await Test("shipmanifest", "{ 'bob': 'bob'}");
+            var result = await Test("shipgenerator", "{ 'bob': 'bob'}");
 
             Assert.IsNotNull(result);
-
-            var jobj = JObject.Parse(result);
-            var pods = jobj["pods"] as JArray;
-
-            Assert.IsNotNull(pods);
         }
         
         #region Private
@@ -23,12 +18,12 @@ namespace Rota.Transform.Test
         public async Task<string> Test(string transform, string data)
         {
             var result = await TransformerTest.TestStaticData(transform, data);           
-            var jobj   = JObject.Parse(result)!;
+            var array   = JArray.Parse(result)!;
 
-            Assert.IsNotNull(jobj);
+            Assert.IsNotNull(array);
 
             #if DEBUG
-            await File.WriteAllTextAsync($"c:\\Development\\Testing\\Rota\\{transform}.json", result);
+            await File.WriteAllTextAsync($"C:\\Development\\Projects\\JTranOrg\\JTran\\Rota\\Transforms\\Documents\\ships.json", result);
             #endif
 
             return result;

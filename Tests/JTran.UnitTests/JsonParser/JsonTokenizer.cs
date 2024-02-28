@@ -14,8 +14,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void JsonParser_ReadNextToken_success()
         {
-            Assert.ThrowsException<JsonParseException>( ()=> Test("").Type);
-
+            Assert.AreEqual(JsonToken.TokenType.EOF,            Test("").Type);
             Assert.AreEqual(JsonToken.TokenType.BeginObject,    Test("  {").Type);
             Assert.AreEqual(JsonToken.TokenType.EndObject,      Test("\r\n  }").Type);
             Assert.AreEqual(JsonToken.TokenType.BeginArray,     Test("  [").Type);
@@ -30,25 +29,25 @@ namespace JTran.UnitTests
             Assert.AreEqual(42.2d,                              Test("  42.2").Value);
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \"bob\"").Type);
-            Assert.AreEqual("bob",                              Test("  \"bob\"").Value);
+            Assert.AreEqual("bob",                              Test("  \"bob\"").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \"bo\\\"b\"").Type);
-            Assert.AreEqual("bo\"b",                            Test("  \"bo\\\"b\"").Value);
+            Assert.AreEqual("bo\"b",                            Test("  \"bo\\\"b\"").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \'bob\'").Type);
-            Assert.AreEqual("bob",                              Test("  \'bob\'").Value);
+            Assert.AreEqual("bob",                              Test("  \'bob\'").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Text,           Test("  \"123\"").Type);
-            Assert.AreEqual("123",                              Test("  \"123\"").Value);
+            Assert.AreEqual("123",                              Test("  \"123\"").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null}").Type);
-            Assert.AreEqual("null",                             Test("  null}").Value);
+            Assert.AreEqual("null",                             Test("  null}").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  true ").Type);
-            Assert.AreEqual("true",                             Test("  true ").Value);
+            Assert.AreEqual("true",                             Test("  true ").Value!.ToString());
                                                                              
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  false,").Type);
-            Assert.AreEqual("false",                            Test("  false,").Value);
+            Assert.AreEqual("false",                            Test("  false,").Value!.ToString());
         }
 
         private (JsonToken.TokenType Type, object? Value) Test(string text)

@@ -3,7 +3,7 @@ using MondoCore.MongoDB;
 using System.Collections;
 using System.Text.Json.Serialization;
 
-using JTran;
+using Newtonsoft.Json.Linq;
 using MondoCore.Common;
 
 namespace JTran.MongoDBTests
@@ -15,13 +15,23 @@ namespace JTran.MongoDBTests
         [DataRow("Violet")]
         public void MongoDB_transform(string firstName)
         {
-            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
-            var transformer  = CreateTransformer(_transformForEach1);
-            var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
-            var input        = db.GetRepositoryReader<Guid, Person>("persons");
-            var enm = input.AsEnumerable<Person>();
+            { 
+                using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
+                var transformer  = CreateTransformer(_transformForEach1);
+                var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
+                var input        = db.GetRepositoryReader<Guid, Person>("persons");
+                var enm = input.AsEnumerable<Person>();
+            
+                transformer.Transform(enm as IEnumerable, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
+            }
 
-            transformer.Transform(enm as IEnumerable, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
+            { 
+                using var strm = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Open);
+                var result = strm.ReadString();
+                var jobj = JArray.Parse(result);
+
+                Assert.IsNotNull(jobj);
+            }
         }
 
         [TestMethod]

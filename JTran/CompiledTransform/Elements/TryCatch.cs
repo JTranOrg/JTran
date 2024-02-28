@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran
@@ -13,13 +14,13 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TThrow(string name, object val, long lineNumber)
+        internal TThrow(CharacterSpan name, object val, long lineNumber)
         {
-            var parms = CompiledTransform.ParseElementParams("throw", name, CompiledTransform.FalseTrue );
+            var parms = CompiledTransform.ParseElementParams("#throw", name, CompiledTransform.FalseTrue );
 
             _code = parms.Any() ? parms[0] : null;
 
-            _message = CreateValue(val, true, lineNumber); // It's not a name per se but we want it to evaluate to a simple string nevertheless
+            _message = CreateValue(val as CharacterSpan, true, lineNumber); // It's not a name per se but we want it to evaluate to a simple string nevertheless
         }
 
         /****************************************************************************/
@@ -77,7 +78,7 @@ namespace JTran
 
                 base.Evaluate(newOutput, context, (fnc)=> fnc());
 
-                wrap( ()=> output.WriteRaw(newOutput.ToString()));
+                wrap( ()=> output.WriteRaw(CharacterSpan.FromString(newOutput.ToString()))); // ??? Inefficient
 
                 context.PreviousCondition = true;
             }
@@ -97,9 +98,9 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TCatch(string name) 
+        internal TCatch(CharacterSpan name) 
         {
-            var parms = CompiledTransform.ParseElementParams("catch", name, CompiledTransform.FalseTrue );
+            var parms = CompiledTransform.ParseElementParams("#catch", name, CompiledTransform.FalseTrue );
 
             _expression = parms.Any() ? parms[0] : null;
         }

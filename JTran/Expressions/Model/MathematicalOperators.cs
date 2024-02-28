@@ -38,7 +38,7 @@ namespace JTran.Expressions
             var leftValStr  = leftVal?.ToString(); 
             var rightValStr = rightVal?.ToString(); 
 
-            if(!(leftVal is StringValue || rightVal is StringValue))
+            if(!(leftVal is IStringValue || rightVal is IStringValue))
             { 
                 if(long.TryParse(leftValStr, out long leftLong))
                     if(long.TryParse(rightValStr, out long rightLong))

@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using JTran.Common;
+using JTran.Expressions;
+using System.Collections.Generic;
 
 namespace JTran
 {
-    public class JsonObject : Dictionary<string, object>
+    internal class JsonObject : Dictionary<CharacterSpan, object>
     {
-        public JsonObject() 
+        internal JsonObject() 
         { 
         }
+
+        public object this[string key] => this[CharacterSpan.FromString(key)];
     }
 }

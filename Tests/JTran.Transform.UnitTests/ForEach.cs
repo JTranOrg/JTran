@@ -153,6 +153,8 @@ namespace JTran.Transform.UnitTests
         public async Task Functions_nested(string transform, string data)
         {
             var result = await TransformerTest.Test("ForEach." + transform, "ForEach." + data);
+            
+            _ = JObject.Parse(result);
 
             var roster = JsonConvert.DeserializeObject<Roster>(result);
 

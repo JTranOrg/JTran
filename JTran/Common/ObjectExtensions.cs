@@ -34,6 +34,7 @@ namespace JTran.Common
             }
             else
             {
+            // ??? create cache, class
                 // Get public and instance properties only
                 var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
 

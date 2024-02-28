@@ -22,6 +22,8 @@ using System.IO;
 
 using JTran.Common.Extensions;
 using JTran.Extensions;
+using JTran.Common;
+using System;
 
 namespace JTran
 {
@@ -44,16 +46,43 @@ namespace JTran
         }
 
         /****************************************************************************/
+        [Obsolete]
         protected override void AppendLine(string line)
         {
             _output.AppendLine(line);
         }        
 
         /****************************************************************************/
+        [Obsolete]
         protected override void Append(string text)
         {
             _output.Append(text);
         } 
+
+        /****************************************************************************/
+        protected override void AppendLine(CharacterSpan line)
+        {
+            _output.AppendLine(line.ToString());
+        }        
+
+        /****************************************************************************/
+        protected override void Append(CharacterSpan text)
+        {
+            _output.Append(text.ToString());
+        } 
+
+        /****************************************************************************/
+        protected override void AppendLine(char ch)
+        {
+            _output.Append(ch);
+            _output.AppendLine();
+        }
+
+        /****************************************************************************/
+        protected override void Append(char ch)
+        {
+            _output.Append(ch);
+        }
 
         /****************************************************************************/
         protected override void Append(Stream strm)
@@ -62,15 +91,22 @@ namespace JTran
 
             _output.Append(text);
         } 
+        
+        /****************************************************************************/
+        protected override void AppendSpaces(int numSpaces)
+        {
+            for(var i = 0; i < numSpaces; i++)
+                _output.Append(' ');
+        }    
 
         /****************************************************************************/
-        protected override string FormatForJsonOutput(string s)
+        protected override CharacterSpan FormatForJsonOutput(CharacterSpan s)
         {
             return s.FormatForJsonOutput();
         }
 
-       /****************************************************************************/
-        protected override string FormatForOutput(object s, bool forceString = false)
+        /****************************************************************************/
+        protected override CharacterSpan FormatForOutput(object s, bool forceString = false)
         {
             return s.FormatForOutput(forceString, true);
         }

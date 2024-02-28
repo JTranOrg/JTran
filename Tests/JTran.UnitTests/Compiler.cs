@@ -2,15 +2,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json.Linq;
 
-using JTran.Expressions;
-
 using JTran.Extensions;
+using JTran.Expressions;
 using JTran.Json;
 using JTranParser = JTran.Parser.ExpressionParser;
-
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Nodes;
+using JTran.Common;
+using JTran.Parser;
 
 namespace JTran.UnitTests
 {
@@ -98,7 +95,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(parser.Parse("$IsLicensed && Licensed && Age < 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
    
-            context.SetVariable("IsLicensed", true);
+            context.SetVariable(CharacterSpan.FromString("IsLicensed"), true);
 
             Assert.IsNotNull(expression);
             Assert.IsTrue(expression.EvaluateToBool(context));
@@ -151,7 +148,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobFred", expression.Evaluate(context));
+            Assert.AreEqual("BobFred", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -163,7 +160,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Bob32Fred", expression.Evaluate(context));
+            Assert.AreEqual("Bob32Fred", expression.Evaluate(context).ToString());
         }        
         
         [TestMethod]
@@ -175,7 +172,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Bob", expression.Evaluate(context));
+            Assert.AreEqual("Bob", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -187,7 +184,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobJones", expression.Evaluate(context));
+            Assert.AreEqual("BobJones", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -204,7 +201,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {} ), "", tContext);
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobJones", expression.Evaluate(context));
+            Assert.AreEqual("BobJones", expression.Evaluate(context).ToString());
         }
 
         private IExpression Compile(string expression)
@@ -275,7 +272,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, State = "WA" } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Coke", expression.Evaluate(context));
+            Assert.AreEqual("Coke", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -288,7 +285,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Name = "bob", Age = 35, FirstName = "Robert", LastName = "Jones" } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Robert", expression.Evaluate(context));
+            Assert.AreEqual("Robert", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -464,7 +461,7 @@ namespace JTran.UnitTests
                                                                         extensionFunctions: Transformer.CompileFunctions(null) );
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("1986-04-05T10:00:00.0000000", expression.Evaluate(context));
+            Assert.AreEqual("1986-04-05T10:00:00.0000000", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -700,7 +697,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual("Dodge", result.GetSingleValue("Make", null));
+            Assert.AreEqual("Dodge", result.GetSingleValue("Make", null).ToString());
         }
 
         [TestMethod]
@@ -731,7 +728,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Model = "Chevy" } ));
    
-            context.SetVariable("Indices", new List<int> {21, 35, 62} );
+            context.SetVariable(CharacterSpan.FromString("Indices"), new List<int> {21, 35, 62} );
             Assert.IsNotNull(expression);
 
             var result = expression.Evaluate(context);
@@ -752,7 +749,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result!["Make"]);
+            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
         }
 
         [TestMethod]
@@ -768,7 +765,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result!["Make"]);
+            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
         }
 
         [TestMethod]
@@ -799,10 +796,12 @@ namespace JTran.UnitTests
             Assert.IsNotNull(expression);
 
             var result = expression.Evaluate(context) as JsonObject;
-            decimal amount = decimal.Parse(result["Amount"].ToString());
+            decimal amount = decimal.Parse(result[_amount].ToString());
 
             Assert.AreEqual(120M, amount);
         }
+
+        private static readonly CharacterSpan _amount = CharacterSpan.FromString("Amount");
 
         [TestMethod]
         public void Compiler_Array_Indexer_Multi2_Success()
@@ -819,10 +818,10 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(result);
             var firstTicket     = result[0] as JsonObject;
-            var firstAmount     = firstTicket!["Amount"]!;
+            var firstAmount     = firstTicket![_amount]!;
             var dFirstAmount    = double.Parse(firstAmount!.ToString());
             var secondTicket    = result[1] as JsonObject;
-            var secondAmount    = secondTicket!["Amount"]!;
+            var secondAmount    = secondTicket![_amount]!;
             var dSecondAmount   = double.Parse(secondAmount!.ToString());
 
             Assert.AreEqual(180d, dFirstAmount);
@@ -950,7 +949,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("Chevy Camaro", expression.Evaluate(context));
+            Assert.AreEqual("Chevy Camaro", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1052,7 +1051,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("abcdef", expression.Evaluate(context));
+            Assert.AreEqual("abcdef", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1064,7 +1063,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("ABCDEF", expression.Evaluate(context));
+            Assert.AreEqual("ABCDEF", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1161,7 +1160,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("frank", expression.Evaluate(context));
+            Assert.AreEqual("frank", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1185,7 +1184,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bee", expression.Evaluate(context));
+            Assert.AreEqual("bee", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1197,7 +1196,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("beebop", expression.Evaluate(context));
+            Assert.AreEqual("beebop", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1209,7 +1208,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bop", expression.Evaluate(context));
+            Assert.AreEqual("bop", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1221,7 +1220,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Foo = "Foo"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bopFoo", expression.Evaluate(context));
+            Assert.AreEqual("bopFoo", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1233,7 +1232,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("elan", expression.Evaluate(context));
+            Assert.AreEqual("elan", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1245,7 +1244,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bob jones", expression.Evaluate(context));
+            Assert.AreEqual("bob jones", expression.Evaluate(context).ToString());
         }
 
         #region Aggregate/Array Functions
@@ -1271,7 +1270,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("Chevy", expression.Evaluate(context));
+            Assert.AreEqual("Chevy", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]

@@ -1,6 +1,6 @@
 ﻿
 using System;
-
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran
@@ -12,16 +12,14 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TIf(string name) : this(name, "#if(") 
+        internal TIf(CharacterSpan name) : this(name, "#if(") 
         {
         }
 
         /****************************************************************************/
-        internal protected TIf(string name, string elementName) 
+        internal protected TIf(CharacterSpan name, string elementName) 
         {
-            name = name.Substring(elementName.Length);
-
-            _expression = Compiler.Compile(name.Substring(0, name.Length - 1));
+            _expression = Compiler.Compile(name.Substring(elementName.Length, name.Length - elementName.Length - 1));
         }
 
         /****************************************************************************/
@@ -42,7 +40,7 @@ namespace JTran
     internal class TElseIf : TIf
     {
         /****************************************************************************/
-        internal TElseIf(string name) : base(name, "#elseif(")
+        internal TElseIf(CharacterSpan name) : base(name, "#elseif(")
         {
         }
 
@@ -59,7 +57,7 @@ namespace JTran
     internal class TElse : TContainer
     {
         /****************************************************************************/
-        internal TElse(string name) 
+        internal TElse() 
         {
         }
 

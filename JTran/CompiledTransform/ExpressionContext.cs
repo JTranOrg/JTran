@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 using JTran.Collections;
+using JTran.Common;
 using JTran.Extensions;
 using JTran.Json;
 
@@ -36,7 +37,7 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly IDictionary<string, object>               _variables;
+        private readonly IDictionary<CharacterSpan, object>        _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
 
@@ -50,7 +51,7 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
+            _variables       = new Dictionary<CharacterSpan, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -59,6 +60,10 @@ namespace JTran
             this.Functions   = functions;
 
             this.ExtensionFunctions = extensionFunctions;
+
+            if(transformerContext?.Arguments != null)
+                foreach(var arg in transformerContext.Arguments)
+                    _variables.Add(CharacterSpan.FromString(arg.Key), arg.Value);
         }
 
         /*****************************************************************************/
@@ -69,7 +74,7 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables        = new Dictionary<string, object>();
+            _variables        = new Dictionary<CharacterSpan, object>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;
@@ -127,7 +132,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object GetVariable(string name, ExpressionContext context)
+        internal object GetVariable(CharacterSpan name, ExpressionContext context)
         {
             if(_variables.ContainsKey(name))
             { 
@@ -172,7 +177,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal void SetVariable(string name, object val)
+        internal void SetVariable(CharacterSpan name, object val)
         {
             if(_variables.ContainsKey(name))
                 throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");

@@ -6,6 +6,7 @@ using JTran.Collections;
 using JTran.Expressions;
 using JTranParser = JTran.Parser.ExpressionParser;
 using System.Dynamic;
+using JTran.Parser;
 
 namespace JTran.UnitTests
 {
@@ -66,8 +67,8 @@ namespace JTran.UnitTests
 
         private void AssertDriver(object result, string name, string model)
         {       
-            var left   = (result as JsonObject)!["left"] as Driver;
-            var right  = (result as JsonObject)!["right"] as Automobile;
+            var left   = (result as JsonObject)![CharacterSpan.FromString("left")] as Driver;
+            var right  = (result as JsonObject)![CharacterSpan.FromString("right")] as Automobile;
 
             Assert.IsNotNull(left);
             Assert.IsNotNull(right);
@@ -103,6 +104,14 @@ namespace JTran.UnitTests
             public string       CarId     { get; set; } = "";
             public string       FirstName { get; set; } = "";
             public string       LastName  { get; set; } = "";
+        }
+    }
+
+    internal static class Extensions
+    {
+        internal static IReadOnlyList<Token> Parse(this JTranParser parser, string data)
+        {
+            return parser.Parse(CharacterSpan.FromString(data));
         }
     }
 }

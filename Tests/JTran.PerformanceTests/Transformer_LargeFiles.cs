@@ -133,10 +133,10 @@ namespace JTran.PerformanceTests
                 {
                     var child = new JsonObject();
 
-                    child.TryAdd("Make",  "Chevy");
-                    child.TryAdd("Model", "Camaro");
-                    child.TryAdd("Color", "Blue");
-                    child.TryAdd("Year",  1969);
+                    child.TryAdd(CharacterSpan.FromString("Make"),  "Chevy");
+                    child.TryAdd(CharacterSpan.FromString("Model"), "Camaro");
+                    child.TryAdd(CharacterSpan.FromString("Color"), "Blue");
+                    child.TryAdd(CharacterSpan.FromString("Year"),  1969);
 
                     customers.Add(child);
                 }

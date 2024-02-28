@@ -6,6 +6,7 @@ using System.Linq;
 using JTran.Extensions;
 using JTran.Expressions;
 using JTran.Parser;
+using JTran.Common;
 
 namespace JTran
 {
@@ -17,9 +18,9 @@ namespace JTran
         private bool _hasConditionals = false;        
 
         /****************************************************************************/
-        internal TForEach(string name, long lineNumber) 
+        internal TForEach(CharacterSpan name, long lineNumber) 
         {
-            var parms = CompiledTransform.ParseElementParams("foreach", name, CompiledTransform.FalseTrue );
+            var parms = CompiledTransform.ParseElementParams("#foreach", name, CompiledTransform.FalseTrue );
 
             if(parms.Count < 1)
                 throw new Transformer.SyntaxException("Missing expression for #foreach") { LineNumber = lineNumber };
@@ -31,7 +32,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected TForEach(string expression, bool expr) 
+        internal protected TForEach(CharacterSpan expression, bool expr) 
         {
             _expression = Compiler.Compile(expression);
         }
@@ -52,19 +53,19 @@ namespace JTran
 
             _hasConditionals = this.Children.Any() && this.Children[0] is IPropertyCondition;
 
-            // If the result of the expression is an array
+            // If the result of the expression is an array. ??? Will this work on a POCO list!?!?
             if(result is IEnumerable<object> list)
             {       
                 wrap( ()=> 
                 { 
                     var arrayName = WriteContainerName(output, context);
 
-                    if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
+                    if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
                         output.StartArray();
                 
                     EvaluateChildren(output, arrayName, list, context);
 
-                    if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
+                    if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
                         output.EndArray();
                 });
             }
@@ -76,7 +77,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private void EvaluateChildren(IJsonWriter output, string arrayName, IEnumerable<object> list, ExpressionContext context)
+        private void EvaluateChildren(IJsonWriter output, CharacterSpan arrayName, IEnumerable<object> list, ExpressionContext context)
         {
             try
             { 
@@ -95,7 +96,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context, ref long index)
+        private bool EvaluateChild(IJsonWriter output, CharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
 
@@ -142,6 +143,7 @@ namespace JTran
             {
                 if(arrayName != null)
                     output.StartObject();
+
                 try
                 {
                     fnc();
@@ -167,9 +169,9 @@ namespace JTran
         private readonly IEnumerable<string>? _groupBy;
 
         /****************************************************************************/
-        internal TForEachGroup(string name) 
+        internal TForEachGroup(CharacterSpan name) 
         {
-            var parms = CompiledTransform.ParseElementParams("foreachgroup", name, CompiledTransform.FalseTrue )!;
+            var parms = CompiledTransform.ParseElementParams("#foreachgroup", name, CompiledTransform.FalseTrue )!;
 
             _expression = parms![0];
             
@@ -188,7 +190,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected TForEachGroup(string expression, bool expr) 
+        internal protected TForEachGroup(CharacterSpan expression, bool expr) 
         {
             _expression = Compiler.Compile(expression);
         }
@@ -222,6 +224,8 @@ namespace JTran
             }
         }
 
+        private static readonly CharacterSpan _groupItems = CharacterSpan.FromString("__groupItems");
+
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
@@ -235,6 +239,7 @@ namespace JTran
 
             // Get the groups
             IEnumerable<JsonObject>? groups;
+            var csGroup = new CharacterSpanGroup();
 
             if(_groupBy.IsSingle())
             {
@@ -247,8 +252,8 @@ namespace JTran
                     (groupValue, items) => {    
                                                 var newObj = new JsonObject();
 
-                                                newObj.TryAdd(groupBy, groupValue);
-                                                newObj.TryAdd("__groupItems", items); 
+                                                newObj.TryAdd(csGroup.Get(groupBy), groupValue);
+                                                newObj.TryAdd(_groupItems, items); 
                                                     
                                                 return newObj; 
                                             }
@@ -264,9 +269,9 @@ namespace JTran
                                                 var newObj = new JsonObject();
 
                                                 foreach(var item in groupValue)
-                                                    newObj.TryAdd(item.Key, item.Value);
+                                                    newObj.TryAdd(csGroup.Get(item.Key), item.Value);
 
-                                                newObj.TryAdd("__groupItems", items); 
+                                                newObj.TryAdd(_groupItems, items); 
                                                     
                                                 return newObj;
                     },
@@ -292,7 +297,7 @@ namespace JTran
                 {
                     var newContext = new ExpressionContext(groupScope, context, templates: this.Templates, functions: this.Functions);
 
-                    newContext.CurrentGroup = groupScope["__groupItems"] as IList<object>;
+                    newContext.CurrentGroup = groupScope[_groupItems] as IList<object>;
 
                     base.Evaluate(output, newContext, (fnc)=>
                     {
@@ -310,7 +315,7 @@ namespace JTran
                 if(arrayName != null)
                 { 
                     output.EndArray();
-                    output.WriteRaw("\r\n");
+                    output.WriteRaw(CharacterSpan.Empty);
                 }                    
             });
         }

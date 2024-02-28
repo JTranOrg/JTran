@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using JTran.Common;
 using JTran.Json;
 
 namespace JTran.Expressions
@@ -93,13 +94,15 @@ namespace JTran.Expressions
             output.EndObject();
 
             var exp = output.ToString().ToJsonObject();
-            var dict = exp as IDictionary<string, object>;
+            var dict = exp as IDictionary<CharacterSpan, object>;
 
-            if(dict.ContainsKey("return"))
-                return dict["return"];
+            if(dict.ContainsKey(_return))
+                return dict[_return];
 
             return exp;
         }
+
+        private readonly static CharacterSpan _return = CharacterSpan.FromString("return");
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)

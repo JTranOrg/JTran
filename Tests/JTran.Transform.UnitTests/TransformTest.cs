@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Reflection;
-
+using System.Text;
 using JTran.Common;
 using Newtonsoft.Json.Linq;
 
@@ -23,7 +23,12 @@ namespace JTran.Transform.UnitTests
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            var result = transformer.Transform(data, context);
+            using var output = new MemoryStream();
+            using var input = new MemoryStream(UTF8Encoding.Default.GetBytes(data));
+
+            transformer.Transform(input, output, context);
+
+            var result = await output.ReadStringAsync();
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
             Assert.AreNotEqual(result, transform);
@@ -38,12 +43,11 @@ namespace JTran.Transform.UnitTests
             var transformer = new JTran.Transformer(transform, null);
             var result = "";
 
-            using(var output = new MemoryStream())
-            { 
-                transformer.Transform(list, listName, output, context: context);
+            using var output = new MemoryStream();
 
-                result = await output.ReadStringAsync();
-            }
+            transformer.Transform(list, listName, output, context: context);
+
+            result = await output.ReadStringAsync();
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
 

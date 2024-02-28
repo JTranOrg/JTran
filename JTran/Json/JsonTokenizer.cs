@@ -1,8 +1,27 @@
-﻿
-using JTran.Parser;
+﻿/***************************************************************************
+ *                                                                          
+ *    JTran - A JSON to JSON transformer  							                    
+ *                                                                          
+ *        Namespace: JTran.Json						            
+ *             File: JsonTokenizer.cs					    		        
+ *        Class(es): JsonTokenizer				         		            
+ *          Purpose: Reads a "token" from a text source               
+ *                                                                          
+ *  Original Author: Jim Lightfoot                                          
+ *    Creation Date: 19 Jan 2024                                             
+ *                                                                          
+ *   Copyright (c) 2024 - Jim Lightfoot, All rights reserved           
+ *                                                                          
+ *  Licensed under the MIT license:                                         
+ *    http://www.opensource.org/licenses/mit-license.php                    
+ *                                                                          
+ ****************************************************************************/
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+
+using JTran.Common;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -13,17 +32,17 @@ namespace JTran.Json
     /// <summary>
     /// Parse thru text and return a token
     /// </summary>
-    internal class JsonTokenizer
+    internal sealed class JsonTokenizer
     {
+        private readonly CharacterSpanFactory _factory = new();
+
         internal object? TokenValue      { get; set; }
         internal long    TokenLineNumber { get; set; } = 0L;
 
+        /****************************************************************************/
         internal JsonToken.TokenType ReadNextToken(ICharacterReader reader, ref long lineNumber) 
         {
-            var ch = '\0';
-
-            StringBuilder? sb = null;
-
+            var ch           = '\0';
             var doubleQuoted = false;
             var singleQuoted = false;
             var previousChar = '\0';
@@ -32,15 +51,15 @@ namespace JTran.Json
 
             try
             { 
-                while(true)
+                while(reader.ReadNext())
                 {
-                    ch = reader.ReadNext(ref lineNumber);
+                    ch = reader.Current!;
 
                     if(!char.IsWhiteSpace(ch))
                         break;
                 }
 
-                this.TokenLineNumber = lineNumber;
+                this.TokenLineNumber = lineNumber = reader.LineNumber;
 
                 switch(ch)
                 {
@@ -54,7 +73,6 @@ namespace JTran.Json
                     default:   break;
                 }
 
-                sb = new StringBuilder();
                 bool escape = false;
 
                 if(ch == '\"')
@@ -62,13 +80,12 @@ namespace JTran.Json
                 else if(ch == '\'')
                     singleQuoted = true;
                 else
-                    sb.Append(ch);
+                    _factory.Append(ch);
 
-                while(true)
+                while(reader.ReadNext())
                 {
-                    ch = reader.ReadNext(ref lineNumber);
-
-                    this.TokenLineNumber = lineNumber;
+                    this.TokenLineNumber = lineNumber = reader.LineNumber;
+                    ch = reader.Current;
 
                     if(escape)
                     {
@@ -115,46 +132,43 @@ namespace JTran.Json
 
                   Append:
 
-                    sb.Append(ch); 
+                    _factory.Append(ch);
                     previousChar = ch;
                 }
             }
             catch(ArgumentOutOfRangeException)
             { 
-                if(sb == null)
+                if(_factory.Length == 0)
                     throw new JsonParseException("Unexpected end of file", lineNumber);
             }
 
-            if(sb != null)
-            { 
-                this.TokenValue = sb.ToString();
+            this.TokenValue = _factory.Current;
 
-                if(!doubleQuoted && !singleQuoted)
-                {
-                    switch (this.TokenValue)
+            if(!doubleQuoted && !singleQuoted)
+            {
+                if(this.TokenValue is CharacterSpan span)
+                { 
+                    if(span.Equals("null"))
+                        return JsonToken.TokenType.Null;    
+
+                    if(span.Equals("true"))
+                        return JsonToken.TokenType.Boolean; 
+                        
+                    if(span.Equals("false"))
+                        return JsonToken.TokenType.Boolean; 
+
+                    if(span.TryParseNumber(out double dVal))
                     { 
-                        case "null":  return JsonToken.TokenType.Null;    
-                        case "true":  return JsonToken.TokenType.Boolean; 
-                        case "false": return JsonToken.TokenType.Boolean; 
+                        this.TokenValue = dVal;
 
-                        default: 
-                        {
-                            if(double.TryParse(this.TokenValue?.ToString(), out double dVal))
-                            { 
-                                this.TokenValue = dVal;
-
-                                return JsonToken.TokenType.Number; 
-                            }
-
-                            return JsonToken.TokenType.Text; 
-                        }
+                        return JsonToken.TokenType.Number; 
                     }
-                }
-                else
+
                     return JsonToken.TokenType.Text; 
+                }
             }
 
-            return JsonToken.TokenType.Unknown;
+            return JsonToken.TokenType.Text; 
         }    
     }
 

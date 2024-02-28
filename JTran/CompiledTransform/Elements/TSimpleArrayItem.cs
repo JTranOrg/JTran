@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using JTran.Common;
+
 namespace JTran
 {
     /****************************************************************************/
@@ -11,7 +13,7 @@ namespace JTran
         private readonly IValue _val;
 
         /****************************************************************************/
-        internal TSimpleArrayItem(object? val, long lineNumber) 
+        internal TSimpleArrayItem(CharacterSpan? val, long lineNumber) 
         {
             _val = CreateValue(val, false, lineNumber);
         }

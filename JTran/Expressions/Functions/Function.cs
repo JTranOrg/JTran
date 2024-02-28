@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using JTran.Common;
 using JTran.Json;
 
 namespace JTran.Expressions
@@ -225,6 +226,9 @@ namespace JTran.Expressions
 
                 if(parmType == typeof(IEnumerable<object>) && currentParam is IList<object> list)
                     return list;
+
+                if(parmType == typeof(string) && currentParam is CharacterSpan cspan)
+                    return cspan.ToString();
 
                 return Convert.ChangeType(currentParam, parmType);
             }

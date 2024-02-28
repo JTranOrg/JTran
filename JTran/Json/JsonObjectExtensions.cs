@@ -26,16 +26,29 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+using JTran.Common;
+
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran.Json
 {
     /****************************************************************************/
     /****************************************************************************/
-    public static class JsonObjectExtensions
+    internal static class JsonObjectExtensions
     {
         /****************************************************************************/
-        public static object ToJsonObject(this string s)
+        internal static object ToJsonObject(this string s)
+        {
+            var parser = new Json.Parser(new JsonModelBuilder());
+            var jobj = parser.Parse(s);
+
+            jobj.SetParent();// ??? Maybe do this in the parser
+
+            return jobj;
+        }
+
+        /****************************************************************************/
+        internal static object ToJsonObject(this Stream s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
             var jobj = parser.Parse(s);
@@ -46,18 +59,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public static object ToJsonObject(this Stream s)
-        {
-            var parser = new Json.Parser(new JsonModelBuilder());
-            var jobj = parser.Parse(s);
-
-            jobj.SetParent();
-
-            return jobj;
-        }
-
-        /****************************************************************************/
-        public static JsonObject JTranToJsonObject(this string s)
+        internal static JsonObject JTranToJsonObject(this string s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
             
@@ -82,28 +84,39 @@ namespace JTran.Json
         /****************************************************************************/
         private static JsonObject SetParent(this JsonObject obj)
         {
-            foreach(var val in obj)
+            foreach(var kv in obj)
             {
-                if(val.Value != null)
-                { 
-                    if(!val.Key.StartsWith("_jtran_"))
-                    {
-                        SetChild(val.Value, obj, null, val.Key);
-                    }
-                }
+                var val = kv.Value;
+
+                if(val is null)
+                    continue;
+
+                if(kv.Key.IsJTranProperty)
+                    continue;
+
+                if(val is CharacterSpan)
+                    continue;
+
+                if(val is double)
+                    continue;
+
+                if(val is bool)
+                    continue;
+
+                SetChild(val, obj, null, kv.Key);
             }
 
             return obj;
         }
 
         /****************************************************************************/
-        public static string ToJson(this JsonObject obj)
+        internal static string ToJson(this JsonObject obj)
         {            
             var writer = new JsonStringWriter();
 
             obj.ToJson(writer);
 
-            return writer.ToString();
+            return writer.ToString(); // ??? this is inefficent. Whoever is using this, please stop
         }
 
         /****************************************************************************/
@@ -120,7 +133,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static void ToJson(string key, object value, IJsonWriter writer)
+        internal static void ToJson(CharacterSpan key, object value, IJsonWriter writer)
         {
             if(value is IEnumerable<object> list)
             {
@@ -133,7 +146,7 @@ namespace JTran.Json
                 writer.WriteContainerName(key);
                 jobj.ToJson(writer);                   
             }
-            else if(value  == null || value is string || !value.GetType().IsClass)
+            else if(value  == null || value is CharacterSpan|| value is string || !value.GetType().IsClass)
                 writer.WriteProperty(key, value);
             else
             {                       
@@ -147,7 +160,7 @@ namespace JTran.Json
         {
             if(obj is JsonObject jobj)
             { 
-                var dict     = jobj.Where( kv=> !kv.Key.StartsWith("_jtran_") );
+                var dict     = jobj.Where( kv=> !kv.Key.IsJTranProperty);
                 var numItems = dict.Count();
 
                 foreach(var kv in dict)
@@ -164,6 +177,7 @@ namespace JTran.Json
                 if(!type.IsClass)
                     throw new ArgumentException("Unknown property type");
 
+                // cache the properties and create class to return all values
                 var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
 
                 foreach(var property in properties)
@@ -173,7 +187,7 @@ namespace JTran.Json
                         var value = property.GetGetMethod().Invoke(obj, null);
 
                         writer.StartChild();
-                        ToJson(property.Name, value, writer);
+                        ToJson(CharacterSpan.FromString(property.Name), value, writer); // ???
                         writer.EndChild();
                     }
                     catch
@@ -186,19 +200,18 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        public static T ToObject<T>(this JsonObject obj) where T : new()
+        internal static T ToObject<T>(this JsonObject obj) where T : new()
         {
             return (T)obj.ToObject(typeof(T));
         }
 
         /****************************************************************************/
-        public static object ToObject(this JsonObject obj, Type t)
+        internal static object ToObject(this JsonObject obj, Type t)
         {
             if(obj == null)
                 return null;
 
             var result = Activator.CreateInstance(t);
-            var dict = obj as IDictionary<string, object>;
 
             foreach (PropertyInfo prop in from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                         where p.CanRead
@@ -206,11 +219,11 @@ namespace JTran.Json
             {
                 try
                 {
-                    var name = prop.Name;
+                    var name = CharacterSpan.FromString(prop.Name);
 
-                    if(dict.ContainsKey(name))
+                    if(obj.ContainsKey(name))
                     {
-                        var val = ToValue(dict[name], prop.PropertyType);
+                        var val = ToValue(obj[name], prop.PropertyType);
 
                         prop.SetValue(result, val);
                     }
@@ -260,10 +273,14 @@ namespace JTran.Json
                 return list;
             }
 
+            if(type.Name == "String")
+                return val.ToString();
+
             return Convert.ChangeType(val, type);
         }
 
-        public static bool IsList(Type type)
+        /****************************************************************************/
+        internal static bool IsList(Type type)
         {
             if(null == type)
                 throw new ArgumentNullException("type");
@@ -278,7 +295,8 @@ namespace JTran.Json
             return false;
         }
 
-        public static Type GetListType(Type type)
+        /****************************************************************************/
+        internal static Type GetListType(Type type)
         {
             if(type == null)
                 throw new ArgumentNullException();
@@ -325,17 +343,17 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        private static void SetChild(object child, object parent, object gparent, string name)
+        private static void SetChild(object child, object parent, object gparent, CharacterSpan name)
         {
             if(child is JsonObject jobj)
             {
-                jobj["_jtran_parent"] = parent;
+                jobj[CharacterSpan.JTranParent] = parent;
 
                 if(gparent != null)
-                   jobj["_jtran_gparent"] = gparent;
+                   jobj[CharacterSpan.JTranGparent] = gparent;
 
                 if(name != null)
-                    jobj["_jtran_name"] = name;
+                    jobj[CharacterSpan.JTranName] = name;
 
                 jobj.SetParent();
             }
@@ -344,7 +362,7 @@ namespace JTran.Json
                 var childIndex = 0;
 
                 foreach(var gchild in list)
-                    SetChild(gchild, child, parent, (childIndex++ - 1).ToString());
+                    SetChild(gchild, child, parent, CharacterSpan.FromString((childIndex++ - 1).ToString())); // ??? this can't be good
             }
 
             return;

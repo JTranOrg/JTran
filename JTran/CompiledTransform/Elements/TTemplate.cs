@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using JTran.Expressions;
 using JTran.Extensions;
 using JTran.Json;
+using JTran.Common;
 
 namespace JTran
 {
@@ -12,18 +13,18 @@ namespace JTran
     /****************************************************************************/
     internal class TTemplate : TContainer
     {
-        public List<string> Parameters { get; } = new List<string>();
+        public List<CharacterSpan> Parameters { get; } = new();
 
         /****************************************************************************/
-        internal TTemplate(string name) 
+        internal TTemplate(CharacterSpan name) 
         {
-            name = name.Substring("#template(".Length);
+            name = name.Substring("#template(".Length, name.Length - "#template(".Length - 1);
 
-            var parms = name.Substring(0, name.Length - 1).Split(new char[] { ',' });
+            var parms = name.ToString().Split(new char[] { ',' });
 
             this.Name = parms[0].ToLower().Trim();
 
-            this.Parameters.AddRange(parms.Select( s=> s.Trim()));
+            this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Trim())));
             this.Parameters.RemoveAt(0);
         }
 
@@ -45,9 +46,9 @@ namespace JTran
         private readonly string _templateName;
 
         /****************************************************************************/
-        internal TCallTemplate(string name) 
+        internal TCallTemplate(CharacterSpan name) 
         {
-            _templateName = name.Substring("#calltemplate(".Length).ReplaceEnding(")", "");
+            _templateName = name.Substring("#calltemplate(".Length).ToString().ReplaceEnding(")", "");
         }
 
         /****************************************************************************/
@@ -68,7 +69,7 @@ namespace JTran
             var jsonParams = paramsOutput.ToString().JTranToJsonObject(); // ???
 
             foreach(var paramName in template.Parameters)
-                newContext.SetVariable(paramName, (jsonParams as IDictionary<string, object>)[paramName].ToString());
+                newContext.SetVariable(paramName, (jsonParams as JsonObject)[paramName].ToString());
 
             template.Evaluate(output, newContext, wrap);
         }
@@ -83,9 +84,9 @@ namespace JTran
         private readonly long _lineNumber;
 
         /****************************************************************************/
-        internal TCallTemplateProperty(string name, long lineNumber) 
+        internal TCallTemplateProperty(CharacterSpan name, long lineNumber) 
         {
-            var parms = CompiledTransform.ParseElementParams("calltemplate", name, CompiledTransform.TrueFalse);
+            var parms = CompiledTransform.ParseElementParams("#calltemplate", name, CompiledTransform.TrueFalse);
 
             _parms        = parms.Skip(1).ToList();
             _templateName = parms[0].Evaluate(new ExpressionContext(null)).ToString();

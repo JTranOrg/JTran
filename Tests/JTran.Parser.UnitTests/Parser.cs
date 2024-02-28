@@ -1,8 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using JTran.Parser;
-using JTranParser = JTran.Parser.ExpressionParser;
 using System.Xml.Linq;
+using System.Collections.Generic;
+
+using JTran.Common;
+using JTranParser = JTran.Parser.ExpressionParser;
 
 namespace JTran.Parser.UnitTests
 {
@@ -335,6 +337,14 @@ namespace JTran.Parser.UnitTests
    
             Assert.IsNotNull(tokens);
             Assert.AreEqual(count, tokens.Count);
+        }
+    }
+
+    internal static class Extensions
+    {
+        internal static IReadOnlyList<Token> Parse(this JTranParser parser, string data)
+        {
+            return parser.Parse(CharacterSpan.FromString(data));
         }
     }
 }

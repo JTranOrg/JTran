@@ -1,4 +1,5 @@
 ﻿
+using JTran.Common;
 using System;
 
 namespace JTran
@@ -11,23 +12,24 @@ namespace JTran
         private readonly TToken _property;
 
         /****************************************************************************/
-        internal TIncludeExclude(string? name, string val, bool include, long lineNumber) 
+        internal TIncludeExclude(CharacterSpan? name, CharacterSpan val, bool include, long lineNumber) 
         {
-            _name = name == null || name == "#noobject" ? null : CreateValue(name, true, 0);
+            _name = (name?.Equals("#noobject") ?? false) ? null : CreateValue(name, true, 0);
+
             _property = new TIncludeExcludeProperty(val, include, lineNumber);
         }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
-            string? name = null;
+            CharacterSpan? name = null;
             bool written = false;
 
             wrap( ()=>
             { 
                 _property.Evaluate(writer, context, fn=>
                 { 
-                    name = _name?.Evaluate(context)?.ToString();
+                    name = _name?.Evaluate(context) as CharacterSpan;
                     written = true;
 
                     if(name != null)

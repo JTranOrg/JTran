@@ -10,10 +10,10 @@ using Castle.Core.Configuration;
 namespace JTran.UnitTests
 {
     [TestClass]
-    public class ExpandoExtensionsTests
+    public class JsonObjectExtensionsTests
     {
         [TestMethod]
-        public void ExpandoExtensions_ToJson_Success()
+        public void JsonObjectExtensions_ToJson_Success()
         {
             var exp = _data1.ToJsonObject() as JsonObject;
             var json = exp.ToJson();
@@ -22,7 +22,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ExpandoExtensions_ToJson_date_Success()
+        public void JsonObjectExtensions_ToJson_date_Success()
         {
             var auto = new Automobile { Make = "Chevy", Model = "Camaro", Sold = DateTime.Parse("2023-12-06").ToString("o") };
             var json1 = JsonConvert.SerializeObject(auto);
@@ -43,7 +43,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ExpandoExtensions_ToObject()
+        public void JsonObjectExtensions_ToObject()
         {
             var auto = new Automobile 
             { 

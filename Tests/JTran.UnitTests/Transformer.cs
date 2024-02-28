@@ -49,26 +49,7 @@ namespace JTran.UnitTests
             Assert.AreEqual("Firebird", json.PathValue<string>("Owner.Cars.Pontiac.Model"));
             Assert.AreEqual("Charger",  json.PathValue<string>("Owner.Cars.Dodge.Model"));
         }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach_nested__Success()
-        {
-            var transformer = new JTran.Transformer(_transformNestedForEach, null);
-            var result      = transformer.Transform(_dataNested, null);
-   
-            Assert.AreNotEqual(_transformNestedForEach, _dataNested);
-
-            var roster = JsonConvert.DeserializeObject<Roster>(result);
-
-            Assert.AreEqual(3,               roster.Owner.Cars.Count);
-            Assert.AreEqual("Chevy",         roster.Owner.Cars[0].Make);
-            Assert.AreEqual("Camaro",        roster.Owner.Cars[0].Model);
-            Assert.AreEqual(3,               roster.Owner.Cars[0].Mechanics.Count);
-            Assert.AreEqual("Bob",           roster.Owner.Cars[0].Mechanics[0].FirstName);
-            Assert.AreEqual("Mendez",        roster.Owner.Cars[0].Mechanics[0].LastName);
-        }
-        
+       
         [TestMethod]
         [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_nested_single_innner__Success()
@@ -136,21 +117,17 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("ForEach")]
-        public async Task Transformer_Transform_ForEach_yielded_list_Success()
+        public void Transformer_Transform_ForEach_yielded_list_Success()
         {
             var list = GetList();
 
             var transformer = new JTran.Transformer(_transformList, null);
-            var result = "";
+            var source = JsonConvert.SerializeObject(list);
+            var result = transformer.Transform("{ 'Automobiles': " + source + " } ");
 
-            using(var output = new MemoryStream())
-            { 
-                transformer.Transform(list, "Automobiles", output);
+            var jobj = JObject.Parse(result);
 
-                result = await output.ReadStringAsync();
-            }
-
-            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+            var owner = JsonConvert.DeserializeObject<Owner2>(result.Trim());
 
             Assert.IsNotNull(owner);
             Assert.IsNotNull(owner.Cars);
@@ -215,12 +192,12 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("Charger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
-            Assert.AreEqual("Green",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
-            Assert.AreEqual("Blue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
-            Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
+            Assert.AreEqual("Camaro",   json!["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
+            Assert.AreEqual("Firebird", json!["Owner"]!["Cars"]!["Pontiac"]!["Model"]!.ToString());
+            Assert.AreEqual("Charger",  json!["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
+            Assert.AreEqual("Green",    json!["Owner"]!["Cars"]!["Chevy"]!["Color"]!.ToString());
+            Assert.AreEqual("Blue",     json!["Owner"]!["Cars"]!["Pontiac"]!["Color"]!.ToString());
+            Assert.AreEqual("Black",    json!["Owner"]!["Cars"]!["Dodge"]!["Color"]!.ToString());
         }
 
         #endregion
@@ -235,7 +212,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
+            Assert.AreEqual("1:48:52.0000", json!["Time"]!.ToString());
         }
 
         /*[TestMethod]

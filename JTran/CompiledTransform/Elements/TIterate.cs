@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 
+using JTran.Common;
 using JTran.Expressions;
 using JTran.Parser;
 
@@ -14,9 +15,9 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TIterate(string name) 
+        internal TIterate(CharacterSpan name) 
         {
-            var parms = CompiledTransform.ParseElementParams("iterate", name, CompiledTransform.FalseTrue );
+            var parms = CompiledTransform.ParseElementParams("#iterate", name, CompiledTransform.FalseTrue );
 
             if(parms.Count < 1)
                 throw new Transformer.SyntaxException("Missing expression for #iterate");
@@ -30,7 +31,7 @@ namespace JTran
                 if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
                 { 
                     this.IsOutputArray = true;
-                    this.Name = new SimpleValue("[]");
+                    this.Name = new SimpleValue(TToken.EmptyArray);
                 }
                 else
                 { 
@@ -63,7 +64,7 @@ namespace JTran
             { 
                 var arrayName = WriteContainerName(output, context);
 
-                if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
+                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
                     output.StartArray();
                 
                 var index = 0L;
@@ -81,13 +82,13 @@ namespace JTran
                     }
                 }
 
-                if(this.IsOutputArray || (arrayName != null && arrayName != "{}"))
+                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
                     output.EndArray();
             });
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, string arrayName, object childScope, ExpressionContext context, ref long index)
+        private bool EvaluateChild(IJsonWriter output, CharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
             var bBreak = false;

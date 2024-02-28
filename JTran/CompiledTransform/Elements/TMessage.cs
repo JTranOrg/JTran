@@ -20,6 +20,8 @@
 using System;
 using System.Diagnostics;
 
+using JTran.Common;
+
 namespace JTran
 {
     /****************************************************************************/
@@ -29,7 +31,7 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TMessage(object val, long lineNumber)
+        internal TMessage(CharacterSpan val, long lineNumber)
         {
             _message = CreateValue(val, true, lineNumber);
         }

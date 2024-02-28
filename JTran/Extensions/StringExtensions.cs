@@ -40,6 +40,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        [Obsolete]
         public static string FormatForJsonOutput(this string str)
         {            
             return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t").Replace("\f", "\\f").Replace("\b", "\\b");

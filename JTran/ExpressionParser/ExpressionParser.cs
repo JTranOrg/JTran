@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran.Parser
@@ -9,7 +9,7 @@ namespace JTran.Parser
     /// <summary>
     /// Parse an expression string into a flat list of tokens
     /// </summary>
-    public class ExpressionParser
+    internal class ExpressionParser
     {
         private static readonly IDictionary<string, string> _transformOperators = new Dictionary<string, string> { {"and", "&&" }, { "or", "||"} };
         private static readonly IList<string> _operators = new List<string> { "[", "]", "*", "/", "++", "--", "+=", "-=", "*=", "/=", "+", "-", "%", "<", "<=", ">", ">=", "=", "==", "===", "!=", "!==", "!", "||", "&&", "??", "?", ":", "(", ")", "~", "^", ">>", "<<", ",", ".", "=>", "=:", "and", "or", "=" };
@@ -20,12 +20,13 @@ namespace JTran.Parser
         private int _index = 0;
 
         /*****************************************************************************/
-        public ExpressionParser()
+        internal ExpressionParser()
         {  
         }
 
         /*****************************************************************************/
-        public IReadOnlyList<Token> Parse(string expression)
+        // ??? Need to optimize tokens to use CharacterSpan
+        internal IReadOnlyList<Token> Parse(CharacterSpan expression)
         {
             var   n    = expression.Length;
             char? prev = null;

@@ -17,8 +17,11 @@
  * 
  ****************************************************************************/
 
+using JTran;
+using JTran.Common;
 using JTran.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace JTran
@@ -29,41 +32,65 @@ namespace JTran
     {
         public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
-        /****************************************************************************/
-        internal protected IValue CreateValue(object? value, bool name, long lineNumber)
-        {
-            return CreateValue(value?.ToString(), name, lineNumber);
-        }  
-        
         internal TContainer? Parent { get; set; }
 
         /****************************************************************************/
-        private IValue CreateSimpleValue(string? sval)
+        private IValue CreateSimpleValue(CharacterSpan? sval)
         {
-            if(double.TryParse(sval, out double val))
-                return new NumberValue(val);
+            if(sval?.TryParseNumber(out double dval) ?? false)
+                return new NumberValue(dval);
 
             return new SimpleValue(sval);
         }
+      
+        private static readonly Dictionary<CharacterSpan, bool> _names = new Dictionary<CharacterSpan, bool>
+        {
+            { CharacterSpan.FromString("#arrayitem"), true }, 
+            { CharacterSpan.FromString("#mapitem"),   true }, 
+            { CharacterSpan.FromString("#if"),        true }, 
+            { CharacterSpan.FromString("#else"),      true }, 
+            { CharacterSpan.FromString("#elseif"),    true } 
+        };
+
+        private readonly static CharacterSpan _include      = CharacterSpan.FromString("#include");
+        private readonly static CharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
+        private readonly static CharacterSpan _innerjoin    = CharacterSpan.FromString("#innerjoin");
+        private readonly static CharacterSpan _outerjoin    = CharacterSpan.FromString("#outerjoin");
+        private readonly static CharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
+       
+        internal readonly static CharacterSpan EmptyArray   = CharacterSpan.FromString("[]");
+        internal readonly static CharacterSpan EmptyObject  = CharacterSpan.FromString("{}");
 
         /****************************************************************************/
-        private IValue CreateValue(string? sval, bool name, long lineNumber)
+        internal protected IValue CreateValue(object? val, bool name, long lineNumber)
         {
-            if(sval == null)
-                return new SimpleValue(sval);
+            if(val != null)
+            {
+                if(val is CharacterSpan cspan)
+                    return InternalCreateValue(cspan, name, lineNumber);
 
-            if(!sval.StartsWith("#") || sval.Length == 1) // Allow "#" as a string literal
+                if(val is double dval)
+                    return new NumberValue(dval);
+            }
+
+            return new SimpleValue(val);
+        }
+
+        /****************************************************************************/
+        private protected IValue InternalCreateValue(CharacterSpan? sval, bool name, long lineNumber)
+        {
+            if(sval![0] != '#' || sval.Length == 1) // Allow "#" as a string literal
                 return CreateSimpleValue(sval);
 
-            var elementName = sval.SubstringBefore("(");
+            var elementName = sval.SubstringBefore('(');
 
-            if(elementName == "#")
+            if(elementName[0] == '#' && elementName.Length == 1)
             { 
                 var expr = sval.Substring(2, sval.Length - 3);
 
                 try
                 { 
-                    return new ExpressionValue(expr);
+                    return new ExpressionValue(expr.ToString());
                 }
                 catch(JsonParseException ex)
                 {
@@ -74,37 +101,24 @@ namespace JTran
 
             if(name)
             { 
-                switch(elementName)
-                {
-                    case "#arrayitem":  
-                    case "#mapitem":    
-                    case "#if":         
-                    case "#else":       
-                    case "#elseif":     return CreateSimpleValue(sval);
-                    default:            break;
-                }
+                if(_names.ContainsKey(elementName))
+                    return CreateSimpleValue(sval);                    
             }
 
             else
             { 
-                switch(elementName)
-                {
-                    case "#include":       return new TIncludeExcludeProperty(sval, true, lineNumber);
-                    case "#exclude":       return new TIncludeExcludeProperty(sval, false, lineNumber);
-                    case "#innerjoin":     return new TInnerOuterJoinProperty(sval, true, lineNumber);
-                    case "#outerjoin":     return new TInnerOuterJoinProperty(sval, false, lineNumber);  
-                    case "#calltemplate":  return new TCallTemplateProperty(sval, lineNumber); 
+                if(_include.Equals(elementName))      return new TIncludeExcludeProperty(sval, true, lineNumber);
+                if(_exclude.Equals(elementName))      return new TIncludeExcludeProperty(sval, false, lineNumber);
+                if(_innerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, true, lineNumber);
+                if(_outerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, false, lineNumber);  
+                if(_calltemplate.Equals(elementName)) return new TCallTemplateProperty(sval, lineNumber); 
                     
-                    default:            
-                    {
-                        var templateName = sval.SubstringBefore("(")[1..];
-                        var theRest      = sval.SubstringAfter("(");
-                        var parm         = "#calltemplate(" + templateName + "," + theRest;
+                var templateName = sval.SubstringBefore('(', 0);
+                var theRest      = sval.SubstringAfter('(');
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString() + "," + theRest.ToString()); // ??? optimize
 
-                        // Will do exception on evaluation if no template found
-                        return new TCallTemplateProperty(parm, lineNumber);
-                    }
-                }
+                // Will do exception on evaluation if no template found
+                return new TCallTemplateProperty(parm, lineNumber);
             }
 
             throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber };    

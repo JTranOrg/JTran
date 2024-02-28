@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using JTran.Collections;
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -236,7 +237,7 @@ namespace JTran.Expressions
                 { 
                     result = outList2;
                 }
-                else if(expr is string || expr is JsonObject)
+                else if(expr is CharacterSpan || expr is string || expr is JsonObject)
                 {
                     result = expr;
                 }
@@ -357,11 +358,18 @@ namespace JTran.Expressions
      /*****************************************************************************/
      internal class VariableValue : IExpression
      {
-        private string _name;
+        private CharacterSpan _name;
 
-        public VariableValue(string name)
+        /*****************************************************************************/
+        public VariableValue(CharacterSpan name)
         {
             _name = name;
+        }
+
+        /*****************************************************************************/
+        public VariableValue(string name)
+        {
+            _name = CharacterSpan.FromString(name);
         }
 
         /*****************************************************************************/

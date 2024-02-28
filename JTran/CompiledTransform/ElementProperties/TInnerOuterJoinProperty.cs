@@ -3,6 +3,7 @@ using System;
 
 using JTran.Expressions;
 using JTran.Collections;
+using JTran.Common;
 
 namespace JTran
 {
@@ -16,9 +17,9 @@ namespace JTran
         private readonly bool _inner;
 
         /****************************************************************************/
-        internal TInnerOuterJoinProperty(string val, bool inner, long lineNumber) 
+        internal TInnerOuterJoinProperty(CharacterSpan val, bool inner, long lineNumber) 
         {
-            var name = inner ? "innerjoin" : "outerjoin";
+            var name = inner ? "#innerjoin" : "#outerjoin";
             var parms = CompiledTransform.ParseElementParams(name, val, CompiledTransform.SingleFalse);
 
             if(parms.Count < 3)

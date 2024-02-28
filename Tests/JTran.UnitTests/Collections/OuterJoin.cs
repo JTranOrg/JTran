@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using JTran.Collections;
 using JTran.Expressions;
 using JTranParser = JTran.Parser.ExpressionParser;
+using JTran.Common;
 
 namespace JTran.UnitTests
 {
@@ -39,8 +40,8 @@ namespace JTran.UnitTests
         private void AssertDriver(object result, string name, string model)
         {       
             var jobj  = result as JsonObject;
-            var left  = jobj!["left"] as Driver;
-            var right = jobj["right"] as Automobile;
+            var left  = jobj![CharacterSpan.FromString("left")] as Driver;
+            var right = jobj[CharacterSpan.FromString("right")] as Automobile;
 
             Assert.IsNotNull(left);
 

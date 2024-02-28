@@ -60,15 +60,15 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("0", true)]
-        [DataRow("1", false)]
-        [DataRow("-123232", false)]
-        [DataRow("0.000005", false)]
-        public void Function_empty_number_Success(string input, bool result)
+        [DataRow(0, true)]
+        [DataRow(1, false)]
+        [DataRow(-123232, false)]
+        [DataRow(0.000005, false)]
+        public void Function_empty_number_Success(double input, bool result)
         {
             var func       = new Function(new BuiltinFunctions(), "empty");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(double.Parse(input)) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(input) };
 
             Assert.AreEqual(result, Convert.ToBoolean(func.Evaluate(parameters, context)));
         }

@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using JTran.Common;
 using JTran.Json;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
@@ -44,7 +45,7 @@ namespace JTran
         #region Properties
 
         /****************************************************************************/
-        public object AddObject(string name, object? parent, object? previous, long lineNumber)
+        public object AddObject(CharacterSpan name, object? parent, object? previous, long lineNumber)
         {
             if(parent == null)
             { 
@@ -62,7 +63,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object AddArray(string name, object parent, long lineNumber)
+        public object AddArray(CharacterSpan name, object parent, long lineNumber)
         {
             if(parent == null)
             { 
@@ -80,7 +81,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object AddText(string name, string val, object parent, object? previous, long lineNumber)      
+        public object AddText(CharacterSpan name, CharacterSpan val, object parent, object? previous, long lineNumber)      
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(name, val, previous, lineNumber);
@@ -89,7 +90,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object AddBoolean(string name, bool val, object parent, object? previous, long lineNumber)     
+        public object AddBoolean(CharacterSpan name, bool val, object parent, object? previous, long lineNumber)     
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(name, val, previous, lineNumber);
@@ -98,7 +99,7 @@ namespace JTran
         }
         
         /****************************************************************************/
-        public object AddNumber(string name, double val, object parent, object? previous, long lineNumber)    
+        public object AddNumber(CharacterSpan name, double val, object parent, object? previous, long lineNumber)    
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(name, val, previous, lineNumber);
@@ -107,7 +108,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object AddNull(string name, object parent, object? previous, long lineNumber)                
+        public object AddNull(CharacterSpan name, object parent, object? previous, long lineNumber)                
         {
             if(parent is TContainer container)
                 return container.CreateProperty(name, null, previous, lineNumber);
@@ -138,7 +139,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object AddText(string val, object parent, long lineNumber)      
+        public object AddText(CharacterSpan val, object parent, long lineNumber)      
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(null, val, null, lineNumber);
@@ -168,7 +169,7 @@ namespace JTran
         public object AddNull(object parent, long lineNumber)                
         { 
             if(parent is TContainer container)
-                return container.CreateProperty("", null, null, lineNumber);
+                return container.CreateProperty(CharacterSpan.Empty, null, null, lineNumber);
 
             throw new Transformer.SyntaxException("Invalid container");
         }

@@ -1,5 +1,7 @@
 ﻿using System;
+using JTran.Common;
 using JTran.Expressions;
+using JTran.Extensions;
 using JTran.Parser;
 
 namespace JTran
@@ -17,22 +19,34 @@ namespace JTran
         internal protected IValue? Name          { get; set; }
       
         /****************************************************************************/
-        internal string? EvaluateName(ExpressionContext context)
+        internal CharacterSpan? EvaluateName(ExpressionContext context)
         {
-            var arrayName = this.IsOutputArray ? "[]" : (this.Name == null ? null : this.Name.Evaluate(context)?.ToString()?.Trim());
+            if(this.IsOutputArray)
+                return EmptyArray;
+                               
+            object? arrayName = null;
+            
+            if(this.Name != null)
+                arrayName = this.Name.Evaluate(context);
 
-            return string.IsNullOrWhiteSpace(arrayName) ? null : arrayName;
+            if(arrayName is CharacterSpan cspan)
+            {
+                 if(!(cspan?.IsNullOrWhiteSpace() ?? true))
+                     return cspan;
+            }
+
+            return null;
         }
       
         /****************************************************************************/
-        internal protected string? WriteContainerName(IJsonWriter output, ExpressionContext context)
+        internal protected CharacterSpan? WriteContainerName(IJsonWriter output, ExpressionContext context)
         {
             if(this.IsOutputArray)
-                return "[]";
+                return EmptyArray;
 
             var arrayName = this.EvaluateName(context);
 
-            if(arrayName != null && arrayName != "{}")
+            if(arrayName != null && !arrayName.Equals(EmptyObject))
             { 
                 output.WriteContainerName(arrayName);
             }
@@ -47,15 +61,24 @@ namespace JTran
 
             if(arrayName != null)
             { 
-                if(arrayName?.Evaluate(null) is Token token && token.Type == Token.TokenType.ExplicitArray)
-                { 
-                    this.IsOutputArray = true;
-                    this.Name = new SimpleValue("[]");
+                var name = arrayName?.Evaluate(null);
+
+                if(name is Token token)
+                {
+                    if(token.Type == Token.TokenType.ExplicitArray)
+                    { 
+                        this.IsOutputArray = true;
+                        this.Name = new SimpleValue(EmptyArray);
+                    }
+                    else if(token.Type == Token.TokenType.Text && token.Value.ToString() == "{}")
+                         this.Name = new SimpleValue(EmptyObject);
+                    else 
+                         this.Name = new SimpleValue(token.Value);
                 }
                 else
                 { 
                     this.IsOutputArray = false;
-                    this.Name = new SimpleValue(arrayName!.Evaluate(null));
+                    this.Name = new SimpleValue(name);
                 }
             }
         }
@@ -66,7 +89,7 @@ namespace JTran
     internal class TArray : TBaseArray
     {
         /****************************************************************************/
-        internal TArray(string name)
+        internal TArray(CharacterSpan name)
         { 
            name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
 
@@ -96,7 +119,7 @@ namespace JTran
     internal class TArrayItem : TObject
     {
         /****************************************************************************/
-        internal TArrayItem(string name, long lineNumber) : base(name, lineNumber)
+        internal TArrayItem(CharacterSpan name, long lineNumber) : base(name, lineNumber)
         {
         }
     }

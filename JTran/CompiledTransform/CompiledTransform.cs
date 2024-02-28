@@ -27,6 +27,7 @@ using System.Text;
 
 using JTran.Expressions;
 using JTran.Json;
+using JTran.Common;
 using JTran.Parser;
 
 using JTranParser = JTran.Parser.ExpressionParser;
@@ -115,7 +116,7 @@ namespace JTran
             return;
         }
 
-        internal override TToken CreateObject(string name, object? previous, long lineNumber)
+        internal override TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
         {
             var result = base.CreateObject(name, previous, lineNumber);
 
@@ -162,7 +163,7 @@ namespace JTran
             { 
                 var jobj = new JsonObject();
 
-                jobj[listName] = list;
+                jobj[CharacterSpan.FromString(listName)] = list;
                 data = jobj;
             }
 
@@ -183,22 +184,58 @@ namespace JTran
         #endregion
         
         /****************************************************************************/
-        internal static IList<IExpression> ParseElementParams(string elementName, string source, IReadOnlyList<bool> isExplicitParam) 
+        internal static IList<IExpression> ParseElementParams(string elementName, CharacterSpan source, IReadOnlyList<bool> isExplicitParam) 
         {
-            source = source.Trim();
-
-            if(!source.StartsWith("#" + elementName))
+            if(!source.StartsWith(elementName))
                 throw new Transformer.SyntaxException("Error in parsing element parameters");
 
             var result  = new List<IExpression>();
 
             // Check for no params
-            var checkStr = source.Substring(("#" + elementName).Length);
+            var checkStr = source.Substring(elementName.Length);
+
+            if(!checkStr.IsNullOrWhiteSpace(1, checkStr.Length - 2))
+            { 
+                var compiler = new Compiler();
+                var token    = Precompile(checkStr);
+                var i = 0;
+                IEnumerable<Token> tokens = token;
+
+                if(token.Type != Token.TokenType.CommaDelimited)
+                    tokens = new [] { token };
+                
+                foreach(var child in tokens)
+                {
+                    if(IsExplicitParam(isExplicitParam, i))
+                        result.Add(new Value(child));
+                    else
+                        result.Add(compiler.InnerCompile(new Token[] { child }));
+
+                    ++i;
+                }
+            }
+
+            return result;
+        }
+        
+        /****************************************************************************/
+        [Obsolete("Replaced by CharacterSpan version")]
+        internal static IList<IExpression> ParseElementParams(string elementName, string source, IReadOnlyList<bool> isExplicitParam) 
+        {
+            source = source.Trim();
+
+            if(!source.StartsWith(elementName))
+                throw new Transformer.SyntaxException("Error in parsing element parameters");
+
+            var result  = new List<IExpression>();
+
+            // Check for no params
+            var checkStr = source.Substring(elementName.Length);
 
             if(checkStr.Length != 0 && !string.IsNullOrWhiteSpace(checkStr.Substring(1, checkStr.Length - 2)))
             { 
                 var compiler = new Compiler();
-                var token    = Precompile(checkStr);
+                var token    = Precompile(CharacterSpan.FromString(checkStr));
                 var i = 0;
                 IEnumerable<Token> tokens = token;
 
@@ -222,7 +259,7 @@ namespace JTran
         #region Private 
 
         /****************************************************************************/
-        private static Token Precompile(string source) 
+        private static Token Precompile(CharacterSpan source) 
         {
             var parser = new JTranParser();
             var tokens = parser.Parse(source);
@@ -354,12 +391,17 @@ namespace JTran
     /****************************************************************************/
     internal class SimpleValue : IValue
     {
-        private string? _value;
+        private CharacterSpan? _value;
 
         /****************************************************************************/
         internal SimpleValue(object? value)
         {
-            _value = value?.ToString();
+            if(value is null)
+                _value = null;
+            else if(value is CharacterSpan cspan)
+                _value = cspan;
+            else
+                _value = CharacterSpan.FromString(value!.ToString());
         }
 
         /*****************************************************************************/
@@ -371,7 +413,33 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class StringValue
+    internal interface IStringValue
+    {
+        string Value { get; }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class CharacterSpanValue : IStringValue // ??? Just make CharacterSpan derive from IStringValue
+    {
+        private readonly CharacterSpan _val;
+
+        internal CharacterSpanValue(CharacterSpan val)
+        {
+            _val = val;
+        }
+
+        public string Value => _val.ToString();
+
+        public override string ToString()
+        {
+            return this.Value;
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class StringValue : IStringValue
     {
         private readonly string _val;
 
@@ -379,6 +447,8 @@ namespace JTran
         {
             _val = val;
         }
+
+        public string Value => _val;
 
         public override string ToString()
         {
@@ -428,7 +498,7 @@ namespace JTran
             if(val == null)
                 return null;
 
-            if(!(val is StringValue) && double.TryParse(val.ToString(), out double dval))
+            if(!(val is IStringValue) && double.TryParse(val.ToString(), out double dval))
             {
                 if(Math.Floor(dval) == dval)
                     return Convert.ToInt64(dval);

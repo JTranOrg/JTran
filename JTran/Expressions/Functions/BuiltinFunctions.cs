@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -145,7 +146,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object? max(object val1, object val2)
         {
-            var result = ObjectExtensions.compareto(val1, val2, out Type type) == 1 ? val1 : val2;
+            var result = JTran.Extensions.ObjectExtensions.compareto(val1, val2, out Type type) == 1 ? val1 : val2;
             
             return Convert(result, type);
         }
@@ -153,7 +154,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object? min(object val1, object val2)
         {
-            var result =  ObjectExtensions.compareto(val1, val2, out Type type) == -1 ? val1 : val2;
+            var result =  JTran.Extensions.ObjectExtensions.compareto(val1, val2, out Type type) == -1 ? val1 : val2;
             
             return Convert(result, type);
         }
@@ -307,7 +308,7 @@ namespace JTran.Expressions
             switch(type.Name)
             {
                 case "Long":      return long.Parse(result.ToString());
-                case "double":   return double.Parse(result.ToString());
+                case "double":    return double.Parse(result.ToString());
                 case "Boolean":   return bool.Parse(result.ToString());
                 case "String":    return result.ToString();
 
@@ -335,7 +336,10 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            return new StringValue(val?.ToString());
+            if(val is CharacterSpan cspan)
+                return new CharacterSpanValue(cspan);
+
+            return new StringValue(val!.ToString());
         }
 
         /*****************************************************************************/
@@ -426,6 +430,16 @@ namespace JTran.Expressions
             if(searchFor == null)
                 return false;
 
+            if(val is CharacterSpan cspan)
+            { 
+                var substr = searchFor as CharacterSpan;
+
+                if(cspan.IsNullOrWhiteSpace())
+                    return false;
+
+                return cspan!.Contains(substr);
+            }
+
             if(val is string sVal)
             { 
                 var substr = searchFor.ToString();
@@ -444,54 +458,62 @@ namespace JTran.Expressions
             }
 
             if(val is IEnumerable<object> list)
-                return list.Any( i=> ObjectExtensions.compareto(i, searchFor, out Type type) == 0 );
+                return list.Any( i=> JTran.Extensions.ObjectExtensions.compareto(i, searchFor, out Type type) == 0 );
 
             return false;
         }
 
         /*****************************************************************************/
         public string? normalizespace(string val)
+        // ??? Change first param to object
         {
             return val?.Trim()?.Replace("  ", " ");
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? trim(string val)
         {
             return val?.Trim();
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? trimend(string val)
         {
             return val?.TrimEnd();
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? trimstart(string val)
         {
             return val?.TrimStart();
         }
         
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? replace(string val, string r1, string r2)
         {
             return val?.Replace(r1, r2);
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? replaceending(string val, string r1, string r2)
         {
             return val?.ReplaceEnding(r1, r2);
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? remove(string val, string r1)
         {
             return val?.Replace(r1, "");
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? removeany(string val, object list)
         {
             if(val == null)
@@ -513,6 +535,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? padleft(string? val, string? padchar, int totalLen)
         {
             if(val == null || padchar == null || padchar.Length == 0)
@@ -522,6 +545,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? padright(string val, string padchar, int totalLen)
         {
             if(val == null || padchar == null || padchar.Length == 0)
@@ -531,12 +555,14 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? removeending(string val, string r1)
         {
             return val?.ReplaceEnding(r1, "");
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public string? removeanyending(string? val, object list)
         {
             if(val == null || list == null)
@@ -558,16 +584,19 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public int stringlength(string val)
         {
+        // ??? Change first param to object
             return val?.Length ?? 0;
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public int indexof(string val, string substr)
         {
             return val?.IndexOf(substr) ?? -1;
         }
 
         /*****************************************************************************/
+        // ??? Change first param to object
         public IEnumerable<object> split(string? val, string separator)
         {
             if(string.IsNullOrWhiteSpace(val)) 
@@ -592,23 +621,38 @@ namespace JTran.Expressions
             if(val == null)
                 return true;
 
+            if(val is CharacterSpan cspan)
+                return cspan.IsNullOrWhiteSpace();
+
+            if(val is JsonObject jobj)
+                return !jobj.Any( kv=> !kv.Key.IsJTranProperty);
+
             if(val is IDictionary<string, object> exp)
                 return !exp.Any( kv=> !kv.Key.StartsWith("_jtran"));
 
             if(val is bool)
                 return false;
 
+            if(val is double dval)
+                return dval == 0d;
+
+            if(val is int ival)
+                return ival == 0;
+
+            if(val is long lval)
+                return lval == 0L;
+
             if(val is string str)
                 return string.IsNullOrWhiteSpace(str);
-
-            if(double.TryParse(val.ToString(), out double dValue))
-                return dValue == 0d;
 
             if(val is IEnumerable<object> list)
                 return list.Count() == 0;
 
             var dict = new Dictionary<string, object>();
 
+            // ??? Check for other primitive types
+
+            // ???
             foreach (PropertyInfo item2 in from p in val.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                         where p.CanRead
                                         select p)
@@ -618,7 +662,7 @@ namespace JTran.Expressions
                     object obj2 = item2.GetGetMethod().Invoke(val, null);
 
                     if (obj2 != null)
-{
+                    {
                         dict.Add(item2.Name, obj2);
                     }
                 }
@@ -704,14 +748,10 @@ namespace JTran.Expressions
         [IgnoreParameterCount]
         public string name(ExpressionContext context)
         {
-            try
-            { 
-                return (context.Data as JsonObject)!["_jtran_name"].ToString();
-            }
-            catch
-            {
-                return "";
-            }
+            if(context.Data is JsonObject jobj && jobj.ContainsKey(CharacterSpan.JTranName))
+                return jobj[CharacterSpan.JTranName].ToString();
+
+            return string.Empty;
         }
 
         /*****************************************************************************/

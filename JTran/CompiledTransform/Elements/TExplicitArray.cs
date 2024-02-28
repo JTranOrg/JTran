@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JTran.Common;
+using System;
+using System.Xml.Linq;
 
 
 namespace JTran
@@ -8,13 +10,13 @@ namespace JTran
     internal class TExplicitArray : TBaseArray
     {
         /****************************************************************************/
-        internal TExplicitArray(string? name, long lineNumber)
+        internal TExplicitArray(CharacterSpan? name, long lineNumber)
         {
             this.Name = name != null ? CreateValue(name, true, lineNumber) : null;
         }
 
         /****************************************************************************/
-        internal override TToken CreateObject(string name, object? previous, long lineNumber)
+        internal override TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
         {
             var obj = new TObject(null, lineNumber);
 
@@ -24,7 +26,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateArray(string? name, long lineNumber)
+        internal override TToken CreateArray(CharacterSpan? name, long lineNumber)
         {
             var obj = new TExplicitArray(null, lineNumber);
 
@@ -34,9 +36,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateProperty(string name, object? val, object? previous, long lineNumber)
+        internal override TToken CreateProperty(CharacterSpan name, object? val, object? previous, long lineNumber)
         {
-            var obj = new TSimpleArrayItem(val, lineNumber);
+            var obj = new TSimpleArrayItem(val as CharacterSpan, lineNumber);
 
             this.Children.Add(obj);
 
@@ -54,7 +56,7 @@ namespace JTran
                     { 
                         var name = WriteContainerName(output, context);
 
-                        if(string.IsNullOrWhiteSpace(name))
+                        if(name?.IsNullOrWhiteSpace() ?? true)
                             throw new Transformer.SyntaxException("Array name evaluates to null or empty string");
                     }
 

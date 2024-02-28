@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using JTran.Common;
+using JTran.Expressions;
 using JTran.Extensions;
 
 namespace JTran
@@ -56,105 +58,84 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateObject(string name, object? previous, long lineNumber)
+        internal virtual TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
         {
             TToken? result = null;
             
             if(name == null)
-                name = "";
+                name = CharacterSpan.Empty;
             
-            var elementName = name.SubstringBefore("(");
+            var elementName = name.SubstringBefore('(');
 
-            switch(elementName)
+            if(elementName.Equals(_template))
+                return AddTemplate(new TTemplate(name));
+
+            if(elementName.Equals(_function))
+                return AddFunction(new TFunction(name));
+
+            if(elementName.Equals(_variable))
+                result = new TVariableObject(name);
+
+            else if(elementName.Equals(_map))
+                result = new TMap(name);
+
+            else if(elementName.Equals(_calltemplate))
+                result = result = new TCallTemplate(name);
+
+            else if(elementName.Equals(_bind))
+                result = new TBind(name);
+
+            else if(elementName.Equals(_foreachgroup))
+                result = new TForEachGroup(name);
+
+            else if(elementName.Equals(_foreach))
+                result = new TForEach(name, lineNumber);
+
+            else if(elementName.Equals(_iterate))
+                result = new TIterate(name);
+
+            else if(elementName.Equals(_arrayitem))
+                result = new TArrayItem(name, lineNumber);
+
+            else if(elementName.Equals(_array))
+                result = new TArray(name);
+
+            else if(elementName.Equals(_try))
+                result = new TTry();
+
+            else if(elementName.Equals(_catch))
             { 
-                case "#template":
-                    return AddTemplate(new TTemplate(name));
+                if(previous is TTry || previous is TCatch)
+                    result = new TCatch(name);
+                else
+                    throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
+            }
 
-                case "#function":
-                    return AddFunction(new TFunction(name));
+            else if(elementName.Equals(_if))
+                result = new TIf(name);
 
-                case "#variable":
-                    result = new TVariableObject(name);
-                    break;
+            else if(elementName.Equals(_elseif))
+            { 
+                if(previous is TIf || previous is TElseIf)
+                    result = new TElseIf(name);
+                else
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
+            }
 
-                case "#map":
-                    result = new TMap(name);
-                    break;
+            else if(elementName.Equals(_else))
+            { 
+                if(previous is TIf || previous is TElseIf)
+                    result = new TElse();
+                else 
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+            }
 
-                case "#calltemplate":
-                    result = result = new TCallTemplate(name);
-                    break;
+            else
+            { 
+                if(name[0] == '#' && name[1] != '(')
+                    throw new Transformer.SyntaxException($"Unknown element name: {elementName}");
 
-                case "#bind":
-                    result = new TBind(name);
-                    break;
-
-                case "#foreachgroup":
-                    result = new TForEachGroup(name);
-                    break;
-
-                case "#foreach":
-                    result = new TForEach(name, lineNumber);
-                    break;
-
-                case "#iterate":
-                    result = new TIterate(name);
-                    break;
-
-                case "#arrayitem":
-                    result = new TArrayItem(name, lineNumber);
-                    break;
-
-                case "#array":
-                    result = new TArray(name);
-                    break;
-
-                case "#try":
-                    result = new TTry();
-                    break;
-
-                case "#catch":
-                { 
-                    if(previous is TTry || previous is TCatch)
-                        result = new TCatch(name);
-                    else
-                        throw new Transformer.SyntaxException("#catch must follow a #try or another #catch");
-
-                    break;
-                }
-
-                case "#if":
-                    result = new TIf(name);
-                    break;
-
-                case "#elseif":
-                { 
-                    if(previous is TIf || previous is TElseIf)
-                        result = new TElseIf(name);
-                    else
-                        throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
-
-                    break;
-                }
-
-                case "#else":
-                { 
-                    if(previous is TIf || previous is TElseIf)
-                        result = new TElse(name);
-                    else 
-                        throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
-
-                    break;
-                }
-
-                default:
-                { 
-                    if(name.StartsWith("#") && !name.StartsWith("#("))
-                        throw new Transformer.SyntaxException($"Unknown element name: {elementName}");
-
-                    result = new TObject(name, lineNumber);
-                    break;
-                }
+                result = new TObject(name, lineNumber);
             }
 
             if(result != null)
@@ -167,7 +148,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateArray(string? name, long lineNumber)
+        internal virtual TToken CreateArray(CharacterSpan? name, long lineNumber)
         {
             TToken? result;
 
@@ -182,7 +163,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateProperty(string name, object? val, object? previous, long lineNumber)
+        internal virtual TToken CreateProperty(CharacterSpan name, object? val, object? previous, long lineNumber)
         {
             var result = CreatePropertyToken(name, val, previous, lineNumber);
 
@@ -195,84 +176,103 @@ namespace JTran
             return result;
         }
 
+        private static readonly CharacterSpan _bind         = CharacterSpan.FromString("#bind");
+        private static readonly CharacterSpan _break        = CharacterSpan.FromString("#break");
+        private static readonly CharacterSpan _function     = CharacterSpan.FromString("#function");
+        private static readonly CharacterSpan _foreach      = CharacterSpan.FromString("#foreach");
+        private static readonly CharacterSpan _foreachgroup = CharacterSpan.FromString("#foreachgroup");
+        private static readonly CharacterSpan _include      = CharacterSpan.FromString("#include");
+        private static readonly CharacterSpan _iterate      = CharacterSpan.FromString("#iterate");
+        private static readonly CharacterSpan _message      = CharacterSpan.FromString("#message");
+        private static readonly CharacterSpan _throw        = CharacterSpan.FromString("#throw");
+        private static readonly CharacterSpan _map          = CharacterSpan.FromString("#map");
+        private static readonly CharacterSpan _mapitem      = CharacterSpan.FromString("#mapitem");
+        private static readonly CharacterSpan _array        = CharacterSpan.FromString("#array");
+        private static readonly CharacterSpan _arrayitem    = CharacterSpan.FromString("#arrayitem");
+        private static readonly CharacterSpan _if           = CharacterSpan.FromString("#if");
+        private static readonly CharacterSpan _elseif       = CharacterSpan.FromString("#elseif");
+        private static readonly CharacterSpan _else         = CharacterSpan.FromString("#else");
+        private static readonly CharacterSpan _try          = CharacterSpan.FromString("#try");
+        private static readonly CharacterSpan _catch        = CharacterSpan.FromString("#catch");
+        private static readonly CharacterSpan _variable     = CharacterSpan.FromString("#variable");
+        private static readonly CharacterSpan _template     = CharacterSpan.FromString("#template");
+        private static readonly CharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
+                                                            
+        private static readonly CharacterSpan _copyof       = CharacterSpan.FromString("#copyof");
+        private static readonly CharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
+        private static readonly CharacterSpan _iif          = CharacterSpan.FromString("#iif");
+
         /****************************************************************************/
-        protected virtual TToken CreatePropertyToken(string name, object child, object? previous, long lineNumber)
+        protected virtual TToken CreatePropertyToken(CharacterSpan name, object child, object? previous, long lineNumber)
         {   
-            if(!string.IsNullOrEmpty(name)) 
+            if(!name.IsNullOrWhiteSpace()) 
             { 
-                switch(name.SubstringBefore("("))
+                var searchStr = name.SubstringBefore('(');
+                
+                if(_include.Equals(searchStr))
                 { 
-                    case "#include":
-                    { 
-                        this.CompiledTransform.LoadInclude(child.ToString(), this, lineNumber);
+                    this.CompiledTransform.LoadInclude(child.ToString(), this, lineNumber);
 
-                        return null;
-                    }
-
-                    case "#break":
-                        return new TBreak();
-
-                    case "#variable":
-                        return new TVariable(name, child, lineNumber);
-
-                    case "#message":
-                        return new TMessage(child, lineNumber);
-
-                    case "#throw":
-                        return new TThrow(name, child, lineNumber);
-
-                    case "#mapitem":
-                    {                
-                        if(this is TMap && (previous is TMapItem || previous == null))
-                            return new TMapItem(name, child, lineNumber);
-
-                        throw new Transformer.SyntaxException("#mapitem must be a child of #map");
-                    }
-
-                    case "#arrayitem":
-                        return new TSimpleArrayItem(child, lineNumber);
-
-                    case "#if":
-                        return new TPropertyIf(name, child, lineNumber);
-
-                    case "#elseif":
-                    { 
-                        if(previous is TPropertyIf || previous is TElseIf)
-                            return new TPropertyElseIf(name, child, lineNumber);
-
-                        throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
-                    }
-
-                    case "#else":
-                    { 
-                        if(previous is TPropertyIf || previous is TPropertyElseIf)
-                            return new TPropertyElse(name, child, lineNumber);
-
-                        throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
-                    }   
-
-                    default:
-                        break;
+                    return null;
                 }
 
-                var sval = child.ToString();
+                if(_break.Equals(searchStr))
+                    return new TBreak();
 
-                switch(sval.SubstringBefore("("))
+                if(_variable.Equals(searchStr))
+                    return new TVariable(name, child as CharacterSpan, lineNumber);
+
+                if(_message.Equals(searchStr))
+                    return new TMessage(child as CharacterSpan, lineNumber);
+
+                if(_throw.Equals(searchStr))
+                    return new TThrow(name, child, lineNumber);
+
+                if(_mapitem.Equals(searchStr))
+                {                
+                    if(this is TMap && (previous is TMapItem || previous == null))
+                        return new TMapItem(name, child, lineNumber);
+
+                    throw new Transformer.SyntaxException("#mapitem must be a child of #map");
+                }
+
+                if(_arrayitem.Equals(searchStr))
+                    return new TSimpleArrayItem(child as CharacterSpan, lineNumber);
+
+                if(_if.Equals(searchStr))
+                    return new TPropertyIf(name, child, lineNumber);
+
+                if(_elseif.Equals(searchStr))
                 { 
-                    case "#copyof":
+                    if(previous is TPropertyIf || previous is TElseIf)
+                        return new TPropertyElseIf(name, child, lineNumber);
+
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or another #elseif");
+                }
+
+                if(_else.Equals(searchStr))
+                { 
+                    if(previous is TPropertyIf || previous is TPropertyElseIf)
+                        return new TPropertyElse(name, child, lineNumber);
+
+                    throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
+                }   
+
+                if(child is CharacterSpan sval)
+                { 
+                    searchStr = sval.SubstringBefore('(');
+
+                    if(_copyof.Equals(searchStr))
                         return new TCopyOf(name, sval);
  
-                    case "#include":
+                    if(_include.Equals(searchStr))
                         return new TIncludeExclude(name, sval, true, lineNumber);
 
-                    case "#exclude":
+                     if(_exclude.Equals(searchStr))
                         return new TIncludeExclude(name, sval, false, lineNumber);
 
-                    case "#iif":
+                     if(_iif.Equals(searchStr))
                         return new TIif(name, sval, lineNumber);
-
-                    default:
-                        break;
                 }
             }
 

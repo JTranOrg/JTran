@@ -4,6 +4,7 @@ using JTran.Extensions;
 using JTran.Json;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Linq;
+using JTran.Common;
 
 namespace JTran.UnitTests
 {
@@ -15,8 +16,8 @@ namespace JTran.UnitTests
         {
             var obj = _data1.ToJsonObject();
 
-            Assert.AreEqual("John",  obj.GetValue("FirstName", null));
-            Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null));
+            Assert.AreEqual("John",  obj.GetValue("FirstName", null).ToString());
+            Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null).ToString());
             Assert.AreEqual(375d,    obj.GetValue("Car.Engine.Displacement", null));
             Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice", null)));
         }
@@ -35,8 +36,8 @@ namespace JTran.UnitTests
             var obj = _datagg1.ToJsonObject();
             var driver = obj.GetValue("parent.Driver", null);
 
-            Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null));
-            Assert.AreEqual("January Events", driver.GetValue("//Name", null));
+            Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null).ToString());
+            Assert.AreEqual("January Events", driver.GetValue("//Name", null).ToString());
         }
 
         [TestMethod]

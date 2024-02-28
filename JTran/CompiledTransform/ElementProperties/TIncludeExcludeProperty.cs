@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran
@@ -12,13 +13,13 @@ namespace JTran
     internal class TIncludeExcludeProperty : TToken, IValue
     {
         private readonly IExpression _expression;
-        private readonly IDictionary<string, string> _properties;
+        private readonly IDictionary<CharacterSpan, CharacterSpan?> _properties;
         private readonly bool _include;
 
         /****************************************************************************/
-        internal TIncludeExcludeProperty(string val, bool include, long lineNumber) 
+        internal TIncludeExcludeProperty(CharacterSpan val, bool include, long lineNumber) 
         {
-            var name  = include ? "include" : "exclude";
+            var name  = include ? "#include" : "#exclude";
             var parms = CompiledTransform.ParseElementParams(name, val, CompiledTransform.FalseTrue);
 
             _include = include;
@@ -27,7 +28,7 @@ namespace JTran
                 throw new Transformer.SyntaxException($"Missing expression for #{name}") { LineNumber = lineNumber};
 
             _expression = parms[0];
-            _properties = parms.Skip(1).Select( s=> s.ToString()).ToDictionary( k=> k, v=> v);
+            _properties = parms.Skip(1).Select( p=> p as CharacterSpan).ToDictionary( k=> k!, v=> v);
         }
 
         /****************************************************************************/

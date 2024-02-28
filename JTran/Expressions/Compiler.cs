@@ -17,10 +17,11 @@
  *                                                                          
  ****************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
+using JTran.Common;
 using JTran.Extensions;
 using JTran.Parser;
 using JTranParser = JTran.Parser.ExpressionParser;
@@ -42,7 +43,17 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        [Obsolete]
         internal static IExpression Compile(string expr)
+        {
+            var parser   = new JTranParser();
+            var compiler = new Compiler();
+
+            return compiler.Compile(parser.Parse(CharacterSpan.FromString(expr)));
+        }
+
+        /*****************************************************************************/
+        internal static IExpression Compile(CharacterSpan expr)
         {
             var parser   = new JTranParser();
             var compiler = new Compiler();

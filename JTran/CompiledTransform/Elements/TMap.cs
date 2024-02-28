@@ -1,5 +1,6 @@
 ﻿using System;
 
+using JTran.Common;
 using JTran.Expressions;
 using JTran.Extensions;
 
@@ -12,7 +13,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TMap(string name) : this(name, "#map(") 
+        internal TMap(CharacterSpan name) : this(name, "#map(") 
         {
         }
 
@@ -21,11 +22,9 @@ namespace JTran
         public bool   If             => true;
 
         /****************************************************************************/
-        internal protected TMap(string name, string elementName) 
+        internal protected TMap(CharacterSpan name, string elementName) 
         {
-            name = name.Substring(elementName.Length);
-
-            _expression = Compiler.Compile(name.Substring(0, name.Length - 1));
+            _expression = Compiler.Compile(name.Substring(elementName.Length, -1)); // -1 means lop off last character
         }
 
         /****************************************************************************/
@@ -54,16 +53,16 @@ namespace JTran
         private readonly IExpression? _expression;
 
         /****************************************************************************/
-        internal TMapItem(string name, object val, long lineNumber) : this(name, val, "#mapitem", lineNumber) 
+        internal TMapItem(CharacterSpan name, object val, long lineNumber) : this(name, val, "#mapitem", lineNumber) 
         {
         }
 
         /****************************************************************************/
-        internal protected TMapItem(string name, object val, string elementName, long lineNumber) : base(name, val, lineNumber)  
+        internal protected TMapItem(CharacterSpan name, object val, string elementName, long lineNumber) : base(name, val, lineNumber)  
         {
             name = name.Substring(elementName.Length);
 
-            if(!string.IsNullOrWhiteSpace(name))
+            if(!name.IsNullOrWhiteSpace())
                 _expression = Compiler.Compile(name.Substring(1, name.Length - 2));
         }
 

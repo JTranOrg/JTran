@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JTran.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,23 +8,23 @@ namespace JTran.Parser
 {
    /*****************************************************************************/
     /*****************************************************************************/
-    public class Token : IList<Token>
+    internal class Token : IList<Token>
     { 
         /*****************************************************************************/
-        public Token()
+        internal Token()
         {
         }
 
         /*****************************************************************************/
-        public Token(string val, TokenType tokenType = TokenType.Text)
+        internal Token(string val, TokenType tokenType = TokenType.Text)
         {
            this.Value = val;
            this.Type  = tokenType;
         }
 
-        public int       Id    { get; set; } = 0;
-        public string    Value { get; set; } = "";
-        public TokenType Type  { get; set; } = TokenType.Text;
+        internal int           Id    { get; set; } = 0;
+        internal string        Value { get; set; } = "";
+        internal TokenType     Type  { get; set; } = TokenType.Text;
 
         protected List<Token>? _children;
 
@@ -41,32 +42,32 @@ namespace JTran.Parser
                 case TokenType.Multipart:      return string.Join(".", _children.Select(c=> c.ToString()));
                 case TokenType.Array:          return this.Value + string.Join("", _children.Select(c=> c.ToString()));
 
-                default:                       return this.Value;
+                default:                       return this.Value.ToString();
             }
         }
 
         /*****************************************************************************/
-        public const string BeginParen = "(";
-        public const string BeginArray = "[";
-        public const string EndParen = ")";
-        public const string EndArray = "]";
+        internal const string BeginParen = "(";
+        internal const string BeginArray = "[";
+        internal const string EndParen = ")";
+        internal const string EndArray = "]";
 
         /*****************************************************************************/
-        public bool IsOperator       => this?.Type == TokenType.Operator;
-        public bool IsPunctuation    => this?.Type == TokenType.Punctuation;
-        public bool IsComma          => this.IsOperator && this.Value == ",";
-        public bool IsBeginParen     => this.IsOperator && this.Value == BeginParen;
-        public bool IsEndParen       => this.IsOperator && this.Value == EndParen;
-        public bool IsBeginArray     => this.IsOperator && this.Value == BeginArray;
-        public bool IsBeginBoundary  => this.IsOperator && (this.Value == BeginArray || this.Value == BeginParen);
-        public bool IsEndBoundary    => this.IsOperator && (this.Value == EndArray || this.Value == EndParen || this.Value == ",");
-        public bool IsMultiDot       => this.IsOperator && this.Value == ".";
-        public bool IsTertiary       => this.IsOperator && "?:".Contains(this.Value);
-        public bool IsExpression     => this.Type >= TokenType.Expression;
-        public bool IsLiteral        => this == null ? false : this?.Type == TokenType.Literal || this?.Type == TokenType.DLiteral;
+        internal bool IsOperator       => this?.Type == TokenType.Operator;
+        internal bool IsPunctuation    => this?.Type == TokenType.Punctuation;
+        internal bool IsComma          => this.IsOperator && this.Value == ",";
+        internal bool IsBeginParen     => this.IsOperator && this.Value == BeginParen;
+        internal bool IsEndParen       => this.IsOperator && this.Value == EndParen;
+        internal bool IsBeginArray     => this.IsOperator && this.Value == BeginArray;
+        internal bool IsBeginBoundary  => this.IsOperator && (this.Value == BeginArray || this.Value == BeginParen);
+        internal bool IsEndBoundary    => this.IsOperator && (this.Value == EndArray || this.Value == EndParen || this.Value == ",");
+        internal bool IsMultiDot       => this.IsOperator && this.Value == ".";
+        internal bool IsTertiary       => this.IsOperator && "?:".Contains(this.Value);
+        internal bool IsExpression     => this.Type >= TokenType.Expression;
+        internal bool IsLiteral        => this == null ? false : this?.Type == TokenType.Literal || this?.Type == TokenType.DLiteral;
 
         /*****************************************************************************/
-        public enum TokenType
+        internal enum TokenType
         {
             NoToken,
             Text,

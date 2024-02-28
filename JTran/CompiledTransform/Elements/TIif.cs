@@ -1,5 +1,6 @@
 ﻿using System;
 
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran
@@ -8,17 +9,17 @@ namespace JTran
     /****************************************************************************/
     internal class TIif : TToken
     {
-        private readonly IValue _name;
+        private readonly IValue? _name;
         private readonly IExpression _expression;
         private readonly IExpression _if;
         private readonly IExpression _else;
 
         /****************************************************************************/
-        internal TIif(string name, string val, long lineNumber) 
+        internal TIif(CharacterSpan? name, CharacterSpan val, long lineNumber) 
         {
             _name = name == null ? null : CreateValue(name, true, lineNumber);
 
-            var parms = CompiledTransform.ParseElementParams("iif", val, CompiledTransform.SingleFalse );
+            var parms = CompiledTransform.ParseElementParams("#iif", val, CompiledTransform.SingleFalse );
 
             if(parms.Count < 3)
                 throw new Transformer.SyntaxException("Missing expressions for #iif");
@@ -34,9 +35,9 @@ namespace JTran
             wrap( ()=>
             { 
                 var result = _expression.EvaluateToBool(context) ? _if.Evaluate(context) : _else.Evaluate(context);
-                var name   = _name?.Evaluate(context)?.ToString();
+                var name   = _name?.Evaluate(context) as CharacterSpan;
 
-                writer.WriteProperty(name, result);
+                writer.WriteProperty(name!, result);
             });
         }
     }

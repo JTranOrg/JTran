@@ -1,4 +1,23 @@
-﻿using System;
+﻿/***************************************************************************
+ *                                                                          
+ *    JTran - A JSON to JSON transformer  							                    
+ *                                                                          
+ *        Namespace: JTran.Json						            
+ *             File: CharacterReader.cs					    		        
+ *        Class(es): CharacterReader				         		            
+ *          Purpose: Reads characters from a stream of string 1 character at a time               
+ *                                                                          
+ *  Original Author: Jim Lightfoot                                          
+ *    Creation Date: 19 Jan 2024                                             
+ *                                                                          
+ *   Copyright (c) 2024 - Jim Lightfoot, All rights reserved           
+ *                                                                          
+ *  Licensed under the MIT license:                                         
+ *    http://www.opensource.org/licenses/mit-license.php                    
+ *                                                                          
+ ****************************************************************************/
+
+using System;
 using System.IO;
 using System.Text;
 using System.Runtime.CompilerServices;
@@ -13,59 +32,100 @@ namespace JTran.Json
     /****************************************************************************/
     internal interface ICharacterReader
     {
-        char ReadNext(ref long lineNumber);    
+        bool ReadNext();    
         void GoBack();    
+        char Current    { get; }
+        long LineNumber { get; }
     }
 
     /****************************************************************************/
     /****************************************************************************/
     internal class CharacterReader : ICharacterReader, IDisposable
     {
-        private string? _currentLine;
-        private int     _position = -1;
-        private char?   _back;
-        private char    _last = '\0';
-        private readonly TextReader _reader;
+        private int       _position = -1;
+        private char?     _back;
+        private char      _last = '\0';
+        private long      _lineNumber = 1L;
+        private char      _ch = '\0';
+        private char[]    _buffer;
+        private int       _bufferRead = 0;
+        private int       _bufferSize = 64 * 1024;
+
+        private TextReader? _reader;
 
         internal CharacterReader(Stream stream) 
         { 
-            _reader = new StreamReader(stream, Encoding.UTF8, true, 32 * 1024);
+            var streamBufferSize = (int)(_bufferSize*1.5);
+            var streamLen        = stream.Length;
+
+            while(_bufferSize > streamLen && _bufferSize > 4096)
+            {
+                int newBufferSize = _bufferSize/2;
+
+                if(newBufferSize < streamLen)
+                    break;
+
+                _bufferSize = newBufferSize;
+            }
+
+            streamBufferSize = (int)(_bufferSize);
+
+            _reader = new StreamReader(stream, Encoding.UTF8, true, streamBufferSize);
+            _buffer = new char[_bufferSize];
         }
 
-       internal CharacterReader(string str) 
+        ~CharacterReader()
+        {
+            Dispose();
+        }
+
+        internal CharacterReader(string str) 
         { 
             _reader = new StringReader(str);
+            _buffer = new char[_bufferSize];
         }
 
-        public char ReadNext(ref long lineNumber)
+        public char Current    => _ch;
+        public long LineNumber => _lineNumber;
+
+        public bool ReadNext()
+        {
+            return InternalReadNext('\0');
+        }
+
+        private bool InternalReadNext(char prev)
         {
             if(_back != null)
             {
                 _last = _back.Value;
                 _back = null;
-                return _last;
+                _ch   = _last;
+
+                return true;
             }
 
-            if(_currentLine == null && _position != -1)
-                throw new ArgumentOutOfRangeException(nameof(ReadNext));
-
-            while(_position == -1 || _position >= (_currentLine?.Length ?? 0))
+            if(_bufferRead == 0 || _position >= _bufferRead)
             {
-                _currentLine = _reader.ReadLine();
-                ++lineNumber;
-
-                if(_currentLine == null)
-                    throw new ArgumentOutOfRangeException(nameof(ReadNext));
-
-                if(_currentLine.Length == 0)
-                   continue;
+                _bufferRead = _reader.ReadBlock(_buffer, 0,_bufferSize);
+                    
+                if(_bufferRead == 0)
+                {
+                    _ch = '\0';
+                    return false;
+                }
 
                 _position = 0;
-                break;
             }
 
-            return _last = _currentLine![_position++];
-        
+            _ch = _last = _buffer[_position++];   
+
+            if(_ch == '\r' || _ch == '\n')
+                return InternalReadNext(_ch);
+
+            if(prev == '\r' || prev == '\n')
+                ++_lineNumber;
+
+            return true;
         }
 
         public void GoBack()
@@ -78,7 +138,11 @@ namespace JTran.Json
 
         public void Dispose()
         {
-            _reader.Dispose();
+            if(_reader != null)
+            {
+                _reader.Dispose();
+                _reader = null;
+            }
         }
     }
 }

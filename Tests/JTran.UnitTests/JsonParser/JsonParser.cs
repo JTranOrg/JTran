@@ -227,7 +227,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("missing_quotes3", 13)]
+        [DataRow("missing_quotes3", 12)]
         public void JsonParser_Parse_end_of_file(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);

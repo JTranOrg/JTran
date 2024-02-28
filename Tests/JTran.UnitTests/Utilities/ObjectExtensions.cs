@@ -34,6 +34,7 @@ namespace JTran.UnitTests
             }
             else
             {
+            // ??? create class/cache
                 // Get public and instance properties only
                 var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
 

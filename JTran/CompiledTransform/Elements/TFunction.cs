@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JTran.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,17 +9,17 @@ namespace JTran
     /****************************************************************************/
     internal class TFunction : TContainer
     {
-        public List<string> Parameters { get; } = new List<string>();
+        public List<CharacterSpan> Parameters { get; } = new List<CharacterSpan>();
 
         /****************************************************************************/
-        internal TFunction(string name) 
+        internal TFunction(CharacterSpan name) 
         {
-            var parms   = CompiledTransform.ParseElementParams("function", name, CompiledTransform.SingleTrue );
+            var parms   = CompiledTransform.ParseElementParams("#function", name, CompiledTransform.SingleTrue );
             var context = new ExpressionContext(new {});
 
             this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim();
 
-            this.Parameters.AddRange(parms.Select( s=> s.Evaluate(context).ToString().Trim()));
+            this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Evaluate(context).ToString().Trim()))); // ???
             this.Parameters.RemoveAt(0);
         }
 
