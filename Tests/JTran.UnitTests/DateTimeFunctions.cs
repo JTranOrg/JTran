@@ -92,9 +92,9 @@ namespace JTran.UnitTests
             var utcNow   = dto.UtcDateTime;
             var sDto     = utcNow.ToString("o");
             var context  = CreateContext(new {Year = 2010, Now = utcNow} );
-            var sResult  = Compile($"DateTimeUtc(Now)").Evaluate(context).ToString();
+            var sResult  = Compile($"DateTimeUtc(Now)").Evaluate(context);
    
-            Assert.AreEqual(sDto, sResult);
+            Assert.AreEqual(sDto, sResult.ToString());
         }
 
         [TestMethod]

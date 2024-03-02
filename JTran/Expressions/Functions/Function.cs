@@ -197,8 +197,8 @@ namespace JTran.Expressions
             if(elementType.Name == "String")
                 return (new List<string>(values.Select( v=> v?.ToString()))).ToArray();
 
-            if(elementType.Name == "Double")
-                return (new List<double>(values.Select( v=> double.Parse(v?.ToString() ?? "0")))).ToArray();
+            if(elementType.Name == "Decimal")
+                return (new List<decimal>(values.Select( v=> decimal.Parse(v?.ToString() ?? "0")))).ToArray();
 
             if(elementType.Name == "Long")
                 return (new List<long>(values.Select( v=> long.Parse(v?.ToString() ?? "0")))).ToArray();

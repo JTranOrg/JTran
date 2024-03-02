@@ -21,6 +21,8 @@ using JTran.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 
+using JTran.Common;
+
 namespace JTran.Collections
 {
     /****************************************************************************/
@@ -61,7 +63,7 @@ namespace JTran.Collections
             private TCHILD?                       _currentValue;
 
             /****************************************************************************/
-            internal Enumerator(IEnumerable<TPARENT> list, string field) 
+            internal Enumerator(IEnumerable<TPARENT> list, string field) // ??? use character span
             {
                 _field            = field;
                 _parentEnumerator = list.GetEnumerator();

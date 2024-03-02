@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Reflection;
 
 using JTran.Common;
@@ -57,7 +58,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(!double.TryParse(val.ToString(), out double dVal))
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
                 return null;
 
             return Math.Floor(dVal);
@@ -69,7 +70,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(!double.TryParse(val.ToString(), out double dVal))
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
                 return null;
 
             return Math.Ceiling(dVal);
@@ -81,7 +82,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(!double.TryParse(val.ToString(), out double dVal))
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
                 return null;
 
             return Math.Round(dVal);
@@ -93,10 +94,10 @@ namespace JTran.Expressions
             if(val == null || numPlaces < 1)
                 return null;
 
-            if(!double.TryParse(val.ToString(), out double dVal))
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
                 return null;
 
-            var multiplier = (double)Math.Pow(10, numPlaces);
+            var multiplier = (decimal)Math.Pow(10, numPlaces);
 
             return Math.Floor(dVal * multiplier) / multiplier;
         }
@@ -107,7 +108,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(!double.TryParse(val.ToString(), out double dVal))
+            if(!decimal.TryParse(val.ToString(), out decimal dVal))
                 return null;
 
             return Math.Abs(dVal);
@@ -119,7 +120,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double result))
+            if(decimal.TryParse(val.ToString(), out decimal result))
                 return result;
 
             return 0d;
@@ -131,7 +132,7 @@ namespace JTran.Expressions
             if(val == null)
                 return false;
 
-            return double.TryParse(val.ToString(), out double result);
+            return decimal.TryParse(val.ToString(), out decimal result);
         }
 
         /*****************************************************************************/
@@ -160,9 +161,9 @@ namespace JTran.Expressions
         }
         
         /*****************************************************************************/
-        public double pi()
+        public decimal pi()
         {            
-            return (double)Math.PI;
+            return (decimal)Math.PI;
         }
 
         /*****************************************************************************/
@@ -171,9 +172,9 @@ namespace JTran.Expressions
             if(val1 == null || val2 == null)
                 return null;
 
-            if(double.TryParse(val1.ToString(), out double dVal1))
-                if(double.TryParse(val2.ToString(), out double dVal2))
-                    return (double)Math.Pow((double)dVal1, (double)dVal2);
+            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
+                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
+                    return (decimal)Math.Pow((double)dVal1, (double)dVal2);
 
             return null;
         }
@@ -184,8 +185,8 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
-                return Math.Sqrt((double)dVal);
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
+                return (decimal)Math.Sqrt((double)dVal);
 
             return null;
         }
@@ -196,7 +197,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Sin((double)dVal);
 
             return null;
@@ -209,7 +210,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Cos((double)dVal);
 
             return null;
@@ -221,7 +222,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Sinh((double)dVal);
 
             return null;
@@ -234,7 +235,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Cosh((double)dVal);
 
             return null;
@@ -246,7 +247,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Tan((double)dVal);
 
             return null;
@@ -258,7 +259,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Acos((double)dVal);
 
             return null;
@@ -270,7 +271,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Asin((double)dVal);
 
             return null;
@@ -282,7 +283,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(double.TryParse(val.ToString(), out double dVal))
+            if(decimal.TryParse(val.ToString(), out decimal dVal))
                 return Math.Atan((double)dVal);
 
             return null;
@@ -294,9 +295,9 @@ namespace JTran.Expressions
             if(val1 == null || val2 == null)
                 return null;
 
-            if(double.TryParse(val1.ToString(), out double dVal1))
-                if(double.TryParse(val2.ToString(), out double dVal2))
-                    return (double)Math.Atan2((double)dVal1, (double)dVal2);
+            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
+                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
+                    return (decimal)Math.Atan2((double)dVal1, (double)dVal2);
 
             return null;
         }
@@ -308,7 +309,7 @@ namespace JTran.Expressions
             switch(type.Name)
             {
                 case "Long":      return long.Parse(result.ToString());
-                case "double":    return double.Parse(result.ToString());
+                case "decimal":    return decimal.Parse(result.ToString());
                 case "Boolean":   return bool.Parse(result.ToString());
                 case "String":    return result.ToString();
 
@@ -337,7 +338,7 @@ namespace JTran.Expressions
                 return null;
 
             if(val is CharacterSpan cspan)
-                return new CharacterSpanValue(cspan);
+                return cspan;
 
             return new StringValue(val!.ToString());
         }
@@ -432,20 +433,20 @@ namespace JTran.Expressions
 
             if(val is CharacterSpan cspan)
             { 
-                var substr = searchFor as CharacterSpan;
-
                 if(cspan.IsNullOrWhiteSpace())
                     return false;
+
+                var substr = searchFor.AsCharacterSpan();
 
                 return cspan!.Contains(substr);
             }
 
             if(val is string sVal)
             { 
-                var substr = searchFor.ToString();
-
-                if(string.IsNullOrEmpty(sVal) )
+                if(string.IsNullOrEmpty(sVal))
                     return false;
+
+                var substr = searchFor.ToString();
 
                 return sVal.Contains(substr);
             }
@@ -513,23 +514,24 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        // ??? Change first param to object
-        public string? removeany(string val, object list)
+        public object? removeany(object? val, object list)
         {
             if(val == null)
                 return null;
             
             if(list is IEnumerable<object> listOfThingsToRemove)
             { 
+                var sval = val!.ToString(); // ???
+
                 foreach(var r1 in listOfThingsToRemove)
                 { 
-                    var newVal = val?.Replace(r1.ToString(), "");
+                    var newVal = sval.Replace(r1.ToString(), "");
 
-                    val = newVal;
+                    sval = newVal;
                 }
+
+                return CharacterSpan.FromString(sval);
             }
-            else
-                return val;
 
             return val;
         }
@@ -633,8 +635,8 @@ namespace JTran.Expressions
             if(val is bool)
                 return false;
 
-            if(val is double dval)
-                return dval == 0d;
+            if(val is decimal dval)
+                return dval == 0m;
 
             if(val is int ival)
                 return ival == 0;
@@ -648,30 +650,9 @@ namespace JTran.Expressions
             if(val is IEnumerable<object> list)
                 return list.Count() == 0;
 
-            var dict = new Dictionary<string, object>();
-
             // ??? Check for other primitive types
 
-            // ???
-            foreach (PropertyInfo item2 in from p in val.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                        where p.CanRead
-                                        select p)
-            {
-                try
-                {
-                    object obj2 = item2.GetGetMethod().Invoke(val, null);
-
-                    if (obj2 != null)
-                    {
-                        dict.Add(item2.Name, obj2);
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            return dict.Count == 0;
+            return Poco.FromObject(val).IsEmpty(val);
         }
         
         /*****************************************************************************/
@@ -763,27 +744,27 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public IEnumerable<object> sequence(object from, object to, object increment)
         {
-            if(!double.TryParse(from.ToString(), out double dFrom))
+            if(!decimal.TryParse(from.ToString(), out decimal dFrom))
                 return Array.Empty<object>();
 
-            if(!double.TryParse(to.ToString(), out double dTo))
+            if(!decimal.TryParse(to.ToString(), out decimal dTo))
                 return Array.Empty<object>();
 
-            double dIncrement = 1d;
+            decimal dIncrement = 1m;
 
-            if(double.TryParse(increment.ToString(), out double dIncr) && dIncr != 0d)
+            if(decimal.TryParse(increment.ToString(), out decimal dIncr) && dIncr != 0m)
                 dIncrement = dIncr;
 
             var list = new List<object>();
 
             if(dIncrement > 0)
             { 
-                for(double d = dFrom; d <= dTo; d += dIncrement)
+                for(decimal d = dFrom; d <= dTo; d += dIncrement)
                     list.Add(d);
             }
             else
             { 
-                for(double d = dFrom; d >= dTo; d += dIncrement)
+                for(decimal d = dFrom; d >= dTo; d += dIncrement)
                     list.Add(d);
             }
              
@@ -806,18 +787,18 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public double coalescenumber(string primary, params string[] fields)
+        public decimal coalescenumber(string primary, params string[] fields)
         {
-            if(double.TryParse(primary, out double d) && d != 0d)
+            if(decimal.TryParse(primary, out decimal d) && d != 0m)
                 return d;
 
             foreach(string field in fields)
             {
-                if(double.TryParse(field, out double d2) && d2 != 0d)
+                if(decimal.TryParse(field, out decimal d2) && d2 != 0m)
                     return d2;
             }
 
-            return 0d;
+            return 0m;
         }
 
         /*****************************************************************************/

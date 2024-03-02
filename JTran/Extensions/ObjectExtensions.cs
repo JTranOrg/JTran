@@ -22,6 +22,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace JTran.Extensions
 {
@@ -271,12 +272,12 @@ namespace JTran.Extensions
                 }
             }
 
-            if(double.TryParse(leftValStr, out double leftDouble))
+            if(decimal.TryParse(leftValStr, out decimal leftdecimal))
             { 
-                if(double.TryParse(rightValStr, out double rightDouble))
+                if(decimal.TryParse(rightValStr, out decimal rightdecimal))
                 { 
-                    type = typeof(double);
-                    return leftDouble.CompareTo(rightDouble);
+                    type = typeof(decimal);
+                    return leftdecimal.CompareTo(rightdecimal);
                 }
             }
 
@@ -331,7 +332,7 @@ namespace JTran.Extensions
                     if(long.TryParse(value.ToString(), out long lval))
                         return CharacterSpan.FromString(lval.ToString());
 
-                    if(double.TryParse(value.ToString(), out double dval)) // ??? need to use CharacterSpan version
+                    if(decimal.TryParse(value.ToString(), out decimal dval)) // ??? need to use CharacterSpan version
                         return CharacterSpan.FromString(dval.ToString().ReplaceEnding(".0", ""));
                 }
 
@@ -522,6 +523,31 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        internal static bool IsPocoList(this IEnumerable<object> list, out Type? type)
+        {
+            var first = list.FirstOrDefault();
+
+            if(first is null || first is IObject || first is IEnumerable)
+            { 
+                type = null;
+                return false;
+            }
+
+            type = first.GetType();
+
+            if(type == null)
+                return false;
+
+            if(!type.IsClass || type.Name == "String" || type.Name == "Object")
+            {
+                type = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        /****************************************************************************/
         internal static object GetPropertyValue(this object obj, CharacterSpan nameSpan)       
         {
             if(obj == null)
@@ -533,21 +559,13 @@ namespace JTran.Extensions
             if(obj == null)
                 return null;
 
-            if(obj is JsonObject props)
-            {
-                if(props.ContainsKey(nameSpan))
-                    return props[nameSpan];
-
-                return null;
-            }
-
-            var otype = obj.GetType();
-
-            // ????
-            var name = nameSpan.ToString();
+            if(obj is IObject iobj)
+                return iobj.GetPropertyValue(nameSpan);
 
             if(obj is ICollection<KeyValuePair<string, object>> dict1)
             { 
+                var name = nameSpan.ToString();
+
                 foreach(var kv in dict1)
                 {
                     if(kv.Key == name)
@@ -559,6 +577,8 @@ namespace JTran.Extensions
 
             if(obj is IDictionary dict)
             { 
+                var name = nameSpan.ToString();
+
                 foreach(var key in dict.Keys)
                 {
                     if(key.ToString() == name)
@@ -568,9 +588,7 @@ namespace JTran.Extensions
                 return null;
             }
 
-            var prop  = otype.GetProperty(name);
-            
-            return prop.GetValue(obj);
+            return Poco.FromObject(obj).GetValue(obj, nameSpan);
         }
 
         /****************************************************************************/

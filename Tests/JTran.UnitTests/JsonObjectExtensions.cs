@@ -95,13 +95,13 @@ namespace JTran.UnitTests
             Assert.IsTrue(obj.Used);
             Assert.IsNotNull(obj.Engine);
             Assert.AreEqual((int)Engine.CylinderConfiguration.V, (int)obj.Engine.Configuration);
-            Assert.AreEqual(8,                  obj.Engine.Cylinders);
-            Assert.AreEqual(350,               obj.Engine.Displacement);
+            Assert.AreEqual(8,                      obj.Engine.Cylinders);
+            Assert.AreEqual(350,                    obj.Engine.Displacement);
             Assert.IsNotNull(obj.Drivers);
-            Assert.AreEqual(3, obj.Drivers.Count);
-            Assert.AreEqual("Alex MackIntosh",  obj.Drivers[0].Name);
-            Assert.AreEqual("Roberta Martinez", obj.Drivers[1].Name);
-            Assert.AreEqual("Kyle Jones",       obj.Drivers[2].Name);
+            Assert.AreEqual(3,                      obj.Drivers.Count);
+            Assert.AreEqual("Alex MackIntosh",      obj.Drivers[0].Name);
+            Assert.AreEqual("Roberta Martinez",     obj.Drivers[1].Name);
+            Assert.AreEqual("Kyle Jones",           obj.Drivers[2].Name);
        }
         
         private class Automobile

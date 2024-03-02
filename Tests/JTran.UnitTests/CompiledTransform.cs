@@ -493,7 +493,7 @@ namespace JTran.UnitTests
         public void CompiledTransform_Transform_if_wbool_Success()
         {
             var transformer = CompiledTransform.Compile(_transformIfBool);
-            var result      = transformer.Transform(_dataIfBool, new TransformerContext { Arguments = new Dictionary<string, object> { {"Licensed", true }, {"YearsDriven", 10 }, {"LicenseState", 7 }} } , null);
+            var result      = transformer.Transform(_dataIfBool, new TransformerContext { Arguments = new Dictionary<string, object> { {"Licensed", true }, {"YearsDriven", 10 }, {"LicenseState", "WA" }} } , null);
 
             Assert.AreNotEqual(_transformIfBool, result);
 

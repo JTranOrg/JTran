@@ -117,13 +117,15 @@ namespace JTran.Json
                 _position = 0;
             }
 
-            _ch = _last = _buffer[_position++];   
+            var ch = _buffer[_position++];   
 
-            if(_ch == '\r' || _ch == '\n')
-                return InternalReadNext(_ch);
+            if(ch == '\r' || ch == '\n')
+                return InternalReadNext(ch);
 
             if(prev == '\r' || prev == '\n')
                 ++_lineNumber;
+
+            _ch = _last = ch;
 
             return true;
         }

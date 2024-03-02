@@ -1,10 +1,12 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using JTran.Common;
 using JTran.Expressions;
+using JTran.Parser;
 
 namespace JTran
 {
@@ -28,7 +30,14 @@ namespace JTran
                 throw new Transformer.SyntaxException($"Missing expression for #{name}") { LineNumber = lineNumber};
 
             _expression = parms[0];
-            _properties = parms.Skip(1).Select( p=> p as CharacterSpan).ToDictionary( k=> k!, v=> v);
+            _properties = parms.Skip(1)
+                               .Select( p=> {
+                                                var t = p.Evaluate(null) as Token; 
+
+                                                return CharacterSpan.FromString(t.Value);
+                                            }
+                                      )
+                               .ToDictionary( k=> k!, v=> v);
         }
 
         /****************************************************************************/

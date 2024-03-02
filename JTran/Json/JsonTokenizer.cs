@@ -34,7 +34,7 @@ namespace JTran.Json
     /// </summary>
     internal sealed class JsonTokenizer
     {
-        private readonly CharacterSpanFactory _factory = new();
+        private readonly CharacterSpanBuilder _factory = new();
 
         internal object? TokenValue      { get; set; }
         internal long    TokenLineNumber { get; set; } = 0L;
@@ -157,7 +157,7 @@ namespace JTran.Json
                     if(span.Equals("false"))
                         return JsonToken.TokenType.Boolean; 
 
-                    if(span.TryParseNumber(out double dVal))
+                    if(span.TryParseNumber(out decimal dVal))
                     { 
                         this.TokenValue = dVal;
 

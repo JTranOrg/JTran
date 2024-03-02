@@ -37,9 +37,6 @@ namespace JTran
         /****************************************************************************/
         private IValue CreateSimpleValue(CharacterSpan? sval)
         {
-            if(sval?.TryParseNumber(out double dval) ?? false)
-                return new NumberValue(dval);
-
             return new SimpleValue(sval);
         }
       
@@ -69,7 +66,7 @@ namespace JTran
                 if(val is CharacterSpan cspan)
                     return InternalCreateValue(cspan, name, lineNumber);
 
-                if(val is double dval)
+                if(val is decimal dval)
                     return new NumberValue(dval);
             }
 
@@ -113,9 +110,9 @@ namespace JTran
                 if(_outerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, false, lineNumber);  
                 if(_calltemplate.Equals(elementName)) return new TCallTemplateProperty(sval, lineNumber); 
                     
-                var templateName = sval.SubstringBefore('(', 0);
+                var templateName = sval.SubstringBefore('(', 1);
                 var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString() + "," + theRest.ToString()); // ??? optimize
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString()); // ??? optimize
 
                 // Will do exception on evaluation if no template found
                 return new TCallTemplateProperty(parm, lineNumber);

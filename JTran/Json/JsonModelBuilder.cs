@@ -19,14 +19,14 @@ namespace JTran.Json
         object AddArray(CharacterSpan name, object parent, long lineNumber);
         object AddText(CharacterSpan name, CharacterSpan val, object parent, object? previous, long lineNumber);
         object AddBoolean(CharacterSpan name, bool val, object parent, object? previous, long lineNumber);
-        object AddNumber(CharacterSpan name, double val, object parent, object? previous, long lineNumber);
+        object AddNumber(CharacterSpan name, decimal val, object parent, object? previous, long lineNumber);
         object AddNull(CharacterSpan name, object parent, object? previous, long lineNumber);
 
         object AddObject(object? parent, long lineNumber);
         object AddArray(object? parent, long lineNumber);
         object AddText(CharacterSpan val, object parent, long lineNumber);
         object AddBoolean(bool val, object parent, long lineNumber);
-        object AddNumber(double val, object parent, long lineNumber);
+        object AddNumber(decimal val, object parent, long lineNumber);
         object AddNull(object parent, long lineNumber);
     }
     
@@ -81,7 +81,7 @@ namespace JTran.Json
         }
         
         /****************************************************************************/
-        public object AddNumber(CharacterSpan name, double val, object parent, object? previous, long lineNumber)    
+        public object AddNumber(CharacterSpan name, decimal val, object parent, object? previous, long lineNumber)    
         { 
             if(parent is JsonObject ex)
                 ex.TryAdd(name, val);
@@ -143,7 +143,7 @@ namespace JTran.Json
         }
         
         /****************************************************************************/
-        public object AddNumber(double val, object parent, long lineNumber)    
+        public object AddNumber(decimal val, object parent, long lineNumber)    
         { 
             if(parent is IList<object> list)
                 list.Add(val);

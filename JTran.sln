@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Random", "JTran.Rando
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.MongoDBTests", "Tests\JTran.MongoDBTests\JTran.MongoDBTests.csproj", "{0540C074-DD5E-4ED6-B492-B1706B5746DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JTran.PerformanceConsole", "Tests\JTran.PerformanceConsole\JTran.PerformanceConsole.csproj", "{A33B3A02-F522-4253-A171-45F07F5A0A36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.PerformanceConsole", "Tests\JTran.PerformanceConsole\JTran.PerformanceConsole.csproj", "{A33B3A02-F522-4253-A171-45F07F5A0A36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

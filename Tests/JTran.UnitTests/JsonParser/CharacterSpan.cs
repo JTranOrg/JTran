@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Common;
 using System.Linq;
+using JTran.Expressions;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.UnitTests
 {
@@ -10,6 +12,8 @@ namespace JTran.UnitTests
     [TestCategory("JsonParser")]
     public class CharacterSpanTests
     {
+        #region CharacterSpan
+
         [TestMethod]
         public void CharacterSpan_ToString()
         {
@@ -114,12 +118,42 @@ namespace JTran.UnitTests
             Assert.AreEqual("4\\\"56", c3.FormatForJsonOutput().ToString());
         }
 
+        private const decimal Zero = 0m;
+
+        [TestMethod]   
+        public void CharacterSpan_TryParseNumber()
+        {
+            TestNumber("16",                16m);
+            TestNumber("16.3",              16.3m);
+            TestNumber("16.3456",           16.3456m);
+            TestNumber("-16.3456",          -16.3456m);
+            TestNumber("0.3",               .3m);
+            TestNumber(".3",                .3m);
+            TestNumber("-.03",              -.03m);
+            TestNumber("-0.3",              -0.3m);
+            TestNumber("1234546.789012",    1234546.789012m);
+            TestNumber("-1234546.789012",   -1234546.789012m);
+            TestNumber("0",                 0m);
+            TestNumber("750.87299999999998", 750.87299999999998m);
+
+        }
+
+        private void TestNumber(string val, decimal expected)
+        {
+            var c1 = CharacterSpan.FromString(val);
+
+            Assert.IsTrue(c1.TryParseNumber(out decimal dval));
+            Assert.AreEqual(expected, dval);
+        }
+
+        #endregion
+
         [TestMethod]
         [DataRow(4096)]
         [DataRow(16)]
         public void CharacterSpanFactory_ToString(int bufferSize)
         {
-            var factory = new CharacterSpanFactory(bufferSize);
+            var factory = new CharacterSpanBuilder(bufferSize);
 
             factory.Append('a');
             factory.Append('b');
@@ -166,15 +200,15 @@ namespace JTran.UnitTests
             Assert.AreEqual("4560.1", c4.ToString());
             Assert.AreEqual("-45605.12", c5.ToString());
 
-            Assert.IsFalse(c1.TryParseNumber(out double _));
-            Assert.IsTrue(c2.TryParseNumber(out double c2n));
-            Assert.IsFalse(c3.TryParseNumber(out double _));
-            Assert.IsTrue(c4.TryParseNumber(out double c4n));
-            Assert.IsTrue(c5.TryParseNumber(out double c5n));
+            Assert.IsFalse(c1.TryParseNumber(out decimal _));
+            Assert.IsTrue(c2.TryParseNumber(out decimal c2n));
+            Assert.IsFalse(c3.TryParseNumber(out decimal _));
+            Assert.IsTrue(c4.TryParseNumber(out decimal c4n));
+            Assert.IsTrue(c5.TryParseNumber(out decimal c5n));
 
-            Assert.AreEqual(123d, c2n);
-            Assert.AreEqual(4560.1d, c4n);
-            Assert.AreEqual(-45605.12d, c5n, 2);
+            Assert.AreEqual(123m, c2n);
+            Assert.AreEqual(4560.1m, c4n);
+            Assert.AreEqual(-45605.12m, c5n, 2);
         }
 
         [TestMethod]
@@ -198,6 +232,22 @@ namespace JTran.UnitTests
             Assert.AreEqual("bob",   d[c4]);
             Assert.AreEqual("fred",  d[c5]);
             Assert.AreEqual("wilma", d[c6]);
+        }
+
+        [TestMethod]
+        public void CharacterSpan_GetHashCode2()
+        {
+            var source = "abc123def456".ToArray();
+            var c1 = new CharacterSpan(source, 0, 3);
+            var c2 = new CharacterSpan(source, 3, 3);
+            var c3 = new CharacterSpan(source, 6, 3);
+
+            var c1h = c1.GetHashCode();
+            var c1s = CharacterSpan.FromString("abc").GetHashCode();
+
+            Assert.AreEqual(c1h, c1s);
+            Assert.AreEqual(c2.GetHashCode(), CharacterSpan.FromString("123").GetHashCode());
+            Assert.AreEqual(c3.GetHashCode(), CharacterSpan.FromString("def").GetHashCode());
         }
     }
 }

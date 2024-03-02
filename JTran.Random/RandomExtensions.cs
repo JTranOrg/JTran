@@ -50,9 +50,9 @@ namespace JTran.Random
         /// <summary>
         /// Randomly picks a floating point number between two values
         /// </summary>
-        public double randomnumber(double from, double to)
+        public decimal randomnumber(decimal from, decimal to)
         {
-            return from + ((to - from) * _random.NextDouble());
+            return from + ((to - from) * (decimal)_random.NextDouble());
         }
 
         /// <summary>

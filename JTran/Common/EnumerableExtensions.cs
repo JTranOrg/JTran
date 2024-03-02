@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace JTran
@@ -63,6 +64,21 @@ namespace JTran
             }
 
             return items == 1;
+        }    
+        
+        /****************************************************************************/
+        /// <summary>
+        /// Returns nth item of array
+        /// </summary>
+        internal static object? GetNthItem(this IEnumerable<object>? enm, int index)
+        {
+            if(enm == null) 
+                return null;
+
+            if(enm is IList<object> list)
+                return list.Count < index ? null : list[index];
+
+            return enm.Skip(index).Take(1).SingleOrDefault();
         }   
     }
 }

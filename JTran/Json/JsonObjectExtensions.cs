@@ -97,7 +97,7 @@ namespace JTran.Json
                 if(val is CharacterSpan)
                     continue;
 
-                if(val is double)
+                if(val is decimal)
                     continue;
 
                 if(val is bool)

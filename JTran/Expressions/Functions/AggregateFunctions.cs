@@ -70,30 +70,30 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public double sum(object val)
+        public decimal sum(object val)
         {
-            return aggregate(val, (result, dval)=> result + dval, 0d, out int count );
+            return aggregate(val, (result, dval)=> result + dval, 0m, out int count );
         }
 
        /*****************************************************************************/
-        public double avg(object val)
+        public decimal avg(object val)
         {
-            return aggregate(val, (result, dval)=> result + dval, 0d, out int count ) / count;
+            return aggregate(val, (result, dval)=> result + dval, 0m, out int count ) / count;
         }
 
         /*****************************************************************************/
-        public double max(object val)
+        public decimal max(object val)
         {
-            return aggregate(val, (result, dval)=> Math.Max(result, dval), 0d, out int count );
+            return aggregate(val, (result, dval)=> Math.Max(result, dval), 0m, out int count );
         }
 
         /*****************************************************************************/
-        public double min(object val)
+        public decimal min(object val)
         {
-            var retVal = aggregate(val, (result, dval)=> Math.Min(result, dval), double.MaxValue, out int count );
+            var retVal = aggregate(val, (result, dval)=> Math.Min(result, dval), decimal.MaxValue, out int count );
 
             if(count == 0)
-                return 0d;
+                return 0m;
 
             return retVal;
         }
@@ -266,19 +266,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        private static double aggregate(object val, Func<double, double, double> fn, double startVal, out int count)
+        private static decimal aggregate(object val, Func<decimal, decimal, decimal> fn, decimal startVal, out int count)
         {
             count = 1;
 
             if(val is null)
-                return 0d;
+                return 0m;
 
             if(val is IEnumerable<object> list)
             { 
-                double result = startVal;
+                decimal result = startVal;
 
                 foreach(var item in list)
-                    if(double.TryParse(item.ToString(), out double dval))
+                    if(decimal.TryParse(item.ToString(), out decimal dval))
                         result = fn(result, dval);
 
                 count = list.Count();
@@ -286,10 +286,10 @@ namespace JTran.Expressions
                 return result;
             }
 
-            if(double.TryParse(val.ToString(), out double dval2))
+            if(decimal.TryParse(val.ToString(), out decimal dval2))
                 return dval2;
 
-            return 0d;
+            return 0m;
         }
 
         #endregion

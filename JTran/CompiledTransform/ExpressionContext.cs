@@ -185,16 +185,18 @@ namespace JTran
             _variables.Add(name, val);
         }
 
+        private static readonly CharacterSpan _scopeSymbol = CharacterSpan.FromString("@");
+
         /*****************************************************************************/
-        internal object GetDataValue(string name)
+        internal object GetDataValue(CharacterSpan name)
         { 
             if(this.Data == null)
                 return null;
 
-            if(name == "@")
+            if(name.Equals(_scopeSymbol))
                 return this.Data;
 
-            if(this.Data is JsonObject)
+            if(this.Data is IObject)
                 return this.Data.GetPropertyValue(name);
 
             if(this.Data is ICollection<object> dict1)
@@ -203,7 +205,7 @@ namespace JTran
                 { 
                     foreach(KeyValuePair<string, object> kv in dict1)
                     {
-                        if(kv.Key == name)
+                        if(name.Equals(kv.Key))
                             return kv.Value;
                     }
 
@@ -215,7 +217,7 @@ namespace JTran
             { 
                 foreach(var kv in dict2)
                 {
-                    if(kv.Key == name)
+                    if(name.Equals(kv.Key))
                         return kv.Value;
                 }
 
@@ -226,7 +228,7 @@ namespace JTran
             { 
                 foreach(var key in dict.Keys)
                 {
-                    if(key.ToString() == name)
+                    if(name.Equals(key.ToString()))
                         return dict[name];
                 }
 
@@ -235,7 +237,7 @@ namespace JTran
 
             if(this.Data is IEnumerable<object> list)
             {
-                var result = new ChildEnumerable<object, object>(list, name);
+                var result = new ChildEnumerable<object, object>(list, name.ToString()); // ???
 
                 if(!result.Any())
                     return null;
@@ -250,7 +252,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        private object GetDataValue(object data, string name)
+        private object GetDataValue(object data, CharacterSpan name)
         { 
             var val = data.GetPropertyValue(name);
 
@@ -259,8 +261,8 @@ namespace JTran
 
             if(!val.GetType().IsClass)
             { 
-                // If it's any kind of number return it as a double
-                if(double.TryParse(val.ToString(), out double dVal))
+                // If it's any kind of number return it as a decimal
+                if(val.AsCharacterSpan().TryParseNumber(out decimal dVal)) 
                     return dVal;
             }
 

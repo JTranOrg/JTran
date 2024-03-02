@@ -58,7 +58,7 @@ namespace JTran.Transform.UnitTests
         {
             var jobj = await Test(transform, data);
 
-            Assert.AreEqual(33d, double.Parse(jobj["Driver"]!.ToString()));
+            Assert.AreEqual(33m, decimal.Parse(jobj["Driver"]!.ToString()));
         }
 
         #endregion

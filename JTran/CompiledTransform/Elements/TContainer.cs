@@ -130,13 +130,11 @@ namespace JTran
                     throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
             }
 
-            else
-            { 
-                if(name[0] == '#' && name[1] != '(')
-                    throw new Transformer.SyntaxException($"Unknown element name: {elementName}");
+            else if(name.Length > 0 && name[0] == '#' && name[1] != '(')
+                throw new Transformer.SyntaxException($"Unknown element name: {elementName}");
 
+            else
                 result = new TObject(name, lineNumber);
-            }
 
             if(result != null)
             { 
@@ -220,7 +218,7 @@ namespace JTran
                     return new TBreak();
 
                 if(_variable.Equals(searchStr))
-                    return new TVariable(name, child as CharacterSpan, lineNumber);
+                    return new TVariable(name, child, lineNumber);
 
                 if(_message.Equals(searchStr))
                     return new TMessage(child as CharacterSpan, lineNumber);

@@ -158,7 +158,7 @@ namespace JTran.Json
                         continue;
 
                    case JsonToken.TokenType.Number:   
-                        _modelBuilder.AddNumber((double)_tokenizer.TokenValue!, array, _lineNumber); 
+                        _modelBuilder.AddNumber((decimal)_tokenizer.TokenValue!, array, _lineNumber); 
                         continue;
 
                     default:
@@ -200,7 +200,7 @@ namespace JTran.Json
                 {
                     case JsonToken.TokenType.BeginObject: return BeginObject(name, parent, previous, lineNumber);
                     case JsonToken.TokenType.BeginArray:  return BeginArray(name, parent, lineNumber);
-                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, (double)_tokenizer.TokenValue!, parent, previous, _lineNumber);       
+                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, (decimal)_tokenizer.TokenValue!, parent, previous, _lineNumber);       
                     case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent, previous, _lineNumber);       
 
                     default:

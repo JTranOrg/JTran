@@ -125,7 +125,7 @@ namespace JTran.Expressions
                         break;
 
                     case Token.TokenType.Number:
-                        expr = new NumberValue(double.Parse(token.Value));
+                        expr = new NumberValue(decimal.Parse(token.Value));
                         break;                    
                         
                     case Token.TokenType.Array:
@@ -272,7 +272,7 @@ namespace JTran.Expressions
                     return new Value(token.Value);
 
                 case Token.TokenType.Number:
-                    return new NumberValue(double.Parse(token.Value));
+                    return new NumberValue(decimal.Parse(token.Value));
 
                 case Token.TokenType.Array:
                 case Token.TokenType.Text:
@@ -285,7 +285,7 @@ namespace JTran.Expressions
                     if(lval == "false")
                         return new Value(false);
 
-                    if(token.Value.StartsWith("$"))
+                    if(token.Value[0] == '$')
                     { 
                         if(token.Value.Contains("."))
                         {

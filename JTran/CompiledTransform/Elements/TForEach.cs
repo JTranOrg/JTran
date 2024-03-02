@@ -53,8 +53,8 @@ namespace JTran
 
             _hasConditionals = this.Children.Any() && this.Children[0] is IPropertyCondition;
 
-            // If the result of the expression is an array. ??? Will this work on a POCO list!?!?
-            if(result is IEnumerable<object> list)
+            // If the result of the expression is an array.
+            if(result is IEnumerable<object> list) // ??? check for poco array
             {       
                 wrap( ()=> 
                 { 
@@ -244,20 +244,29 @@ namespace JTran
             if(_groupBy.IsSingle())
             {
                 var groupBy = _groupBy.First();
+                var dict = new Dictionary<string, List<object>>();
 
-                groups = list.GroupBy
-                (
-                    (item)=> item.GetSingleValue(groupBy, null),
-                    (item)=> item,
-                    (groupValue, items) => {    
+                foreach(var item in list)
+                {
+                    var key = item.GetSingleValue(groupBy, null)?.ToString();
+
+                    if(key != null)
+                    {
+                        if(!dict.ContainsKey(key))
+                            dict.Add(key, new List<object> { item});
+                        else
+                            dict[key].Add(item);                            
+                    }
+                }
+
+                groups = dict.Select( kv=>  {    
                                                 var newObj = new JsonObject();
 
-                                                newObj.TryAdd(csGroup.Get(groupBy), groupValue);
-                                                newObj.TryAdd(_groupItems, items); 
+                                                newObj.TryAdd(csGroup.Get(groupBy), kv.Key);
+                                                newObj.TryAdd(_groupItems, kv.Value); 
                                                     
-                                                return newObj; 
-                                            }
-                );
+                                                return newObj;
+                                            } );
             }
             else
             { 

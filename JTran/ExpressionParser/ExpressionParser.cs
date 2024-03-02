@@ -148,7 +148,7 @@ namespace JTran.Parser
                 }
                 else if(token.IsLiteral && token.Value.IsQuoted())
                     this._sb.Add(CreateToken(token.Value.Substring(1, token.Value.Length - 2), Token.TokenType.Literal)); 
-                else if(token.Type == Token.TokenType.Text && double.TryParse(token.Value, out double dval))
+                else if(token.Type == Token.TokenType.Text && decimal.TryParse(token.Value, out decimal dval)) // ??? CharacterSpan
                     this._sb.Add(CreateToken(token.Value, Token.TokenType.Number)); 
                 else
                     this._sb.Add(CreateToken(token.Value, token.Type)); 

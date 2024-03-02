@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace JTran.Common
 {
@@ -20,42 +19,60 @@ namespace JTran.Common
             if (obj is IDictionary<string, object> dict)
                 return dict;
 
-            var result = new Dictionary<string, object>();
-
             if(obj is IDictionary dict2)
             {
+                var result = new Dictionary<string, object>();
+
                 foreach(var key in dict2.Keys)
                     result.Add(key.ToString(), dict2![key]);
+
+                return result;
             }
-            else if(obj is IEnumerable list)
+            
+            if(obj is IEnumerable list)
             {
+                var result = new Dictionary<string, object>();
+
                 foreach(var val in list)
                     result.Add(val.ToString(), val);
-            }
-            else
-            {
-            // ??? create cache, class
-                // Get public and instance properties only
-                var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
 
-                foreach(var property in properties)
-                {
-                    try
-                    { 
-                        var value = property.GetGetMethod().Invoke(obj, null);
-
-                        // Add property name and value to dictionary
-                        if (value != null)
-                            result.Add(property.Name, value);
-                    }
-                    catch
-                    {
-                        // Just ignore it
-                    }
-                }
+                return result;
             }
 
-            return result;
+             return Poco.FromObject(obj).ToDictionary(obj);
+        }
+
+        internal static CharacterSpan AsCharacterSpan(this object obj)
+        {
+            if(obj is CharacterSpan cspan)
+                return cspan;
+
+            return CharacterSpan.FromString(obj.ToString());
+        }
+
+        internal static bool TryParseInt(this object obj, out int val)
+        {
+            val = 0;
+
+            if(obj is decimal d)
+            { 
+                val = (int)d;
+                return true;
+            }
+
+            if(obj is int i)
+            { 
+                val = i;
+                return true;
+            }
+
+            if(obj is long i2)
+            { 
+                val = (int)i2;
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -9,9 +9,9 @@ namespace JTran
     internal class TObject : TContainer
     {
         /****************************************************************************/
-        internal TObject(CharacterSpan name, long lineNumber)
+        internal TObject(CharacterSpan? name, long lineNumber)
         {
-            this.Name = CreateValue(name, true, lineNumber);
+            this.Name = ((name?.Length ?? 0) == 0) ? null : CreateValue(name, true, lineNumber);
         }
 
         internal IValue Name  { get; set; }
@@ -19,7 +19,7 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var name = this.Name.Evaluate(context);
+            var name = this.Name?.Evaluate(context);
             var csname = name as CharacterSpan;
 
            if(output.InObject && (csname?.IsNullOrWhiteSpace() ?? true))

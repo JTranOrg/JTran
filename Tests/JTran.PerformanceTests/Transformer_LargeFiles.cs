@@ -49,16 +49,30 @@ namespace JTran.PerformanceTests
             TimeSpan duration = TimeSpan.Zero;
 
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
-
-            var dtStart = DateTime.Now;
-
             using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
 
             transformer.Transform(input, output);
+        }
 
-            var dtEnd = DateTime.Now;
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        //[InlineData(2000000)]
+        public void Transform_Transform_large_list(int numItems)
+        {
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
+            TimeSpan duration = TimeSpan.Zero;
 
-            duration = dtEnd - dtStart;
+            var list = CreateLargeList(numItems);
+
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
+
+            transformer.Transform(list, output);
         }
 
         [Theory]
@@ -147,6 +161,15 @@ namespace JTran.PerformanceTests
 
         private Stream CreateLargeDataSource(int numItems = 100000)
         {
+            var orgs = CreateLargeList(numItems);
+
+            var cstr = JsonConvert.SerializeObject(orgs, Formatting.Indented);
+
+            return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
+        }
+
+        private List<Organization> CreateLargeList(int numItems = 100000)
+        {
             var orgs = new List<Organization>();
 
             for(int c = 0; c < 7; ++c)
@@ -168,16 +191,14 @@ namespace JTran.PerformanceTests
                         City         = person.City,
                         State        = person.State,
                         ZipCode      = person.ZipCode,
-                        Age          = (int)(DateTime.Now.Ticks & 11111) + 20
+                        Age          = (int)(DateTime.Now.Ticks & 31) + 20
                     });
                 }
 
                 orgs.Add(org);
             }
 
-            var cstr = JsonConvert.SerializeObject(orgs, Formatting.Indented);
-
-            return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
+            return orgs;
         }
 
         public class Organization

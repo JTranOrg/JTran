@@ -18,7 +18,8 @@ namespace JTran
         private ExpressionContext? _context;
 
         /****************************************************************************/
-        internal TVariable(CharacterSpan name, object val, long lineNumber) : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
+        internal TVariable(CharacterSpan name, object val, long lineNumber) 
+                    : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
         {
         }
 
@@ -35,7 +36,7 @@ namespace JTran
         /****************************************************************************/
         public object GetActualValue(ExpressionContext context)
         {
-            // Use the context when first evaluated. The param is the context where the var is being used
+            // Use the context when first evaluated. The param here is the context where the var is being used which we don't want to use.
             return this.Value.Evaluate(_context!);
         }
     }

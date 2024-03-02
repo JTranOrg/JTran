@@ -415,26 +415,7 @@ namespace JTran
     /****************************************************************************/
     internal interface IStringValue
     {
-        string Value { get; }
-    }
-
-    /****************************************************************************/
-    /****************************************************************************/
-    internal class CharacterSpanValue : IStringValue // ??? Just make CharacterSpan derive from IStringValue
-    {
-        private readonly CharacterSpan _val;
-
-        internal CharacterSpanValue(CharacterSpan val)
-        {
-            _val = val;
-        }
-
-        public string Value => _val.ToString();
-
-        public override string ToString()
-        {
-            return this.Value;
-        }
+        object? Value { get; }
     }
 
     /****************************************************************************/
@@ -448,7 +429,7 @@ namespace JTran
             _val = val;
         }
 
-        public string Value => _val;
+        public object? Value => _val;
 
         public override string ToString()
         {
@@ -460,10 +441,10 @@ namespace JTran
     /****************************************************************************/
     internal class NumberValue : IValue
     {
-        private double _value;
+        private decimal _value;
 
         /****************************************************************************/
-        internal NumberValue(double val)
+        internal NumberValue(decimal val)
         {
             _value = val;
         }
@@ -471,9 +452,6 @@ namespace JTran
         /****************************************************************************/       
         public object Evaluate(ExpressionContext context)
         {
-            if(Math.Floor(_value) == _value)
-                return Convert.ToInt64(_value);
-
             return _value;
         }
     }
@@ -498,11 +476,8 @@ namespace JTran
             if(val == null)
                 return null;
 
-            if(!(val is IStringValue) && double.TryParse(val.ToString(), out double dval))
+            if(!(val is IStringValue) && decimal.TryParse(val.ToString(), out decimal dval)) 
             {
-                if(Math.Floor(dval) == dval)
-                    return Convert.ToInt64(dval);
-
                 return dval;
             }
 

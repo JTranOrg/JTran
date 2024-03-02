@@ -17,10 +17,12 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Expressions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
@@ -28,7 +30,7 @@ namespace JTran.Common
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class CharacterSpan : IReadOnlyList<char>, IEquatable<CharacterSpan>
+    internal class CharacterSpan : IReadOnlyList<char>, IEquatable<CharacterSpan>, IStringValue
     {
         private readonly char[]? _source;
         private readonly int     _offset;
@@ -65,7 +67,6 @@ namespace JTran.Common
             _offset          = 0;
             _length          = source.Length;
             _isJTranProperty = jtranProp;
-            _hashCode        = source.GetHashCode();
         }
 
         /****************************************************************************/
@@ -158,7 +159,7 @@ namespace JTran.Common
 
             var i = 0;
 
-            while((this.Length-i) > find.Length)
+            while((this.Length-i) >= find.Length)
             {
                 var index = this.IndexOf(find[0], i);
 
@@ -183,10 +184,10 @@ namespace JTran.Common
         /****************************************************************************/
         public CharacterSpan SubstringBefore(char ch, int skip = 0)
         {
-            for(var i = 0; i < this.Length; ++i)
+            for(var i = skip; i < this.Length; ++i)
             { 
                 if(this[i] == ch)
-                    return new CharacterSpan(this, skip, i);
+                    return new CharacterSpan(this, skip, i-skip);
             }
 
             if(skip != 0)
@@ -296,24 +297,25 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public double ParseNumber() 
+        public decimal ParseNumber() 
         {
-            if(TryParseNumber(out double result))
+            if(TryParseNumber(out decimal result))
                 return result;
 
-            return 0d;
+            return 0m;
         }
-
+        
         /****************************************************************************/
-        public bool TryParseNumber(out double result)
+        public bool TryParseNumber(out decimal result)
         {
-            result = 0d;
+            result = 0m;
 
             if(this.Length == 0)
                 return false;                
 
-            var multiplier = 1d;
-            var negative   = 1d;
+            var multiplier = 1m;
+            var negative   = 1m;
+            var isDecimal = false;
 
             for(var i = 0; i < this.Length; ++i)
             {
@@ -321,34 +323,38 @@ namespace JTran.Common
 
                 if(char.IsDigit(ch))
                 {
-                    if(multiplier >= 1d)
-                    { 
-                        result *= multiplier;
-                        result += ch - '0';
-                        multiplier = 10d;
+                    if(isDecimal)
+                    {
+                        var add = (ch - '0') / multiplier;
+
+                        result += add;
+                        multiplier *= 10m;
                     }
                     else
                     {
-                        result += (ch - '0') * multiplier;
-                        multiplier /= 10;
+                        result *= multiplier;
+                        result += ch - '0';
+                        multiplier = 10m;
                     }
-                }
+                 }
                 else if(ch == '.')
                 {
-                    multiplier = .1d;
+                    isDecimal = true;
+                    multiplier = 10m;
                 }
                 else if(ch == '-')
                 {
-                    if(i != 0 || negative == -1d)
+                    if(i != 0 || negative == -1m)
                         throw new JsonParseException("Missplaced negative sign", 0L);
 
-                    negative = -1d;
+                    negative = -1m;
                 }
                 else
                     return false;
             }
 
             result *= negative;
+                
             return true;
         }
 
@@ -374,7 +380,7 @@ namespace JTran.Common
 
             return true;
         }
-        
+                
         /****************************************************************************/
         public virtual void CopyTo(TextWriter writer) /// ???
         {
@@ -399,72 +405,35 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        // "Borrowed" and adapted from String.GetHashCode. Copyright (c) Microsoft Corporation
         public override int GetHashCode()
         {
-        // ??? google hashing arrays. There is a better solution
             if(_hashCode == 0)
-                _hashCode= this.ToString().GetHashCode();
+            { 
+                if(this.Length == 0)
+                    _hashCode = 0;
+                else
+                { 
+                    var comparer = EqualityComparer<int>.Default;
 
-            return _hashCode;
-        }        
-        
-        public int GetHashCode3()
-        {
-            if(_hashCode != 0)
-                return _hashCode;
-
-            int hash1 = 5381;
-            int hash2 = hash1;
-
-            int index = 0;
-
-            int len = this.Length;
-            int c;
-
-            while(index < (len-1) && (c = this[index]) != 0) 
-            {
-                hash1 = ((hash1 << 5) + hash1) ^ c;
-                c = this[index+1];
-
-                if (c == 0)
-                    break;
-
-                hash2 = ((hash2 << 5) + hash2) ^ c;
-                index += 2;
+                    for(int i = 0; i < this.Length; i += 2) 
+                    { 
+                        var value1 = (int)this[i];
+                        var value2 = (i < this.Length-1) ? (int)this[i+1] : 0;
+                        var value  = value1 << 16 | value2;
+                        
+                        _hashCode = i == 0 ? comparer.GetHashCode(value) : CombineHashCodes(_hashCode, comparer.GetHashCode(value));
+                    }
+                }
             }
 
             return _hashCode;
         }        
-        
-        public int GetHashCode_old()
-        {
-            if(_hashCode != 0)
-                return _hashCode;
 
-            int hash1 = (5381 << 16) + 5381;
-            int hash2 = hash1;
+        #region IStringValue
 
-            int len = this.Length;
-            int index = 0;
+        public object? Value => this;
 
-            while(len > 2)
-            {
-                hash1 = ((hash1 << 5) + hash1 + (hash1 >> 27)) ^ (int)this[index];
-                hash2 = ((hash2 << 5) + hash2 + (hash2 >> 27)) ^ (int)this[index + 1];
-                index += 2;                                              
-                len   -= 4;
-            }
- 
-            if(len > 0)
-            {
-                hash1 = ((hash1 << 5) + hash1 + (hash1 >> 27)) ^ (int)this[index];
-            }
-
-            _hashCode = hash1 + (hash2 * 1566083941);
-
-            return _hashCode;
-        }
+        #endregion
 
         #region IReadOnlyList
 
@@ -488,7 +457,20 @@ namespace JTran.Common
 
         public bool Equals(CharacterSpan other)
         {
+            if(other == null)
+                return _source == null;
+
             return this.GetHashCode() == other.GetHashCode();
+        }
+
+        #endregion
+
+        #region Private
+
+        /****************************************************************************/
+        private static int CombineHashCodes(int h1, int h2) 
+        {
+            return (((h1 << 5) + h1) ^ h2);
         }
 
         #endregion
@@ -508,7 +490,7 @@ namespace JTran.Common
         /****************************************************************************/
         internal CharacterSpan Get(string key)
         {
-            if(_dict.ContainsKey(key))
+            if(!_dict.ContainsKey(key))
                 _dict.Add(key, CharacterSpan.FromString(key));
 
             return _dict[key];
@@ -517,7 +499,7 @@ namespace JTran.Common
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class CharacterSpanFactory
+    internal class CharacterSpanBuilder
     {
         private char[]       _buffer;
         private int          _offset = 0;
@@ -525,7 +507,7 @@ namespace JTran.Common
         private readonly int _bufferSize;
 
         /****************************************************************************/
-        internal CharacterSpanFactory(int bufferSize = 16 * 1024)
+        internal CharacterSpanBuilder(int bufferSize = 16 * 1024)
         {
             _bufferSize = bufferSize;
             _buffer = new char[_bufferSize];

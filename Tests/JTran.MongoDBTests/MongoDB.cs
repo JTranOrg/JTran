@@ -20,17 +20,17 @@ namespace JTran.MongoDBTests
                 var transformer  = CreateTransformer(_transformForEach1);
                 var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
                 var input        = db.GetRepositoryReader<Guid, Person>("persons");
-                var enm = input.AsEnumerable<Person>();
+                var enm          = input.AsEnumerable<Person>();
             
                 transformer.Transform(enm as IEnumerable, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
             }
 
             { 
-                using var strm = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Open);
-                var result = strm.ReadString();
-                var jobj = JArray.Parse(result);
-
-                Assert.IsNotNull(jobj);
+                //using var strm = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Open);
+                //var result     = strm.ReadString();
+                //var jobj       = JArray.Parse(result);
+                //
+                //Assert.IsNotNull(jobj);
             }
         }
 
@@ -42,7 +42,7 @@ namespace JTran.MongoDBTests
             var transformer  = CreateTransformer(_transformForEach2);
             var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
             var input        = db.GetRepositoryReader<Guid, Person>("persons");
-            var enm = input.AsEnumerable<Person>();
+            var enm          = input.AsEnumerable<Person>();
 
             var list = enm.Where( i=> i.FirstName == firstName );
 

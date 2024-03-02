@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
 
 using JTran.Common;
 using JTran.Expressions;
@@ -55,7 +54,7 @@ namespace JTran
             if(result == null)
                 return;
 
-            if(!double.TryParse(result.ToString(), out double d))
+            if(!decimal.TryParse(result.ToString(), out decimal d)) // ??? CharacterSpan
                 throw new Transformer.SyntaxException("#iterate expression must resolve to number");
 
             var numItems = (long)Math.Floor(d);

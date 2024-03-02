@@ -17,7 +17,8 @@
  *                                                                          
  ****************************************************************************/
 
-using JTran.Expressions;
+using JTran.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -72,6 +73,75 @@ namespace JTran.Collections
             public bool MoveNext()
             {
                 return _enumerator!.MoveNext();
+            }
+
+            /****************************************************************************/
+            public void Reset()
+            {
+                _enumerator.Reset();
+            }
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class PocoEnumerableWrapper : IEnumerable<object>
+    {
+        private readonly IEnumerable _list;
+        private readonly Poco       _poco;
+
+        /****************************************************************************/
+        internal PocoEnumerableWrapper(Type type, IEnumerable list) 
+        {
+            _list = list;
+            _poco = Poco.FromType(type);
+        }
+
+        /****************************************************************************/
+        public IEnumerator<object> GetEnumerator()
+        {
+            return new Enumerator(_poco, _list);
+        }
+
+        /****************************************************************************/
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new Enumerator(_poco, _list);
+        }
+
+        /****************************************************************************/
+        /****************************************************************************/
+        private class Enumerator : IEnumerator<object>
+        {
+            private readonly IEnumerator _enumerator;
+            private readonly PocoObject  _pocoObject;
+
+            /****************************************************************************/
+            internal Enumerator(Poco poco,IEnumerable list) 
+            {
+                _enumerator = list.GetEnumerator();
+                _pocoObject = new PocoObject(poco);
+            }
+
+            public object Current => _pocoObject;
+            object IEnumerator.Current => _pocoObject;
+
+            /****************************************************************************/
+            public void Dispose()
+            {
+                // Nothing to do
+            }
+
+            /****************************************************************************/
+            public bool MoveNext()
+            {
+                if(_enumerator!.MoveNext())
+                { 
+                    _pocoObject.Data = _enumerator!.Current;
+                    return true;
+                }
+
+                return false;
             }
 
             /****************************************************************************/

@@ -22,7 +22,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Net.Http.Headers;
 using JTran.Collections;
 using JTran.Common;
 using JTran.Extensions;
@@ -102,8 +102,8 @@ namespace JTran.Expressions
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  
 
-            if(double.TryParse(value?.ToString(), out double dval))
-                return dval != 0d;
+            if(decimal.TryParse(value?.ToString(), out decimal dval))
+                return dval != 0m;
 
             return !string.IsNullOrWhiteSpace(value?.ToString());
         }
@@ -119,9 +119,9 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class NumberValue : IExpression
     {
-        private double _value;
+        private decimal _value;
 
-        public NumberValue(double val)
+        public NumberValue(decimal val)
         {
             _value = val;
         }
@@ -136,7 +136,7 @@ namespace JTran.Expressions
 
         public bool EvaluateToBool(ExpressionContext context)
         {
-            return _value > 0d;
+            return _value > 0m;
         }
                 
         /*****************************************************************************/
@@ -152,10 +152,10 @@ namespace JTran.Expressions
     {
         public DataValue(string name)
         {
-            this.Name = name;
+            this.Name = CharacterSpan.FromString(name);
         }
 
-        public string Name { get; }
+        public CharacterSpan Name { get; }
 
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
@@ -198,9 +198,9 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string JoinLiteral(ExpressionContext context)
+        public CharacterSpan JoinLiteral(ExpressionContext context)
         {   
-            var parts      = new List<string>();
+            var parts      = new List<CharacterSpan>();
             var numParts   = _parts.Count;
             var newContext = new ExpressionContext("", context);
 
@@ -211,19 +211,22 @@ namespace JTran.Expressions
                 else if(part is DataValue val)
                     parts.Add(val.Name);
                 else
-                    parts.Add(part.Evaluate(newContext).ToString());
+                    parts.Add(part.Evaluate(newContext).AsCharacterSpan());
             }
 
-            return string.Join('.', parts);
+            return CharacterSpan.FromString(string.Join('.', parts.Select( p=> p.ToString() ))); // ???
         }
 
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var numParts = _parts.Count;
-            var data     = context.Data;
-            object? result = null;
+            var     numParts = _parts.Count;
+            var     data     = context.Data;
+            object? result   = null;
             
+            if(data is IEnumerable<object> enm && enm.IsPocoList(out Type? t))
+                data = new PocoEnumerableWrapper(t!, enm);
+
             for(var i = 0; i < numParts; ++i)
             {
                 var expr = _parts[i].Evaluate(new ExpressionContext(data!, context));
@@ -308,35 +311,32 @@ namespace JTran.Expressions
             }
 
             IEnumerable<object>? enm = null;
+            Type? type = null;
 
             if(context.Data is IEnumerable<object> enm2)
+            { 
+                if(!enm2.Any())
+                    return null;
+
+                if(enm2.IsPocoList(out Type? type2))
+                    type = type2;
+
                 enm = enm2;
+            }
             else
                 enm = new [] {context.Data};
 
             // If expression result is integer then return nth value of array
             if(!_expr.IsConditional(context))
             { 
-                try
-                { 
-                    var result = _expr.Evaluate(context);
+                var result = _expr.Evaluate(context);
 
-                    if(!(result is JsonObject || result is IEnumerable<object>))
-                    { 
-                        if(int.TryParse(result.ToString(), out int index))  
-                        {
-                            if(enm is IList<object> list)
-                                return list[index];
-
-                            return enm.Skip(index).Take(1).Single();
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
+                if(result.TryParseInt(out int index))
+                    return enm.GetNthItem(index);
+            }   
+            
+            if(type != null) 
+                return new PocoWhereClause(type, enm, _expr, new ExpressionContext(enm, context));
 
             return new WhereClause<object>(enm, _expr, new ExpressionContext(enm, context));
         }

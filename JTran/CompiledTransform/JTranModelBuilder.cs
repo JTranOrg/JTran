@@ -99,7 +99,7 @@ namespace JTran
         }
         
         /****************************************************************************/
-        public object AddNumber(CharacterSpan name, double val, object parent, object? previous, long lineNumber)    
+        public object AddNumber(CharacterSpan name, decimal val, object parent, object? previous, long lineNumber)    
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(name, val, previous, lineNumber);
@@ -157,7 +157,7 @@ namespace JTran
         }
         
         /****************************************************************************/
-        public object AddNumber(double val, object parent, long lineNumber)    
+        public object AddNumber(decimal val, object parent, long lineNumber)    
         { 
             if(parent is TContainer container)
                 return container.CreateProperty(null, val, null, lineNumber);
