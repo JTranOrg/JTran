@@ -18,7 +18,7 @@ namespace JTran
         private ExpressionContext? _context;
 
         /****************************************************************************/
-        internal TVariable(CharacterSpan name, object val, long lineNumber) 
+        internal TVariable(ICharacterSpan name, object val, long lineNumber) 
                     : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
         {
         }
@@ -26,7 +26,7 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var name = this.Name.Evaluate(context) as CharacterSpan;
+            var name = this.Name.Evaluate(context) as ICharacterSpan;
 
             context.SetVariable(name!, this);
 
@@ -46,12 +46,12 @@ namespace JTran
     internal abstract class TVariableContainer : TContainer, IVariable
     {    
         /****************************************************************************/
-        internal TVariableContainer(CharacterSpan name) 
+        internal TVariableContainer(ICharacterSpan name) 
         {
             this.Name = name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1);
         }
 
-        internal CharacterSpan Name { get; }
+        internal ICharacterSpan Name { get; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
@@ -89,7 +89,7 @@ namespace JTran
     internal class TVariableObject : TVariableContainer
     {    
         /****************************************************************************/
-        internal TVariableObject(CharacterSpan name) : base(name)
+        internal TVariableObject(ICharacterSpan name) : base(name)
         {
         }
 
@@ -111,7 +111,7 @@ namespace JTran
     internal class TVariableArray : TVariableContainer
     {    
         /****************************************************************************/
-        internal TVariableArray(CharacterSpan name)  : base(name)
+        internal TVariableArray(ICharacterSpan name)  : base(name)
         {
         }
 
@@ -128,9 +128,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        protected override TToken CreatePropertyToken(CharacterSpan name, object val, object? previous, long lineNumber)
+        protected override TToken CreatePropertyToken(ICharacterSpan name, object val, object? previous, long lineNumber)
         {
-            return new TSimpleArrayItem(val as CharacterSpan, lineNumber);
+            return new TSimpleArrayItem(val as ICharacterSpan, lineNumber);
         }
     }
 }

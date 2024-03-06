@@ -10,7 +10,7 @@ namespace JTran
     internal class TProperty : TToken
     {
         /****************************************************************************/
-        internal TProperty(CharacterSpan name, object val, long lineNumber)
+        internal TProperty(ICharacterSpan name, object val, long lineNumber)
         {
             this.Name  = CreateValue(name, true, lineNumber);
             this.Value = CreateValue(val, false, lineNumber);
@@ -22,7 +22,7 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var name = this.Name?.Evaluate(context) as CharacterSpan;
+            var name = this.Name?.Evaluate(context) as ICharacterSpan;
             var val  = this.Value.Evaluate(context);
 
             wrap( ()=> output.WriteProperty(name, val));
@@ -36,7 +36,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TPropertyIf(CharacterSpan name, object val, long lineNumber) : this(name, val, "#if(", lineNumber) 
+        internal TPropertyIf(ICharacterSpan name, object val, long lineNumber) : this(name, val, "#if(", lineNumber) 
         {
         }
 
@@ -44,7 +44,7 @@ namespace JTran
         public bool    If             { get; set; } = false;
 
         /****************************************************************************/
-        internal protected TPropertyIf(CharacterSpan name, object val, string elementName, long lineNumber) : base(name, val, lineNumber) 
+        internal protected TPropertyIf(ICharacterSpan name, object val, string elementName, long lineNumber) : base(name, val, lineNumber) 
         {
             _expression = Compiler.Compile(name.Substring(elementName.Length, -1));
         }
@@ -70,7 +70,7 @@ namespace JTran
     internal class TPropertyElseIf : TPropertyIf
     {
         /****************************************************************************/
-        internal TPropertyElseIf(CharacterSpan name, object val, long lineNumber) : base(name, val, "#elseif(", lineNumber)
+        internal TPropertyElseIf(ICharacterSpan name, object val, long lineNumber) : base(name, val, "#elseif(", lineNumber)
         {
         }
 
@@ -89,7 +89,7 @@ namespace JTran
     internal class TPropertyElse : TProperty, IPropertyCondition
     {
         /****************************************************************************/
-        internal TPropertyElse(CharacterSpan name, object val, long lineNumber)  : base(name, val, lineNumber)
+        internal TPropertyElse(ICharacterSpan name, object val, long lineNumber)  : base(name, val, lineNumber)
         {
         }
 

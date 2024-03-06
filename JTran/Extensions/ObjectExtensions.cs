@@ -50,7 +50,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static object GetSingleValue(this object obj, CharacterSpan expression, ExpressionContext context)
+        internal static object GetSingleValue(this object obj, ICharacterSpan expression, ExpressionContext context)
         {
             var results = obj.GetValue(expression, context);
 
@@ -61,9 +61,10 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        [Obsolete("Use ICharacterSpan")]
         internal static object GetSingleValue(this object obj, string expression, ExpressionContext context)
         {
-            var results = obj.GetValue(expression, context);
+            var results = obj.GetValue(expression.AsCharacterSpan(), context);
 
             if(results is IEnumerable<object> list)
                 return list.First();
@@ -87,64 +88,14 @@ namespace JTran.Extensions
         }
         
         /****************************************************************************/
-        [Obsolete]
+        [Obsolete("This should only be used for unit tests")]
         internal static object GetValue(this object obj, string expression, ExpressionContext context)
         {
-            if(expression.StartsWith("@"))
-            {
-                obj = context.Data;
-                 
-                if(expression.StartsWith("@."))
-                { 
-                    expression = expression.Substring(2);
-                }
-                else
-                    expression = "";
-
-                if(expression == "")
-                    return obj;
-           }
-            else
-            {
-                // Resolve ancestors
-                obj = obj.EvaluateAncestors(ref expression);
-            }
-
-            if(expression.StartsWith("$"))
-            {
-                var varName = expression.Substring(1);
-                var index   = expression.IndexOf(".");
-
-                if(index != -1)
-                { 
-                    varName = varName.Substring(0, index-1);
-                    expression = expression.Substring(1 + index);
-                }
-                else
-                    expression = "";
-
-                obj = context.GetVariable(CharacterSpan.FromString(varName), context);
-
-                if(expression == "")
-                    return obj;
-            }
-
-            var results = new List<object>(); // ??? inefficient
-            var isList  = false;
-
-            obj.GetValue(results, expression, context, ref isList);
-
-            if(isList)
-                return results;
-
-            if(results.Count == 0)
-                return null;
-                
-            return results[0];
+            return obj.GetValue(expression.AsCharacterSpan(), context);
         }
 
         /****************************************************************************/
-        internal static object GetValue(this object obj, CharacterSpan expression, ExpressionContext context)
+        internal static object GetValue(this object obj, ICharacterSpan expression, ExpressionContext context)
         {
             if(expression[0] == '@')
             {
@@ -309,12 +260,12 @@ namespace JTran.Extensions
             return compareto(leftVal, rightVal, out type);
         }
 
-        private static readonly CharacterSpan _true  = CharacterSpan.FromString("true");
-        private static readonly CharacterSpan _false = CharacterSpan.FromString("false");
-        private static readonly CharacterSpan _null  = CharacterSpan.FromString("null");
+        private static readonly ICharacterSpan _true  = CharacterSpan.FromString("true");
+        private static readonly ICharacterSpan _false = CharacterSpan.FromString("false");
+        private static readonly ICharacterSpan _null  = CharacterSpan.FromString("null");
 
         /*****************************************************************************/
-        internal static CharacterSpan FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
+        internal static ICharacterSpan FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
         {
             if(value == null)
                 return _null;
@@ -327,12 +278,12 @@ namespace JTran.Extensions
                 if(!(value is IStringValue))
                 { 
                     if(bool.TryParse(value.ToString(), out bool bval))
-                        return CharacterSpan.FromString(bval.ToString().ToLower()); // ??? needs work
+                        return bval ? _true : _false;
 
                     if(long.TryParse(value.ToString(), out long lval))
                         return CharacterSpan.FromString(lval.ToString());
 
-                    if(decimal.TryParse(value.ToString(), out decimal dval)) // ??? need to use CharacterSpan version
+                    if(decimal.TryParse(value.ToString(), out decimal dval)) 
                         return CharacterSpan.FromString(dval.ToString().ReplaceEnding(".0", ""));
                 }
 
@@ -340,13 +291,16 @@ namespace JTran.Extensions
                     return CharacterSpan.FromString("\"" + dtVal.ToString("o") + "\"");
             }
 
+            if(finalOutput)
+                return value.AsCharacterSpan().FormatForJsonOutput(addDoubleQuotes: true);
+
             return CharacterSpan.FromString("\"" + (finalOutput ? value!.ToString().FormatForJsonOutput() : value.ToString()) + "\""); // ??? Inefficent
         }
 
         #region Private
 
         /****************************************************************************/
-        private static void GetValue(this object obj, List<object> results, CharacterSpan expression, ExpressionContext context, ref bool isList)
+        private static void GetValue(this object obj, List<object> results, ICharacterSpan expression, ExpressionContext context, ref bool isList)
         {
             var parts  = expression.ToString().Split(new char[] {'.'} ); 
             var nParts = parts.Length;
@@ -450,7 +404,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        private static bool GetAncestor(this object obj, CharacterSpan key, ref object? parent)
+        private static bool GetAncestor(this object obj, ICharacterSpan key, ref object? parent)
         {        
            if(obj is JsonObject jobj && jobj.ContainsKey(key))
             { 
@@ -491,7 +445,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        private static object EvaluateAncestors(this object obj, ref CharacterSpan expression)
+        private static object EvaluateAncestors(this object obj, ref ICharacterSpan expression)
         {
             var result = obj;
             var index = 0;
@@ -548,7 +502,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static object GetPropertyValue(this object obj, CharacterSpan nameSpan)       
+        internal static object GetPropertyValue(this object obj, ICharacterSpan nameSpan)       
         {
             if(obj == null)
                 return null;
@@ -592,29 +546,10 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        [Obsolete("Replaced by CharacterSpan version")]
+        [Obsolete("Replaced by ICharacterSpan version")]
         internal static object GetPropertyValue(this object obj, string name)       
         {
             return obj.GetPropertyValue(CharacterSpan.FromString(name));
-        }
-
-        /****************************************************************************/
-        private static object GetArrayPart(IEnumerable array, string[] parts, int index, ExpressionContext context)
-        {        
-            var nextParts = string.Join(".", parts, index+1, parts.Length - index - 1);
-
-            foreach(var child in array)
-            {
-                if(child != null)
-                { 
-                    var val = child.GetValue(nextParts, context);
-
-                    if(val != null)
-                        return val;
-                }
-            }
-
-            return null;       
         }
 
         #endregion

@@ -42,9 +42,9 @@ namespace JTran.Common
              return Poco.FromObject(obj).ToDictionary(obj);
         }
 
-        internal static CharacterSpan AsCharacterSpan(this object obj)
+        internal static ICharacterSpan AsCharacterSpan(this object obj)
         {
-            if(obj is CharacterSpan cspan)
+            if(obj is ICharacterSpan cspan)
                 return cspan;
 
             return CharacterSpan.FromString(obj.ToString());
@@ -53,6 +53,9 @@ namespace JTran.Common
         internal static bool TryParseInt(this object obj, out int val)
         {
             val = 0;
+
+            if(obj is null)
+                return false;
 
             if(obj is decimal d)
             { 
@@ -69,6 +72,12 @@ namespace JTran.Common
             if(obj is long i2)
             { 
                 val = (int)i2;
+                return true;
+            }
+
+            if(obj is ICharacterSpan cspan && cspan.TryParseNumber(out decimal dval))
+            { 
+                val = (int)dval;    
                 return true;
             }
 

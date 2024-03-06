@@ -15,11 +15,11 @@ namespace JTran
     internal class TIncludeExcludeProperty : TToken, IValue
     {
         private readonly IExpression _expression;
-        private readonly IDictionary<CharacterSpan, CharacterSpan?> _properties;
+        private readonly IDictionary<ICharacterSpan, ICharacterSpan?> _properties;
         private readonly bool _include;
 
         /****************************************************************************/
-        internal TIncludeExcludeProperty(CharacterSpan val, bool include, long lineNumber) 
+        internal TIncludeExcludeProperty(ICharacterSpan val, bool include, long lineNumber) 
         {
             var name  = include ? "#include" : "#exclude";
             var parms = CompiledTransform.ParseElementParams(name, val, CompiledTransform.FalseTrue);

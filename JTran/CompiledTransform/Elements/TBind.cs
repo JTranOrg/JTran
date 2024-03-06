@@ -31,7 +31,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TBind(CharacterSpan name) 
+        internal TBind(ICharacterSpan name) 
         {
             var parms = CompiledTransform.ParseElementParams("#bind", name, CompiledTransform.SingleFalse );
 

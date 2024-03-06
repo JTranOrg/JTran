@@ -9,7 +9,7 @@ namespace JTran
     internal class TObject : TContainer
     {
         /****************************************************************************/
-        internal TObject(CharacterSpan? name, long lineNumber)
+        internal TObject(ICharacterSpan? name, long lineNumber)
         {
             this.Name = ((name?.Length ?? 0) == 0) ? null : CreateValue(name, true, lineNumber);
         }
@@ -20,7 +20,7 @@ namespace JTran
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name?.Evaluate(context);
-            var csname = name as CharacterSpan;
+            var csname = name as ICharacterSpan;
 
            if(output.InObject && (csname?.IsNullOrWhiteSpace() ?? true))
                throw new Transformer.SyntaxException("Property name evaluates to null or empty string");

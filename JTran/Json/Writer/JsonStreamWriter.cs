@@ -122,7 +122,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        protected override void AppendLine(CharacterSpan line)
+        protected override void AppendLine(ICharacterSpan line)
         {
             Append(line);
             AppendNewLine();
@@ -139,7 +139,7 @@ namespace JTran
         }        
 
         /****************************************************************************/
-        protected override void Append(CharacterSpan text)
+        protected override void Append(ICharacterSpan text)
         {
              if(_bufferWritten + text.Length > _bufferSize)
                 Flush();
@@ -162,13 +162,13 @@ namespace JTran
         }
 
         /****************************************************************************/
-        protected override CharacterSpan FormatForJsonOutput(CharacterSpan s)
+        protected override ICharacterSpan FormatForJsonOutput(ICharacterSpan s)
         {
             return s.FormatForJsonOutput();
         }
 
        /****************************************************************************/
-        protected override CharacterSpan FormatForOutput(object s, bool forceString = false)
+        protected override ICharacterSpan FormatForOutput(object s, bool forceString = false)
         {
             return s.FormatForOutput(forceString, true);
         }

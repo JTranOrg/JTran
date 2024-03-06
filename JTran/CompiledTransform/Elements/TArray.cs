@@ -19,7 +19,7 @@ namespace JTran
         internal protected IValue? Name          { get; set; }
       
         /****************************************************************************/
-        internal CharacterSpan? EvaluateName(ExpressionContext context)
+        internal ICharacterSpan? EvaluateName(ExpressionContext context)
         {
             if(this.IsOutputArray)
                 return EmptyArray;
@@ -29,7 +29,7 @@ namespace JTran
             if(this.Name != null)
                 arrayName = this.Name.Evaluate(context);
 
-            if(arrayName is CharacterSpan cspan)
+            if(arrayName is ICharacterSpan cspan)
             {
                  if(!(cspan?.IsNullOrWhiteSpace() ?? true))
                      return cspan;
@@ -39,7 +39,7 @@ namespace JTran
         }
       
         /****************************************************************************/
-        internal protected CharacterSpan? WriteContainerName(IJsonWriter output, ExpressionContext context)
+        internal protected ICharacterSpan? WriteContainerName(IJsonWriter output, ExpressionContext context)
         {
             if(this.IsOutputArray)
                 return EmptyArray;
@@ -89,7 +89,7 @@ namespace JTran
     internal class TArray : TBaseArray
     {
         /****************************************************************************/
-        internal TArray(CharacterSpan name)
+        internal TArray(ICharacterSpan name)
         { 
            name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
 
@@ -119,7 +119,7 @@ namespace JTran
     internal class TArrayItem : TObject
     {
         /****************************************************************************/
-        internal TArrayItem(CharacterSpan name, long lineNumber) : base(name, lineNumber)
+        internal TArrayItem(ICharacterSpan name, long lineNumber) : base(name, lineNumber)
         {
         }
     }

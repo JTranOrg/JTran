@@ -22,6 +22,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 using JTran.Common;
+using JTran.Expressions;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -51,13 +52,14 @@ namespace JTran.Json
 
             try
             { 
-                while(reader.ReadNext())
+                if(!reader.ReadNext(true))
                 {
-                    ch = reader.Current!;
-
-                    if(!char.IsWhiteSpace(ch))
-                        break;
+                    this.TokenLineNumber = lineNumber = reader.LineNumber;
+                    this.TokenValue = "end of file"; 
+                    return JsonToken.TokenType.EOF;
                 }
+
+                ch = reader.Current!;
 
                 this.TokenLineNumber = lineNumber = reader.LineNumber;
 
@@ -82,7 +84,7 @@ namespace JTran.Json
                 else
                     _factory.Append(ch);
 
-                while(reader.ReadNext())
+                while(reader.ReadNext(quoted: doubleQuoted || singleQuoted))
                 {
                     this.TokenLineNumber = lineNumber = reader.LineNumber;
                     ch = reader.Current;
@@ -122,13 +124,17 @@ namespace JTran.Json
                     {
                         if(ch.IsSeparator())
                         {
-                            reader.GoBack(); 
+                            if(ch != ' ' && ch != '\t')
+                                reader.GoBack(); 
+
                             break;
                         }
 
                         if(ch == '\"' || ch == '\'')
                             throw new JsonParseException("Missing end quotes", lineNumber-1); 
                     }
+                    else if((ch == '\r' || ch == '\n'))
+                        throw new JsonParseException("Missing end quotes", lineNumber-1); 
 
                   Append:
 
@@ -146,7 +152,7 @@ namespace JTran.Json
 
             if(!doubleQuoted && !singleQuoted)
             {
-                if(this.TokenValue is CharacterSpan span)
+                if(this.TokenValue is ICharacterSpan span)
                 { 
                     if(span.Equals("null"))
                         return JsonToken.TokenType.Null;    
@@ -167,6 +173,8 @@ namespace JTran.Json
                     return JsonToken.TokenType.Text; 
                 }
             }
+            else if(ch == '\r' || ch == '\n')
+                throw new JsonParseException("Missing end quote", lineNumber);
 
             return JsonToken.TokenType.Text; 
         }    
@@ -178,13 +186,17 @@ namespace JTran.Json
         {
             switch(ch)
             {
-                case '{':  return true;
-                case '}':  return true;
-                case '[':  return true;
-                case ']':  return true;
-                case ':':  return true;
-                case ',':  return true;
-                default:   return char.IsWhiteSpace(ch);
+                case '{': 
+                case '}': 
+                case '[': 
+                case ']': 
+                case ':': 
+                case ',': 
+                case ' ': 
+                case '\r':
+                case '\n':
+                case '\t': return true;
+                default:   return false;
             }
         }
     }

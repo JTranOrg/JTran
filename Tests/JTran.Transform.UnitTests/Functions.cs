@@ -20,19 +20,19 @@ namespace JTran.Transform.UnitTests
 
             Assert.AreEqual(6, array!.Count);
 
-            Assert.AreEqual("Linda",  array[0]["Driver"].ToString());
-            Assert.AreEqual("Bob",    array[1]["Driver"].ToString());
-            Assert.AreEqual("John",   array[2]["Driver"].ToString());
-            Assert.AreEqual("Mary",   array[3]["Driver"].ToString());
-            Assert.AreEqual("Oliver", array[4]["Driver"].ToString());
-            Assert.AreEqual("Elena",  array[5]["Driver"].ToString());
+            Assert.AreEqual("Linda",  array?[0]?["Driver"]?.ToString());
+            Assert.AreEqual("Bob",    array?[1]?["Driver"]?.ToString());
+            Assert.AreEqual("John",   array?[2]?["Driver"]?.ToString());
+            Assert.AreEqual("Mary",   array?[3]?["Driver"]?.ToString());
+            Assert.AreEqual("Oliver", array?[4]?["Driver"]?.ToString());
+            Assert.AreEqual("Elena",  array?[5]?["Driver"]?.ToString());
 
-            Assert.AreEqual(make1, array[0]["Make"]?.ToString());
-            Assert.AreEqual(make1, array[1]["Make"]?.ToString());
-            Assert.AreEqual(make1, array[2]["Make"]?.ToString());
-            Assert.AreEqual(make2, array[3]["Make"]?.ToString());
-            Assert.AreEqual(make2, array[4]["Make"]?.ToString());
-            Assert.AreEqual(make2, array[5]["Make"]?.ToString());
+            Assert.AreEqual(make1, array?[0]?["Make"]?.ToString());
+            Assert.AreEqual(make1, array?[1]?["Make"]?.ToString());
+            Assert.AreEqual(make1, array?[2]?["Make"]?.ToString());
+            Assert.AreEqual(make2, array?[3]?["Make"]?.ToString());
+            Assert.AreEqual(make2, array?[4]?["Make"]?.ToString());
+            Assert.AreEqual(make2, array?[5]?["Make"]?.ToString());
         }
 
         #endregion

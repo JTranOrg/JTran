@@ -801,7 +801,7 @@ namespace JTran.UnitTests
             Assert.AreEqual(120M, amount);
         }
 
-        private static readonly CharacterSpan _amount = CharacterSpan.FromString("Amount");
+        private static readonly ICharacterSpan _amount = CharacterSpan.FromString("Amount");
 
         [TestMethod]
         public void Compiler_Array_Indexer_Multi2_Success()

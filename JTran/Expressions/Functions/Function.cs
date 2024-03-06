@@ -227,7 +227,7 @@ namespace JTran.Expressions
                 if(parmType == typeof(IEnumerable<object>) && currentParam is IList<object> list)
                     return list;
 
-                if(parmType == typeof(string) && currentParam is CharacterSpan cspan)
+                if(parmType == typeof(string) && currentParam is ICharacterSpan cspan)
                     return cspan.ToString();
 
                 return Convert.ChangeType(currentParam, parmType);

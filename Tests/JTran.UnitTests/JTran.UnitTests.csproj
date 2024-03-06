@@ -16,6 +16,7 @@
     <None Remove="JsonParser\Samples\array_not_supported.json" />
     <None Remove="JsonParser\Samples\array_of_arrays.json" />
     <None Remove="JsonParser\Samples\array_unquoted_prop_names.json" />
+    <None Remove="JsonParser\Samples\booleanarray.json" />
     <None Remove="JsonParser\Samples\customers.json" />
     <None Remove="JsonParser\Samples\customers2.json" />
     <None Remove="JsonParser\Samples\empties.json" />
@@ -25,6 +26,7 @@
     <None Remove="JsonParser\Samples\missing_quotes.json" />
     <None Remove="JsonParser\Samples\missing_quotes2.json" />
     <None Remove="JsonParser\Samples\missing_quotes3.json" />
+    <None Remove="JsonParser\Samples\missing_quotes4.json" />
     <None Remove="JsonParser\Samples\not_json_at_all.json" />
     <None Remove="JsonParser\Samples\numberarray.json" />
     <None Remove="JsonParser\Samples\simplesinglecustomer.json" />
@@ -38,6 +40,7 @@
   <ItemGroup>
     <EmbeddedResource Include="JsonParser\Samples\missing_comma.json" />
     <EmbeddedResource Include="JsonParser\Samples\missing_brace.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_quotes4.json" />
     <EmbeddedResource Include="JsonParser\Samples\missing_quotes3.json" />
     <EmbeddedResource Include="JsonParser\Samples\missing_quotes2.json" />
     <EmbeddedResource Include="JsonParser\Samples\not_json_at_all.json" />
@@ -45,6 +48,7 @@
     <EmbeddedResource Include="JsonParser\Samples\customers2.json" />
     <EmbeddedResource Include="JsonParser\Samples\empties.jtran" />
     <EmbeddedResource Include="JsonParser\Samples\array_not_supported.json" />
+    <EmbeddedResource Include="JsonParser\Samples\booleanarray.json" />
     <EmbeddedResource Include="JsonParser\Samples\numberarray.json" />
     <EmbeddedResource Include="JsonParser\Samples\array_of_arrays.json" />
     <EmbeddedResource Include="JsonParser\Samples\missing_quotes.json" />

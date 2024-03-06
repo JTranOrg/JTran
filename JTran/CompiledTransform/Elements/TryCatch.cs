@@ -14,13 +14,13 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TThrow(CharacterSpan name, object val, long lineNumber)
+        internal TThrow(ICharacterSpan name, object val, long lineNumber)
         {
             var parms = CompiledTransform.ParseElementParams("#throw", name, CompiledTransform.FalseTrue );
 
             _code = parms.Any() ? parms[0] : null;
 
-            _message = CreateValue(val as CharacterSpan, true, lineNumber); // It's not a name per se but we want it to evaluate to a simple string nevertheless
+            _message = CreateValue(val as ICharacterSpan, true, lineNumber); // It's not a name per se but we want it to evaluate to a simple string nevertheless
         }
 
         /****************************************************************************/
@@ -74,11 +74,7 @@ namespace JTran
 
             try
             { 
-                var newOutput = new JsonStringWriter();
-
-                base.Evaluate(newOutput, context, (fnc)=> fnc());
-
-                wrap( ()=> output.WriteRaw(CharacterSpan.FromString(newOutput.ToString()))); // ??? Inefficient
+                wrap( ()=> base.Evaluate(output, context, (fnc)=> fnc()) );
 
                 context.PreviousCondition = true;
             }
@@ -98,7 +94,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TCatch(CharacterSpan name) 
+        internal TCatch(ICharacterSpan name) 
         {
             var parms = CompiledTransform.ParseElementParams("#catch", name, CompiledTransform.FalseTrue );
 

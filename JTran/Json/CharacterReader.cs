@@ -32,7 +32,7 @@ namespace JTran.Json
     /****************************************************************************/
     internal interface ICharacterReader
     {
-        bool ReadNext();    
+        bool ReadNext(bool skipWhiteSpace = false, bool quoted = false);    
         void GoBack();    
         char Current    { get; }
         long LineNumber { get; }
@@ -88,44 +88,63 @@ namespace JTran.Json
         public char Current    => _ch;
         public long LineNumber => _lineNumber;
 
-        public bool ReadNext()
+        public bool ReadNext(bool skipWhiteSpace, bool quoted = false)
         {
-            return InternalReadNext('\0');
+            return InternalReadNext('\0', skipWhiteSpace, quoted);
         }
 
-        private bool InternalReadNext(char prev)
+        private bool InternalReadNext(char prev, bool skipWhiteSpace, bool quoted)
         {
-            if(_back != null)
-            {
-                _last = _back.Value;
-                _back = null;
-                _ch   = _last;
-
-                return true;
-            }
-
-            if(_bufferRead == 0 || _position >= _bufferRead)
-            {
-                _bufferRead = _reader.ReadBlock(_buffer, 0,_bufferSize);
-                    
-                if(_bufferRead == 0)
+            while(true)
+            { 
+                if(_back != null)
                 {
-                    _ch = '\0';
-                    return false;
+                    _last = _back.Value;
+                    _back = null;
+                    _ch   = _last;
+
+                    return true;
                 }
 
-                _position = 0;
+                if(_bufferRead == 0 || _position >= _bufferRead)
+                {
+                    _bufferRead = _reader.ReadBlock(_buffer, 0,_bufferSize);
+                    
+                    if(_bufferRead == 0)
+                    {
+                        _ch = '\0';
+                        return false;
+                    }
+
+                    _position = 0;
+                }
+
+                var ch = _buffer[_position++];   
+
+                if(ch == '\r' || ch == '\n')
+                { 
+                    if(quoted)
+                    { 
+                        _ch = ch;
+                        ++_lineNumber;
+                        return true;
+                    }
+
+                    return InternalReadNext(ch, skipWhiteSpace, false);
+                }
+
+                 if(prev == '\r' || prev == '\n')
+                    ++_lineNumber;
+
+                if(skipWhiteSpace && (ch == ' ' || ch == '\t'))
+                { 
+                    prev = ch;
+                    continue;
+                }
+
+                _ch = _last = ch;
+                break;
             }
-
-            var ch = _buffer[_position++];   
-
-            if(ch == '\r' || ch == '\n')
-                return InternalReadNext(ch);
-
-            if(prev == '\r' || prev == '\n')
-                ++_lineNumber;
-
-            _ch = _last = ch;
 
             return true;
         }

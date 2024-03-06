@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace JTran
 {
-    internal class JsonObject : Dictionary<CharacterSpan, object>, IObject
+    internal class JsonObject : Dictionary<ICharacterSpan, object>, IObject
     {
         internal JsonObject() 
         { 
@@ -13,7 +13,7 @@ namespace JTran
 
         public object this[string key] => this[CharacterSpan.FromString(key)];
 
-        public object? GetPropertyValue(CharacterSpan name)
+        public object? GetPropertyValue(ICharacterSpan name)
         {
             if(this.ContainsKey(name))
                 return this[name];

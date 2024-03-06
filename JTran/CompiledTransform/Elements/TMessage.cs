@@ -31,7 +31,7 @@ namespace JTran
         private IValue _message;
 
         /****************************************************************************/
-        internal TMessage(CharacterSpan val, long lineNumber)
+        internal TMessage(ICharacterSpan val, long lineNumber)
         {
             _message = CreateValue(val, true, lineNumber);
         }

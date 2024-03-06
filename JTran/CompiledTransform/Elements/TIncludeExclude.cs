@@ -12,7 +12,7 @@ namespace JTran
         private readonly TToken _property;
 
         /****************************************************************************/
-        internal TIncludeExclude(CharacterSpan? name, CharacterSpan val, bool include, long lineNumber) 
+        internal TIncludeExclude(ICharacterSpan? name, ICharacterSpan val, bool include, long lineNumber) 
         {
             _name = (name?.Equals("#noobject") ?? false) ? null : CreateValue(name, true, 0);
 
@@ -22,14 +22,14 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
-            CharacterSpan? name = null;
+            ICharacterSpan? name = null;
             bool written = false;
 
             wrap( ()=>
             { 
                 _property.Evaluate(writer, context, fn=>
                 { 
-                    name = _name?.Evaluate(context) as CharacterSpan;
+                    name = _name?.Evaluate(context) as ICharacterSpan;
                     written = true;
 
                     if(name != null)

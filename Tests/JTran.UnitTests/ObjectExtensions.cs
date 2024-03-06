@@ -16,10 +16,10 @@ namespace JTran.UnitTests
         {
             var obj = _data1.ToJsonObject();
 
-            Assert.AreEqual("John",  obj.GetValue("FirstName", null).ToString());
-            Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null).ToString());
-            Assert.AreEqual(375m,    obj.GetValue("Car.Engine.Displacement", null));
-            Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice", null)));
+            Assert.AreEqual("John",  obj.GetValue("FirstName".AsCharacterSpan(), null).ToString());
+            Assert.AreEqual("Chevy", obj.GetValue("Car.Make".AsCharacterSpan(), null).ToString());
+            Assert.AreEqual(375m,    obj.GetValue("Car.Engine.Displacement".AsCharacterSpan(), null));
+            Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice".AsCharacterSpan(), null)));
         }
 
         [TestMethod]
@@ -34,7 +34,7 @@ namespace JTran.UnitTests
         public void ObjectExtensions_GetValue_wGGParent_Success()
         {
             var obj = _datagg1.ToJsonObject();
-            var driver = obj.GetValue("parent.Driver", null);
+            var driver = obj.GetValue("parent.Driver".AsCharacterSpan(), null);
 
             Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null).ToString());
             Assert.AreEqual("January Events", driver.GetValue("//Name", null).ToString());
@@ -45,7 +45,7 @@ namespace JTran.UnitTests
         {
             var obj = _data1.ToJsonObject();
 
-            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
+            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator".AsCharacterSpan(), new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace JTran.UnitTests
         {
             var obj = _data1.ToJsonObject();
 
-            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
+            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone".AsCharacterSpan(), new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
         }
 
         [TestMethod]

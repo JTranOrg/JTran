@@ -13,7 +13,7 @@ namespace JTran
         private readonly IValue _val;
 
         /****************************************************************************/
-        internal TSimpleArrayItem(CharacterSpan? val, long lineNumber) 
+        internal TSimpleArrayItem(ICharacterSpan? val, long lineNumber) 
         {
             _val = CreateValue(val, false, lineNumber);
         }

@@ -13,7 +13,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TMap(CharacterSpan name) : this(name, "#map(") 
+        internal TMap(ICharacterSpan name) : this(name, "#map(") 
         {
         }
 
@@ -22,7 +22,7 @@ namespace JTran
         public bool   If             => true;
 
         /****************************************************************************/
-        internal protected TMap(CharacterSpan name, string elementName) 
+        internal protected TMap(ICharacterSpan name, string elementName) 
         {
             _expression = Compiler.Compile(name.Substring(elementName.Length, -1)); // -1 means lop off last character
         }
@@ -53,12 +53,12 @@ namespace JTran
         private readonly IExpression? _expression;
 
         /****************************************************************************/
-        internal TMapItem(CharacterSpan name, object val, long lineNumber) : this(name, val, "#mapitem", lineNumber) 
+        internal TMapItem(ICharacterSpan name, object val, long lineNumber) : this(name, val, "#mapitem", lineNumber) 
         {
         }
 
         /****************************************************************************/
-        internal protected TMapItem(CharacterSpan name, object val, string elementName, long lineNumber) : base(name, val, lineNumber)  
+        internal protected TMapItem(ICharacterSpan name, object val, string elementName, long lineNumber) : base(name, val, lineNumber)  
         {
             name = name.Substring(elementName.Length);
 

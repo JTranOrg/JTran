@@ -60,13 +60,13 @@ namespace JTran
         } 
 
         /****************************************************************************/
-        protected override void AppendLine(CharacterSpan line)
+        protected override void AppendLine(ICharacterSpan line)
         {
             _output.AppendLine(line.ToString());
         }        
 
         /****************************************************************************/
-        protected override void Append(CharacterSpan text)
+        protected override void Append(ICharacterSpan text)
         {
             _output.Append(text.ToString());
         } 
@@ -100,13 +100,13 @@ namespace JTran
         }    
 
         /****************************************************************************/
-        protected override CharacterSpan FormatForJsonOutput(CharacterSpan s)
+        protected override ICharacterSpan FormatForJsonOutput(ICharacterSpan s)
         {
             return s.FormatForJsonOutput();
         }
 
         /****************************************************************************/
-        protected override CharacterSpan FormatForOutput(object s, bool forceString = false)
+        protected override ICharacterSpan FormatForOutput(object s, bool forceString = false)
         {
             return s.FormatForOutput(forceString, true);
         }

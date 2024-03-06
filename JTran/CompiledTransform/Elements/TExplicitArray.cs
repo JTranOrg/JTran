@@ -10,13 +10,13 @@ namespace JTran
     internal class TExplicitArray : TBaseArray
     {
         /****************************************************************************/
-        internal TExplicitArray(CharacterSpan? name, long lineNumber)
+        internal TExplicitArray(ICharacterSpan? name, long lineNumber)
         {
             this.Name = name != null ? CreateValue(name, true, lineNumber) : null;
         }
 
         /****************************************************************************/
-        internal override TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
+        internal override TToken CreateObject(ICharacterSpan name, object? previous, long lineNumber)
         {
             var obj = new TObject(null, lineNumber);
 
@@ -26,7 +26,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateArray(CharacterSpan? name, long lineNumber)
+        internal override TToken CreateArray(ICharacterSpan? name, long lineNumber)
         {
             var obj = new TExplicitArray(null, lineNumber);
 
@@ -36,9 +36,9 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal override TToken CreateProperty(CharacterSpan name, object? val, object? previous, long lineNumber)
+        internal override TToken CreateProperty(ICharacterSpan name, object? val, object? previous, long lineNumber)
         {
-            var obj = new TSimpleArrayItem(val as CharacterSpan, lineNumber);
+            var obj = new TSimpleArrayItem(val as ICharacterSpan, lineNumber);
 
             this.Children.Add(obj);
 

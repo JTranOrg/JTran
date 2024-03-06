@@ -30,10 +30,10 @@ namespace JTran.Collections
     internal class ChildEnumerable<TPARENT, TCHILD> : IEnumerable<TCHILD>
     {
         private readonly IEnumerable<TPARENT> _list;
-        private readonly string         _field;
+        private readonly ICharacterSpan        _field;
 
         /****************************************************************************/
-        internal ChildEnumerable(IEnumerable<TPARENT> list, string field) 
+        internal ChildEnumerable(IEnumerable<TPARENT> list, ICharacterSpan field) 
         {
             _list  = list;
             _field = field;
@@ -57,13 +57,13 @@ namespace JTran.Collections
         {
             private readonly IEnumerator<TPARENT> _parentEnumerator;
             private IEnumerator<TCHILD>?          _childEnumerator;
-            private readonly string               _field;
+            private readonly ICharacterSpan        _field;
             private bool                          _childStatus = false;
             private bool                          _isChildValue = false;
             private TCHILD?                       _currentValue;
 
             /****************************************************************************/
-            internal Enumerator(IEnumerable<TPARENT> list, string field) // ??? use character span
+            internal Enumerator(IEnumerable<TPARENT> list, ICharacterSpan field) 
             {
                 _field            = field;
                 _parentEnumerator = list.GetEnumerator();

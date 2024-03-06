@@ -40,13 +40,13 @@ namespace JTran
         void EndChild();
         void EndContainer();
          
-        void WriteContainerName(CharacterSpan name);
+        void WriteContainerName(ICharacterSpan name);
         void WriteSimpleArrayItem(object item);
-        void WriteRaw(CharacterSpan json);
+        void WriteRaw(ICharacterSpan json);
         void WriteRaw(Stream  stream);
         void WriteItem(object item, bool newContainer = true);
         void WriteProperties(object item);
-        void WriteProperty(CharacterSpan name, object val, bool forceString = false);
+        void WriteProperty(ICharacterSpan name, object val, bool forceString = false);
         void WriteList(IEnumerable<object> list);
 
         bool InObject { get; }
@@ -79,8 +79,8 @@ namespace JTran
             internal bool   PreviousFinished  { get; set; } = false;
         }
 
-        protected abstract CharacterSpan FormatForJsonOutput(CharacterSpan s);
-        protected abstract CharacterSpan FormatForOutput(object s, bool forceString = false);
+        protected abstract ICharacterSpan FormatForJsonOutput(ICharacterSpan s);
+        protected abstract ICharacterSpan FormatForOutput(object s, bool forceString = false);
         protected abstract void AppendSpaces(int numSpaces);
 
         /****************************************************************************/
@@ -90,7 +90,7 @@ namespace JTran
         #region Write
 
         /****************************************************************************/
-        public void WriteContainerName(CharacterSpan name)
+        public void WriteContainerName(ICharacterSpan name)
         {
             StartChild();
             _stack.Peek().PreviousFinished = true;
@@ -113,7 +113,7 @@ namespace JTran
         {
             if(item is IEnumerable<object> list)
                 WriteList(list);
-            else if(item is CharacterSpan || item is string || !item.GetType().IsClass)
+            else if(item is ICharacterSpan || item is string || !item.GetType().IsClass)
                 WriteSimpleArrayItem(item);
             else 
             { 
@@ -148,7 +148,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void WriteProperty(CharacterSpan name, object val, bool forceString = false)
+        public void WriteProperty(ICharacterSpan name, object val, bool forceString = false)
         {
             StartChild();
 
@@ -173,7 +173,7 @@ namespace JTran
         }        
         
         /****************************************************************************/
-        public void WriteRaw(CharacterSpan json)
+        public void WriteRaw(ICharacterSpan json)
         {
              Append(json);
         }
@@ -277,10 +277,10 @@ namespace JTran
         protected abstract void Append(string text);
 
         /****************************************************************************/
-        protected abstract void AppendLine(CharacterSpan line);
+        protected abstract void AppendLine(ICharacterSpan line);
 
         /****************************************************************************/
-        protected abstract void Append(CharacterSpan text);
+        protected abstract void Append(ICharacterSpan text);
 
         /****************************************************************************/
         protected abstract void Append(char ch);
@@ -301,7 +301,7 @@ namespace JTran
         }             
 
         /****************************************************************************/
-        private void WriteLine(CharacterSpan line, bool newline = true)
+        private void WriteLine(ICharacterSpan line, bool newline = true)
         {
             if(IndentLength > 0)
                 AppendSpaces(IndentLength);
@@ -325,7 +325,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private void WriteLine(string before, CharacterSpan line, string after, bool newline = true)
+        private void WriteLine(string before, ICharacterSpan line, string after, bool newline = true)
         {
             if(IndentLength > 0)
                 AppendSpaces(IndentLength);
@@ -360,7 +360,7 @@ namespace JTran
         #region Write
 
         /****************************************************************************/
-        public void WriteContainerName(CharacterSpan name)
+        public void WriteContainerName(ICharacterSpan name)
         {
             ++NumWrites;
         }
@@ -390,7 +390,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void WriteProperty(CharacterSpan name, object val, bool forceString = false)
+        public void WriteProperty(ICharacterSpan name, object val, bool forceString = false)
         {
             ++NumWrites;
         }
@@ -401,7 +401,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void WriteRaw(CharacterSpan json)
+        public void WriteRaw(ICharacterSpan json)
         {
             ++NumWrites;
         }

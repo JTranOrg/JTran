@@ -15,7 +15,7 @@ namespace JTran
         private readonly IExpression _else;
 
         /****************************************************************************/
-        internal TIif(CharacterSpan? name, CharacterSpan val, long lineNumber) 
+        internal TIif(ICharacterSpan? name, ICharacterSpan val, long lineNumber) 
         {
             _name = name == null ? null : CreateValue(name, true, lineNumber);
 
@@ -35,7 +35,7 @@ namespace JTran
             wrap( ()=>
             { 
                 var result = _expression.EvaluateToBool(context) ? _if.Evaluate(context) : _else.Evaluate(context);
-                var name   = _name?.Evaluate(context) as CharacterSpan;
+                var name   = _name?.Evaluate(context) as ICharacterSpan;
 
                 writer.WriteProperty(name!, result);
             });

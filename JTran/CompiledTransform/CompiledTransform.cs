@@ -116,7 +116,7 @@ namespace JTran
             return;
         }
 
-        internal override TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
+        internal override TToken CreateObject(ICharacterSpan name, object? previous, long lineNumber)
         {
             var result = base.CreateObject(name, previous, lineNumber);
 
@@ -184,7 +184,7 @@ namespace JTran
         #endregion
         
         /****************************************************************************/
-        internal static IList<IExpression> ParseElementParams(string elementName, CharacterSpan source, IReadOnlyList<bool> isExplicitParam) 
+        internal static IList<IExpression> ParseElementParams(string elementName, ICharacterSpan source, IReadOnlyList<bool> isExplicitParam) 
         {
             if(!source.StartsWith(elementName))
                 throw new Transformer.SyntaxException("Error in parsing element parameters");
@@ -219,7 +219,7 @@ namespace JTran
         }
         
         /****************************************************************************/
-        [Obsolete("Replaced by CharacterSpan version")]
+        [Obsolete("Replaced by ICharacterSpan version")]
         internal static IList<IExpression> ParseElementParams(string elementName, string source, IReadOnlyList<bool> isExplicitParam) 
         {
             source = source.Trim();
@@ -259,7 +259,7 @@ namespace JTran
         #region Private 
 
         /****************************************************************************/
-        private static Token Precompile(CharacterSpan source) 
+        private static Token Precompile(ICharacterSpan source) 
         {
             var parser = new JTranParser();
             var tokens = parser.Parse(source);
@@ -391,14 +391,14 @@ namespace JTran
     /****************************************************************************/
     internal class SimpleValue : IValue
     {
-        private CharacterSpan? _value;
+        private ICharacterSpan? _value;
 
         /****************************************************************************/
         internal SimpleValue(object? value)
         {
             if(value is null)
                 _value = null;
-            else if(value is CharacterSpan cspan)
+            else if(value is ICharacterSpan cspan)
                 _value = cspan;
             else
                 _value = CharacterSpan.FromString(value!.ToString());

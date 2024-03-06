@@ -17,7 +17,7 @@ namespace JTran
         private readonly bool _inner;
 
         /****************************************************************************/
-        internal TInnerOuterJoinProperty(CharacterSpan val, bool inner, long lineNumber) 
+        internal TInnerOuterJoinProperty(ICharacterSpan val, bool inner, long lineNumber) 
         {
             var name = inner ? "#innerjoin" : "#outerjoin";
             var parms = CompiledTransform.ParseElementParams(name, val, CompiledTransform.SingleFalse);

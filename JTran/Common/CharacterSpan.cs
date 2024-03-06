@@ -4,8 +4,8 @@
  *                                                                          
  *        Namespace: JTran.Common							            
  *             File: CharacterSpan.cs					    		        
- *        Class(es): CharacterSpan				         		            
- *          Purpose: Class to reference a span of characters                 
+ *        Class(es): ICharacterSpan, CharacterSpan
+ *          Purpose: Class/Interface to reference a span of characters                 
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 21 Jan 2024                                             
@@ -17,26 +17,46 @@
  *                                                                          
  ****************************************************************************/
 
-using JTran.Expressions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 
 namespace JTran.Common
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class CharacterSpan : IReadOnlyList<char>, IEquatable<CharacterSpan>, IStringValue
+    internal interface ICharacterSpan : IReadOnlyList<char>, IEquatable<ICharacterSpan>, IStringValue
+    {
+        bool IsJTranProperty    { get; }
+        int  Length             { get; }
+
+        bool            IsNullOrWhiteSpace(int start = 0, int length = -1);
+        void            CopyTo(char[] buffer, int offset, int length = -1);
+        bool            Contains(ICharacterSpan find);
+        bool            StartsWith(string compare);
+        int             IndexOf(char ch, int start = 0);
+        int             IndexOf(ICharacterSpan find);
+        ICharacterSpan  SubstringBefore(char ch, int skip = 0);
+        ICharacterSpan  SubstringAfter(char ch);
+        ICharacterSpan  Substring(int index, int length = -1000);
+        ICharacterSpan  FormatForJsonOutput(bool addDoubleQuotes = false);
+        decimal         ParseNumber();
+        bool            TryParseNumber(out decimal result);
+        bool            Equals(string compare);
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal class CharacterSpan : ICharacterSpan
     {
         private readonly char[]? _source;
         private readonly int     _offset;
         private readonly int     _length;
         private int              _hashCode = 0;
         private readonly bool    _isJTranProperty;
+
+        #region Constructors
 
         /****************************************************************************/
         internal CharacterSpan()
@@ -70,10 +90,18 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        internal CharacterSpan(CharacterSpan source, int offset, int length)
+        internal CharacterSpan(ICharacterSpan source, int offset, int length)
         {
-            _source          = source._source;
-            _offset          = source._offset + offset;
+            if(source is CharacterSpan cspan)
+            { 
+                _source = cspan._source;
+                _offset = cspan._offset + offset;
+            }
+            else 
+            {
+                // ???
+            }
+
             _length          = length;
             _isJTranProperty = false;
 
@@ -81,25 +109,67 @@ namespace JTran.Common
                 throw new ArgumentOutOfRangeException();
         }
 
-        internal virtual int Length => _length;
+        #endregion
+
+        internal static readonly ICharacterSpan Empty        = new CharacterSpan();
+        internal static readonly ICharacterSpan JTranName    = CharacterSpan.FromString("_jtran_name", isJtranProp: true);
+        internal static readonly ICharacterSpan JTranParent  = CharacterSpan.FromString("_jtran_parent", isJtranProp: true);
+        internal static readonly ICharacterSpan JTranGparent = CharacterSpan.FromString("_jtran_gparent", isJtranProp: true);
 
         /****************************************************************************/
-        internal bool IsJTranProperty => _isJTranProperty;
-
-        internal static readonly CharacterSpan Empty        = new CharacterSpan();
-        internal static readonly CharacterSpan JTranName    = CharacterSpan.FromString("_jtran_name", true);
-        internal static readonly CharacterSpan JTranParent  = CharacterSpan.FromString("_jtran_parent", true);
-        internal static readonly CharacterSpan JTranGparent = CharacterSpan.FromString("_jtran_gparent", true);
-
-        /****************************************************************************/
-        internal static CharacterSpan FromString(string s, bool isJtranProp = false)
+        internal static ICharacterSpan FromString(string s, bool addDoubleQuotes = false, bool isJtranProp = false)
         {
-            // ??? need a lightweight version of CharacterSpan that wraps a string and make common interface for both, e.g. IString
+            // ??? addDoubleQuotes
+            // ??? need a lightweight version of ICharacterSpan that wraps a string and make common interface for both, e.g. IString
             return new CharacterSpan(s, isJtranProp);
         }
+        
+        /****************************************************************************/
+        internal static bool IsNullOrWhiteSpace(char ch)
+        {
+            switch(ch)
+            {
+                case ' ': 
+                case '\r':
+                case '\n':
+                case '\t': return true;
+                default:   return false;
+            }
+        }
+                        
+        /****************************************************************************/
+        internal static ICharacterSpan Join(IList<ICharacterSpan> list, char separator)
+        {
+            var length = list.Count-1;
+
+            foreach(var item in list) 
+                length += item.Length;
+            
+            var buffer = new char[length];
+            var offset = 0;
+
+            for(var i = 0; i < list.Count; ++i)
+            { 
+                var item = list[i];
+
+                item.CopyTo(buffer, offset);
+
+                offset += item.Length;
+
+                if(i < list.Count-1)
+                    buffer[offset++] = separator;
+            }
+
+            return new CharacterSpan(buffer, 0, length);
+        }
+
+        #region ICharacterSpan
+
+        public virtual int Length           => _length;
+        public bool        IsJTranProperty  => _isJTranProperty;
 
         /****************************************************************************/
-        internal bool IsNullOrWhiteSpace(int start = 0, int length = -1)
+        public bool IsNullOrWhiteSpace(int start = 0, int length = -1)
         {
             if(start >= this.Length)
                 return true;
@@ -111,7 +181,7 @@ namespace JTran.Common
 
             for(var i = start; i < n; ++i)
             { 
-                if(!char.IsWhiteSpace(this[i]))
+                if(!IsNullOrWhiteSpace(this[i]))
                     return false;
             }
 
@@ -119,7 +189,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        internal bool Contains(CharacterSpan find)
+        public bool Contains(ICharacterSpan find)
         {
             return IndexOf(find) != -1;
         }
@@ -152,7 +222,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public int IndexOf(CharacterSpan find)
+        public int IndexOf(ICharacterSpan find)
         {
             if(this.Length < find.Length || find.Length == 0 || this.Length == 0)
                 return -1;
@@ -182,7 +252,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public CharacterSpan SubstringBefore(char ch, int skip = 0)
+        public ICharacterSpan SubstringBefore(char ch, int skip = 0)
         {
             for(var i = skip; i < this.Length; ++i)
             { 
@@ -197,7 +267,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public CharacterSpan SubstringAfter(char ch)
+        public ICharacterSpan SubstringAfter(char ch)
         {
             for(var i = 0; i < this.Length; ++i)
             { 
@@ -214,7 +284,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public CharacterSpan Substring(int index, int length = -1000)
+        public ICharacterSpan Substring(int index, int length = -1000)
         {
             return new CharacterSpan(this, index, length == -1000 ? this.Length - index : (length < 0 ? this.Length - index + length : length));
         }
@@ -225,25 +295,14 @@ namespace JTran.Common
             return this[0];
         }
 
-         private static readonly Dictionary<char, char> _escapeCharacters = new Dictionary<char, char> 
-        {
-            { '\\', '\\' },
-            { '"',  '"' },
-            { '\r', 'r' },
-            { '\n', 'n' },
-            { '\t', 't' },
-            { '\f', 'f' },
-            { '\b', 'b' }
-        };
-        
         /****************************************************************************/
-        public CharacterSpan FormatForJsonOutput() 
+        public ICharacterSpan FormatForJsonOutput(bool addDoubleQuotes = false) 
         {
-            if(this.Length == 0)
+            if(this.Length == 0 && !addDoubleQuotes)
                 return this;
 
             var bufferIndex = 0;
-            char[]? buffer = null;
+            char[]? buffer = GetBuffer(null, -1, addDoubleQuotes, ref bufferIndex);
 
             for(int i = 0; i < this.Length; ++i)
             {
@@ -254,16 +313,9 @@ namespace JTran.Common
                     var replacement = _escapeCharacters[ch];
 
                     if(buffer == null)
-                    { 
-                        buffer = new char[this.Length + 16];
-
-                        if(i > 0)
-                            Array.Copy(_source, _offset, buffer, 0, i);
-
-                        bufferIndex = i;
-                    }
-                    else if(bufferIndex + 2 >= buffer.Length)
-                        Array.Resize(ref buffer, bufferIndex + 32);
+                        buffer = GetBuffer(buffer, i, addDoubleQuotes, ref bufferIndex);
+                    else 
+                        buffer = CheckBuffer(buffer, bufferIndex);
                      
                     buffer[bufferIndex++] = '\\';
                     buffer[bufferIndex++] = replacement;
@@ -277,23 +329,19 @@ namespace JTran.Common
                 }
             }
 
+            if(addDoubleQuotes)
+            {
+                if((bufferIndex+2) >= buffer.Length)
+                    bufferIndex += 0;
+
+                buffer = CheckBuffer(buffer, bufferIndex);
+                buffer[bufferIndex++] = '"';
+            }
+
             if(buffer != null)
                 return new CharacterSpan(buffer, 0, bufferIndex);
 
             return this;
-        }
-
-        private static bool IsEscapedCharacter(char ch)
-        {
-            if(ch == '\\') return true;
-            if(ch == '"')  return true;
-            if(ch == '\r') return true;
-            if(ch == '\n') return true;
-            if(ch == '\t') return true;
-            if(ch == '\f') return true;
-            if(ch == '\b') return true;
-
-            return false;
         }
 
         /****************************************************************************/
@@ -380,21 +428,16 @@ namespace JTran.Common
 
             return true;
         }
-                
-        /****************************************************************************/
-        public virtual void CopyTo(TextWriter writer) /// ???
-        {
-            if(this.Length != 0)
-                writer.Write(_source, _offset, this.Length);
-        }
         
         /****************************************************************************/
-        public virtual void CopyTo(char[] buffer, int offset)
+        public virtual void CopyTo(char[] buffer, int offset, int length = -1)
         {
             if(_length != 0)
-                Array.Copy(_source, _offset, buffer, offset, _length);
+                Array.Copy(_source, _offset, buffer, offset, length == -1 ? _length : length);
         }
-        
+
+        #endregion
+
         /****************************************************************************/
         public override string ToString()
         {
@@ -455,7 +498,7 @@ namespace JTran.Common
 
         #region IEquatable
 
-        public bool Equals(CharacterSpan other)
+        public bool Equals(ICharacterSpan other)
         {
             if(other == null)
                 return _source == null;
@@ -466,6 +509,62 @@ namespace JTran.Common
         #endregion
 
         #region Private
+
+        /****************************************************************************/
+        private static readonly Dictionary<char, char> _escapeCharacters = new Dictionary<char, char> 
+        {
+            { '\\', '\\' },
+            { '"',  '"' },
+            { '\r', 'r' },
+            { '\n', 'n' },
+            { '\t', 't' },
+            { '\f', 'f' },
+            { '\b', 'b' }
+        };
+        
+        /****************************************************************************/
+        private char[] GetBuffer(char[]? buffer, int index, bool addDoubleQuotes, ref int bufferIndex) 
+        {        
+            if(buffer == null && !addDoubleQuotes && index == -1)
+                return buffer;
+
+            buffer = new char[(int)((this.Length + (addDoubleQuotes ? 2 : 0)) / 16) * 16 + 16];
+
+            if(addDoubleQuotes)
+                buffer[0] = '\"';
+
+            if(index > 0)
+                Array.Copy(_source, _offset, buffer,  addDoubleQuotes ? 1 : 0, index);
+
+            bufferIndex = index == -1 ? 0 : index;
+
+            if(addDoubleQuotes)
+                ++bufferIndex;
+
+            return buffer;
+        }
+
+        /****************************************************************************/
+        private char[] CheckBuffer(char[] buffer, int bufferIndex) 
+        {        
+            if((bufferIndex + 2) >= buffer.Length)
+                Array.Resize(ref buffer, (int)(bufferIndex / 16) * 16 + 32);
+
+            return buffer;
+        }
+        
+        private static bool IsEscapedCharacter(char ch)
+        {
+            if(ch == '\\') return true;
+            if(ch == '"')  return true;
+            if(ch == '\r') return true;
+            if(ch == '\n') return true;
+            if(ch == '\t') return true;
+            if(ch == '\f') return true;
+            if(ch == '\b') return true;
+
+            return false;
+        }
 
         /****************************************************************************/
         private static int CombineHashCodes(int h1, int h2) 
@@ -480,7 +579,7 @@ namespace JTran.Common
     /****************************************************************************/
     internal class CharacterSpanGroup 
     { 
-        private readonly Dictionary<string, CharacterSpan> _dict = new();
+        private readonly Dictionary<string, ICharacterSpan> _dict = new();
 
         /****************************************************************************/
         internal CharacterSpanGroup()
@@ -488,7 +587,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        internal CharacterSpan Get(string key)
+        internal ICharacterSpan Get(string key)
         {
             if(!_dict.ContainsKey(key))
                 _dict.Add(key, CharacterSpan.FromString(key));
@@ -532,7 +631,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public CharacterSpan Current  
+        public ICharacterSpan Current  
         {
             get
             { 

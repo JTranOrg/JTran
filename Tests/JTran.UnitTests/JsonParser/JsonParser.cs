@@ -98,6 +98,7 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow("stringarray")]
         [DataRow("numberarray")]
+        [DataRow("booleanarray")]
         public void JsonParser_Parse_array_non_object_values(string fileName)
         {
             var json = TestParse(fileName);
@@ -213,6 +214,8 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow("missing_quotes", 2)]
         [DataRow("missing_quotes2", 9)]
+        [DataRow("missing_quotes3", 10)]
+        [DataRow("missing_quotes4", 2)]
         public void JsonParser_Parse_missing_quotes(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
@@ -224,21 +227,6 @@ namespace JTran.UnitTests
             Assert.AreEqual(lineNumber, ex.LineNumber);
             Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
             Assert.IsTrue(ex.Message.StartsWith("Missing end quotes"));
-        }
-
-        [TestMethod]
-        [DataRow("missing_quotes3", 12)]
-        public void JsonParser_Parse_end_of_file(string fileName, long lineNumber)
-        {
-            var data   = LoadSample(fileName);
-            var parser = new Json.Parser(new JsonModelBuilder());
-            
-            var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
-
-            Assert.IsNotNull(ex);
-            Assert.AreEqual(lineNumber, ex.LineNumber);
-            Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
-            Assert.IsTrue(ex.Message.StartsWith("Unexpected end of file"));
         }
 
         [TestMethod]

@@ -94,7 +94,7 @@ namespace JTran.Json
                 if(kv.Key.IsJTranProperty)
                     continue;
 
-                if(val is CharacterSpan)
+                if(val is ICharacterSpan)
                     continue;
 
                 if(val is decimal)
@@ -116,7 +116,7 @@ namespace JTran.Json
 
             obj.ToJson(writer);
 
-            return writer.ToString(); // ??? this is inefficent. Whoever is using this, please stop
+            return writer.ToString(); 
         }
 
         /****************************************************************************/
@@ -133,7 +133,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        internal static void ToJson(CharacterSpan key, object value, IJsonWriter writer)
+        internal static void ToJson(ICharacterSpan key, object value, IJsonWriter writer)
         {
             if(value is IEnumerable<object> list)
             {
@@ -146,7 +146,7 @@ namespace JTran.Json
                 writer.WriteContainerName(key);
                 jobj.ToJson(writer);                   
             }
-            else if(value  == null || value is CharacterSpan|| value is string || !value.GetType().IsClass)
+            else if(value  == null || value is ICharacterSpan|| value is string || !value.GetType().IsClass)
                 writer.WriteProperty(key, value);
             else
             {                       
@@ -177,24 +177,14 @@ namespace JTran.Json
                 if(!type.IsClass)
                     throw new ArgumentException("Unknown property type");
 
-                // cache the properties and create class to return all values
-                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where( p=> p.CanRead );
+                var poco = Poco.FromType(type);
 
-                foreach(var property in properties)
+                poco.ForEachProperty(obj, (name, value)=> 
                 {
-                    try
-                    { 
-                        var value = property.GetGetMethod().Invoke(obj, null);
-
-                        writer.StartChild();
-                        ToJson(CharacterSpan.FromString(property.Name), value, writer); // ???
-                        writer.EndChild();
-                    }
-                    catch
-                    {
-                        // Just ignore it
-                    }
-                }
+                    writer.StartChild();
+                    ToJson(name, value, writer); 
+                    writer.EndChild();
+                });
              }
 
         }
@@ -343,7 +333,7 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        private static void SetChild(object child, object parent, object gparent, CharacterSpan name)
+        private static void SetChild(object child, object parent, object? gparent, ICharacterSpan? name)
         {
             if(child is JsonObject jobj)
             {
@@ -359,10 +349,8 @@ namespace JTran.Json
             }
             else if(child is IEnumerable<object> list)
             {
-                var childIndex = 0;
-
                 foreach(var gchild in list)
-                    SetChild(gchild, child, parent, CharacterSpan.FromString((childIndex++ - 1).ToString())); // ??? this can't be good
+                    SetChild(gchild, child, parent, null);
             }
 
             return;

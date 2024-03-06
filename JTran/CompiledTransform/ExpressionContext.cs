@@ -37,7 +37,7 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly IDictionary<CharacterSpan, object>        _variables;
+        private readonly IDictionary<ICharacterSpan, object>        _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
 
@@ -51,7 +51,7 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables       = new Dictionary<CharacterSpan, object>();
+            _variables       = new Dictionary<ICharacterSpan, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -74,7 +74,7 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables        = new Dictionary<CharacterSpan, object>();
+            _variables        = new Dictionary<ICharacterSpan, object>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;
@@ -132,7 +132,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object GetVariable(CharacterSpan name, ExpressionContext context)
+        internal object GetVariable(ICharacterSpan name, ExpressionContext context)
         {
             if(_variables.ContainsKey(name))
             { 
@@ -177,7 +177,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal void SetVariable(CharacterSpan name, object val)
+        internal void SetVariable(ICharacterSpan name, object val)
         {
             if(_variables.ContainsKey(name))
                 throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");
@@ -185,10 +185,10 @@ namespace JTran
             _variables.Add(name, val);
         }
 
-        private static readonly CharacterSpan _scopeSymbol = CharacterSpan.FromString("@");
+        private static readonly ICharacterSpan _scopeSymbol = CharacterSpan.FromString("@");
 
         /*****************************************************************************/
-        internal object GetDataValue(CharacterSpan name)
+        internal object GetDataValue(ICharacterSpan name)
         { 
             if(this.Data == null)
                 return null;
@@ -237,7 +237,7 @@ namespace JTran
 
             if(this.Data is IEnumerable<object> list)
             {
-                var result = new ChildEnumerable<object, object>(list, name.ToString()); // ???
+                var result = new ChildEnumerable<object, object>(list, name.AsCharacterSpan()); 
 
                 if(!result.Any())
                     return null;
@@ -252,7 +252,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        private object GetDataValue(object data, CharacterSpan name)
+        private object GetDataValue(object data, ICharacterSpan name)
         { 
             var val = data.GetPropertyValue(name);
 

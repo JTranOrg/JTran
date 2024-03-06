@@ -35,12 +35,12 @@ namespace JTran
         internal TContainer? Parent { get; set; }
 
         /****************************************************************************/
-        private IValue CreateSimpleValue(CharacterSpan? sval)
+        private IValue CreateSimpleValue(ICharacterSpan? sval)
         {
             return new SimpleValue(sval);
         }
       
-        private static readonly Dictionary<CharacterSpan, bool> _names = new Dictionary<CharacterSpan, bool>
+        private static readonly Dictionary<ICharacterSpan, bool> _names = new Dictionary<ICharacterSpan, bool>
         {
             { CharacterSpan.FromString("#arrayitem"), true }, 
             { CharacterSpan.FromString("#mapitem"),   true }, 
@@ -49,21 +49,21 @@ namespace JTran
             { CharacterSpan.FromString("#elseif"),    true } 
         };
 
-        private readonly static CharacterSpan _include      = CharacterSpan.FromString("#include");
-        private readonly static CharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
-        private readonly static CharacterSpan _innerjoin    = CharacterSpan.FromString("#innerjoin");
-        private readonly static CharacterSpan _outerjoin    = CharacterSpan.FromString("#outerjoin");
-        private readonly static CharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
+        private readonly static ICharacterSpan _include      = CharacterSpan.FromString("#include");
+        private readonly static ICharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
+        private readonly static ICharacterSpan _innerjoin    = CharacterSpan.FromString("#innerjoin");
+        private readonly static ICharacterSpan _outerjoin    = CharacterSpan.FromString("#outerjoin");
+        private readonly static ICharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
        
-        internal readonly static CharacterSpan EmptyArray   = CharacterSpan.FromString("[]");
-        internal readonly static CharacterSpan EmptyObject  = CharacterSpan.FromString("{}");
+        internal readonly static ICharacterSpan EmptyArray   = CharacterSpan.FromString("[]");
+        internal readonly static ICharacterSpan EmptyObject  = CharacterSpan.FromString("{}");
 
         /****************************************************************************/
         internal protected IValue CreateValue(object? val, bool name, long lineNumber)
         {
             if(val != null)
             {
-                if(val is CharacterSpan cspan)
+                if(val is ICharacterSpan cspan)
                     return InternalCreateValue(cspan, name, lineNumber);
 
                 if(val is decimal dval)
@@ -74,7 +74,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private protected IValue InternalCreateValue(CharacterSpan? sval, bool name, long lineNumber)
+        private protected IValue InternalCreateValue(ICharacterSpan? sval, bool name, long lineNumber)
         {
             if(sval![0] != '#' || sval.Length == 1) // Allow "#" as a string literal
                 return CreateSimpleValue(sval);
@@ -112,7 +112,7 @@ namespace JTran
                     
                 var templateName = sval.SubstringBefore('(', 1);
                 var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString()); // ??? optimize
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString()); 
 
                 // Will do exception on evaluation if no template found
                 return new TCallTemplateProperty(parm, lineNumber);

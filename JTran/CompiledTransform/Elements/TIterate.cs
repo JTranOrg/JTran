@@ -14,7 +14,7 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TIterate(CharacterSpan name) 
+        internal TIterate(ICharacterSpan name) 
         {
             var parms = CompiledTransform.ParseElementParams("#iterate", name, CompiledTransform.FalseTrue );
 
@@ -51,13 +51,8 @@ namespace JTran
         {
             var result = _expression.Evaluate(context);
 
-            if(result == null)
-                return;
-
-            if(!decimal.TryParse(result.ToString(), out decimal d)) // ??? CharacterSpan
-                throw new Transformer.SyntaxException("#iterate expression must resolve to number");
-
-            var numItems = (long)Math.Floor(d);
+            if(result == null || !result.TryParseInt(out int numItems)) 
+                throw new Transformer.SyntaxException("#iterate expression must resolve to a number");
 
             wrap( ()=> 
             { 
@@ -87,7 +82,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, CharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
+        private bool EvaluateChild(IJsonWriter output, ICharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
             var bBreak = false;

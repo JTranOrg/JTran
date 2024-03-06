@@ -29,7 +29,7 @@ namespace JTran.Common
     internal class Poco
     {
         private static readonly Dictionary<string, Poco> _cache = new();
-        private readonly Dictionary<CharacterSpan, PropertyInfo> _properties = new();
+        private readonly Dictionary<ICharacterSpan, PropertyInfo> _properties = new();
 
         /****************************************************************************/
         internal Poco(Type type)
@@ -64,7 +64,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public object? GetValue(object? poco, CharacterSpan name)  
+        public object? GetValue(object? poco, ICharacterSpan name)  
         {
             if(poco == null ) 
                 return null;
@@ -99,7 +99,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public void ForEachProperty(object poco, Action<CharacterSpan, object> onProperty)  
+        public void ForEachProperty(object poco, Action<ICharacterSpan, object> onProperty)  
         {        
             foreach(var kv in _properties)
             {
@@ -156,7 +156,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public object? GetPropertyValue(CharacterSpan name)
+        public object? GetPropertyValue(ICharacterSpan name)
         {
             return _poco.GetValue(this.Data, name);
         }

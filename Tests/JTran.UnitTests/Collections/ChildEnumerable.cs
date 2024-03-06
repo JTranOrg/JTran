@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using JTran.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using JTran.Common;
 
 namespace JTran.UnitTests
 {
@@ -105,7 +106,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ChildEnumerable_success()
         {
-            var flattened  = new ChildEnumerable<Car, Person>(_cars, "Drivers");
+            var flattened  = new ChildEnumerable<Car, Person>(_cars, "Drivers".AsCharacterSpan());
             var result     = new List<Person>(flattened);
 
             Assert.AreEqual(6, result.Count);
@@ -116,7 +117,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ChildEnumerable_object_success()
         {
-            var flattened  = new ChildEnumerable<object, object>(_carObjects, "Drivers");
+            var flattened  = new ChildEnumerable<object, object>(_carObjects, "Drivers".AsCharacterSpan());
             var result     = new List<object>(flattened);
             var json       = JsonConvert.SerializeObject(result);
             var array      = JArray.Parse(json);
@@ -129,8 +130,8 @@ namespace JTran.UnitTests
         [TestMethod]
         public void ChildEnumerable_property_success()
         {
-            var drivers   = new ChildEnumerable<object, object>(_carObjects, "Drivers");
-            var firstNames  = new ChildEnumerable<object, object>(drivers, "FirstName");
+            var drivers    = new ChildEnumerable<object, object>(_carObjects, "Drivers".AsCharacterSpan());
+            var firstNames = new ChildEnumerable<object, object>(drivers, "FirstName".AsCharacterSpan());
             var result     = new List<object>(firstNames);
             var json       = JsonConvert.SerializeObject(result);
             var array      = JArray.Parse(json);
@@ -142,22 +143,22 @@ namespace JTran.UnitTests
 
         internal class Car
         {
-            public string              Make    { get; set; } = "";
-            public string              Model   { get; set; } = "";
-            public IEnumerable<Person> Drivers { get; set; }
+            public string               Make    { get; set; } = "";
+            public string               Model   { get; set; } = "";
+            public IEnumerable<Person>? Drivers { get; set; }
         }
 
         internal class CarObject
         {
-            public string              Make    { get; set; } = "";
-            public string              Model   { get; set; } = "";
-            public IEnumerable<object> Drivers { get; set; }
+            public string               Make    { get; set; } = "";
+            public string               Model   { get; set; } = "";
+            public IEnumerable<object>? Drivers { get; set; }
         }
 
         internal class Person
         {
             public string FirstName { get; set; } = "";
-            public string LastName { get; set; }  = "";
+            public string LastName  { get; set; } = "";
 
         }
     }

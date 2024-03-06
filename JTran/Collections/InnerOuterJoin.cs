@@ -103,8 +103,8 @@ namespace JTran.Collections
                 _rightEnum.Dispose();
             }
 
-            private static readonly CharacterSpan _left  = CharacterSpan.FromString("left");
-            private static readonly CharacterSpan _right = CharacterSpan.FromString("right");
+            private static readonly ICharacterSpan _left  = CharacterSpan.FromString("left");
+            private static readonly ICharacterSpan _right = CharacterSpan.FromString("right");
 
             /****************************************************************************/
             public bool MoveNext()
@@ -119,7 +119,7 @@ namespace JTran.Collections
 
                     while(_rightEnum!.MoveNext()) 
                     { 
-                        IDictionary<CharacterSpan, object> dict = eval;
+                        IDictionary<ICharacterSpan, object> dict = eval;
 
                         if(!eval.TryAdd(_left, _leftEnum.Current))
                             dict[_left] = _leftEnum.Current;

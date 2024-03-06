@@ -12,12 +12,12 @@ namespace JTran
         private readonly IExpression _expression;
 
         /****************************************************************************/
-        internal TIf(CharacterSpan name) : this(name, "#if(") 
+        internal TIf(ICharacterSpan name) : this(name, "#if(") 
         {
         }
 
         /****************************************************************************/
-        internal protected TIf(CharacterSpan name, string elementName) 
+        internal protected TIf(ICharacterSpan name, string elementName) 
         {
             _expression = Compiler.Compile(name.Substring(elementName.Length, name.Length - elementName.Length - 1));
         }
@@ -40,7 +40,7 @@ namespace JTran
     internal class TElseIf : TIf
     {
         /****************************************************************************/
-        internal TElseIf(CharacterSpan name) : base(name, "#elseif(")
+        internal TElseIf(ICharacterSpan name) : base(name, "#elseif(")
         {
         }
 

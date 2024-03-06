@@ -372,7 +372,7 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformMultipleIfElse, result);
             Assert.IsNotNull(JObject.Parse(result));
 
-            var family = JsonConvert.DeserializeObject<Family>(result);
+            var family = JsonConvert.DeserializeObject<Family>(result)!;
 
             Assert.AreEqual("Lance",   family.HusbandFirstName);
             Assert.AreEqual("Boulder", family.HusbandSurname);
@@ -396,7 +396,7 @@ namespace JTran.UnitTests
             Assert.IsNotNull(jresult);
 
             Assert.IsNotNull(jresult["output"]);
-            Assert.AreEqual("true", jresult["output"]["modified"].ToString().ToLower());
+            Assert.AreEqual("true", jresult!["output"]!["modified"]!.ToString()!.ToLower());
         }
 
         [TestMethod]

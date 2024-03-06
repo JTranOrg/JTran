@@ -5,17 +5,18 @@ using JTran.Common;
 using System.Linq;
 using JTran.Expressions;
 using Newtonsoft.Json.Linq;
+using System.Data.Common;
 
 namespace JTran.UnitTests
 {
     [TestClass]
     [TestCategory("JsonParser")]
-    public class CharacterSpanTests
+    public class ICharacterSpanTests
     {
-        #region CharacterSpan
+        #region ICharacterSpan
 
         [TestMethod]
-        public void CharacterSpan_ToString()
+        public void ICharacterSpan_ToString()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -30,7 +31,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_PeekChar()
+        public void ICharacterSpan_PeekChar()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -44,7 +45,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_bracket_operator()
+        public void ICharacterSpan_bracket_operator()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -58,7 +59,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_IsNullOrWhiteSpace()
+        public void ICharacterSpan_IsNullOrWhiteSpace()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -76,7 +77,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_Contains()
+        public void ICharacterSpan_Contains()
         {
             var source = "abc12345678def".ToArray();
             var c1 = new CharacterSpan(source, 3, 8);
@@ -89,7 +90,7 @@ namespace JTran.UnitTests
 
 
         [TestMethod]
-        public void CharacterSpan_IndexOf_ch()
+        public void ICharacterSpan_IndexOf_ch()
         {
             var source = "abc12345678def".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -104,7 +105,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_FormatForJsonOutput()
+        public void ICharacterSpan_FormatForJsonOutput()
         {
             var source = "a\rc1234\"56".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -118,10 +119,19 @@ namespace JTran.UnitTests
             Assert.AreEqual("4\\\"56", c3.FormatForJsonOutput().ToString());
         }
 
+        [TestMethod]
+        public void ICharacterSpan_FormatForJsonOutput2()
+        {
+            var c1 = CharacterSpan.FromString("abcdefghijk");
+
+            Assert.AreEqual("abcdefghijk",     c1.FormatForJsonOutput().ToString());
+            Assert.AreEqual("\"abcdefghijk\"", c1.FormatForJsonOutput(true).ToString());
+        }
+
         private const decimal Zero = 0m;
 
         [TestMethod]   
-        public void CharacterSpan_TryParseNumber()
+        public void ICharacterSpan_TryParseNumber()
         {
             TestNumber("16",                16m);
             TestNumber("16.3",              16.3m);
@@ -151,7 +161,7 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow(4096)]
         [DataRow(16)]
-        public void CharacterSpanFactory_ToString(int bufferSize)
+        public void ICharacterSpanFactory_ToString(int bufferSize)
         {
             var factory = new CharacterSpanBuilder(bufferSize);
 
@@ -212,7 +222,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_GetHashCode()
+        public void ICharacterSpan_GetHashCode()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -223,7 +233,7 @@ namespace JTran.UnitTests
             var c5 = new CharacterSpan(source, 3, 3);
             var c6 = new CharacterSpan(source, 6, 3);
 
-            var d = new Dictionary<CharacterSpan, string>();
+            var d = new Dictionary<ICharacterSpan, string>();
 
             d.Add(c1, "bob");
             d.Add(c2, "fred");
@@ -235,7 +245,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void CharacterSpan_GetHashCode2()
+        public void ICharacterSpan_GetHashCode2()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -248,6 +258,17 @@ namespace JTran.UnitTests
             Assert.AreEqual(c1h, c1s);
             Assert.AreEqual(c2.GetHashCode(), CharacterSpan.FromString("123").GetHashCode());
             Assert.AreEqual(c3.GetHashCode(), CharacterSpan.FromString("def").GetHashCode());
+        }
+
+        [TestMethod]
+        public void ICharacterSpan_Join()
+        {
+            var source = "abc123def456".ToArray();
+            var c1 = new CharacterSpan(source, 0, 3);
+            var c2 = new CharacterSpan(source, 3, 3);
+            var c3 = new CharacterSpan(source, 6, 3);
+
+            Assert.AreEqual("abc.def.123", CharacterSpan.Join(new List<ICharacterSpan> { c1, c3, c2}, '.').ToString());
         }
     }
 }

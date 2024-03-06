@@ -53,7 +53,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        internal static IExpression Compile(CharacterSpan expr)
+        internal static IExpression Compile(ICharacterSpan expr)
         {
             var parser   = new JTranParser();
             var compiler = new Compiler();

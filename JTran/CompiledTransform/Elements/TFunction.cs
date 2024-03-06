@@ -9,15 +9,15 @@ namespace JTran
     /****************************************************************************/
     internal class TFunction : TContainer
     {
-        public List<CharacterSpan> Parameters { get; } = new List<CharacterSpan>();
+        public List<ICharacterSpan> Parameters { get; } = new List<ICharacterSpan>();
 
         /****************************************************************************/
-        internal TFunction(CharacterSpan name) 
+        internal TFunction(ICharacterSpan name) 
         {
             var parms   = CompiledTransform.ParseElementParams("#function", name, CompiledTransform.SingleTrue );
             var context = new ExpressionContext(new {});
 
-            this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim();
+            this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim(); // ???
 
             this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Evaluate(context).ToString().Trim()))); // ???
             this.Parameters.RemoveAt(0);

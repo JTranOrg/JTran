@@ -17,7 +17,7 @@ namespace JTran
         private readonly IValue? _name;
 
         /****************************************************************************/
-        internal TCopyOf(CharacterSpan? name, CharacterSpan val) 
+        internal TCopyOf(ICharacterSpan? name, ICharacterSpan val) 
         {
             _name = (name?.Equals("#noobject") ?? false) ? null : CreateValue(name, true, 0);
 
@@ -33,7 +33,7 @@ namespace JTran
         public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
             var newScope = _expression.Evaluate(context);
-            var name     = _name?.Evaluate(context) as CharacterSpan;
+            var name     = _name?.Evaluate(context) as ICharacterSpan;
 
             wrap( ()=>
             { 

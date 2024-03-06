@@ -337,7 +337,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(val is CharacterSpan cspan)
+            if(val is ICharacterSpan cspan)
                 return cspan;
 
             return new StringValue(val!.ToString());
@@ -431,7 +431,7 @@ namespace JTran.Expressions
             if(searchFor == null)
                 return false;
 
-            if(val is CharacterSpan cspan)
+            if(val is ICharacterSpan cspan)
             { 
                 if(cspan.IsNullOrWhiteSpace())
                     return false;
@@ -623,7 +623,7 @@ namespace JTran.Expressions
             if(val == null)
                 return true;
 
-            if(val is CharacterSpan cspan)
+            if(val is ICharacterSpan cspan)
                 return cspan.IsNullOrWhiteSpace();
 
             if(val is JsonObject jobj)
@@ -727,12 +727,13 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public string name(ExpressionContext context)
+        public ICharacterSpan name(ExpressionContext context)
         {
             if(context.Data is JsonObject jobj && jobj.ContainsKey(CharacterSpan.JTranName))
-                return jobj[CharacterSpan.JTranName].ToString();
+                if(jobj[CharacterSpan.JTranName] is CharacterSpan cspan)
+                    return cspan;
 
-            return string.Empty;
+            return CharacterSpan.Empty;
         }
 
         /*****************************************************************************/

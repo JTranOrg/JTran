@@ -25,8 +25,8 @@ namespace JTran.Parser
         }
 
         /*****************************************************************************/
-        // ??? Need to optimize tokens to use CharacterSpan
-        internal IReadOnlyList<Token> Parse(CharacterSpan expression)
+        // ??? Need to optimize tokens to use ICharacterSpan
+        internal IReadOnlyList<Token> Parse(ICharacterSpan expression)
         {
             var   n    = expression.Length;
             char? prev = null;
@@ -148,7 +148,7 @@ namespace JTran.Parser
                 }
                 else if(token.IsLiteral && token.Value.IsQuoted())
                     this._sb.Add(CreateToken(token.Value.Substring(1, token.Value.Length - 2), Token.TokenType.Literal)); 
-                else if(token.Type == Token.TokenType.Text && decimal.TryParse(token.Value, out decimal dval)) // ??? CharacterSpan
+                else if(token.Type == Token.TokenType.Text && decimal.TryParse(token.Value, out decimal dval)) // ??? ICharacterSpan
                     this._sb.Add(CreateToken(token.Value, Token.TokenType.Number)); 
                 else
                     this._sb.Add(CreateToken(token.Value, token.Type)); 

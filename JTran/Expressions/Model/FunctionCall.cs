@@ -94,7 +94,7 @@ namespace JTran.Expressions
             output.EndObject();
 
             var exp = output.ToString().ToJsonObject();
-            var dict = exp as IDictionary<CharacterSpan, object>;
+            var dict = exp as IDictionary<ICharacterSpan, object>;
 
             if(dict.ContainsKey(_return))
                 return dict[_return];
@@ -102,7 +102,7 @@ namespace JTran.Expressions
             return exp;
         }
 
-        private readonly static CharacterSpan _return = CharacterSpan.FromString("return");
+        private readonly static ICharacterSpan _return = CharacterSpan.FromString("return");
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)

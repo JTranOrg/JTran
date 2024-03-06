@@ -56,8 +56,6 @@ namespace JTran.Json
 
         #region Private
 
-        private readonly CharacterSpan _empty = new CharacterSpan();
-
         /****************************************************************************/
         public object InnerParse(ICharacterReader reader) 
         {
@@ -69,10 +67,10 @@ namespace JTran.Json
                 var tokenType = _tokenizer.ReadNextToken(_reader, ref _lineNumber);
 
                 if(tokenType == JsonToken.TokenType.BeginObject) 
-                    return BeginObject(_empty, null, null, _lineNumber);
+                    return BeginObject(CharacterSpan.Empty, null, null, _lineNumber);
 
                 if(tokenType == JsonToken.TokenType.BeginArray) 
-                    return BeginArray(_empty, null, _lineNumber);
+                    return BeginArray(CharacterSpan.Empty, null, _lineNumber);
             }
             catch(JsonParseException ex)
             {
@@ -85,7 +83,7 @@ namespace JTran.Json
             throw new JsonParseException("Invalid json", _lineNumber);
         }
 
-        private object BeginObject(CharacterSpan? name, object parent, object? previous, long lineNumber) 
+        private object BeginObject(ICharacterSpan? name, object parent, object? previous, long lineNumber) 
         {
             var ex = name == null ? _modelBuilder.AddObject(parent, lineNumber) 
                                   : _modelBuilder.AddObject(name, parent, previous, lineNumber);
@@ -110,7 +108,7 @@ namespace JTran.Json
 
                     case JsonToken.TokenType.Text when (previousTokenType == JsonToken.TokenType.BeginObject || previousTokenType == JsonToken.TokenType.Comma):
                     {                    
-                        var propName = _tokenizer.TokenValue as CharacterSpan;
+                        var propName = _tokenizer.TokenValue as ICharacterSpan;
                         
                         runningPrevious = BeginProperty(propName!, ex, runningPrevious);
 
@@ -125,7 +123,7 @@ namespace JTran.Json
             }
         }
 
-        private object BeginArray(CharacterSpan? name, object parent, long lineNumber) 
+        private object BeginArray(ICharacterSpan? name, object parent, long lineNumber) 
         {
             var array = name == null ? _modelBuilder.AddArray(parent, lineNumber) 
                                                              : _modelBuilder.AddArray(name, parent, lineNumber);
@@ -163,7 +161,7 @@ namespace JTran.Json
 
                     default:
                     { 
-                        if(_tokenizer.TokenValue is CharacterSpan cspan)
+                        if(_tokenizer.TokenValue is ICharacterSpan cspan)
                         { 
                             switch(tokenType)
                             { 
@@ -187,7 +185,7 @@ namespace JTran.Json
             return array;
         }
 
-        private object BeginProperty(CharacterSpan name, object parent, object? previous) 
+        private object BeginProperty(ICharacterSpan name, object parent, object? previous) 
         {
             var lineNumber = _lineNumber;
             var tokenType = _tokenizer.ReadNextToken(_reader!, ref _lineNumber);
@@ -205,7 +203,7 @@ namespace JTran.Json
 
                     default:
                     {
-                        if(_tokenizer!.TokenValue is CharacterSpan cspan)
+                        if(_tokenizer!.TokenValue is ICharacterSpan cspan)
                         { 
                             if(tokenType == JsonToken.TokenType.Text)
                                 return _modelBuilder.AddText(name, cspan, parent, previous, _lineNumber);  

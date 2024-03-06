@@ -20,7 +20,7 @@ namespace JTran.UnitTests
             var reader = new CharacterReader(data);
             var i = -1;
 
-            while(reader.ReadNext()) 
+            while(reader.ReadNext(false)) 
             {
                 ++i;
                 Assert.AreEqual(reader.Current, check[i]);

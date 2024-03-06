@@ -7,6 +7,6 @@ namespace JTran.Common
 {
     internal interface IObject 
     {
-        object? GetPropertyValue(CharacterSpan name);
+        object? GetPropertyValue(ICharacterSpan name);
     }
 }

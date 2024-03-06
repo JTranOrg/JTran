@@ -13,10 +13,10 @@ namespace JTran
     /****************************************************************************/
     internal class TTemplate : TContainer
     {
-        public List<CharacterSpan> Parameters { get; } = new();
+        public List<ICharacterSpan> Parameters { get; } = new();
 
         /****************************************************************************/
-        internal TTemplate(CharacterSpan name) 
+        internal TTemplate(ICharacterSpan name) 
         {
             name = name.Substring("#template(".Length, name.Length - "#template(".Length - 1);
 
@@ -46,7 +46,7 @@ namespace JTran
         private readonly string _templateName;
 
         /****************************************************************************/
-        internal TCallTemplate(CharacterSpan name) 
+        internal TCallTemplate(ICharacterSpan name) 
         {
             _templateName = name.Substring("#calltemplate(".Length).ToString().ReplaceEnding(")", "");
         }
@@ -84,7 +84,7 @@ namespace JTran
         private readonly long _lineNumber;
 
         /****************************************************************************/
-        internal TCallTemplateProperty(CharacterSpan name, long lineNumber) 
+        internal TCallTemplateProperty(ICharacterSpan name, long lineNumber) 
         {
             var parms = CompiledTransform.ParseElementParams("#calltemplate", name, CompiledTransform.TrueFalse);
 

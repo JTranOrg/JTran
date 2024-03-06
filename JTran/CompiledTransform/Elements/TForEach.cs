@@ -18,7 +18,7 @@ namespace JTran
         private bool _hasConditionals = false;        
 
         /****************************************************************************/
-        internal TForEach(CharacterSpan name, long lineNumber) 
+        internal TForEach(ICharacterSpan name, long lineNumber) 
         {
             var parms = CompiledTransform.ParseElementParams("#foreach", name, CompiledTransform.FalseTrue );
 
@@ -32,7 +32,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected TForEach(CharacterSpan expression, bool expr) 
+        internal protected TForEach(ICharacterSpan expression, bool expr) 
         {
             _expression = Compiler.Compile(expression);
         }
@@ -77,7 +77,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private void EvaluateChildren(IJsonWriter output, CharacterSpan arrayName, IEnumerable<object> list, ExpressionContext context)
+        private void EvaluateChildren(IJsonWriter output, ICharacterSpan arrayName, IEnumerable<object> list, ExpressionContext context)
         {
             try
             { 
@@ -96,7 +96,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        private bool EvaluateChild(IJsonWriter output, CharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
+        private bool EvaluateChild(IJsonWriter output, ICharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
 
@@ -169,7 +169,7 @@ namespace JTran
         private readonly IEnumerable<string>? _groupBy;
 
         /****************************************************************************/
-        internal TForEachGroup(CharacterSpan name) 
+        internal TForEachGroup(ICharacterSpan name) 
         {
             var parms = CompiledTransform.ParseElementParams("#foreachgroup", name, CompiledTransform.FalseTrue )!;
 
@@ -190,7 +190,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected TForEachGroup(CharacterSpan expression, bool expr) 
+        internal protected TForEachGroup(ICharacterSpan expression, bool expr) 
         {
             _expression = Compiler.Compile(expression);
         }
@@ -224,7 +224,7 @@ namespace JTran
             }
         }
 
-        private static readonly CharacterSpan _groupItems = CharacterSpan.FromString("__groupItems");
+        private static readonly ICharacterSpan _groupItems = CharacterSpan.FromString("__groupItems");
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)

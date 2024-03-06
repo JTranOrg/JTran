@@ -41,6 +41,9 @@ namespace JTran.UnitTests
             Assert.AreEqual("123",                              Test("  \"123\"").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null}").Type);
+            Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null}\r\nfred:").Type);
+            Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null  \r\nfred:").Type);
+            Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null fred:").Type);
             Assert.AreEqual("null",                             Test("  null}").Value!.ToString());
 
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  true ").Type);

@@ -155,7 +155,7 @@ namespace JTran.Expressions
             this.Name = CharacterSpan.FromString(name);
         }
 
-        public CharacterSpan Name { get; }
+        public ICharacterSpan Name { get; }
 
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
@@ -198,9 +198,9 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public CharacterSpan JoinLiteral(ExpressionContext context)
+        public ICharacterSpan JoinLiteral(ExpressionContext context)
         {   
-            var parts      = new List<CharacterSpan>();
+            var parts      = new List<ICharacterSpan>();
             var numParts   = _parts.Count;
             var newContext = new ExpressionContext("", context);
 
@@ -214,7 +214,7 @@ namespace JTran.Expressions
                     parts.Add(part.Evaluate(newContext).AsCharacterSpan());
             }
 
-            return CharacterSpan.FromString(string.Join('.', parts.Select( p=> p.ToString() ))); // ???
+            return CharacterSpan.Join(parts, '.');
         }
 
         /*****************************************************************************/
@@ -240,7 +240,7 @@ namespace JTran.Expressions
                 { 
                     result = outList2;
                 }
-                else if(expr is CharacterSpan || expr is string || expr is JsonObject)
+                else if(expr is ICharacterSpan || expr is string || expr is JsonObject)
                 {
                     result = expr;
                 }
@@ -358,10 +358,10 @@ namespace JTran.Expressions
      /*****************************************************************************/
      internal class VariableValue : IExpression
      {
-        private CharacterSpan _name;
+        private ICharacterSpan _name;
 
         /*****************************************************************************/
-        public VariableValue(CharacterSpan name)
+        public VariableValue(ICharacterSpan name)
         {
             _name = name;
         }

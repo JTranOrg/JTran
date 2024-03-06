@@ -58,7 +58,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateObject(CharacterSpan name, object? previous, long lineNumber)
+        internal virtual TToken CreateObject(ICharacterSpan name, object? previous, long lineNumber)
         {
             TToken? result = null;
             
@@ -146,7 +146,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateArray(CharacterSpan? name, long lineNumber)
+        internal virtual TToken CreateArray(ICharacterSpan? name, long lineNumber)
         {
             TToken? result;
 
@@ -161,7 +161,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal virtual TToken CreateProperty(CharacterSpan name, object? val, object? previous, long lineNumber)
+        internal virtual TToken CreateProperty(ICharacterSpan name, object? val, object? previous, long lineNumber)
         {
             var result = CreatePropertyToken(name, val, previous, lineNumber);
 
@@ -174,34 +174,34 @@ namespace JTran
             return result;
         }
 
-        private static readonly CharacterSpan _bind         = CharacterSpan.FromString("#bind");
-        private static readonly CharacterSpan _break        = CharacterSpan.FromString("#break");
-        private static readonly CharacterSpan _function     = CharacterSpan.FromString("#function");
-        private static readonly CharacterSpan _foreach      = CharacterSpan.FromString("#foreach");
-        private static readonly CharacterSpan _foreachgroup = CharacterSpan.FromString("#foreachgroup");
-        private static readonly CharacterSpan _include      = CharacterSpan.FromString("#include");
-        private static readonly CharacterSpan _iterate      = CharacterSpan.FromString("#iterate");
-        private static readonly CharacterSpan _message      = CharacterSpan.FromString("#message");
-        private static readonly CharacterSpan _throw        = CharacterSpan.FromString("#throw");
-        private static readonly CharacterSpan _map          = CharacterSpan.FromString("#map");
-        private static readonly CharacterSpan _mapitem      = CharacterSpan.FromString("#mapitem");
-        private static readonly CharacterSpan _array        = CharacterSpan.FromString("#array");
-        private static readonly CharacterSpan _arrayitem    = CharacterSpan.FromString("#arrayitem");
-        private static readonly CharacterSpan _if           = CharacterSpan.FromString("#if");
-        private static readonly CharacterSpan _elseif       = CharacterSpan.FromString("#elseif");
-        private static readonly CharacterSpan _else         = CharacterSpan.FromString("#else");
-        private static readonly CharacterSpan _try          = CharacterSpan.FromString("#try");
-        private static readonly CharacterSpan _catch        = CharacterSpan.FromString("#catch");
-        private static readonly CharacterSpan _variable     = CharacterSpan.FromString("#variable");
-        private static readonly CharacterSpan _template     = CharacterSpan.FromString("#template");
-        private static readonly CharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
+        private static readonly ICharacterSpan _bind         = CharacterSpan.FromString("#bind");
+        private static readonly ICharacterSpan _break        = CharacterSpan.FromString("#break");
+        private static readonly ICharacterSpan _function     = CharacterSpan.FromString("#function");
+        private static readonly ICharacterSpan _foreach      = CharacterSpan.FromString("#foreach");
+        private static readonly ICharacterSpan _foreachgroup = CharacterSpan.FromString("#foreachgroup");
+        private static readonly ICharacterSpan _include      = CharacterSpan.FromString("#include");
+        private static readonly ICharacterSpan _iterate      = CharacterSpan.FromString("#iterate");
+        private static readonly ICharacterSpan _message      = CharacterSpan.FromString("#message");
+        private static readonly ICharacterSpan _throw        = CharacterSpan.FromString("#throw");
+        private static readonly ICharacterSpan _map          = CharacterSpan.FromString("#map");
+        private static readonly ICharacterSpan _mapitem      = CharacterSpan.FromString("#mapitem");
+        private static readonly ICharacterSpan _array        = CharacterSpan.FromString("#array");
+        private static readonly ICharacterSpan _arrayitem    = CharacterSpan.FromString("#arrayitem");
+        private static readonly ICharacterSpan _if           = CharacterSpan.FromString("#if");
+        private static readonly ICharacterSpan _elseif       = CharacterSpan.FromString("#elseif");
+        private static readonly ICharacterSpan _else         = CharacterSpan.FromString("#else");
+        private static readonly ICharacterSpan _try          = CharacterSpan.FromString("#try");
+        private static readonly ICharacterSpan _catch        = CharacterSpan.FromString("#catch");
+        private static readonly ICharacterSpan _variable     = CharacterSpan.FromString("#variable");
+        private static readonly ICharacterSpan _template     = CharacterSpan.FromString("#template");
+        private static readonly ICharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
                                                             
-        private static readonly CharacterSpan _copyof       = CharacterSpan.FromString("#copyof");
-        private static readonly CharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
-        private static readonly CharacterSpan _iif          = CharacterSpan.FromString("#iif");
+        private static readonly ICharacterSpan _copyof       = CharacterSpan.FromString("#copyof");
+        private static readonly ICharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
+        private static readonly ICharacterSpan _iif          = CharacterSpan.FromString("#iif");
 
         /****************************************************************************/
-        protected virtual TToken CreatePropertyToken(CharacterSpan name, object child, object? previous, long lineNumber)
+        protected virtual TToken CreatePropertyToken(ICharacterSpan name, object child, object? previous, long lineNumber)
         {   
             if(!name.IsNullOrWhiteSpace()) 
             { 
@@ -221,7 +221,7 @@ namespace JTran
                     return new TVariable(name, child, lineNumber);
 
                 if(_message.Equals(searchStr))
-                    return new TMessage(child as CharacterSpan, lineNumber);
+                    return new TMessage(child as ICharacterSpan, lineNumber);
 
                 if(_throw.Equals(searchStr))
                     return new TThrow(name, child, lineNumber);
@@ -235,7 +235,7 @@ namespace JTran
                 }
 
                 if(_arrayitem.Equals(searchStr))
-                    return new TSimpleArrayItem(child as CharacterSpan, lineNumber);
+                    return new TSimpleArrayItem(child as ICharacterSpan, lineNumber);
 
                 if(_if.Equals(searchStr))
                     return new TPropertyIf(name, child, lineNumber);
@@ -256,7 +256,7 @@ namespace JTran
                     throw new Transformer.SyntaxException("#elseif must follow an #if or an #elseif");
                 }   
 
-                if(child is CharacterSpan sval)
+                if(child is ICharacterSpan sval)
                 { 
                     searchStr = sval.SubstringBefore('(');
 
