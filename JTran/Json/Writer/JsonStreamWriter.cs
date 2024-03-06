@@ -99,20 +99,37 @@ namespace JTran
         }
 
         /****************************************************************************/
+        protected override void AppendNewline()
+        {
+            if(_bufferWritten + 2 > _bufferSize)
+                Flush();
+
+            _buffer[_bufferWritten++] = '\r';
+            _buffer[_bufferWritten++] = '\n';
+        }
+
+        private byte[] _flushBuffer = new byte[512];
+
+        /****************************************************************************/
         private void Flush()
         {
             if(_bufferWritten > 0)
             {
-                var bytes = UTF8Encoding.Default.GetBytes(_buffer, 0, _bufferWritten); // ??? Use version that takes a buffer
+                var numBytes = UTF8Encoding.Default.GetByteCount(_buffer, 0, _bufferWritten);
 
-                _output.Write(bytes, 0, bytes.Length);
+                if(numBytes > _flushBuffer.Length)
+                    _flushBuffer = new byte[((int)(numBytes / 32) * 32) + 32];
+
+                numBytes = UTF8Encoding.Default.GetBytes(_buffer, 0, _bufferWritten, _flushBuffer, 0);
+
+                _output.Write(_flushBuffer, 0, numBytes);
 
                 _bufferWritten = 0;
             }
         }
 
         /****************************************************************************/
-        private void AppendNewLine()
+        protected void AppendNewLine()
         {
             if(_bufferWritten + 2 > _bufferSize)
                 Flush();
@@ -147,12 +164,6 @@ namespace JTran
              text.CopyTo(_buffer, _bufferWritten);
 
              _bufferWritten += text.Length;
-        }
-
-        /****************************************************************************/
-        protected override void Append(Stream strm)
-        {
-            strm.CopyTo(_output);
         }
 
         /****************************************************************************/

@@ -20,7 +20,7 @@
 using System.Text;
 using System.IO;
 
-using JTran.Common.Extensions;
+using JTran.Common;
 using JTran.Extensions;
 using JTran.Common;
 using System;
@@ -79,19 +79,17 @@ namespace JTran
         }
 
         /****************************************************************************/
+        protected override void AppendNewline()
+        {
+            _output.AppendLine();
+        }
+
+        /****************************************************************************/
         protected override void Append(char ch)
         {
             _output.Append(ch);
         }
-
-        /****************************************************************************/
-        protected override void Append(Stream strm)
-        {
-            var text = strm.ReadString();
-
-            _output.Append(text);
-        } 
-        
+      
         /****************************************************************************/
         protected override void AppendSpaces(int numSpaces)
         {

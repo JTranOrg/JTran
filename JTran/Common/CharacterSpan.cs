@@ -44,6 +44,7 @@ namespace JTran.Common
         decimal         ParseNumber();
         bool            TryParseNumber(out decimal result);
         bool            Equals(string compare);
+        bool            Equals(ICharacterSpan compare);
     }
 
     /****************************************************************************/
@@ -111,10 +112,7 @@ namespace JTran.Common
 
         #endregion
 
-        internal static readonly ICharacterSpan Empty        = new CharacterSpan();
-        internal static readonly ICharacterSpan JTranName    = CharacterSpan.FromString("_jtran_name", isJtranProp: true);
-        internal static readonly ICharacterSpan JTranParent  = CharacterSpan.FromString("_jtran_parent", isJtranProp: true);
-        internal static readonly ICharacterSpan JTranGparent = CharacterSpan.FromString("_jtran_gparent", isJtranProp: true);
+        internal static readonly ICharacterSpan Empty = new CharacterSpan();
 
         /****************************************************************************/
         internal static ICharacterSpan FromString(string s, bool addDoubleQuotes = false, bool isJtranProp = false)
@@ -162,6 +160,10 @@ namespace JTran.Common
 
             return new CharacterSpan(buffer, 0, length);
         }
+
+        internal static readonly ICharacterSpan True  = CharacterSpan.FromString("true");
+        internal static readonly ICharacterSpan False = CharacterSpan.FromString("false");
+        internal static readonly ICharacterSpan Null  = CharacterSpan.FromString("null");
 
         #region ICharacterSpan
 

@@ -121,7 +121,7 @@ namespace JTran.PerformanceTests
         {
             var input = File.ReadAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
             
-            _ = JsonArray.Parse(input);
+            _ = System.Text.Json.Nodes.JsonArray.Parse(input);
         }
 
         [Theory]
@@ -145,7 +145,7 @@ namespace JTran.PerformanceTests
 
                 for(var j = 0; j < numItems; ++j)
                 {
-                    var child = new JsonObject();
+                    var child = new JsonObject(null);
 
                     child.TryAdd(CharacterSpan.FromString("Make"),  "Chevy");
                     child.TryAdd(CharacterSpan.FromString("Model"), "Camaro");

@@ -109,7 +109,7 @@ namespace JTran.Collections
             /****************************************************************************/
             public bool MoveNext()
             {
-                var eval = new JsonObject();
+                var eval = new JsonObject(null);
 
                 while(_leftEnum!.MoveNext())
                 {

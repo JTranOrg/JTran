@@ -285,7 +285,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
     <ProjectReference Include="..\..\JTran.Random\JTran.Random.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>

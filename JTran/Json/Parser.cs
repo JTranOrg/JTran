@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using JTran.Common;
@@ -28,6 +29,7 @@ namespace JTran.Json
     {
         private readonly JsonTokenizer _tokenizer = new JsonTokenizer();
         private readonly IJsonModelBuilder _modelBuilder;
+        private readonly Dictionary<ICharacterSpan, ICharacterSpan> _nameCache = new();
 
         private long _lineNumber = 1;
         private ICharacterReader? _reader;
@@ -83,10 +85,22 @@ namespace JTran.Json
             throw new JsonParseException("Invalid json", _lineNumber);
         }
 
+        /****************************************************************************/
+        private ICharacterSpan GetName(ICharacterSpan name)
+        {
+            if(_nameCache.ContainsKey(name))
+                return _nameCache[name];
+
+            _nameCache.Add(name, name);
+
+            return name;
+        }
+
+        /****************************************************************************/
         private object BeginObject(ICharacterSpan? name, object parent, object? previous, long lineNumber) 
         {
             var ex = name == null ? _modelBuilder.AddObject(parent, lineNumber) 
-                                  : _modelBuilder.AddObject(name, parent, previous, lineNumber);
+                                  : _modelBuilder.AddObject(GetName(name), parent, previous, lineNumber);
 
             var previousTokenType = JsonToken.TokenType.BeginObject;
             object? runningPrevious = null;
@@ -126,7 +140,7 @@ namespace JTran.Json
         private object BeginArray(ICharacterSpan? name, object parent, long lineNumber) 
         {
             var array = name == null ? _modelBuilder.AddArray(parent, lineNumber) 
-                                                             : _modelBuilder.AddArray(name, parent, lineNumber);
+                                     : _modelBuilder.AddArray(name, parent, lineNumber);
 
             while(true)
             {
@@ -166,7 +180,7 @@ namespace JTran.Json
                             switch(tokenType)
                             { 
                                 case JsonToken.TokenType.Boolean:   
-                                    _modelBuilder.AddBoolean(cspan.Equals("true"), array, _lineNumber); 
+                                    _modelBuilder.AddBoolean(cspan.Equals(CharacterSpan.True), array, _lineNumber); 
                                     continue;
                             
                                 case JsonToken.TokenType.Text:
@@ -196,20 +210,20 @@ namespace JTran.Json
 
                 switch(tokenType)
                 {
-                    case JsonToken.TokenType.BeginObject: return BeginObject(name, parent, previous, lineNumber);
-                    case JsonToken.TokenType.BeginArray:  return BeginArray(name, parent, lineNumber);
-                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(name, (decimal)_tokenizer.TokenValue!, parent, previous, _lineNumber);       
-                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(name, parent, previous, _lineNumber);       
+                    case JsonToken.TokenType.BeginObject: return BeginObject(GetName(name), parent, previous, lineNumber);
+                    case JsonToken.TokenType.BeginArray:  return BeginArray(GetName(name), parent, lineNumber);
+                    case JsonToken.TokenType.Number:      return _modelBuilder.AddNumber(GetName(name), (decimal)_tokenizer.TokenValue!, parent, previous, _lineNumber);       
+                    case JsonToken.TokenType.Null:        return _modelBuilder.AddNull(GetName(name), parent, previous, _lineNumber);       
 
                     default:
                     {
                         if(_tokenizer!.TokenValue is ICharacterSpan cspan)
                         { 
                             if(tokenType == JsonToken.TokenType.Text)
-                                return _modelBuilder.AddText(name, cspan, parent, previous, _lineNumber);  
+                                return _modelBuilder.AddText(GetName(name), cspan, parent, previous, _lineNumber);  
 
                             if(tokenType == JsonToken.TokenType.Boolean)
-                                return _modelBuilder.AddBoolean(name, cspan.Equals("true"), parent, previous, _lineNumber);       
+                                return _modelBuilder.AddBoolean(GetName(name), cspan.Equals("true"), parent, previous, _lineNumber);       
                         }
 
                         break;

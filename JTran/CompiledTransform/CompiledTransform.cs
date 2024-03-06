@@ -161,7 +161,7 @@ namespace JTran
 
             if(listName != null)
             { 
-                var jobj = new JsonObject();
+                var jobj = new JsonObject(null); 
 
                 jobj[CharacterSpan.FromString(listName)] = list;
                 data = jobj;
@@ -270,12 +270,10 @@ namespace JTran
         /****************************************************************************/
         private void Transform(Stream data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            var parser  = new Json.Parser(new JsonModelBuilder());
-            var expando = parser.Parse(data);
+            var parser = new Json.Parser(new JsonModelBuilder());
+            var result = parser.Parse(data);
 
-            expando!.SetParent();
-
-            TransformObject(expando, output, context, extensionFunctions);
+            TransformObject(result, output, context, extensionFunctions);
     
             return;
         }                

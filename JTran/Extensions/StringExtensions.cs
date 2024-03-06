@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 using JTran.Json;
@@ -30,15 +31,6 @@ namespace JTran.Extensions
     /****************************************************************************/
     public static class StringExtensions
     {
-        /****************************************************************************/
-        public static T ToObject<T>(this string str) where T : new()
-        {          
-            var parser = new Json.Parser(new JsonModelBuilder());
-            var expObj = parser.Parse(str) as JsonObject;
-
-            return expObj.ToObject<T>();
-        }
-
         /****************************************************************************/
         [Obsolete]
         public static string FormatForJsonOutput(this string str)

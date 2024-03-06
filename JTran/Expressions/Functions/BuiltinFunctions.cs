@@ -729,9 +729,8 @@ namespace JTran.Expressions
         [IgnoreParameterCount]
         public ICharacterSpan name(ExpressionContext context)
         {
-            if(context.Data is JsonObject jobj && jobj.ContainsKey(CharacterSpan.JTranName))
-                if(jobj[CharacterSpan.JTranName] is CharacterSpan cspan)
-                    return cspan;
+            if(context.Data is JsonObject jobj)
+                return jobj.Name ?? CharacterSpan.Empty;
 
             return CharacterSpan.Empty;
         }

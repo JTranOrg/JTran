@@ -35,7 +35,7 @@ namespace JTran.Json
     /// </summary>
     internal sealed class JsonTokenizer
     {
-        private readonly CharacterSpanBuilder _factory = new();
+        private readonly CharacterSpanBuilder _builder = new();
 
         internal object? TokenValue      { get; set; }
         internal long    TokenLineNumber { get; set; } = 0L;
@@ -65,13 +65,13 @@ namespace JTran.Json
 
                 switch(ch)
                 {
-                    case '\0': this.TokenValue = "end of file"; return JsonToken.TokenType.EOF;         
-                    case '{':  this.TokenValue = "{";           return JsonToken.TokenType.BeginObject; 
-                    case '}':  this.TokenValue = "}";           return JsonToken.TokenType.EndObject;   
-                    case '[':  this.TokenValue = "[";           return JsonToken.TokenType.BeginArray;  
-                    case ']':  this.TokenValue = "]";           return JsonToken.TokenType.EndArray;    
-                    case ':':  this.TokenValue = ":";           return JsonToken.TokenType.Property;    
-                    case ',':  this.TokenValue = ",";           return JsonToken.TokenType.Comma;       
+                    case '\0': return JsonToken.TokenType.EOF;         
+                    case '{':  return JsonToken.TokenType.BeginObject; 
+                    case '}':  return JsonToken.TokenType.EndObject;   
+                    case '[':  return JsonToken.TokenType.BeginArray;  
+                    case ']':  return JsonToken.TokenType.EndArray;    
+                    case ':':  return JsonToken.TokenType.Property;    
+                    case ',':  return JsonToken.TokenType.Comma;       
                     default:   break;
                 }
 
@@ -82,7 +82,7 @@ namespace JTran.Json
                 else if(ch == '\'')
                     singleQuoted = true;
                 else
-                    _factory.Append(ch);
+                    _builder.Append(ch);
 
                 while(reader.ReadNext(quoted: doubleQuoted || singleQuoted))
                 {
@@ -138,29 +138,29 @@ namespace JTran.Json
 
                   Append:
 
-                    _factory.Append(ch);
+                    _builder.Append(ch);
                     previousChar = ch;
                 }
             }
             catch(ArgumentOutOfRangeException)
             { 
-                if(_factory.Length == 0)
+                if(_builder.Length == 0)
                     throw new JsonParseException("Unexpected end of file", lineNumber);
             }
 
-            this.TokenValue = _factory.Current;
+            this.TokenValue = _builder.Current;
 
             if(!doubleQuoted && !singleQuoted)
             {
                 if(this.TokenValue is ICharacterSpan span)
                 { 
-                    if(span.Equals("null"))
+                    if(span.Equals(CharacterSpan.Null))
                         return JsonToken.TokenType.Null;    
 
-                    if(span.Equals("true"))
+                    if(span.Equals(CharacterSpan.True))
                         return JsonToken.TokenType.Boolean; 
                         
-                    if(span.Equals("false"))
+                    if(span.Equals(CharacterSpan.False))
                         return JsonToken.TokenType.Boolean; 
 
                     if(span.TryParseNumber(out decimal dVal))

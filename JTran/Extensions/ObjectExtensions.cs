@@ -260,31 +260,30 @@ namespace JTran.Extensions
             return compareto(leftVal, rightVal, out type);
         }
 
-        private static readonly ICharacterSpan _true  = CharacterSpan.FromString("true");
-        private static readonly ICharacterSpan _false = CharacterSpan.FromString("false");
-        private static readonly ICharacterSpan _null  = CharacterSpan.FromString("null");
-
         /*****************************************************************************/
         internal static ICharacterSpan FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
         {
             if(value == null)
-                return _null;
+                return CharacterSpan.Null;
 
             if(!forceString)
             { 
                 if(value is bool bVal)
-                    return bVal ? _true : _false;
+                    return bVal ? CharacterSpan.True : CharacterSpan.False;
+
+                if(value is decimal dval)
+                    return CharacterSpan.FromString(dval.ToString().ReplaceEnding(".0", "")); // ???
 
                 if(!(value is IStringValue))
                 { 
                     if(bool.TryParse(value.ToString(), out bool bval))
-                        return bval ? _true : _false;
+                        return bval ? CharacterSpan.True : CharacterSpan.False;
 
                     if(long.TryParse(value.ToString(), out long lval))
                         return CharacterSpan.FromString(lval.ToString());
 
-                    if(decimal.TryParse(value.ToString(), out decimal dval)) 
-                        return CharacterSpan.FromString(dval.ToString().ReplaceEnding(".0", ""));
+                    if(decimal.TryParse(value.ToString(), out decimal dval2)) 
+                        return CharacterSpan.FromString(dval2.ToString().ReplaceEnding(".0", "")); // ???
                 }
 
                 if(value is DateTime dtVal)
@@ -394,54 +393,25 @@ namespace JTran.Extensions
         /****************************************************************************/
         public static bool GetParent(this object obj, ref object? parent)
         {        
-            return obj.GetAncestor(CharacterSpan.JTranParent, ref parent); 
-        }
+            if(obj is IJsonToken jobj)
+            { 
+                parent = jobj.Parent;
+                return true;
+            }
 
-        /****************************************************************************/
-        public static bool GetGrandParent(this object obj, ref object? parent)
-        {        
-            return obj.GetAncestor(CharacterSpan.JTranGparent, ref parent); 
+            return false;
         }
 
         /****************************************************************************/
         private static bool GetAncestor(this object obj, ICharacterSpan key, ref object? parent)
         {        
-           if(obj is JsonObject jobj && jobj.ContainsKey(key))
+           if(obj is IJsonToken jobj)
             { 
-                parent = (obj as JsonObject)![key];
+                parent = jobj.Parent;
                 return true;
             }
 
             return false; 
-        }
-
-        /****************************************************************************/
-        [Obsolete]
-        private static object EvaluateAncestors(this object obj, ref string expression)
-        {
-            var result = obj;
-
-            // Resolve ancestors
-            while(expression.StartsWith("/"))
-            {
-                if(expression.StartsWith("//"))
-                {
-                    if(result!.GetGrandParent(ref result))
-                    {
-                        expression = expression.Substring(2);
-                        continue;
-                    }
-                    
-                    // Fall thru
-                }
-
-                if(result.GetParent(ref result))
-                    expression = expression.Substring(1);
-                else
-                    return null;
-            }
-
-            return result;
         }
 
         /****************************************************************************/
@@ -453,18 +423,7 @@ namespace JTran.Extensions
             // Resolve ancestors
             while(expression[index] == '/')
             {
-                if(expression[index + 1] == '/')
-                {
-                    if(result!.GetGrandParent(ref result))
-                    {
-                        index += 2;
-                        continue;
-                    }
-                    
-                    // Fall thru
-                }
-
-                if(result.GetParent(ref result))
+                if(result?.GetParent(ref result) ?? false)
                     ++index;
                 else
                     return null;

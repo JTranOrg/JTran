@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
     <ProjectReference Include="..\JTran.UnitTests\JTran.UnitTests.csproj" />
   </ItemGroup>

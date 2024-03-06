@@ -260,7 +260,7 @@ namespace JTran
                 }
 
                 groups = dict.Select( kv=>  {    
-                                                var newObj = new JsonObject();
+                                                var newObj = new JsonObject(null);// ??? parent
 
                                                 newObj.TryAdd(csGroup.Get(groupBy), kv.Key);
                                                 newObj.TryAdd(_groupItems, kv.Value); 
@@ -275,7 +275,7 @@ namespace JTran
                     (item)=> item.GetGroupByKey(_groupBy!),
                     (item)=> item,
                     (groupValue, items) => {    
-                                                var newObj = new JsonObject();
+                                                var newObj = new JsonObject(null); // ??? parent
 
                                                 foreach(var item in groupValue)
                                                     newObj.TryAdd(csGroup.Get(item.Key), item.Value);

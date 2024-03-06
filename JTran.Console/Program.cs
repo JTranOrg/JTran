@@ -5,7 +5,7 @@ using System.Reflection;
 
 using JTranProject = JTran.Project.Project;
 
-using JTran.Extensions;
+using JTran.Common;
 using JTran.Project;
 
 namespace JTran.Console
@@ -64,11 +64,11 @@ namespace JTran.Console
                         return;
                     }
 
-                    var json = File.ReadAllText(projectPath);
+                    using Stream file = File.OpenRead(projectPath);
 
                     try
                     { 
-                        project = json.ToObject<JTranProject>();
+                        project = file.ToObject<JTranProject>();
                     }
                     catch(JsonParseException)
                     {

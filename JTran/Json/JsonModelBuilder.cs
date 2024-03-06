@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using JTran.Common;
+using System.Xml.Linq;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 [assembly: InternalsVisibleTo("JTran.PerformanceTests")]
@@ -33,7 +34,7 @@ namespace JTran.Json
     /****************************************************************************/
     /****************************************************************************/
     /// <summary>
-    /// Create a JTran data object model (an JsonObject)
+    /// Create a JTran data object model (a JsonObject)
     /// </summary>
     internal class JsonModelBuilder : IJsonModelBuilder
     {
@@ -42,11 +43,13 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddObject(ICharacterSpan name, object? parent, object? _, long lineNumber)
         {
-            var newObj = new JsonObject();
+            var newObj = new JsonObject(parent, name);
 
             if(parent != null)
-                if(parent is JsonObject ex)
-                    ex.TryAdd(name, newObj);
+            { 
+                if(parent is JsonObject pobj)
+                    pobj.TryAdd(name, newObj);
+            }
 
             return newObj;
         }
@@ -54,7 +57,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddArray(ICharacterSpan name, object parent, long lineNumber)
         {
-            var newArr = new List<object>();
+            var newArr = new JsonArray(parent);
 
             if(parent is JsonObject ex)
                 ex.TryAdd(name, newArr);
@@ -105,7 +108,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddObject(object? parent, long lineNumber)
         {
-            var newObj = new JsonObject();
+            var newObj = new JsonObject(parent);
 
             if(parent is IList<object> list)
                 list.Add(newObj);
@@ -116,7 +119,7 @@ namespace JTran.Json
         /****************************************************************************/
         public object AddArray(object? parent, long lineNumber)
         {
-            var newArr = new List<object>();
+            var newArr = new JsonArray(parent);
 
             if(parent is IList<object> list)
                 list.Add(newArr);

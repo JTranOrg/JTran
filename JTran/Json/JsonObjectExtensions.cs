@@ -40,22 +40,16 @@ namespace JTran.Json
         internal static object ToJsonObject(this string s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
-            var jobj = parser.Parse(s);
 
-            jobj.SetParent();// ??? Maybe do this in the parser
-
-            return jobj;
+            return parser.Parse(s);
         }
 
         /****************************************************************************/
         internal static object ToJsonObject(this Stream s)
         {
             var parser = new Json.Parser(new JsonModelBuilder());
-            var jobj = parser.Parse(s);
 
-            jobj.SetParent();
-
-            return jobj;
+            return parser.Parse(s);
         }
 
         /****************************************************************************/
@@ -64,49 +58,6 @@ namespace JTran.Json
             var parser = new Json.Parser(new JsonModelBuilder());
             
             return parser.Parse(s) as JsonObject;
-        }
-
-        /****************************************************************************/
-        internal static object SetParent(this object obj)
-        {
-            if(obj is JsonObject jobj)
-                return jobj.SetParent();
-
-            if(obj is IEnumerable<object> list)
-            { 
-                foreach(var item in list)
-                    item.SetParent();
-            }
-
-            return obj;
-        }
-
-        /****************************************************************************/
-        private static JsonObject SetParent(this JsonObject obj)
-        {
-            foreach(var kv in obj)
-            {
-                var val = kv.Value;
-
-                if(val is null)
-                    continue;
-
-                if(kv.Key.IsJTranProperty)
-                    continue;
-
-                if(val is ICharacterSpan)
-                    continue;
-
-                if(val is decimal)
-                    continue;
-
-                if(val is bool)
-                    continue;
-
-                SetChild(val, obj, null, kv.Key);
-            }
-
-            return obj;
         }
 
         /****************************************************************************/
@@ -202,7 +153,12 @@ namespace JTran.Json
                 return null;
 
             var result = Activator.CreateInstance(t);
+            /*???var poco = Poco.FromType(t);
 
+            poco.ForEachProperty( (name, val)=>
+            {
+
+            };*/
             foreach (PropertyInfo prop in from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                         where p.CanRead
                                         select p)
@@ -227,7 +183,7 @@ namespace JTran.Json
         }
 
         #region Private 
-
+      
         /****************************************************************************/
         private static object ToValue(object val, Type type)
         {
@@ -330,30 +286,6 @@ namespace JTran.Json
                 return typeof(object);
 
             return null;
-        }
-
-        /****************************************************************************/
-        private static void SetChild(object child, object parent, object? gparent, ICharacterSpan? name)
-        {
-            if(child is JsonObject jobj)
-            {
-                jobj[CharacterSpan.JTranParent] = parent;
-
-                if(gparent != null)
-                   jobj[CharacterSpan.JTranGparent] = gparent;
-
-                if(name != null)
-                    jobj[CharacterSpan.JTranName] = name;
-
-                jobj.SetParent();
-            }
-            else if(child is IEnumerable<object> list)
-            {
-                foreach(var gchild in list)
-                    SetChild(gchild, child, parent, null);
-            }
-
-            return;
         }
 
         #endregion

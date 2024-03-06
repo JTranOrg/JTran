@@ -52,13 +52,13 @@ namespace JTran
         {
             var newScope = _expression.Evaluate(context);
 
-            if(newScope is JsonObject expObject)
+            if(newScope is JsonObject jobj)
             { 
-                var properties = expObject.Where( kv=> _properties.ContainsKey(kv.Key) == _include);
+                var properties = jobj.Where( kv=> _properties.ContainsKey(kv.Key) == _include);
 
                 if(properties.Any())
                 {
-                    var result = new JsonObject();
+                    var result = new JsonObject(jobj.Parent, jobj.Name);
 
                     foreach(var kv in properties)
                         result.TryAdd(kv.Key, kv.Value);

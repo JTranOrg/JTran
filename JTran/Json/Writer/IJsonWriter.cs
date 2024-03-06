@@ -43,7 +43,6 @@ namespace JTran
         void WriteContainerName(ICharacterSpan name);
         void WriteSimpleArrayItem(object item);
         void WriteRaw(ICharacterSpan json);
-        void WriteRaw(Stream  stream);
         void WriteItem(object item, bool newContainer = true);
         void WriteProperties(object item);
         void WriteProperty(ICharacterSpan name, object val, bool forceString = false);
@@ -82,6 +81,7 @@ namespace JTran
         protected abstract ICharacterSpan FormatForJsonOutput(ICharacterSpan s);
         protected abstract ICharacterSpan FormatForOutput(object s, bool forceString = false);
         protected abstract void AppendSpaces(int numSpaces);
+        protected abstract void AppendNewline();
 
         /****************************************************************************/
         public bool InObject => !(_stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false);
@@ -94,7 +94,8 @@ namespace JTran
         {
             StartChild();
             _stack.Peek().PreviousFinished = true;
-            WriteLine(CharacterSpan.FromString($"\"{FormatForJsonOutput(name)}\":")); // Inefficient
+            WriteLine(name.FormatForJsonOutput(true), false);
+            AppendLine(':');
         }
 
         /****************************************************************************/
@@ -176,12 +177,6 @@ namespace JTran
         public void WriteRaw(ICharacterSpan json)
         {
              Append(json);
-        }
-
-        /****************************************************************************/
-        public void WriteRaw(Stream  stream)
-        {
-             Append(stream);
         }
 
         #endregion
@@ -285,9 +280,6 @@ namespace JTran
         /****************************************************************************/
         protected abstract void Append(char ch);
 
-        /****************************************************************************/
-        protected abstract void Append(Stream strm);
-
         #region Private
 
         /****************************************************************************/
@@ -295,7 +287,7 @@ namespace JTran
         {
             if(_stack.Count > 0 && !_stack.Peek().PreviousFinished)
             { 
-                AppendLine("");
+                AppendNewline();
                 _stack.Peek().PreviousFinished = true;
             }
         }             
@@ -404,13 +396,6 @@ namespace JTran
         public void WriteRaw(ICharacterSpan json)
         {
             ++NumWrites;
-        }
-
-        /****************************************************************************/
-        public void WriteRaw(Stream strm)
-        {
-            if(strm.Length > 0)
-                ++NumWrites;
         }
 
         #endregion

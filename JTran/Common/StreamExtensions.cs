@@ -17,15 +17,21 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Json;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JTran.Common.Extensions
+[assembly: InternalsVisibleTo("JTran.Transform.UnitTests")]
+[assembly: InternalsVisibleTo("JTran.Project.UnitTests")]
+[assembly: InternalsVisibleTo("Rota.Transform.Test")]
+
+namespace JTran.Common
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal static class StreamExtensions
+    public static class StreamExtensions
     {
         /****************************************************************************/
         /// <summary>
@@ -98,6 +104,15 @@ namespace JTran.Common.Extensions
                 if(stream.CanSeek)
                     stream.Seek(0, SeekOrigin.Begin);
             }
-        }    
+        }  
+        
+        /****************************************************************************/
+        public static T ToObject<T>(this Stream input) where T : new()
+        {          
+            var parser = new Json.Parser(new JsonModelBuilder());
+            var jobj   = parser.Parse(input) as JsonObject;
+
+            return jobj!.ToObject<T>();
+        }
     }
 }
