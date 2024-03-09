@@ -22,7 +22,7 @@ namespace JTran.Json
         object AddBoolean(ICharacterSpan name, bool val, object parent, object? previous, long lineNumber);
         object AddNumber(ICharacterSpan name, decimal val, object parent, object? previous, long lineNumber);
         object AddNull(ICharacterSpan name, object parent, object? previous, long lineNumber);
-
+               
         object AddObject(object? parent, long lineNumber);
         object AddArray(object? parent, long lineNumber);
         object AddText(ICharacterSpan val, object parent, long lineNumber);

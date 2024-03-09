@@ -17,13 +17,11 @@
  *                                                                          
  ****************************************************************************/
 
+using System;
 using System.Text;
-using System.IO;
 
 using JTran.Common;
 using JTran.Extensions;
-using JTran.Common;
-using System;
 
 namespace JTran
 {
@@ -82,6 +80,24 @@ namespace JTran
         protected override void AppendNewline()
         {
             _output.AppendLine();
+        }
+
+        /****************************************************************************/
+        protected override void AppendBoolean(bool bval)
+        {
+            _output.Append(bval ? "true" : "false");
+        }
+
+        /****************************************************************************/
+        protected override void AppendNull()
+        {
+            _output.Append("null");
+        }
+
+        /****************************************************************************/
+        protected override void AppendNumber(decimal val)
+        {
+            _output.Append(val.ToString().ReplaceEnding(".0", "")); 
         }
 
         /****************************************************************************/

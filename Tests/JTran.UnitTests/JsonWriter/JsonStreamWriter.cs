@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using JTran.Common;
 
 using System.Text.Json;
+using System;
 
 namespace JTran.UnitTests
 {
@@ -19,7 +20,13 @@ namespace JTran.UnitTests
             {
                 Name  = "Rocinante",
                 Class = "Heavy Freighter",
+                Width = 1000,
+                Height = 140M,
+                Length = 10000L,
+                Active = true,
+                Captain = (string)null
             };
+            
 
             using var output = new MemoryStream();
 

@@ -30,17 +30,17 @@ namespace JTran.Json
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal interface ICharacterReader
+    internal interface ICharacterReader : IDisposable
     {
-        bool ReadNext(bool skipWhiteSpace = false, bool quoted = false);    
-        void GoBack();    
-        char Current    { get; }
-        long LineNumber { get; }
+        bool    ReadNext(bool skipWhiteSpace = false, bool quoted = false);    
+        void    GoBack();    
+        char    Current    { get; }
+        long    LineNumber { get; }
     }
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class CharacterReader : ICharacterReader, IDisposable
+    internal class CharacterReader : ICharacterReader
     {
         private int       _position = -1;
         private char?     _back;
@@ -53,6 +53,7 @@ namespace JTran.Json
 
         private TextReader? _reader;
 
+        /****************************************************************************/
         internal CharacterReader(Stream stream) 
         { 
             var streamBufferSize = (int)(_bufferSize*1.5);
@@ -74,25 +75,29 @@ namespace JTran.Json
             _buffer = new char[_bufferSize];
         }
 
+        /****************************************************************************/
         ~CharacterReader()
         {
             Dispose();
         }
 
+        /****************************************************************************/
         internal CharacterReader(string str) 
         { 
             _reader = new StringReader(str);
             _buffer = new char[_bufferSize];
         }
 
-        public char Current    => _ch;
-        public long LineNumber => _lineNumber;
+        public char   Current     => _ch;
+        public long   LineNumber  => _lineNumber;
 
+        /****************************************************************************/
         public bool ReadNext(bool skipWhiteSpace, bool quoted = false)
         {
             return InternalReadNext('\0', skipWhiteSpace, quoted);
         }
 
+        /****************************************************************************/
         private bool InternalReadNext(char prev, bool skipWhiteSpace, bool quoted)
         {
             while(true)
@@ -108,7 +113,10 @@ namespace JTran.Json
 
                 if(_bufferRead == 0 || _position >= _bufferRead)
                 {
-                    _bufferRead = _reader.ReadBlock(_buffer, 0,_bufferSize);
+                    if(_reader == null)
+                        throw new NullReferenceException();
+
+                    _bufferRead = _reader.ReadBlock(_buffer, 0, _bufferSize);
                     
                     if(_bufferRead == 0)
                     {
@@ -149,6 +157,7 @@ namespace JTran.Json
             return true;
         }
 
+        /****************************************************************************/
         public void GoBack()
         {
             if(_last == '\0')
@@ -157,6 +166,7 @@ namespace JTran.Json
             _back = _last;
         }
 
+        /****************************************************************************/
         public void Dispose()
         {
             if(_reader != null)
@@ -164,6 +174,8 @@ namespace JTran.Json
                 _reader.Dispose();
                 _reader = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

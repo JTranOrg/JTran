@@ -11,12 +11,12 @@ namespace JTran.UnitTests
 {
     [TestClass]
     [TestCategory("JsonParser")]
-    public class ICharacterSpanTests
+    public class CharacterSpanTests
     {
         #region ICharacterSpan
 
         [TestMethod]
-        public void ICharacterSpan_ToString()
+        public void CharacterSpan_ToString()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -31,21 +31,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_PeekChar()
-        {
-            var source = "abc123def456".ToArray();
-            var c1 = new CharacterSpan(source, 0, 3);
-            var c2 = new CharacterSpan(source, 3, 3);
-            var c3 = new CharacterSpan(source, 6, 3);
-            var c4 = new CharacterSpan(source, 9, 3);
-
-            Assert.AreEqual('a', c1.PeekChar());
-            Assert.AreEqual('1', c2.PeekChar());
-            Assert.AreEqual('d', c3.PeekChar());
-        }
-
-        [TestMethod]
-        public void ICharacterSpan_bracket_operator()
+        public void CharacterSpan_bracket_operator()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -59,13 +45,13 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_IsNullOrWhiteSpace()
+        public void CharacterSpan_IsNullOrWhiteSpace()
         {
             var source = "abc123def456".ToArray();
-            var c1 = new CharacterSpan(source, 0, 3);
-            var c2 = new CharacterSpan(source, 3, 3);
-            var c3 = new CharacterSpan(source, 6, 3);
-            var c4 = new CharacterSpan();
+            ICharacterSpan c1 = new CharacterSpan(source, 0, 3);
+            ICharacterSpan c2 = new CharacterSpan(source, 3, 3);
+            ICharacterSpan c3 = new CharacterSpan(source, 6, 3);
+            ICharacterSpan c4 = new CharacterSpan();
 
             Assert.IsFalse(c1.IsNullOrWhiteSpace());
             Assert.IsFalse(c2.IsNullOrWhiteSpace());
@@ -77,12 +63,12 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_Contains()
+        public void CharacterSpan_Contains()
         {
             var source = "abc12345678def".ToArray();
-            var c1 = new CharacterSpan(source, 3, 8);
-            var c2 = new CharacterSpan(source, 5, 3);
-            var c3 = new CharacterSpan(source, 0, 3);
+            ICharacterSpan c1 = new CharacterSpan(source, 3, 8);
+            ICharacterSpan c2 = new CharacterSpan(source, 5, 3);
+            ICharacterSpan c3 = new CharacterSpan(source, 0, 3);
 
             Assert.IsTrue(c1.Contains(c2));
             Assert.IsFalse(c1.Contains(c3));
@@ -90,12 +76,12 @@ namespace JTran.UnitTests
 
 
         [TestMethod]
-        public void ICharacterSpan_IndexOf_ch()
+        public void CharacterSpan_IndexOf_ch()
         {
             var source = "abc12345678def".ToArray();
-            var c1 = new CharacterSpan(source, 0, 3);
-            var c2 = new CharacterSpan(source, 3, 8);
-            var c3 = new CharacterSpan(source, 11, 3);
+            ICharacterSpan c1 = new CharacterSpan(source, 0, 3);
+            ICharacterSpan c2 = new CharacterSpan(source, 3, 8);
+            ICharacterSpan c3 = new CharacterSpan(source, 11, 3);
 
             Assert.AreEqual(0, c1.IndexOf('a'));
             Assert.AreEqual(1, c1.IndexOf('b'));
@@ -105,33 +91,32 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_FormatForJsonOutput()
+        public void CharacterSpan_FormatForJsonOutput()
         {
             var source = "a\rc1234\"56".ToArray();
-            var c1 = new CharacterSpan(source, 0, 3);
-            var c2 = new CharacterSpan(source, 3, 3);
-            var c3 = new CharacterSpan(source, 6, 4);
-            var c4 = new CharacterSpan();
+            ICharacterSpan c1 = new CharacterSpan(source, 0, 3, hasEscapeCharacters: true);
+            ICharacterSpan c2 = new CharacterSpan(source, 3, 3);
+            ICharacterSpan c3 = new CharacterSpan(source, 6, 4, hasEscapeCharacters: true);
+            ICharacterSpan c4 = new CharacterSpan();
 
-            Assert.AreEqual("a\\rc",  c1.FormatForJsonOutput().ToString());
+            Assert.AreEqual("a\\rc",   c1.FormatForJsonOutput().ToString());
             Assert.AreEqual("123",     c2.FormatForJsonOutput().ToString());
             Assert.AreEqual("",        c4.FormatForJsonOutput().ToString());
             Assert.AreEqual("4\\\"56", c3.FormatForJsonOutput().ToString());
         }
 
         [TestMethod]
-        public void ICharacterSpan_FormatForJsonOutput2()
+        public void CharacterSpan_FormatForJsonOutput2()
         {
-            var c1 = CharacterSpan.FromString("abcdefghijk");
+            ICharacterSpan c1 = CharacterSpan.FromString("abcdefghijk");
 
             Assert.AreEqual("abcdefghijk",     c1.FormatForJsonOutput().ToString());
-            Assert.AreEqual("\"abcdefghijk\"", c1.FormatForJsonOutput(true).ToString());
         }
 
         private const decimal Zero = 0m;
 
         [TestMethod]   
-        public void ICharacterSpan_TryParseNumber()
+        public void CharacterSpan_TryParseNumber()
         {
             TestNumber("16",                16m);
             TestNumber("16.3",              16.3m);
@@ -145,7 +130,6 @@ namespace JTran.UnitTests
             TestNumber("-1234546.789012",   -1234546.789012m);
             TestNumber("0",                 0m);
             TestNumber("750.87299999999998", 750.87299999999998m);
-
         }
 
         private void TestNumber(string val, decimal expected)
@@ -161,7 +145,7 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow(4096)]
         [DataRow(16)]
-        public void ICharacterSpanFactory_ToString(int bufferSize)
+        public void CharacterSpanBuilder_ToString(int bufferSize)
         {
             var factory = new CharacterSpanBuilder(bufferSize);
 
@@ -169,19 +153,19 @@ namespace JTran.UnitTests
             factory.Append('b');
             factory.Append('c');
 
-            var c1 = factory.Current;
+            ICharacterSpan c1 = CharacterSpan.Clone(factory.Current);
 
             factory.Append('1');
             factory.Append('2');
             factory.Append('3');
 
-            var c2 = factory.Current;
+            ICharacterSpan c2 = CharacterSpan.Clone(factory.Current);
 
             factory.Append('d');
             factory.Append('e');
             factory.Append('f');
 
-            var c3 = factory.Current;
+            ICharacterSpan c3 = CharacterSpan.Clone(factory.Current);
 
             factory.Append('4');
             factory.Append('5');
@@ -190,7 +174,7 @@ namespace JTran.UnitTests
             factory.Append('.');
             factory.Append('1');
 
-            var c4 = factory.Current;
+            ICharacterSpan c4 = CharacterSpan.Clone(factory.Current);
 
             factory.Append('-');
             factory.Append('4');
@@ -202,7 +186,7 @@ namespace JTran.UnitTests
             factory.Append('1');
             factory.Append('2');
 
-            var c5 = factory.Current;
+            ICharacterSpan c5 = CharacterSpan.Clone(factory.Current);
 
             Assert.AreEqual("abc", c1.ToString());
             Assert.AreEqual("123", c2.ToString());
@@ -222,7 +206,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_GetHashCode()
+        public void CharacterSpan_GetHashCode()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -245,7 +229,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_GetHashCode2()
+        public void CharacterSpan_GetHashCode2()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);
@@ -261,7 +245,7 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ICharacterSpan_Join()
+        public void CharacterSpan_Join()
         {
             var source = "abc123def456".ToArray();
             var c1 = new CharacterSpan(source, 0, 3);

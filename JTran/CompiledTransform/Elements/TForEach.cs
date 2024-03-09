@@ -239,7 +239,7 @@ namespace JTran
 
             // Get the groups
             IEnumerable<JsonObject>? groups;
-            var csGroup = new CharacterSpanGroup();
+            var csGroup = new CharacterSpanGroup(); // ??? use global name cache
 
             if(_groupBy.IsSingle())
             {
@@ -248,7 +248,7 @@ namespace JTran
 
                 foreach(var item in list)
                 {
-                    var key = item.GetSingleValue(groupBy, null)?.ToString();
+                    var key = item.GetSingleValue(groupBy, null)?.ToString(); // ??? Don't convert to string
 
                     if(key != null)
                     {

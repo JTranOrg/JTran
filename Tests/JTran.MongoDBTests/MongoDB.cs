@@ -57,7 +57,11 @@ namespace JTran.MongoDBTests
                 'FirstName':            '#(FirstName)',
                 'MiddleName':           '#(MiddleName)',
                 'Surname':              '#(Surname)',
-                'Birthdate':            '#(Birthdate)'
+                'Birthdate':            '#(Birthdate)',
+                'Age':                  32.5,
+                'Employed':             true,
+                'Unemployed':           false,
+                'Id':                   null
             }
         }";
 

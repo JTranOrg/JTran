@@ -31,6 +31,7 @@ using JTran.Common;
 using JTran.Parser;
 
 using JTranParser = JTran.Parser.ExpressionParser;
+using System.Diagnostics;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -72,8 +73,8 @@ namespace JTran
         /****************************************************************************/
         internal static CompiledTransform Compile(Stream source, IDictionary<string, string>? includeSource = null, bool isInclude = false, TContainer? parent = null)
         {
-            var parser = new Json.Parser(new JTranModelBuilder(includeSource, isInclude, parent));
-            var result = parser.Parse(source) as CompiledTransform;
+            using var parser = new Json.Parser(new JTranModelBuilder(includeSource, isInclude, parent));
+            var result = parser.Parse(source, false) as CompiledTransform;
 
             return result!;
         }
@@ -270,11 +271,23 @@ namespace JTran
         /****************************************************************************/
         private void Transform(Stream data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            var parser = new Json.Parser(new JsonModelBuilder());
-            var result = parser.Parse(data);
+            using var parser = new Json.Parser(new JsonModelBuilder());
+            var result = parser.Parse(data, context?.AllowDeferredLoading ?? true);
 
             TransformObject(result, output, context, extensionFunctions);
     
+            #if DEBUG
+
+            var NumInstances = CharacterSpan.NumInstances;
+            var NumInstancesFromString = CharacterSpan.NumInstancesFromString;
+            var TotalOutstanding = CharacterSpan.TotalOutstanding;
+            
+            Debug.WriteLine($"CharacterSpan.NumInstances: {NumInstances}");
+            Debug.WriteLine($"CharacterSpan.NumInstancesFromString: {NumInstancesFromString}");
+            Debug.WriteLine($"CharacterSpan.TotalOutstanding: {TotalOutstanding}");
+
+            #endif
+
             return;
         }                
 

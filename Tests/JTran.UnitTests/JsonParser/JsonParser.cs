@@ -172,7 +172,7 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_error(string fileName, int lineNumber)
         {
             var data       = LoadSample(fileName);
-            var parser     = new Json.Parser(new JsonModelBuilder());
+            using var parser     = new Json.Parser(new JsonModelBuilder());
             using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
             
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
@@ -187,7 +187,7 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_array(string fileName)
         {
             var data       = LoadSample(fileName);
-            var parser     = new Json.Parser(new JsonModelBuilder());
+            using var parser     = new Json.Parser(new JsonModelBuilder());
             using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
             
             var result = parser.Parse(strm);
@@ -201,7 +201,7 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_invalid_json_files(string fileName)
         {
             var data       = LoadSample(fileName);
-            var parser     = new Json.Parser(new JsonModelBuilder());
+            using var parser     = new Json.Parser(new JsonModelBuilder());
             using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
             
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(strm) );
@@ -219,7 +219,7 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_missing_quotes(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
             
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
 
@@ -235,7 +235,7 @@ namespace JTran.UnitTests
         public void JsonParser_Parse_unexpected_token(string fileName, long lineNumber)
         {
             var data   = LoadSample(fileName);
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
             
             var ex = Assert.ThrowsException<JsonParseException>( ()=> parser.Parse(data) );
 
@@ -251,9 +251,9 @@ namespace JTran.UnitTests
 
         private string TestParse(string fileName, bool jtran = false)
         {
-            var data       = LoadSample(fileName, jtran);
-            var parser     = new Json.Parser(new JsonModelBuilder());
-            var result     = parser.Parse(data) as JsonObject;
+            using var parser = new Json.Parser(new JsonModelBuilder());
+            var data         = LoadSample(fileName, jtran);
+            var result       = parser.Parse(data) as JsonObject;
 
             Assert.IsNotNull(result);
 

@@ -82,6 +82,9 @@ namespace JTran
         protected abstract ICharacterSpan FormatForOutput(object s, bool forceString = false);
         protected abstract void AppendSpaces(int numSpaces);
         protected abstract void AppendNewline();
+        protected abstract void AppendBoolean(bool val);
+        protected abstract void AppendNull();
+        protected abstract void AppendNumber(decimal val);
 
         /****************************************************************************/
         public bool InObject => !(_stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false);
@@ -94,19 +97,98 @@ namespace JTran
         {
             StartChild();
             _stack.Peek().PreviousFinished = true;
-            WriteLine(name.FormatForJsonOutput(true), false);
-            AppendLine(':');
+            WritePropertyName(name, true);
+        }
+
+        /****************************************************************************/
+        private void WritePropertyName(ICharacterSpan name, bool newline)
+        {
+            WriteIndentation();
+            Append('"');
+            Append(name.FormatForJsonOutput());
+            Append('"');
+
+            if(newline)
+            {  
+                AppendLine(':');
+            }
+            else
+            { 
+                Append(':');
+                Append(' ');
+            }
         }
 
         /****************************************************************************/
         public void WriteSimpleArrayItem(object item)
         {
             StartChild();
-
-            var sitem = FormatForOutput(item);
-
-            WriteLine(sitem, false);
+            WriteIndentation();
+            WriteValue(item);
             EndChild();
+        }
+
+        /****************************************************************************/
+        private void WriteValue(object item)
+        {
+            if(item is null)
+            { 
+                AppendNull();
+                return;
+            }
+
+            if(item is ICharacterSpan)
+                goto Text;
+
+            if(item is string)
+                goto Text;
+
+            if(item is bool bval)
+            { 
+                AppendBoolean(bval);
+                return;
+            }
+
+            if(item is decimal dval)
+            { 
+                AppendNumber(dval);
+                return;
+            }
+
+            if(item is double dblVal)
+            { 
+                AppendNumber((decimal)dblVal);
+                return;
+            }
+
+            if(item is float fVal)
+            { 
+                AppendNumber((decimal)fVal);
+                return;
+            }
+
+            if(item is long lval)
+            { 
+                AppendNumber(lval);
+                return;
+            }
+
+            if(item is int ival)
+            { 
+                AppendNumber(ival);
+                return;
+            }
+
+            if(item is short sval)
+            { 
+                AppendNumber(sval);
+                return;
+            }
+
+           Text:
+            Append('"');
+            Append(FormatForOutput(item));
+            Append('"');
         }
 
         /****************************************************************************/
@@ -167,7 +249,8 @@ namespace JTran
             }
             else
             { 
-                WriteLine(CharacterSpan.FromString($"\"{FormatForJsonOutput(name)}\":  {FormatForOutput(val, forceString)}"), false); // ???
+                WritePropertyName(name, false);
+                WriteValue(val);
             }
 
             EndChild();
@@ -293,10 +376,16 @@ namespace JTran
         }             
 
         /****************************************************************************/
-        private void WriteLine(ICharacterSpan line, bool newline = true)
+        private void WriteIndentation()
         {
             if(IndentLength > 0)
                 AppendSpaces(IndentLength);
+        }
+
+        /****************************************************************************/
+        private void WriteLine(ICharacterSpan line, bool newline = true)
+        {
+            WriteIndentation();
 
             if(newline)
                 AppendLine(line);
@@ -307,8 +396,7 @@ namespace JTran
         /****************************************************************************/
         private void WriteLine(char ch, bool newline = true)
         {
-            if(IndentLength > 0)
-                AppendSpaces(IndentLength);
+            WriteIndentation();
 
             if(newline)
                 AppendLine(ch);
@@ -319,8 +407,7 @@ namespace JTran
         /****************************************************************************/
         private void WriteLine(string before, ICharacterSpan line, string after, bool newline = true)
         {
-            if(IndentLength > 0)
-                AppendSpaces(IndentLength);
+            WriteIndentation();
 
             if(newline)
                 AppendLine(line);

@@ -109,7 +109,7 @@ namespace JTran.Common
         /****************************************************************************/
         public static T ToObject<T>(this Stream input) where T : new()
         {          
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
             var jobj   = parser.Parse(input) as JsonObject;
 
             return jobj!.ToObject<T>();

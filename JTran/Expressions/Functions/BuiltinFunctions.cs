@@ -627,10 +627,10 @@ namespace JTran.Expressions
                 return cspan.IsNullOrWhiteSpace();
 
             if(val is JsonObject jobj)
-                return !jobj.Any( kv=> !kv.Key.IsJTranProperty);
+                return !jobj.Any();
 
             if(val is IDictionary<string, object> exp)
-                return !exp.Any( kv=> !kv.Key.StartsWith("_jtran"));
+                return !exp.Any();
 
             if(val is bool)
                 return false;
@@ -638,19 +638,26 @@ namespace JTran.Expressions
             if(val is decimal dval)
                 return dval == 0m;
 
-            if(val is int ival)
-                return ival == 0;
-
-            if(val is long lval)
-                return lval == 0L;
-
             if(val is string str)
                 return string.IsNullOrWhiteSpace(str);
 
             if(val is IEnumerable<object> list)
                 return list.Count() == 0;
 
-            // ??? Check for other primitive types
+            if(val is double dblVal)
+                return dblVal == 0d;
+
+            if(val is float fVal)
+                return fVal == 0f;
+
+            if(val is int ival)
+                return ival == 0;
+
+            if(val is long lval)
+                return lval == 0L;
+
+            if(val.GetType().IsPrimitive)
+                return (long)System.Convert.ChangeType(val, typeof(long)) == 0L;
 
             return Poco.FromObject(val).IsEmpty(val);
         }

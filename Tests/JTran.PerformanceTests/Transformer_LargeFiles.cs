@@ -26,7 +26,7 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public async Task Transform_create_test_files(int numItems)
         {
             using var dataSource = CreateLargeDataSource(numItems);
@@ -42,11 +42,10 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public void Transform_Transform_large_file(int numItems)
         {
             var transformer = TransformerTests.CreateTransformer(_transformForEach1);
-            TimeSpan duration = TimeSpan.Zero;
 
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
             using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
@@ -62,7 +61,7 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public void Transform_Transform_large_list(int numItems)
         {
             var transformer = TransformerTests.CreateTransformer(_transformForEach1);
@@ -83,13 +82,13 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public void Parser_parse(int numItems)
         {
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
-            var parser  = new Json.Parser(new JsonModelBuilder());
+            using var parser  = new Json.Parser(new JsonModelBuilder());
             
-            parser.Parse(input);
+            parser.Parse(input, true);
         }
 
         [Theory]
@@ -100,7 +99,45 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
+        public void Parser_parse_and_transform_using_deferred(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
+            var transformer  = new JTran.Transformer(_transform);
+           
+            transformer.Transform(input!, output);
+        }
+
+        private const string _transform = "{ '#foreach(@, [])': { '#noobject': '#copyof(@)' } }";
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Parser_parse_and_transform_no_deferred(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
+            var transformer  = new JTran.Transformer(_transform);
+           
+            transformer.Transform(input!, output, new TransformerContext() { AllowDeferredLoading = false } );
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
         public void Parser_parse_newtonsoft(int numItems)
         {
             var input = File.ReadAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
@@ -116,7 +153,7 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public void Parser_parse_system_json(int numItems)
         {
             var input = File.ReadAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
@@ -132,7 +169,7 @@ namespace JTran.PerformanceTests
         [InlineData(20000)]
         [InlineData(100000)]
         [InlineData(200000)]
-        //[InlineData(2000000)]
+        [InlineData(2000000)]
         public void Parser_jsonobject(int numItems)
         {
             var list = new List<object>();
@@ -168,37 +205,31 @@ namespace JTran.PerformanceTests
             return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
         }
 
-        private List<Organization> CreateLargeList(int numItems = 100000)
+        private List<Customer> CreateLargeList(int numItems = 100000)
         {
-            var orgs = new List<Organization>();
+            var org = new List<Customer>();
 
-            for(int c = 0; c < 7; ++c)
+            for(int i = 0; i < numItems; ++i)
             { 
-                var org = CreateRandomOrg();
+                var person = CreateRandomPerson();
 
-                for(int i = 0; i < numItems; ++i)
+                org.Add(new Customer
                 { 
-                    var person = CreateRandomPerson();
-
-                    org.Customers.Add(new Customer
-                    { 
-                        Id           = Guid.NewGuid().ToString(),
-                        FirstName    = person.FirstName,
-                        MiddleName   = person.MiddleName,
-                        LastName     = "\\" + person.Surname + "\\",
-                        Birthdate    = person.Birthdate,
-                        Address      = person.StreetNumber + " " + person.StreetName,
-                        City         = person.City,
-                        State        = person.State,
-                        ZipCode      = person.ZipCode,
-                        Age          = (int)(DateTime.Now.Ticks & 31) + 20
-                    });
-                }
-
-                orgs.Add(org);
+                    Id           = Guid.NewGuid().ToString(),
+                    FirstName    = person.FirstName,
+                    MiddleName   = person.MiddleName,
+                    LastName     = "\\" + person.Surname + "\\",
+                    Birthdate    = person.Birthdate,
+                    Address      = person.StreetNumber + " " + person.StreetName,
+                    City         = person.City,
+                    State        = person.State,
+                    ZipCode      = person.ZipCode,
+                    Age          = (int)(DateTime.Now.Ticks & 31) + 20
+                });
             }
 
-            return orgs;
+
+            return org;
         }
 
         public class Organization
@@ -234,7 +265,7 @@ namespace JTran.PerformanceTests
             '#variable(surname)':   'bobyoursuncle',
             '#variable(org)':       'blah',
 
-            '#foreach(@[Name != $org][1].Customers[Surname != $surname], Customers)':
+            '#foreach(@[Surname != $surname], Customers)':
             {
                 'Name':       '#(FirstName + MiddleName + LastName)',
                 'Birthdate':  '#(Birthdate)',

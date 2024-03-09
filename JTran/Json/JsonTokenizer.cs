@@ -36,6 +36,7 @@ namespace JTran.Json
     internal sealed class JsonTokenizer
     {
         private readonly CharacterSpanBuilder _builder = new();
+        private readonly CharacterSpan        _cspan = new();
 
         internal object? TokenValue      { get; set; }
         internal long    TokenLineNumber { get; set; } = 0L;
@@ -62,6 +63,7 @@ namespace JTran.Json
                 ch = reader.Current!;
 
                 this.TokenLineNumber = lineNumber = reader.LineNumber;
+                this.TokenValue = null;
 
                 switch(ch)
                 {
@@ -77,12 +79,12 @@ namespace JTran.Json
 
                 bool escape = false;
 
-                if(ch == '\"')
+                if(ch == '"')
                     doubleQuoted = true;
                 else if(ch == '\'')
                     singleQuoted = true;
                 else
-                    _builder.Append(ch);
+                    _builder.Append(ch); 
 
                 while(reader.ReadNext(quoted: doubleQuoted || singleQuoted))
                 {
@@ -104,7 +106,6 @@ namespace JTran.Json
                                 throw new JsonParseException("Invalid escaped character", lineNumber);
                         }
 
-                        escape = false;
                         goto Append;
                     }
 
@@ -138,7 +139,12 @@ namespace JTran.Json
 
                   Append:
 
-                    _builder.Append(ch);
+                    _builder.Append(ch); 
+
+                    if(escape) 
+                        _builder.HasEscapeCharacters = true;
+
+                    escape = false;
                     previousChar = ch;
                 }
             }
@@ -158,10 +164,16 @@ namespace JTran.Json
                         return JsonToken.TokenType.Null;    
 
                     if(span.Equals(CharacterSpan.True))
+                    { 
+                        this.TokenValue = true;
                         return JsonToken.TokenType.Boolean; 
+                    }
                         
                     if(span.Equals(CharacterSpan.False))
-                        return JsonToken.TokenType.Boolean; 
+                    { 
+                         this.TokenValue = false;
+                         return JsonToken.TokenType.Boolean; 
+                    }
 
                     if(span.TryParseNumber(out decimal dVal))
                     { 

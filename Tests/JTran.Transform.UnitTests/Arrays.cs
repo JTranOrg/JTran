@@ -30,12 +30,12 @@ namespace JTran.Transform.UnitTests
         {
             var array = await TestArray(transform, data);
 
-             Assert.AreEqual("Chevybob",    array![0]!["Make"]!.ToString());
-             Assert.AreEqual("Camarobob",   array![0]!["Model"]!.ToString());
-
-             Assert.AreEqual("Pontiacbob",  array![1]!["Make"]!.ToString());
-             Assert.AreEqual("Firebirdbob", array![1]!["Model"]!.ToString());
-        }
+             Assert.AreEqual("Chevybob",    array.Array![0]!["Make"]!.ToString());
+             Assert.AreEqual("Camarobob",   array.Array![0]!["Model"]!.ToString());
+                                                  
+             Assert.AreEqual("Pontiacbob",  array.Array![1]!["Make"]!.ToString());
+             Assert.AreEqual("Firebirdbob", array.Array![1]!["Model"]!.ToString());
+        }                                        
 
         [TestMethod]
         [DataRow("arrayitem", "arrayitem")]
@@ -61,14 +61,14 @@ namespace JTran.Transform.UnitTests
             return jobj;
         }
 
-        public async Task<JArray> TestArray(string transform, string data)
+        public async Task<(JArray Array, string Json)> TestArray(string transform, string data)
         {
             var result = await TransformerTest.Test("Arrays." + transform, "Arrays." + data);           
             var array   = JArray.Parse(result)!;
 
             Assert.IsNotNull(array);
 
-            return array;
+            return (array, result);
         }
 
         #endregion   

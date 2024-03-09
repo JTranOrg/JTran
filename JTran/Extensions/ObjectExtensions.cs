@@ -291,9 +291,9 @@ namespace JTran.Extensions
             }
 
             if(finalOutput)
-                return value.AsCharacterSpan().FormatForJsonOutput(addDoubleQuotes: true);
+                return value.AsCharacterSpan().FormatForJsonOutput();
 
-            return CharacterSpan.FromString("\"" + (finalOutput ? value!.ToString().FormatForJsonOutput() : value.ToString()) + "\""); // ??? Inefficent
+            return CharacterSpan.FromString("\"" + value.ToString() + "\""); // ??? Inefficent
         }
 
         #region Private

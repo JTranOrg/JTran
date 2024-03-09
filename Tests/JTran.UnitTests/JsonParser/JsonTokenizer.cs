@@ -44,13 +44,13 @@ namespace JTran.UnitTests
             Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null}\r\nfred:").Type);
             Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null  \r\nfred:").Type);
             Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null fred:").Type);
-            Assert.AreEqual("null",                             Test("  null}").Value!.ToString());
+            Assert.AreEqual(JsonToken.TokenType.Null,           Test("  null}").Type);
 
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  true ").Type);
-            Assert.AreEqual("true",                             Test("  true ").Value!.ToString());
+            Assert.IsTrue((bool)Test("  true ").Value!);
                                                                              
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  false,").Type);
-            Assert.AreEqual("false",                            Test("  false,").Value!.ToString());
+            Assert.IsFalse((bool)Test("  false,").Value!);
         }
 
         private (JsonToken.TokenType Type, object? Value) Test(string text)

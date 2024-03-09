@@ -39,7 +39,7 @@ namespace JTran.Json
         /****************************************************************************/
         internal static object ToJsonObject(this string s)
         {
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
 
             return parser.Parse(s);
         }
@@ -47,7 +47,7 @@ namespace JTran.Json
         /****************************************************************************/
         internal static object ToJsonObject(this Stream s)
         {
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
 
             return parser.Parse(s);
         }
@@ -55,7 +55,7 @@ namespace JTran.Json
         /****************************************************************************/
         internal static JsonObject JTranToJsonObject(this string s)
         {
-            var parser = new Json.Parser(new JsonModelBuilder());
+            using var parser = new Json.Parser(new JsonModelBuilder());
             
             return parser.Parse(s) as JsonObject;
         }
@@ -111,10 +111,7 @@ namespace JTran.Json
         {
             if(obj is JsonObject jobj)
             { 
-                var dict     = jobj.Where( kv=> !kv.Key.IsJTranProperty);
-                var numItems = dict.Count();
-
-                foreach(var kv in dict)
+                foreach(var kv in jobj)
                 {
                     writer.StartChild();
                     ToJson(kv.Key, kv.Value, writer);
