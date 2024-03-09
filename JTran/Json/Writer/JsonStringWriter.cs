@@ -112,17 +112,5 @@ namespace JTran
             for(var i = 0; i < numSpaces; i++)
                 _output.Append(' ');
         }    
-
-        /****************************************************************************/
-        protected override ICharacterSpan FormatForJsonOutput(ICharacterSpan s)
-        {
-            return s.FormatForJsonOutput();
-        }
-
-        /****************************************************************************/
-        protected override ICharacterSpan FormatForOutput(object s, bool forceString = false)
-        {
-            return s.FormatForOutput(forceString, true);
-        }
     }
 }

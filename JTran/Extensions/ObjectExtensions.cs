@@ -260,42 +260,6 @@ namespace JTran.Extensions
             return compareto(leftVal, rightVal, out type);
         }
 
-        /*****************************************************************************/
-        internal static ICharacterSpan FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
-        {
-            if(value == null)
-                return CharacterSpan.Null;
-
-            if(!forceString)
-            { 
-                if(value is bool bVal)
-                    return bVal ? CharacterSpan.True : CharacterSpan.False;
-
-                if(value is decimal dval)
-                    return CharacterSpan.FromString(dval.ToString().ReplaceEnding(".0", "")); // ???
-
-                if(!(value is IStringValue))
-                { 
-                    if(bool.TryParse(value.ToString(), out bool bval))
-                        return bval ? CharacterSpan.True : CharacterSpan.False;
-
-                    if(long.TryParse(value.ToString(), out long lval))
-                        return CharacterSpan.FromString(lval.ToString());
-
-                    if(decimal.TryParse(value.ToString(), out decimal dval2)) 
-                        return CharacterSpan.FromString(dval2.ToString().ReplaceEnding(".0", "")); // ???
-                }
-
-                if(value is DateTime dtVal)
-                    return CharacterSpan.FromString("\"" + dtVal.ToString("o") + "\"");
-            }
-
-            if(finalOutput)
-                return value.AsCharacterSpan().FormatForJsonOutput();
-
-            return CharacterSpan.FromString("\"" + value.ToString() + "\""); // ??? Inefficent
-        }
-
         #region Private
 
         /****************************************************************************/

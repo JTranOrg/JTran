@@ -204,17 +204,5 @@ namespace JTran
         {
             Flush();
         }
-
-        /****************************************************************************/
-        protected override ICharacterSpan FormatForJsonOutput(ICharacterSpan s)
-        {
-            return s.FormatForJsonOutput();
-        }
-
-       /****************************************************************************/
-        protected override ICharacterSpan FormatForOutput(object s, bool forceString = false)
-        {
-            return s.FormatForOutput(forceString, true);
-        }
     }
 }

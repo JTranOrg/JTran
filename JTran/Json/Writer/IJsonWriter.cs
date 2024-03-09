@@ -78,8 +78,6 @@ namespace JTran
             internal bool   PreviousFinished  { get; set; } = false;
         }
 
-        protected abstract ICharacterSpan FormatForJsonOutput(ICharacterSpan s);
-        protected abstract ICharacterSpan FormatForOutput(object s, bool forceString = false);
         protected abstract void AppendSpaces(int numSpaces);
         protected abstract void AppendNewline();
         protected abstract void AppendBoolean(bool val);
@@ -187,7 +185,7 @@ namespace JTran
 
            Text:
             Append('"');
-            Append(FormatForOutput(item));
+            Append(item.AsCharacterSpan().FormatForJsonOutput());
             Append('"');
         }
 
