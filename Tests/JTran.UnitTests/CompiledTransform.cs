@@ -1,10 +1,12 @@
+using System.Text;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using JTran.Common;
 using JTran.Expressions;
-using System.Text;
 
 namespace JTran.UnitTests
 {
@@ -529,7 +531,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_Success()
         {
-            var parms = CompiledTransform.ParseElementParams("#foreach", "#foreach(Customers, Persons)", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach(Customers, Persons"), CompiledTransform.FalseTrue);
 
             Assert.AreEqual(2,           parms.Count);
             Assert.IsTrue(parms[0] is DataValue);
@@ -539,7 +541,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_wFunction_Success()
         {
-            var parms = CompiledTransform.ParseElementParams("#foreach", "#foreach(sort(Customers, Name, City), Persons)", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach(sort(Customers, Name, City), Persons)"), CompiledTransform.FalseTrue);
 
             Assert.AreEqual(2,                       parms.Count);
             Assert.IsTrue(parms[0] is IExpression);
@@ -549,7 +551,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_empty()
         {
-            var parms = CompiledTransform.ParseElementParams("#foreach", "#foreach()", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach()"), CompiledTransform.FalseTrue );
 
             Assert.IsNotNull(parms);
             Assert.AreEqual(0, parms.Count);

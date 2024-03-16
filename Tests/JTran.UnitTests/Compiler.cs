@@ -461,7 +461,7 @@ namespace JTran.UnitTests
                                                                         extensionFunctions: Transformer.CompileFunctions(null) );
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("1986-04-05T10:00:00.0000000", expression.Evaluate(context).ToString());
+            Assert.AreEqual("1986-04-05T10:00:00", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -475,7 +475,49 @@ namespace JTran.UnitTests
                                                                         extensionFunctions: Transformer.CompileFunctions(null) );
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("1984-10-22T10:00:00.0000000", expression.Evaluate(context));
+            Assert.AreEqual("1984-10-22T10:00:00", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_max_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("max(Husband.Age, Wife.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (short)90 },
+                                                                        Wife    = new { Age = 89f }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(90m, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_min_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("min(Husband.Age, Wife.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (short)90 },
+                                                                        Wife    = new { Age = (ushort)89 }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(89m, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_reverse_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("reverse(Husband.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (uint)90438921 },
+                                                                        Wife    = new { Age = (ushort)89 }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("12983409", expression.Evaluate(context));
         }
 
         #endregion
@@ -683,22 +725,6 @@ namespace JTran.UnitTests
         #endregion
 
         #region Array Indexers
-
-        [TestMethod]
-        public void Compiler_Array_Indexer_Number_Success()
-        {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[2]");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars} ));
-   
-            Assert.IsNotNull(expression);
-
-            var result = expression.Evaluate(context);
-
-            Assert.AreEqual("Dodge", result.GetSingleValue("Make", null).ToString());
-        }
 
         [TestMethod]
         [DataRow("0", 21)]

@@ -234,11 +234,7 @@ namespace JTran.Expressions
         {            
             if(left != null && right != null)
             {
-                if(op != null)
-                    return new ComplexExpression { Left = left, Operator = op, Right = right };
-
-                if(right is DataValue)
-                    return new ComplexExpression { Left = left, Operator = new DataPart(), Right = right };
+                return new ComplexExpression { Left = left, Operator = op, Right = right };
             }
 
             return left;

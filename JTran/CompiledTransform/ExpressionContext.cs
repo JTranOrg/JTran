@@ -262,7 +262,7 @@ namespace JTran
             if(!val.GetType().IsClass)
             { 
                 // If it's any kind of number return it as a decimal
-                if(val.AsCharacterSpan().TryParseNumber(out decimal dVal)) 
+                if(val.TryParseDecimal(out decimal dVal)) 
                     return dVal;
             }
 

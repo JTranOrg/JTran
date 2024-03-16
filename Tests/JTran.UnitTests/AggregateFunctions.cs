@@ -24,7 +24,7 @@ namespace JTran.UnitTests
             var context    = CreateContext(new {Year = 2010} );
             var result     = expression.Evaluate(context);
    
-            Assert.AreEqual("54321", result);
+            Assert.AreEqual("54321", result.ToString());
         }
 
         [TestMethod]

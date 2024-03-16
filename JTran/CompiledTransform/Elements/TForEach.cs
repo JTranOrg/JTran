@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -45,45 +46,32 @@ namespace JTran
             if(result == null)
                 return;
 
-            if(result is IEnumerable<object> tryList && !tryList.Any())
-                return;
-           
-            if(!(result is IEnumerable<object>))
-                result = new [] { result };
+            var list = result.EnsureEnumerable();
 
             _hasConditionals = this.Children.Any() && this.Children[0] is IPropertyCondition;
+      
+            wrap( ()=> 
+            { 
+                var arrayName = WriteContainerName(output, context);
 
-            // If the result of the expression is an array.
-            if(result is IEnumerable<object> list) // ??? check for poco array
-            {       
-                wrap( ()=> 
-                { 
-                    var arrayName = WriteContainerName(output, context);
-
-                    if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
-                        output.StartArray();
+                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
+                    output.StartArray();
                 
-                    EvaluateChildren(output, arrayName, list, context);
+                EvaluateChildren(output, arrayName, list, context);
 
-                    if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
-                        output.EndArray();
-                });
-            }
-            else 
-            {
-                // Not an array. Just treat it as a bind
-                base.Evaluate(output, new ExpressionContext(result, context, templates: this.Templates, functions: this.Functions), wrap);
-            }
+                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
+                    output.EndArray();
+            });
         }
 
         /****************************************************************************/
-        private void EvaluateChildren(IJsonWriter output, ICharacterSpan arrayName, IEnumerable<object> list, ExpressionContext context)
+        private void EvaluateChildren(IJsonWriter output, ICharacterSpan arrayName, IEnumerable list, ExpressionContext context)
         {
             try
             { 
                 var index = 0L;
 
-                foreach(var childScope in list)
+                foreach(var childScope in list) // ??? check for poco array
                 { 
                     if(EvaluateChild(output, arrayName, childScope, context, ref index))
                         break;
@@ -166,12 +154,12 @@ namespace JTran
     internal class TForEachGroup : TBaseArray
     {
         private readonly IExpression  _expression;
-        private readonly IEnumerable<string>? _groupBy;
+        private readonly IExpression? _groupBy;
 
         /****************************************************************************/
         internal TForEachGroup(ICharacterSpan name) 
         {
-            var parms = CompiledTransform.ParseElementParams("#foreachgroup", name, CompiledTransform.FalseTrue )!;
+            var parms = CompiledTransform.ParseElementParams("#foreachgroup", name, CompiledTransform.FalseFalseTrue )!;
 
             _expression = parms![0];
             
@@ -179,14 +167,7 @@ namespace JTran
                 SetName(parms.Last());
 
             if(parms.Count > 1)
-            { 
-                var groupBy = (parms[1] as Value)!.Evaluate(null) as Token;
-
-                if(groupBy!.Type == Token.TokenType.ExplicitArray) 
-                    _groupBy = groupBy.Select(x => x.Value );
-                else 
-                    _groupBy = new [] { groupBy.Value };
-            }
+                _groupBy = parms[1];
         }
 
         /****************************************************************************/
@@ -198,9 +179,9 @@ namespace JTran
         /****************************************************************************/
         private class GroupByComparer : IEqualityComparer<GroupKey>
         {
-            private readonly IEnumerable<string> _fields;
+            private readonly IEnumerable<string> _fields; // ??? ICharacterSpan
 
-            public GroupByComparer(IEnumerable<string> fields)
+            public GroupByComparer(IEnumerable<string> fields) // ??? ICharacterSpan
             {
                 _fields = fields;
             }
@@ -209,7 +190,7 @@ namespace JTran
             {
                 foreach(var field in _fields)
                 {
-                    var compare = x[field].CompareTo(y[field], out Type t);
+                    var compare = x[field].CompareTo(y[field], out Type t); 
 
                     if(compare != 0)
                         return false;
@@ -232,61 +213,34 @@ namespace JTran
             var result = _expression.Evaluate(context);
 
             // If the result of the expression is an array
-            if(!(result is IEnumerable<object> list))
+            if(!(result is IEnumerable<object> enm))
             { 
-                list = new List<object> { result };
+                enm = new List<object> { result };
             }
 
             // Get the groups
             IEnumerable<JsonObject>? groups;
-            var csGroup = new CharacterSpanGroup(); // ??? use global name cache
+            var newContext = new ExpressionContext(null, context);
+            var groupNames = ((_groupBy is ArrayExpression array) ? array.SubExpressions.Select( s=> s.ToString()) : new[] {_groupBy!.ToString() }).ToList();
 
-            if(_groupBy.IsSingle())
-            {
-                var groupBy = _groupBy.First();
-                var dict = new Dictionary<string, List<object>>();
+            var list = enm.ToList(); // No way to avoid loading the entire thing into memory
 
-                foreach(var item in list)
-                {
-                    var key = item.GetSingleValue(groupBy, null)?.ToString(); // ??? Don't convert to string
+            groups = list.GroupBy
+            (
+                (item)=> item.GetGroupByKey(_groupBy, newContext, groupNames),
+                (item)=> item,
+                (groupValue, items) => {    
+                                            var newObj = new JsonObject(null); // ??? parent
 
-                    if(key != null)
-                    {
-                        if(!dict.ContainsKey(key))
-                            dict.Add(key, new List<object> { item});
-                        else
-                            dict[key].Add(item);                            
-                    }
-                }
+                                            foreach(var item in groupValue)
+                                                newObj.TryAdd(CharacterSpan.FromString(item.Key, true), item.Value);
 
-                groups = dict.Select( kv=>  {    
-                                                var newObj = new JsonObject(null);// ??? parent
-
-                                                newObj.TryAdd(csGroup.Get(groupBy), kv.Key);
-                                                newObj.TryAdd(_groupItems, kv.Value); 
+                                            newObj.TryAdd(_groupItems, items); 
                                                     
-                                                return newObj;
-                                            } );
-            }
-            else
-            { 
-                groups = list.GroupBy
-                (
-                    (item)=> item.GetGroupByKey(_groupBy!),
-                    (item)=> item,
-                    (groupValue, items) => {    
-                                                var newObj = new JsonObject(null); // ??? parent
-
-                                                foreach(var item in groupValue)
-                                                    newObj.TryAdd(csGroup.Get(item.Key), item.Value);
-
-                                                newObj.TryAdd(_groupItems, items); 
-                                                    
-                                                return newObj;
-                    },
-                    new GroupByComparer(_groupBy)
-                );
-            }
+                                            return newObj;
+                },
+                new GroupByComparer(groupNames)
+            );
 
             var numGroups = groups.Count();
 
@@ -318,13 +272,11 @@ namespace JTran
                         output.EndObject();
                         output.EndChild();
                     });
-
                 }
 
                 if(arrayName != null)
                 { 
                     output.EndArray();
-                    output.WriteRaw(CharacterSpan.Empty);
                 }                    
             });
         }

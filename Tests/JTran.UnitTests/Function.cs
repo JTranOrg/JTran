@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Expressions;
 using System.Linq;
+using JTran.Common;
 
 namespace JTran.UnitTests
 {
@@ -32,7 +33,7 @@ namespace JTran.UnitTests
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual("ran", result);
+            Assert.AreEqual("ran", result.ToString());
         }
 
         [TestMethod]
@@ -44,7 +45,19 @@ namespace JTran.UnitTests
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual("frank", result);
+            Assert.AreEqual("frank", result.ToString());
+        }
+
+        [TestMethod]
+        public void Function_coalesce_Success2()
+        {
+            var func       = new Function(new BuiltinFunctions(), "coalesce");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.Value(null), new JTran.Expressions.Value(CharacterSpan.Empty), new JTran.Expressions.Value(CharacterSpan.FromString("frank")) };
+
+            var result = func.Evaluate(parameters, context);
+
+            Assert.AreEqual("frank", result.ToString());
         }
 
         [TestMethod]
@@ -144,9 +157,10 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext("bob");
             var parameters = new List<IExpression> { new JTran.Expressions.Value("bob"), new JTran.Expressions.Value(",") };
 
-            var result = func.Evaluate(parameters, context) as IEnumerable<string>;
+            var result = func.Evaluate(parameters, context) as IEnumerable<object>;
 
             Assert.AreEqual(1, result.Count());
+            Assert.AreEqual("bob", result.First().ToString());
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(""), new JTran.Expressions.Value(",") };
 
@@ -156,12 +170,12 @@ namespace JTran.UnitTests
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(" bob;fred ; george  "), new JTran.Expressions.Value(";") };
 
-           var result2 = (func.Evaluate(parameters, context) as IEnumerable<string>).ToList();
+           var result2 = (func.Evaluate(parameters, context) as IEnumerable<object>).ToList();
 
             Assert.AreEqual(3, result2.Count);
-            Assert.AreEqual("bob",    result2[0]);
-            Assert.AreEqual("fred",   result2[1]);
-            Assert.AreEqual("george", result2[2]);
+            Assert.AreEqual("bob",    result2[0].ToString());
+            Assert.AreEqual("fred",   result2[1].ToString());
+            Assert.AreEqual("george", result2[2].ToString());
         }
     }
 }

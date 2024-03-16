@@ -38,11 +38,10 @@ namespace JTran
         void EndArray();
         void StartChild();
         void EndChild();
-        void EndContainer();
-         
+     
+        // ??? simplify so we can implement a JsonWriter that creates a JsonObject or JsonArray
         void WriteContainerName(ICharacterSpan name);
         void WriteSimpleArrayItem(object item);
-        void WriteRaw(ICharacterSpan json);
         void WriteItem(object item, bool newContainer = true);
         void WriteProperties(object item);
         void WriteProperty(ICharacterSpan name, object val, bool forceString = false);
@@ -253,12 +252,6 @@ namespace JTran
 
             EndChild();
         }        
-        
-        /****************************************************************************/
-        public void WriteRaw(ICharacterSpan json)
-        {
-             Append(json);
-        }
 
         #endregion
 
@@ -334,7 +327,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void EndContainer()
+        private void EndContainer()
         {
             if(!_stack.Empty())
                 if(_stack.Peek().NumChildren > 0 && !_stack.Peek().ChildFinished)
@@ -477,12 +470,6 @@ namespace JTran
         {
         }
 
-        /****************************************************************************/
-        public void WriteRaw(ICharacterSpan json)
-        {
-            ++NumWrites;
-        }
-
         #endregion
 
         /****************************************************************************/
@@ -514,11 +501,6 @@ namespace JTran
 
         /****************************************************************************/
         public void EndArray()
-        {
-        }
-
-        /****************************************************************************/
-        public void EndContainer()
         {
         }
     }

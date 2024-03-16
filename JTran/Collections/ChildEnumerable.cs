@@ -96,7 +96,7 @@ namespace JTran.Collections
                 if(!_parentEnumerator!.MoveNext())
                     return false;
 
-                var val = _parentEnumerator!.Current!.GetPropertyValue(_field);
+                var val = _parentEnumerator!.Current!.GetPropertyValue(_field); // ??? if list is poco then we can optimize this
 
                 if(val is IEnumerable<TCHILD> childList)
                 { 

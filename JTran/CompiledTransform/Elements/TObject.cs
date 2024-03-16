@@ -14,7 +14,7 @@ namespace JTran
             this.Name = ((name?.Length ?? 0) == 0) ? null : CreateValue(name, true, lineNumber);
         }
 
-        internal IValue Name  { get; set; }
+        internal IValue? Name  { get; set; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)

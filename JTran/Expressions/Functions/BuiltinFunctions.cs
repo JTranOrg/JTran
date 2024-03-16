@@ -18,10 +18,9 @@
  ****************************************************************************/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Reflection;
 
 using JTran.Common;
 using JTran.Extensions;
@@ -141,23 +140,25 @@ namespace JTran.Expressions
             if(val == null)
                 return false;
 
+            if(val is long)
+                return true;
+
+            if(val is int)
+                return true;
+
             return long.TryParse(val.ToString(), out long result);
         }
 
         /*****************************************************************************/
         public object? max(object val1, object val2)
         {
-            var result = JTran.Extensions.ObjectExtensions.compareto(val1, val2, out Type type) == 1 ? val1 : val2;
-            
-            return Convert(result, type);
+            return JTran.Extensions.ObjectExtensions.Compare(val1, val2, out object? t1, out object? t2) == 1 ? t1 : t2;
         }
 
         /*****************************************************************************/
         public object? min(object val1, object val2)
         {
-            var result =  JTran.Extensions.ObjectExtensions.compareto(val1, val2, out Type type) == -1 ? val1 : val2;
-            
-            return Convert(result, type);
+            return JTran.Extensions.ObjectExtensions.Compare(val1, val2, out object? t1, out object? t2) == -1 ? t1 : t2;
         }
         
         /*****************************************************************************/
@@ -172,9 +173,8 @@ namespace JTran.Expressions
             if(val1 == null || val2 == null)
                 return null;
 
-            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
-                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
-                    return (decimal)Math.Pow((double)dVal1, (double)dVal2);
+            if(val1.TryParseDecimal(out decimal dVal1) && val2.TryParseDecimal(out decimal dVal2))
+                return (decimal)Math.Pow((double)dVal1, (double)dVal2);
 
             return null;
         }
@@ -185,7 +185,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return (decimal)Math.Sqrt((double)dVal);
 
             return null;
@@ -197,7 +197,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Sin((double)dVal);
 
             return null;
@@ -210,7 +210,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Cos((double)dVal);
 
             return null;
@@ -222,7 +222,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Sinh((double)dVal);
 
             return null;
@@ -235,7 +235,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Cosh((double)dVal);
 
             return null;
@@ -247,7 +247,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Tan((double)dVal);
 
             return null;
@@ -259,7 +259,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Acos((double)dVal);
 
             return null;
@@ -271,7 +271,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Asin((double)dVal);
 
             return null;
@@ -283,7 +283,7 @@ namespace JTran.Expressions
             if(val == null)
                 return null;
 
-            if(decimal.TryParse(val.ToString(), out decimal dVal))
+            if(val.TryParseDecimal(out decimal dVal))
                 return Math.Atan((double)dVal);
 
             return null;
@@ -295,36 +295,10 @@ namespace JTran.Expressions
             if(val1 == null || val2 == null)
                 return null;
 
-            if(decimal.TryParse(val1.ToString(), out decimal dVal1))
-                if(decimal.TryParse(val2.ToString(), out decimal dVal2))
-                    return (decimal)Math.Atan2((double)dVal1, (double)dVal2);
+            if(val1.TryParseDecimal(out decimal dVal1) && val2.TryParseDecimal(out decimal dVal2))
+                return (decimal)Math.Atan2((double)dVal1, (double)dVal2);
 
             return null;
-        }
-
-
-        /*****************************************************************************/
-        private object? Convert(object result, Type type)
-        {
-            switch(type.Name)
-            {
-                case "Long":      return long.Parse(result.ToString());
-                case "decimal":    return decimal.Parse(result.ToString());
-                case "Boolean":   return bool.Parse(result.ToString());
-                case "String":    return result.ToString();
-
-                case "DateTime":  
-                { 
-                    result.TryParseDateTime(out DateTime? dtValue);
-                    if(dtValue.HasValue)
-                        return dtValue.Value.ToString("o");
-
-                    return null;
-                }
-
-                default:          
-                return result;
-            }
         }
 
         #endregion
@@ -453,7 +427,7 @@ namespace JTran.Expressions
 
             if(val.IsDictionary())
             { 
-                var found = val.GetPropertyValue(searchFor.ToString());
+                var found = val.GetPropertyValue(searchFor.AsCharacterSpan());
 
                 return found != null;
             }
@@ -584,10 +558,15 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public int stringlength(string val)
+        public int stringlength(object? val)
         {
-        // ??? Change first param to object
-            return val?.Length ?? 0;
+            if(val is null)
+                return 0;
+
+            if(val is string str)
+                return str.Length;
+
+            return val.AsCharacterSpan().Length;
         }
 
         /*****************************************************************************/
@@ -598,13 +577,19 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        // ??? Change first param to object
-        public IEnumerable<object> split(string? val, string separator)
+        public IEnumerable<object> split(object? val, object separator)
         {
-            if(string.IsNullOrWhiteSpace(val)) 
+            if(val == null)
                 return Enumerable.Empty<string>();
 
-            return val.Split(separator).Select( s=> s.Trim() );
+            ICharacterSpan cspan = val.AsCharacterSpan();
+
+            if(cspan.IsNullOrWhiteSpace()) 
+                return Enumerable.Empty<string>();
+
+            ICharacterSpan sep = separator.AsCharacterSpan();
+
+            return cspan.Split(sep, true);
         }
 
         #endregion
@@ -626,6 +611,9 @@ namespace JTran.Expressions
             if(val is ICharacterSpan cspan)
                 return cspan.IsNullOrWhiteSpace();
 
+            if(val is string str)
+                return string.IsNullOrWhiteSpace(str);
+
             if(val is JsonObject jobj)
                 return !jobj.Any();
 
@@ -635,29 +623,21 @@ namespace JTran.Expressions
             if(val is bool)
                 return false;
 
-            if(val is decimal dval)
-                return dval == 0m;
-
-            if(val is string str)
-                return string.IsNullOrWhiteSpace(str);
-
             if(val is IEnumerable<object> list)
-                return list.Count() == 0;
+            { 
+                return !list.Any();
+            }
 
-            if(val is double dblVal)
-                return dblVal == 0d;
+            if(val is IEnumerable list2)
+            { 
+                foreach(var _ in list2)
+                    return false;
 
-            if(val is float fVal)
-                return fVal == 0f;
+                return true;
+            }
 
-            if(val is int ival)
-                return ival == 0;
-
-            if(val is long lval)
-                return lval == 0L;
-
-            if(val.GetType().IsPrimitive)
-                return (long)System.Convert.ChangeType(val, typeof(long)) == 0L;
+            if(val.TryParseDecimal(out decimal dval))
+                return dval == 0m;
 
             return Poco.FromObject(val).IsEmpty(val);
         }
@@ -665,19 +645,8 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object required(object val, string errorMessage)
         {
-            if(val == null)
+            if(empty(val))
                  throw new Transformer.UserError(errorMessage);
-
-            if(val is IEnumerable<object> list)
-            {
-                if(!list.Any())
-                    throw new Transformer.UserError(errorMessage);
-
-                return val;
-            }
-
-            if(string.IsNullOrWhiteSpace(val.ToString()))
-                throw new Transformer.UserError(errorMessage);
 
             return val;
         }
@@ -693,28 +662,14 @@ namespace JTran.Expressions
         [IgnoreParameterCount]
         public string errormessage(ExpressionContext context)
         {
-            try
-            { 
-                return context.UserError?.Message;
-            }
-            catch
-            {
-                return "";
-            }
+            return context?.UserError?.Message ?? "";
         }
 
         /*****************************************************************************/
         [IgnoreParameterCount]
         public string errorcode(ExpressionContext context)
         {
-            try
-            { 
-                return context.UserError?.ErrorCode;
-            }
-            catch
-            {
-                return "";
-            }
+            return context?.UserError?.ErrorCode ?? "";
         }
 
         /*****************************************************************************/
@@ -780,28 +735,44 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public string coalesce(string primary, params string[] fields)
+        public ICharacterSpan? coalesce(object? primary, params object?[] fields)
         {
-            if(!string.IsNullOrWhiteSpace(primary))
-                return primary.Trim();
+            if(primary != null)
+            {
+                var primarySpan = primary.AsCharacterSpan();
 
-            foreach(string field in fields)
-                if(!string.IsNullOrWhiteSpace(field))
-                    return field.Trim();
-               
-            return "";
+                if(!primarySpan.IsNullOrWhiteSpace())
+                    return primarySpan;
+            }
+
+            foreach(var field in fields)
+            { 
+                if(field == null) 
+                    continue; 
+
+                if(field is ICharacterSpan cspan)
+                    if(!cspan.IsNullOrWhiteSpace())
+                        return cspan; 
+
+                var fieldStr = field.ToString();
+
+                if(!string.IsNullOrWhiteSpace(fieldStr))
+                    return CharacterSpan.FromString(fieldStr.Trim()); 
+            } 
+
+            return CharacterSpan.Empty;
         }
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public decimal coalescenumber(string primary, params string[] fields)
+        public decimal coalescenumber(string primary, params object?[] fields)
         {
             if(decimal.TryParse(primary, out decimal d) && d != 0m)
                 return d;
 
-            foreach(string field in fields)
+            foreach(var field in fields)
             {
-                if(decimal.TryParse(field, out decimal d2) && d2 != 0m)
+                if(decimal.TryParse(field?.ToString() ?? "", out decimal d2) && d2 != 0m)
                     return d2;
             }
 

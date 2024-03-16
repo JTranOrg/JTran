@@ -36,7 +36,7 @@ namespace Rota.Transform.Test
 
         internal static Task<string> LoadTransform(string name)
         {
-            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "");
+            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "").Replace("Rota.Transform.Test\\bin\\Release\\net8.0", "");
             
             return File.ReadAllTextAsync(Path.Combine(location, "Transforms", name + ".jtran"));
         }
@@ -53,7 +53,7 @@ namespace Rota.Transform.Test
 
         public class DocumentRepository : IDocumentRepository2
         { 
-            private static string _path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location.Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "")), "Transforms\\Documents");
+            private static string _path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location.Replace("Rota.Transform.Test\\bin\\Debug\\net8.0", "").Replace("Rota.Transform.Test\\bin\\Release\\net8.0", "")), "Transforms\\Documents");
 
             public DocumentRepository()
             {

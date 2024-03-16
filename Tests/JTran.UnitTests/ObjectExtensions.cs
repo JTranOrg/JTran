@@ -1,72 +1,14 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Extensions;
-using JTran.Json;
-using Microsoft.CSharp.RuntimeBinder;
-using System.Linq;
 using JTran.Common;
+using JTran.Json;
 
 namespace JTran.UnitTests
 {
     [TestClass]
     public class ObjectExtensionsTests
     {
-        [TestMethod]
-        public void ObjectExtensions_GetValue_Success()
-        {
-            var obj = _data1.ToJsonObject();
-
-            Assert.AreEqual("John",  obj.GetValue("FirstName".AsCharacterSpan(), null).ToString());
-            Assert.AreEqual("Chevy", obj.GetValue("Car.Make".AsCharacterSpan(), null).ToString());
-            Assert.AreEqual(375m,    obj.GetValue("Car.Engine.Displacement".AsCharacterSpan(), null));
-            Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice".AsCharacterSpan(), null)));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_Fail()
-        {
-            var obj = _data1.ToJsonObject();
-
-            Assert.IsNull(obj.GetValue("Car.DontHaveThisProp", null));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_wGGParent_Success()
-        {
-            var obj = _datagg1.ToJsonObject();
-            var driver = obj.GetValue("parent.Driver".AsCharacterSpan(), null);
-
-            Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null).ToString());
-            Assert.AreEqual("January Events", driver.GetValue("//Name", null).ToString());
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_var_Success()
-        {
-            var obj = _data1.ToJsonObject();
-
-            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator".AsCharacterSpan(), new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_varObject_Success()
-        {
-            var obj = _data1.ToJsonObject();
-
-            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone".AsCharacterSpan(), new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GroupKey_Success()
-        {
-            var obj = new { Make = "Chevy", Model = "Corvette", Year = 1956 };
-            var ex  = obj.GetGroupByKey(new [] { "Make", "Model" });
-
-            Assert.AreEqual("Chevy", ex["Make"]);
-            Assert.AreEqual("Corvette", ex["Model"]);
-            Assert.ThrowsException<KeyNotFoundException>(()=> ex["Year"]);
-        }
-
         public class Automobile
         {
             public string Make  { get; set; }
@@ -74,12 +16,12 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void ObjectExtensions_EnsureEnumerable_Success()
+        public void ObjectExtensions_EnsureObjectEnumerable_Success()
         {
             var obj = new Automobile { Make = "Chevy", Model = "Corvette" };
-            var enm = obj.EnsureEnumerable();
+            var enm = obj.EnsureObjectEnumerable();
             var t = enm.GetType();
-            var list = new List<Automobile>(enm);
+            var list = enm.ToList();
 
             Assert.AreEqual(1, list.Count);
         }

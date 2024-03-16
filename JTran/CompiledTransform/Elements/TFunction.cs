@@ -17,9 +17,9 @@ namespace JTran
             var parms   = CompiledTransform.ParseElementParams("#function", name, CompiledTransform.SingleTrue );
             var context = new ExpressionContext(new {});
 
-            this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim(); // ???
+            this.Name = parms[0].Evaluate(context).ToString().ToLower().Trim();
 
-            this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Evaluate(context).ToString().Trim()))); // ???
+            this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Evaluate(context).ToString().Trim(), true))); 
             this.Parameters.RemoveAt(0);
         }
 

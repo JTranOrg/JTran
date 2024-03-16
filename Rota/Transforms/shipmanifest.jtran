@@ -16,9 +16,12 @@
     "Chemicals (volatile)"
   ],
 
-  "#variable(ship)":     "#(pickrandomunique($ships, 'ships'))",
+  "#variable(ship)":    "#(pickrandomunique($ships, 'ships'))",
 
-  "ship":  "#copyof($ship)",
+  "oldest_ship":        "#(min($ships.year_built))",
+  "youngest_ship":      "#(max($ships.year_built))",
+  "ship":               "#copyof($ship)",
+  "testmax":            "#(max('tom', 'fred'))",
 
   "#iterate($ship.maxpods, pods)": 
   {

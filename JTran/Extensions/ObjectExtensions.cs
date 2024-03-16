@@ -17,12 +17,13 @@
  *                                                                          
  ****************************************************************************/
 
-using JTran.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using JTran.Collections;
+using JTran.Common;
+using JTran.Expressions;
 
 namespace JTran.Extensions
 {
@@ -32,7 +33,7 @@ namespace JTran.Extensions
     {
         public override string ToString()
         {
-            return string.Join(";;", this.Select(v=> v.Key.ToString() + ",," + v.Value.ToString()));
+            return string.Join(";;", this.Select(v=> v.Key.ToString() + ",," + v.Value?.ToString() ?? ""));
         }
     }
 
@@ -41,116 +42,59 @@ namespace JTran.Extensions
     internal static class ObjectExtensions
     {
         /****************************************************************************/
-        internal static IEnumerable<T> EnsureEnumerable<T>(this T obj)
+        internal static IEnumerable EnsureEnumerable(this object obj)
         {
-            if(obj is IEnumerable<T> list)
+            // These things will cast as IEnumerable but are actually single objects
+            if(obj is ICharacterSpan || obj is string || obj is IObject)
+                return new [] { obj };
+
+            if(obj is IEnumerable list)
                 return list;
 
-            return new [] {obj};
+            return new [] { obj };
         }
 
         /****************************************************************************/
-        internal static object GetSingleValue(this object obj, ICharacterSpan expression, ExpressionContext context)
+        internal static IEnumerable<object> EnsureObjectEnumerable(this object obj)
         {
-            var results = obj.GetValue(expression, context);
+            // These things will cast as IEnumerable but are actually single objects
+            if(obj is ICharacterSpan || obj is string || obj is IObject)
+                return [obj];
 
-            if(results is IEnumerable<object> list)
-                return list.First();
+            if(obj is IEnumerable<object> list)
+                return list;
 
-            return results;
+            if(obj is IEnumerable enm)
+                return new EnumerableWrapper(enm);
+
+            return [obj];
         }
 
         /****************************************************************************/
-        [Obsolete("Use ICharacterSpan")]
-        internal static object GetSingleValue(this object obj, string expression, ExpressionContext context)
+        internal static GroupKey GetGroupByKey(this object obj, IExpression groupExpr, ExpressionContext context, IList<string> fields)
         {
-            var results = obj.GetValue(expression.AsCharacterSpan(), context);
+            context.Data = obj;
 
-            if(results is IEnumerable<object> list)
-                return list.First();
+            var groupValues = groupExpr.Evaluate(context);
 
-            return results;
-        }
-
-        /****************************************************************************/
-        internal static GroupKey GetGroupByKey(this object obj, IEnumerable<string> fields)
-        {
             var result = new GroupKey();
 
-            foreach(var field in fields)
-            { 
-                var val = obj.GetSingleValue(field, null);
+            if(groupValues is IEnumerable<object> list)
+            {
+                var numFields = fields.Count;
+                var i = 0;
 
-                result.TryAdd(field.ToString(), val); 
+                foreach(var item in list)
+                { 
+                    result.TryAdd(fields[i++], item); 
+                }
             }
+            else
+                result.TryAdd(fields[0], groupValues);
 
             return result;
         }
         
-        /****************************************************************************/
-        [Obsolete("This should only be used for unit tests")]
-        internal static object GetValue(this object obj, string expression, ExpressionContext context)
-        {
-            return obj.GetValue(expression.AsCharacterSpan(), context);
-        }
-
-        /****************************************************************************/
-        internal static object GetValue(this object obj, ICharacterSpan expression, ExpressionContext context)
-        {
-            if(expression[0] == '@')
-            {
-                obj = context.Data;
-                 
-                if(expression[1] == '.')
-                { 
-                    expression = expression.Substring(2);
-                }
-                else
-                    expression = CharacterSpan.Empty;
-
-                if(expression.Length == 0)
-                    return obj;
-           }
-            else
-            {
-                // Resolve ancestors
-                obj = obj.EvaluateAncestors(ref expression);
-            }
-
-            if(expression[0] == '$')
-            {
-                var varName = expression.Substring(1);
-                var index   = expression.IndexOf('.');
-
-                if(index != -1)
-                { 
-                    // ??? is there a better way to do this?
-                    varName = varName.Substring(0, index-1);
-                    expression = expression.Substring(1 + index);
-                }
-                else
-                    expression = CharacterSpan.Empty;
-
-                obj = context.GetVariable(varName, context);
-
-                if(expression.Length == 0)
-                    return obj;
-            }
-
-            var results = new List<object>(); // ??? inefficient
-            var isList  = false;
-
-            obj.GetValue(results, expression, context, ref isList);
-
-            if(isList)
-                return results;
-
-            if(results.Count == 0)
-                return null;
-                
-            return results[0];
-        }
-
         /****************************************************************************/
         internal static bool IsDictionary(this object obj)
         {
@@ -158,6 +102,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
+        // ??? what about DateTimeOffset
         internal static bool TryParseDateTime(this object data, out DateTime? dtValue)
         {
             dtValue = null;
@@ -198,6 +143,44 @@ namespace JTran.Extensions
         }
 
         /*****************************************************************************/
+        internal static int Compare(object? leftVal, object? rightVal, out object? lVal, out object? rVal)
+        {
+            lVal = leftVal;
+            rVal = rightVal;
+
+            if(leftVal == null && rightVal == null)
+                return 0;
+
+            if(rightVal == null)
+                return 1;
+
+            if(leftVal == null)
+                return -1;
+
+            if(leftVal is bool b1 && rightVal is bool b2)
+                return b1.CompareTo(b2);
+
+            if(leftVal.TryParseDecimal(out decimal d1) && rightVal.TryParseDecimal(out decimal d2))
+            { 
+                lVal = d1;
+                rVal = d2;
+                return d1.CompareTo(d2);
+            }
+
+            var leftValStr  = leftVal.ToString(); 
+            var rightValStr = rightVal.ToString(); 
+
+            if(leftVal.TryParseDateTime(out DateTime? dtLeft) && rightVal.TryParseDateTime(out DateTime? dtRight))
+            { 
+                lVal = dtLeft!.Value.ToString("s");
+                rVal = dtRight!.Value.ToString("s");
+                return DateTime.Compare(dtLeft!.Value, dtRight!.Value);
+            }
+                    
+            return leftValStr.CompareTo(rightValStr);
+        }
+
+        /*****************************************************************************/
         internal static int compareto(object? leftVal, object? rightVal, out Type type)
         {
             type = typeof(object);
@@ -211,35 +194,20 @@ namespace JTran.Extensions
             if(leftVal == null)
                 return -1;
 
+            if(leftVal is bool b1 && rightVal is bool b2)
+            { 
+                type = typeof(bool);
+                return b1.CompareTo(b2);
+            }
+
+            if(leftVal.TryParseDecimal(out decimal d1) && rightVal.TryParseDecimal(out decimal d2))
+            { 
+                type = typeof(bool);
+                return d1.CompareTo(d2);
+            }
+
             var leftValStr  = leftVal.ToString(); 
             var rightValStr = rightVal.ToString(); 
-
-            if(long.TryParse(leftValStr, out long leftLong))
-            { 
-                if(long.TryParse(rightValStr, out long rightLong))
-                { 
-                    type = typeof(long);
-                    return leftLong.CompareTo(rightLong);
-                }
-            }
-
-            if(decimal.TryParse(leftValStr, out decimal leftdecimal))
-            { 
-                if(decimal.TryParse(rightValStr, out decimal rightdecimal))
-                { 
-                    type = typeof(decimal);
-                    return leftdecimal.CompareTo(rightdecimal);
-                }
-            }
-
-            if(bool.TryParse(leftValStr, out bool leftBool))
-            { 
-                if(bool.TryParse(rightValStr, out bool rightBool))
-                { 
-                    type = typeof(bool);
-                    return leftBool.CompareTo(rightBool);
-                }
-            }
 
             if(leftVal.TryParseDateTime(out DateTime? dtLeft))
             { 
@@ -265,38 +233,38 @@ namespace JTran.Extensions
         /****************************************************************************/
         private static void GetValue(this object obj, List<object> results, ICharacterSpan expression, ExpressionContext context, ref bool isList)
         {
-            var parts  = expression.ToString().Split(new char[] {'.'} ); 
-            var nParts = parts.Length;
+            var parts  = expression.Split('.'); 
+            var nParts = parts.Count;
 
             for(var i = 0; i < (nParts - 1); ++i)
             { 
-                var part = parts[i].Trim();
-                var partObj = obj.GetPropertyValue(part);
+                var part    = parts[i];
+                var partVal = obj.GetPropertyValue(part); 
 
                 // Array object without brackets
-                if(partObj is IList array)
+                if(partVal is IList array) // ??? IEnumerable
                 {
                     isList = true;
 
                     foreach(var child in array)
-                        child.GetValue(results, string.Join(".", parts, i+1, parts.Length - i - 1), context, ref isList);
+                        child.GetValue(results, string.Join(".", parts, i+1, parts.Count - i - 1), context, ref isList); // ??? need join that returns ICharacterSpan
 
                     return;
                 }
                     
-                obj = partObj;
+                obj = partVal;
 
                 if(obj == null)
                     return;
             }
 
             var partName = parts[nParts-1];
-            var val      = obj.GetPropertyValue(partName);
+            var val      = obj.GetPropertyValue(partName); 
 
             if(val == null)
                 return;
 
-            if(!val.IsDictionary() && val is IList list)
+            if(!val.IsDictionary() && val is IList list) // ??? IEnumerable
             { 
                 isList = true;
 
@@ -311,7 +279,7 @@ namespace JTran.Extensions
         [Obsolete]
         private static void GetValue(this object obj, List<object> results, string expression, ExpressionContext context, ref bool isList)
         {
-            var parts  = expression.ToString().Split(new char[] {'.'} ); 
+            var parts  = expression.ToString().Split(new char[] {'.'} );  // ??? Use iCharacterSpan.Split
             var nParts = parts.Length;
 
             for(var i = 0; i < (nParts - 1); ++i)

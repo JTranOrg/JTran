@@ -49,6 +49,19 @@ namespace JTran.MongoDBTests
             transformer.Transform(list, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
         }
 
+        [TestMethod]
+        [DataRow("No Filter")]
+        public void MongoDB_transform3(string firstName)
+        {
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
+            var transformer  = CreateTransformer(_transformForEach2);
+            var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
+            var input        = db.GetRepositoryReader<Guid, Person>("persons");
+            var enm          = input.AsEnumerable<Person>();
+
+            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
+        }
+
         private static readonly string _transformForEach1 =
         @"{
             '#foreach(@[FirstName == $Name], [])':

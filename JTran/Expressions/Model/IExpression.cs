@@ -176,6 +176,12 @@ namespace JTran.Expressions
         {
             return context.Data is bool;
         }
+
+        /*****************************************************************************/
+        public override string ToString()
+        {
+            return this.Name.ToString();
+        }
     }
 
     /*****************************************************************************/
@@ -331,7 +337,7 @@ namespace JTran.Expressions
             { 
                 var result = _expr.Evaluate(context);
 
-                if(result.TryParseInt(out int index))
+                if(!(result is bool) && result.TryParseInt(out int index))
                     return enm.GetNthItem(index);
             }   
             

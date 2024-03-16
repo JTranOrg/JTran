@@ -1,11 +1,9 @@
 using System.Text;
-using System.Text.Json;
+
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using JTran.Common;
 using JTran.Json;
-using System.Text.Json.Nodes;
 
 namespace JTran.PerformanceTests
 {
@@ -127,71 +125,6 @@ namespace JTran.PerformanceTests
             var transformer  = new JTran.Transformer(_transform);
            
             transformer.Transform(input!, output, new TransformerContext() { AllowDeferredLoading = false } );
-        }
-
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
-        public void Parser_parse_newtonsoft(int numItems)
-        {
-            var input = File.ReadAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
-            
-            _ = JArray.Parse(input);
-        }
-
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
-        public void Parser_parse_system_json(int numItems)
-        {
-            var input = File.ReadAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
-            
-            _ = System.Text.Json.Nodes.JsonArray.Parse(input);
-        }
-
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
-        public void Parser_jsonobject(int numItems)
-        {
-            var list = new List<object>();
-
-            for(var i = 0; i < 7; ++i)
-            {
-                var customers = new List<object>();
-
-                list.Add(customers);
-
-                for(var j = 0; j < numItems; ++j)
-                {
-                    var child = new JsonObject(null);
-
-                    child.TryAdd(CharacterSpan.FromString("Make"),  "Chevy");
-                    child.TryAdd(CharacterSpan.FromString("Model"), "Camaro");
-                    child.TryAdd(CharacterSpan.FromString("Color"), "Blue");
-                    child.TryAdd(CharacterSpan.FromString("Year"),  1969);
-
-                    customers.Add(child);
-                }
-            }
         }
 
         #region Private

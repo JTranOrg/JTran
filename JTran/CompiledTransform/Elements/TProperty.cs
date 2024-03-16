@@ -12,8 +12,20 @@ namespace JTran
         /****************************************************************************/
         internal TProperty(ICharacterSpan name, object val, long lineNumber)
         {
+            if(name.Length == 0)
+                throw new ArgumentException();
+
             this.Name  = CreateValue(name, true, lineNumber);
-            this.Value = CreateValue(val, false, lineNumber);
+
+            try
+            { 
+                this.Value = CreateValue(val, false, lineNumber);
+            }
+            catch
+            {
+                throw;
+            }
+
         }
 
         internal IValue Name  { get; set; }

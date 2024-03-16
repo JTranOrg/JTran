@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -116,6 +116,96 @@ namespace JTran.Transform.UnitTests
                     Color = "Black",
                 }
             };
+
+            var result = await TransformerTest.TestList("list", list, "Automobiles");
+            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+
+            Assert.IsNotNull(owner);
+            Assert.IsNotNull(owner.Cars);
+            Assert.AreEqual(3, owner.Cars.Count);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
+            Assert.AreEqual("Corvette",  owner.Cars[0].Model);
+            Assert.AreEqual(1956,        owner.Cars[0].Year);
+
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
+            Assert.AreEqual("Firebird",  owner.Cars[1].Model);
+            Assert.AreEqual(1969,        owner.Cars[1].Year);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
+            Assert.AreEqual("Camaro",    owner.Cars[2].Model);
+            Assert.AreEqual(1970,        owner.Cars[2].Year);
+        }
+
+        internal class TestEnumerable : IEnumerable
+        {
+            private readonly List<object> _list = new List<object>();
+
+            internal TestEnumerable()
+            {
+            }
+
+            internal void Add(object value) 
+            {
+                _list.Add(value);
+            }
+
+            public IEnumerator GetEnumerator()
+            {
+                return new TestEnumerator(_list.GetEnumerator());
+            }
+
+            private class TestEnumerator : IEnumerator
+            {
+                private readonly IEnumerator _enumerator;
+
+                internal TestEnumerator(IEnumerator enumerator)
+                {
+                    _enumerator = enumerator;
+                }
+
+                public object Current => _enumerator.Current;
+
+                public bool MoveNext()
+                {
+                    return _enumerator.MoveNext();
+                }
+
+                public void Reset()
+                {
+                    _enumerator.Reset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task ForEach_array()
+        {
+           var list = new TestEnumerable();
+
+           list.Add(new Automobile
+                    {
+                        Make  = "Chevrolet",
+                        Model = "Corvette",
+                        Year  = 1956,
+                        Color = "Blue"
+                    });
+
+           list.Add(new Automobile
+                {
+                    Make  = "Pontiac",
+                    Model = "Firebird",
+                    Year  = 1969,
+                    Color = "Green"
+                    });
+
+           list.Add(new Automobile
+                {
+                    Make  = "Chevrolet",
+                    Model = "Camaro",
+                    Year  = 1970,
+                    Color = "Black"
+                    });
 
             var result = await TransformerTest.TestList("list", list, "Automobiles");
             var owner = JsonConvert.DeserializeObject<Owner2>(result);

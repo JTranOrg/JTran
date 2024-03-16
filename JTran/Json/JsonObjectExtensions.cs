@@ -150,20 +150,12 @@ namespace JTran.Json
                 return null;
 
             var result = Activator.CreateInstance(t);
-            /*???var poco = Poco.FromType(t);
+            var poco = Poco.FromType(t);
 
-            poco.ForEachProperty( (name, val)=>
-            {
-
-            };*/
-            foreach (PropertyInfo prop in from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                        where p.CanRead
-                                        select p)
+            poco.ForEachProperty( (name, prop)=>
             {
                 try
                 {
-                    var name = CharacterSpan.FromString(prop.Name);
-
                     if(obj.ContainsKey(name))
                     {
                         var val = ToValue(obj[name], prop.PropertyType);
@@ -174,7 +166,7 @@ namespace JTran.Json
                 catch
                 {
                 }
-            }
+            });
 
             return result;
         }
@@ -257,9 +249,10 @@ namespace JTran.Json
             {
                 foreach (var prop in type.GetProperties())
                 {
-                    if ("Item" == prop.Name && typeof(object)!=prop.PropertyType)
+                    if ("Item" == prop.Name && typeof(object) != prop.PropertyType)
                     {
                         var ipa = prop.GetIndexParameters();
+
                         if (1 == ipa.Length && typeof(int) == ipa[0].ParameterType)
                         {
                             return prop.PropertyType;

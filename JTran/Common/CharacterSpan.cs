@@ -21,25 +21,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran.Common
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal interface ICharacterSpan : IReadOnlyList<char>, IEquatable<ICharacterSpan>, IStringValue
+    public interface ICharacterSpan : IReadOnlyList<char>, IEquatable<ICharacterSpan>, IStringValue
     {
         int  Length               { get; }
         bool HasEscapeCharacters  { get; }
 
-        void            CopyTo(char[] buffer, int offset, int length = -1);
-        bool            StartsWith(string compare);
-        int             IndexOf(char ch, int start = 0);
-        int             IndexOf(ICharacterSpan find);
-        ICharacterSpan  SubstringBefore(char ch, int skip = 0);
-        ICharacterSpan  SubstringAfter(char ch);
-        ICharacterSpan  Substring(int index, int length = -1000);
-        ICharacterSpan  FormatForJsonOutput();
-        bool            Equals(string compare);
+        void                    CopyTo(char[] buffer, int offset, int length = -1);
+        bool                    StartsWith(string compare);
+        int                     IndexOf(char ch, int start = 0);
+        int                     IndexOf(ICharacterSpan find, int start = 0);
+        ICharacterSpan          SubstringBefore(char ch, int skip = 0);
+        ICharacterSpan          SubstringAfter(char ch);
+        ICharacterSpan          Substring(int index, int length = -1000);
+        ICharacterSpan          FormatForJsonOutput();
+        IList<ICharacterSpan>   Split(char separator, bool trim = true);
+        IList<ICharacterSpan>   Split(ICharacterSpan separator, bool trim = true);
+        bool                    Equals(string compare);
 
         #region Default Implementations
 
@@ -92,7 +97,7 @@ namespace JTran.Common
                 else if(ch == '-')
                 {
                     if(i != 0 || negative == -1m)
-                        throw new JsonParseException("Missplaced negative sign", 0L);
+                        return false;
 
                     negative = -1m;
                 }
@@ -108,7 +113,10 @@ namespace JTran.Common
         /****************************************************************************/
         public bool IsNullOrWhiteSpace(int start = 0, int length = -1)
         {
-            if(start >= this.Length)
+            if(this == null)
+                return true;
+
+            if (start >= this.Length)
                 return true;
 
             if(length == -1)
@@ -131,6 +139,12 @@ namespace JTran.Common
             return IndexOf(find) != -1;
         }
 
+        /****************************************************************************/
+        public bool Contains(char ch)
+        {
+            return IndexOf(ch) != -1;
+        }
+
         #endregion
     }
 
@@ -143,6 +157,9 @@ namespace JTran.Common
         private int     _length;
         private int     _hashCode = 0;
         private bool    _hasEscapeCharacters;
+        private string? _str;
+
+        private static Dictionary<string, ICharacterSpan> _cache = new();
 
         #region Constructors
 
@@ -155,31 +172,21 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        internal CharacterSpan(char[] source, int offset, int length, bool hasEscapeCharacters = false)
+        internal CharacterSpan(char[] source, int offset, int length = -1, bool hasEscapeCharacters = false)
         {
             _source              = source;
             _offset              = offset;
-            _length              = length;
+            _length              = length == -1 ? source.Length : length;
             _hasEscapeCharacters = hasEscapeCharacters;
-
-          #if DEBUG
-            ++NumInstances;
-            ++TotalOutstanding;
-          #endif
         }
 
         /****************************************************************************/
-        internal CharacterSpan(string source, bool jtranProp = false)
+        internal CharacterSpan(string source)
         {
             _source              = source.ToArray();
             _offset              = 0;
             _length              = source.Length;
             _hasEscapeCharacters = true;
-
-          #if DEBUG
-            ++NumInstancesFromString;
-            ++TotalOutstanding;
-          #endif
         }
 
         /****************************************************************************/
@@ -192,7 +199,7 @@ namespace JTran.Common
             }
             else 
             {
-                // ???
+                throw new NotSupportedException();
             }
 
             _length          = length == -1 ? source.Length - offset : length;
@@ -200,11 +207,6 @@ namespace JTran.Common
 
             if(_offset + _length > _source?.Length)
                 throw new ArgumentOutOfRangeException();
-
-          #if DEBUG
-            ++NumInstances;
-            ++TotalOutstanding;
-          #endif
         }
 
         #endregion
@@ -226,19 +228,6 @@ namespace JTran.Common
 
         internal static readonly ICharacterSpan Empty = new CharacterSpan();
 
-        #if DEBUG
-
-        internal static int NumInstances { get; set; } = 0;
-        internal static int NumInstancesFromString { get; set; } = 0;
-        internal static int TotalOutstanding { get; set; } = 0;
-
-        ~CharacterSpan() 
-        { 
-            --TotalOutstanding;
-        }
-
-        #endif
-
         /****************************************************************************/
         internal void Reset(char[] source, int offset, int length, bool hasEscapeCharacters = false)
         {
@@ -250,11 +239,19 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        internal static ICharacterSpan FromString(string s, bool isJtranProp = false)
+        internal static ICharacterSpan FromString(string s, bool cacheable = false)
         {
-            // ??? need a lightweight version of ICharacterSpan that wraps a string and make common interface for both, e.g. IString
+            if(cacheable && _cache.ContainsKey(s))
+                return _cache[s];
 
-            return new CharacterSpan(s, isJtranProp);
+            var cspan = new CharacterSpan(s);
+
+            if(cacheable)
+                _cache.TryAdd(s, cspan);
+
+            cspan._str = s;
+
+            return cspan;
         }
         
         /****************************************************************************/
@@ -323,7 +320,7 @@ namespace JTran.Common
         /****************************************************************************/
         public int IndexOf(char ch, int start = 0)
         {
-            for(var i = start; i < (this.Length - start); ++i)
+            for(var i = start; i < this.Length; ++i)
             { 
                 if(this[i] == ch)
                     return i;
@@ -333,27 +330,30 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public int IndexOf(ICharacterSpan find)
+        public int IndexOf(ICharacterSpan find, int start = 0)
         {
-            if(this.Length < find.Length || find.Length == 0 || this.Length == 0)
+            var thisLength = this.Length;
+            var findLength = find.Length;
+
+            if(thisLength < findLength || findLength == 0 || thisLength == 0)
                 return -1;
 
-            var i = 0;
+            var i = start;
 
-            while((this.Length-i) >= find.Length)
+            while((thisLength-i) >= findLength)
             {
                 var index = this.IndexOf(find[0], i);
 
                 if(index == -1)
                     return -1;
                 
-                for(var j = 1; j < find.Length-1; ++j)
+                for(var j = 1; j < findLength-1; ++j)
                 {
                     if(this[index + j] != find[j])
                         goto Next;
                 }
 
-                return i;
+                return index;
                 
               Next:
                 ++i;
@@ -470,6 +470,126 @@ namespace JTran.Common
                 Array.Copy(_source, _offset, buffer, offset, length == -1 ? _length : length);
         }
 
+        /****************************************************************************/
+        public IList<ICharacterSpan> Split(ICharacterSpan separator, bool trim = true)
+        {
+            ICharacterSpan cspan = this;
+
+            if(!cspan.Contains(separator))
+                return [this];
+
+            var list = new List<ICharacterSpan>();
+            var start = 0;
+
+            while(start < _length) 
+            { 
+                var index = this.IndexOf(separator, start);
+
+                if(index == -1)
+                {
+                    list.Add(Create(_source!, _offset + start, _length - start, this.HasEscapeCharacters, trim));
+                    break;
+                }
+
+                list.Add(Create(_source!, _offset + start, index - start, this.HasEscapeCharacters, trim));
+
+                start = index + separator.Length;
+            }
+
+            return list;
+        }
+
+        /****************************************************************************/
+        public IList<ICharacterSpan> Split(char separator, bool trim = true)
+        {
+            ICharacterSpan cspan = this;
+
+            if(!cspan.Contains(separator))
+                return [this];
+
+            var list = new List<ICharacterSpan>();
+            var start = 0;
+
+            while(start < _length) 
+            { 
+                var index = this.IndexOf(separator, start);
+
+                if(index == -1)
+                {
+                    list.Add(Create(_source!, _offset + start, _length - start, this.HasEscapeCharacters, trim));
+                    break;
+                }
+
+                list.Add(Create(_source!, _offset + start, index - start, this.HasEscapeCharacters, trim));
+
+                start = index + 1;
+            }
+
+            return list;
+        }
+
+        /****************************************************************************/
+        private static ICharacterSpan Create(char[] source, int offset, int length, bool hasEscapeCharacters, bool trim)
+        {
+            if(trim)
+                return Trim(source!, offset, length, hasEscapeCharacters);
+
+            return new CharacterSpan(source!, offset, length, hasEscapeCharacters);
+        }
+
+        /****************************************************************************/
+        internal static ICharacterSpan Trim(char[] source, int offset, int length, bool hasEscapeCharacters = false)
+        {
+            var nonWhitespaceBegin = IndexOfNonWhiteSpace(source, offset, length);
+
+            if(nonWhitespaceBegin == -1)
+                return CharacterSpan.Empty;
+
+            var nonWhitespaceEnd = LastIndexOfNonWhiteSpace(source, nonWhitespaceBegin, length - (nonWhitespaceBegin - offset));
+            
+            length = nonWhitespaceEnd - nonWhitespaceBegin + 1;
+
+            return new CharacterSpan(source!, nonWhitespaceBegin, length, hasEscapeCharacters);
+        }
+
+        /****************************************************************************/
+        internal static int IndexOfNonWhiteSpace(char[]? source, int start, int length)
+        {
+            if(source == null)
+                return -1;
+
+            var end = start + length;
+
+            while(start < end) 
+            {
+                if(!char.IsWhiteSpace(source[start]))
+                    return start;
+
+                ++start;
+            }
+
+            return -1;
+        }
+
+        /****************************************************************************/
+        internal static int LastIndexOfNonWhiteSpace(char[]? source, int start, int length)
+        {
+            if(source == null)
+                return -1;
+
+            var end = start + length;
+
+            while(start < end) 
+            {
+                if(!char.IsWhiteSpace(source[end-1]))
+                    return end-1;
+
+                end = start + --length;
+            }
+
+            return -1;
+        }
+
         #endregion
 
         /****************************************************************************/
@@ -478,7 +598,10 @@ namespace JTran.Common
             if(this.Length == 0)
                 return String.Empty;
 
-            return new String(_source, _offset, _length);
+            if(_str != null)
+                return _str;
+
+            return _str = new String(_source!, _offset, _length);
         }
 
         /****************************************************************************/
@@ -609,27 +732,6 @@ namespace JTran.Common
         }
 
         #endregion
-    }
-
-    /****************************************************************************/
-    /****************************************************************************/
-    internal class CharacterSpanGroup 
-    { 
-        private readonly Dictionary<string, ICharacterSpan> _dict = new();
-
-        /****************************************************************************/
-        internal CharacterSpanGroup()
-        {
-        }
-
-        /****************************************************************************/
-        internal ICharacterSpan Get(string key)
-        {
-            if(!_dict.ContainsKey(key))
-                _dict.Add(key, CharacterSpan.FromString(key));
-
-            return _dict[key];
-        }
     }
 
     /****************************************************************************/

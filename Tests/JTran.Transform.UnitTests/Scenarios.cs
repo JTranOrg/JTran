@@ -13,6 +13,7 @@ namespace JTran.Transform.UnitTests
         [TestMethod]
         [DataRow("customerorders", "sales_report")]
         [DataRow("customerorders", "sales_report_by_month")]
+        [DataRow("customerorders", "sales_report_by_city")] // ??? doesn't work
         public async Task Scenario_success(string dataGenerator, string transform)
         {
             // First generate test data

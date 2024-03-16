@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using JTran.Collections;
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -107,6 +108,12 @@ namespace JTran.Expressions
             if(val is IEnumerable<object> list)
                 return list.Reverse();
 
+            if(val is ICharacterSpan cspan)
+                return new CharacterSpan(cspan.Reverse().ToArray(), 0, -1, cspan.HasEscapeCharacters);
+
+            if(val is IEnumerable<char> enm)
+                return new CharacterSpan(enm.Reverse().ToArray(), 0);
+
             return new String(val.ToString().Reverse().ToArray());
         }
 
@@ -115,6 +122,9 @@ namespace JTran.Expressions
         {
             if(val is null)
                 return null;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.Length == 0 ? '\0' : cspan[cspan.Length - 1];
 
             if(val is IEnumerable<object> list)
                 return list.LastOrDefault();
@@ -127,6 +137,9 @@ namespace JTran.Expressions
         {
             if(val is null)
                 return null;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.Length == 0 ? '\0' : cspan[0];
 
             if(val is IEnumerable<object> list)
                 return list.FirstOrDefault();
@@ -156,7 +169,7 @@ namespace JTran.Expressions
             {
                 if(parm != null)
                 { 
-                    union.Add(parm.EnsureEnumerable());
+                    union.Add(parm.EnsureObjectEnumerable());
                 }
             }
 
@@ -165,7 +178,7 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public object? sort(object expr, params string[] sortFields)
+        public object? sort(object expr, params string[] sortFields) // ??? ICharacterSpan
         {
             if(expr is null)
                 return null;
@@ -194,7 +207,7 @@ namespace JTran.Expressions
             private readonly IList<SortField> _sortFields = new List<SortField>();
 
             /*****************************************************************************/
-            internal SortComparer(string[] sortFields)
+            internal SortComparer(string[] sortFields) // ??? ICharacterSpan
             {
                 foreach(var sortField in sortFields)
                 {
@@ -245,13 +258,13 @@ namespace JTran.Expressions
             /*****************************************************************************/
             private class SortField
             {
-                internal string Name      { get; set; } = "";
+                internal string Name      { get; set; } = ""; // ??? ICharacterSpan
                 internal bool   Ascending { get; set; } = true;
             }
         }
 
         /*****************************************************************************/
-        private IComparer<object> GetComparer(string[] sortFields)
+        private IComparer<object> GetComparer(string[] sortFields)// ??? ICharacterSpan
         {
             var key = string.Join("", sortFields);
 
@@ -273,20 +286,25 @@ namespace JTran.Expressions
             if(val is null)
                 return 0m;
 
-            if(val is IEnumerable<object> list)
-            { 
-                decimal result = startVal;
+            if(!(val is ICharacterSpan) && !(val is string))
+            {
+                if(val is IEnumerable<object> list)
+                { 
+                    decimal result = startVal;
 
-                foreach(var item in list)
-                    if(decimal.TryParse(item.ToString(), out decimal dval))
-                        result = fn(result, dval);
+                    foreach(var item in list)
+                    { 
+                        if(item.TryParseDecimal(out decimal dval))
+                            result = fn(result, dval);
+                    }
 
-                count = list.Count();
+                    count = list.Count();
 
-                return result;
+                    return result;
+                }
             }
 
-            if(decimal.TryParse(val.ToString(), out decimal dval2))
+            if(val.TryParseDecimal(out decimal dval2))
                 return dval2;
 
             return 0m;

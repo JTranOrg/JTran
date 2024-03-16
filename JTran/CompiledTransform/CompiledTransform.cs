@@ -44,10 +44,11 @@ namespace JTran
         private readonly Dictionary<string, CompiledTransform> _loadedIncludes = new();
         private readonly IDictionary<string, string>? _includeSource;
 
-        internal static IReadOnlyList<bool> SingleFalse { get; } = new List<bool>() { false };
-        internal static IReadOnlyList<bool> SingleTrue  { get; } = new List<bool>() { true };
-        internal static IReadOnlyList<bool> FalseTrue   { get; } = new List<bool>() { false, true };
-        internal static IReadOnlyList<bool> TrueFalse   { get; } = new List<bool>() { true, false};
+        internal static IReadOnlyList<bool> SingleFalse     { get; } = new List<bool>() { false };
+        internal static IReadOnlyList<bool> SingleTrue      { get; } = new List<bool>() { true };
+        internal static IReadOnlyList<bool> FalseTrue       { get; } = new List<bool>() { false, true };
+        internal static IReadOnlyList<bool> FalseFalseTrue  { get; } = new List<bool>() { false, false, true };
+        internal static IReadOnlyList<bool> TrueFalse       { get; } = new List<bool>() { true, false};
 
         private bool _outputArray = false;
 
@@ -219,44 +220,6 @@ namespace JTran
             return result;
         }
         
-        /****************************************************************************/
-        [Obsolete("Replaced by ICharacterSpan version")]
-        internal static IList<IExpression> ParseElementParams(string elementName, string source, IReadOnlyList<bool> isExplicitParam) 
-        {
-            source = source.Trim();
-
-            if(!source.StartsWith(elementName))
-                throw new Transformer.SyntaxException("Error in parsing element parameters");
-
-            var result  = new List<IExpression>();
-
-            // Check for no params
-            var checkStr = source.Substring(elementName.Length);
-
-            if(checkStr.Length != 0 && !string.IsNullOrWhiteSpace(checkStr.Substring(1, checkStr.Length - 2)))
-            { 
-                var compiler = new Compiler();
-                var token    = Precompile(CharacterSpan.FromString(checkStr));
-                var i = 0;
-                IEnumerable<Token> tokens = token;
-
-                if(token.Type != Token.TokenType.CommaDelimited)
-                    tokens = new [] { token };
-                
-                foreach(var child in tokens)
-                {
-                    if(IsExplicitParam(isExplicitParam, i))
-                        result.Add(new Value(child));
-                    else
-                        result.Add(compiler.InnerCompile(new Token[] { child }));
-
-                    ++i;
-                }
-            }
-
-            return result;
-        }
-
         #region Private 
 
         /****************************************************************************/
@@ -276,18 +239,6 @@ namespace JTran
 
             TransformObject(result, output, context, extensionFunctions);
     
-            #if DEBUG
-
-            var NumInstances = CharacterSpan.NumInstances;
-            var NumInstancesFromString = CharacterSpan.NumInstancesFromString;
-            var TotalOutstanding = CharacterSpan.TotalOutstanding;
-            
-            Debug.WriteLine($"CharacterSpan.NumInstances: {NumInstances}");
-            Debug.WriteLine($"CharacterSpan.NumInstancesFromString: {NumInstancesFromString}");
-            Debug.WriteLine($"CharacterSpan.TotalOutstanding: {TotalOutstanding}");
-
-            #endif
-
             return;
         }                
 
@@ -298,6 +249,8 @@ namespace JTran
 
             if(!_outputArray)
                 output.StartObject();
+
+                var t = data.GetType().FullName;
 
             this.Evaluate(output, newContext, f=> f());
 
@@ -424,7 +377,7 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal interface IStringValue
+    public interface IStringValue
     {
         object? Value { get; }
     }
@@ -487,10 +440,10 @@ namespace JTran
             if(val == null)
                 return null;
 
-            if(!(val is IStringValue) && decimal.TryParse(val.ToString(), out decimal dval)) 
-            {
-                return dval;
-            }
+           // if(!(val is IStringValue) && decimal.TryParse(val.ToString(), out decimal dval)) 
+            //{
+            //    return dval;
+            //}
 
             return val;
         }

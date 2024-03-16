@@ -64,9 +64,11 @@ namespace JTran
             if(val != null)
             {
                 if(val is ICharacterSpan cspan)
-                    return InternalCreateValue(cspan, name, lineNumber);
-
-                if(val is decimal dval)
+                { 
+                    if(cspan.Length != 0)
+                        return InternalCreateValue(cspan, name, lineNumber);
+                }
+                else if(val is decimal dval)
                     return new NumberValue(dval);
             }
 
@@ -76,6 +78,9 @@ namespace JTran
         /****************************************************************************/
         private protected IValue InternalCreateValue(ICharacterSpan? sval, bool name, long lineNumber)
         {
+            if(sval.Length == 0)
+                throw new ArgumentException();
+
             if(sval![0] != '#' || sval.Length == 1) // Allow "#" as a string literal
                 return CreateSimpleValue(sval);
 
@@ -87,7 +92,7 @@ namespace JTran
 
                 try
                 { 
-                    return new ExpressionValue(expr.ToString());
+                    return new ExpressionValue(expr!.ToString());
                 }
                 catch(JsonParseException ex)
                 {
@@ -112,7 +117,7 @@ namespace JTran
                     
                 var templateName = sval.SubstringBefore('(', 1);
                 var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString()); 
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString(), true); 
 
                 // Will do exception on evaluation if no template found
                 return new TCallTemplateProperty(parm, lineNumber);

@@ -57,16 +57,21 @@ namespace JTran.Expressions
                 name = name.Substring(3);
 
             this.Name = name;
-            this.IgnoreParams = method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(IgnoreParameterCount)))?.Any() ?? false;
+
+            var customAttributes = method.CustomAttributes?.ToList();
+            var ignoreType = typeof(IgnoreParameterCount);
+            var literalType = typeof(LiteralParameters);
+
+            this.IgnoreParams = customAttributes == null ? false : customAttributes.Any(a=> a.AttributeType.Equals(ignoreType));
 
             if(this.IgnoreParams)
                 this.NumParams = 0;
             else
-                this.NumParams = method.GetParameters().Where( p=> !p.HasDefaultValue ).Count();
+                this.NumParams = method.GetParameters().Count( p=> !p.HasDefaultValue );
 
            _method    = method;
            _container = container;
-           _literals  = _method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(LiteralParameters)))?.Any() ?? false;
+           _literals  = customAttributes == null ? false : customAttributes.Any( a=> a.AttributeType.Equals(literalType));
         }
 
         private static IDictionary<String, bool> _builtInFunctions = new Dictionary<string, bool> 

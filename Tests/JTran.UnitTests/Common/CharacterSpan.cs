@@ -6,6 +6,7 @@ using System.Linq;
 using JTran.Expressions;
 using Newtonsoft.Json.Linq;
 using System.Data.Common;
+using System.Reflection.Metadata;
 
 namespace JTran.UnitTests
 {
@@ -74,6 +75,22 @@ namespace JTran.UnitTests
             Assert.IsFalse(c1.Contains(c3));
         }
 
+        #region IndexOf
+
+        [TestMethod]
+        public void CharacterSpan_IndexOf_cspan()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc12345678def");
+            ICharacterSpan c2 = new CharacterSpan(c1, 4, 9);
+            ICharacterSpan find = CharacterSpan.FromString("456");
+
+            Assert.AreEqual(6,  c1.IndexOf(find));
+            Assert.AreEqual(6,  c1.IndexOf(find, 5));
+            Assert.AreEqual(-1, c1.IndexOf(CharacterSpan.FromString("xyz")));
+            Assert.AreEqual(2,  c2.IndexOf(find));
+            Assert.AreEqual(2,  c2.IndexOf(find, 2));
+            Assert.AreEqual(-1, c2.IndexOf(CharacterSpan.FromString("xyz")));
+        }
 
         [TestMethod]
         public void CharacterSpan_IndexOf_ch()
@@ -89,6 +106,17 @@ namespace JTran.UnitTests
             Assert.AreEqual(4, c2.IndexOf('5'));
             Assert.AreEqual(2, c3.IndexOf('f'));
         }
+
+        [TestMethod]
+        public void CharacterSpan_IndexOf_ch_wstart()
+        {
+            var source = "abc.1234.5678.def".ToArray();
+            ICharacterSpan c1 = new CharacterSpan(source!, 0);
+
+            Assert.AreEqual(13, c1.IndexOf('.', 9));
+        }
+
+        #endregion
 
         [TestMethod]
         public void CharacterSpan_FormatForJsonOutput()
@@ -130,6 +158,63 @@ namespace JTran.UnitTests
             TestNumber("-1234546.789012",   -1234546.789012m);
             TestNumber("0",                 0m);
             TestNumber("750.87299999999998", 750.87299999999998m);
+        }
+
+        [TestMethod]   
+        public void CharacterSpan_Split_no_separator()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc");
+            var parts = c1.Split('.').ToList();
+
+            Assert.AreEqual(1, parts.Count());
+            Assert.AreEqual("abc", parts![0].ToString());
+        }
+
+        [TestMethod]
+        [DataRow("    bob ", 0, 8, "bob")]
+        [DataRow("    bob ", 1, 7, "bob")]
+        [DataRow("    bob .   fred", 1, 7, "bob")]
+        [DataRow("    bob .   fred   ", 9, 9, "fred")]
+        [DataRow("    bob . \r\tfred \n ", 9, 9, "fred")]
+        public void CharacterSpan_Trim(string src, int offset, int length, string result)
+        {
+            Assert.AreEqual(result,  CharacterSpan.Trim(src.ToArray(), offset, length).ToString());
+        }
+
+        [TestMethod]   
+        public void CharacterSpan_Split_trim()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc. def.\rghi.\tjk");
+            var parts = c1.Split('.').ToList();
+
+            Assert.AreEqual("abc", parts[0].ToString());
+            Assert.AreEqual("def", parts[1].ToString());
+            Assert.AreEqual("ghi", parts[2].ToString());
+            Assert.AreEqual("jk",  parts[3].ToString());
+        }
+
+        [TestMethod]   
+        public void CharacterSpan_Split_trim2()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc. def.\rghi.jklm");
+            var parts = c1.Split('.').ToList();
+
+            Assert.AreEqual("abc",  parts[0].ToString());
+            Assert.AreEqual("def",  parts[1].ToString());
+            Assert.AreEqual("ghi",  parts[2].ToString());
+            Assert.AreEqual("jklm", parts[3].ToString());
+        }
+
+        [TestMethod]   
+        public void CharacterSpan_Split()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc.def.ghi.jk");
+            var parts = c1.Split('.').ToList();
+
+            Assert.AreEqual("abc", parts[0].ToString());
+            Assert.AreEqual("def", parts[1].ToString());
+            Assert.AreEqual("ghi", parts[2].ToString());
+            Assert.AreEqual("jk",  parts[3].ToString());
         }
 
         private void TestNumber(string val, decimal expected)

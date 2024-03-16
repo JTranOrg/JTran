@@ -19,6 +19,7 @@
 
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace JTran
@@ -79,6 +80,21 @@ namespace JTran
                 return list.Count < index ? null : list[index];
 
             return enm.Skip(index).Take(1).SingleOrDefault();
+        }   
+        
+        /****************************************************************************/
+        /// <summary>
+        /// Returns true if the enumerable is not empty
+        /// </summary>
+        internal static bool Any(this IEnumerable? enm)
+        {
+            if(enm == null) 
+                return false;
+
+            foreach(var item in enm)
+                return true;
+
+            return false;
         }   
     }
 }

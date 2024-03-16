@@ -38,7 +38,7 @@ namespace JTran.Common
 
             foreach(var property in properties ) 
             {
-                _properties.Add(CharacterSpan.FromString(property.Name), property);
+                _properties.Add(CharacterSpan.FromString(property.Name, true), property);
             }
         }
 
@@ -66,7 +66,7 @@ namespace JTran.Common
         /****************************************************************************/
         public object? GetValue(object? poco, ICharacterSpan name)  
         {
-            if(poco == null ) 
+            if(poco == null) 
                 return null;
 
             if(!_properties.ContainsKey(name)) 
@@ -108,6 +108,23 @@ namespace JTran.Common
                     var value = kv.Value.GetValue(poco, null);
 
                     onProperty(kv.Key, value);
+                }
+                catch
+                {
+                    // Just ignore it
+                }
+            }
+        }
+
+
+        /****************************************************************************/
+        public void ForEachProperty(Action<ICharacterSpan, PropertyInfo> onProperty)  
+        {        
+            foreach(var kv in _properties)
+            {
+                try
+                { 
+                    onProperty(kv.Key, kv.Value);
                 }
                 catch
                 {

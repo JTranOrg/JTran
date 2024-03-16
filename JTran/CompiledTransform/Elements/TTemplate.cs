@@ -20,12 +20,11 @@ namespace JTran
         {
             name = name.Substring("#template(".Length, name.Length - "#template(".Length - 1);
 
-            var parms = name.ToString().Split(new char[] { ',' });
+            var parms = name.Split(',');
 
-            this.Name = parms[0].ToLower().Trim();
+            this.Name = parms![0].ToString().ToLower();
 
-            this.Parameters.AddRange(parms.Select( s=> CharacterSpan.FromString(s.Trim())));
-            this.Parameters.RemoveAt(0);
+            this.Parameters.AddRange(parms.Skip(1));
         }
 
         internal string Name      { get; }
@@ -69,7 +68,11 @@ namespace JTran
             var jsonParams = paramsOutput.ToString().JTranToJsonObject(); // ???
 
             foreach(var paramName in template.Parameters)
-                newContext.SetVariable(paramName, (jsonParams as JsonObject)[paramName].ToString());
+            { 
+                var val = jsonParams[paramName];
+
+                newContext.SetVariable(paramName, val);
+            }
 
             template.Evaluate(output, newContext, wrap);
         }

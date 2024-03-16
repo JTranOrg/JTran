@@ -83,9 +83,29 @@ namespace JTran
                     if(!bVal)
                         return;
                 }
-                else if(context.Data.CompareTo(val, out _) != 0)
-                    return;
+                else 
+                {   
+                    // If the expression evaluates to bool then we use item if it true as above
+                    //   but if we want to compare against the map value that is a bool then we
+                    //   use a 'true' or 'false' string for the mapitem expression
+                    var bVal1 = val?.ToString()?.ToLower() ?? "";
+
+                    if(bVal1 == "true" || bVal1 == "false")
+                    {
+                        var bVal2 = context.Data?.ToString()?.ToLower() ?? "";
+
+                        if(bVal1 != bVal2)
+                            return;
+
+                        goto Next;
+                    }
+
+                    if(context.Data.CompareTo(val, out _) != 0)
+                        return;
+                }
             }
+
+          Next:
 
             this.EvaluatedValue = this.Value.Evaluate(context);
             this.If = true;
