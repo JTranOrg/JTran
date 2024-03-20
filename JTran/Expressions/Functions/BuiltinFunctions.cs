@@ -324,85 +324,85 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public string? lowercase(object val)
+        public object? uppercase(object? val)
+        {
+            return Transform(val, 
+                            (ch)=> (true, char.ToUpperInvariant(ch)), 
+                            (s)=> s.ToUpperInvariant());
+        }
+
+        /*****************************************************************************/
+        public object? lowercase(object? val)
+        {
+            return Transform(val, 
+                            (ch)=> (true, char.ToLowerInvariant(ch)), 
+                            (s)=> s.ToLowerInvariant());
+        }
+
+        #region substring
+
+        /*****************************************************************************/
+        [IgnoreParameterCount]
+        public object? substring(object? val, int start, int length = -1000)
         {
             if(val == null)
-                return null;
-
-            return val?.ToString()?.ToLower();
-        }
-
-        /*****************************************************************************/
-        public string? uppercase(object val)
-        {
-            if(val == null)
-                return null;
-
-            return val?.ToString()?.ToUpper();
-        }
-
-        /*****************************************************************************/
-        public string? substring(string val, int start, int length)
-        {
-            return val?.Substring(start, length);
-        }
-
-        /*****************************************************************************/
-        public string? substring(string val, int start)
-        {
-            return val?.Substring(start);
-        }
-
-        /*****************************************************************************/
-        public string? substringafter(string val, string substr)
-        {
-            if(string.IsNullOrEmpty(val) || string.IsNullOrEmpty(substr))
                 return val;
 
-            var index = val.IndexOf(substr);
+            if(val is ICharacterSpan cspan)
+                return cspan!.Substring(start, length);
 
-            if(index == -1)
-                return "";
- 
-            return val.Substring(index + substr.Length);
+            var str = val.ToString();
+
+            if(length == -1000)
+                return str.Substring(start);
+
+            if(length >= 0)
+                length = Math.Min(length, str.Length - start);  
+            
+            if(start >= str.Length || length < 1)
+                return string.Empty;
+
+            return str.Substring(start, length);
         }
 
         /*****************************************************************************/
-        public string substringbefore(string val, string substr)
+        public object? substringafter(object? val, object? substr)
         {
-            if(string.IsNullOrEmpty(val) || string.IsNullOrEmpty(substr))
-                return val;
-
-            var index = val.IndexOf(substr);
-
-            if(index == -1)
-                return val;
- 
-            return val.Substring(0, index);
+            return Match<object?>(val, substr, val, 
+                                 (val, search)=> val.Find(search, out int index) ? val.Substring(index + search.Length) : CharacterSpan.Empty, 
+                                 (val, search)=> val.Find(search, out int index) ? val.Substring(index + search.Length) : CharacterSpan.Empty);
         }
 
         /*****************************************************************************/
-        public bool startswith(string val, string substr)
+        public object? substringbefore(object? val, object? substr)
         {
-            if(string.IsNullOrEmpty(val) || string.IsNullOrEmpty(substr))
-                return false;
+            return Match<object?>(val, substr, val, 
+                                 (val, search)=> val.Find(search, out int index) ? val.Substring(0, index) : val, 
+                                 (val, search)=> val.Find(search, out int index) ? val.Substring(0, index) : val);
+        }
 
-            return val.StartsWith(substr);
+        #endregion
+
+        /*****************************************************************************/
+        public bool startswith(object? val, object? substr)
+        {
+            return Match(val, substr, false, 
+                         (val, search)=> val.IndexOf(search) == 0, 
+                         (val, search)=> val.IndexOf(search) == 0);
         }
 
         /*****************************************************************************/
-        public bool endswith(string val, string substr)
+        public bool endswith(object? val, object? substr)
         {
-            if(string.IsNullOrEmpty(val) || string.IsNullOrEmpty(substr))
-                return false;
-
-            return val.EndsWith(substr);
+            return Match(val, substr, false, 
+                        (val, search)=> val.LastIndexOf(search) == (val.Length - search.Length), 
+                        (val, search)=> val.LastIndexOf(search) == (val.Length - search.Length));
         }
 
         /*****************************************************************************/
-        public bool contains(object val, object searchFor)
+        public bool contains(object? val, object? searchFor)
         {
-            if(searchFor == null)
+            if(val == null || searchFor == null)
                 return false;
 
             if(val is ICharacterSpan cspan)
@@ -433,101 +433,123 @@ namespace JTran.Expressions
             }
 
             if(val is IEnumerable<object> list)
-                return list.Any( i=> JTran.Extensions.ObjectExtensions.compareto(i, searchFor, out Type type) == 0 );
+                return list.Any( i=> JTran.Extensions.ObjectExtensions.compareto(i, searchFor, out Type _) == 0 );
 
             return false;
         }
 
-        /*****************************************************************************/
-        public string? normalizespace(string val)
-        // ??? Change first param to object
-        {
-            return val?.Trim()?.Replace("  ", " ");
-        }
+        #region trim
 
         /*****************************************************************************/
-        // ??? Change first param to object
-        public string? trim(string val)
-        {
-            return val?.Trim();
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? trimend(string val)
-        {
-            return val?.TrimEnd();
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? trimstart(string val)
-        {
-            return val?.TrimStart();
-        }
-        
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? replace(string val, string r1, string r2)
-        {
-            return val?.Replace(r1, r2);
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? replaceending(string val, string r1, string r2)
-        {
-            return val?.ReplaceEnding(r1, r2);
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? remove(string val, string r1)
-        {
-            return val?.Replace(r1, "");
-        }
-
-        /*****************************************************************************/
-        public object? removeany(object? val, object list)
+        public object? normalizespace(object? val)
         {
             if(val == null)
                 return null;
-            
-            if(list is IEnumerable<object> listOfThingsToRemove)
+
+            var cspan = val.AsCharacterSpan();
+            var previous = '\0';
+
+            return cspan.Trim().Transform( ch=> 
+            {
+                var result = (ch != ' ' || previous != ' ', ch);
+
+                previous = ch;
+
+                return result;
+            });
+        }
+
+        /*****************************************************************************/
+        public object? trim(object? val)
+        {
+            if(val == null)
+                return val;
+
+            if(val is ICharacterSpan cspan)
+                return cspan!.Trim();
+
+            return val.ToString().Trim();
+        }
+
+        /*****************************************************************************/
+        public object? trimend(object? val)
+        {
+            if(val == null)
+                return val;
+
+            if(val is ICharacterSpan cspan)
+                return cspan!.Trim(false, true);
+
+            return val.ToString().TrimEnd();
+        }
+
+        /*****************************************************************************/
+        public object? trimstart(object? val)
+        {
+            if(val == null)
+                return val;
+
+            if(val is ICharacterSpan cspan)
+                return cspan!.Trim(true, false);
+
+            return val.ToString().TrimStart();
+        }
+
+        #endregion
+
+        #region replace
+
+        /*****************************************************************************/
+        public object? replace(object? val, object? r1, object? r2)
+        {
+            if(val == null || r1 == null || r2 == null)
+                return val;
+
+            // ???
+            return val!.ToString().Replace(r1.ToString()!, r2.ToString());
+        }
+
+        /*****************************************************************************/
+        public string? replaceending(string val, string r1, string r2)
+        {
+            if(val == null || r1 == null || r2 == null)
+                return val;
+
+            return val.ToString().ReplaceEnding(r1.ToString(), r2.ToString());
+        }
+
+        #endregion
+
+        #region remove
+
+        /*****************************************************************************/
+        public object? remove(object? val, object? r1)
+        {
+            if(val == null || r1 == null)
+                return val;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.Remove(r1.AsCharacterSpan());
+
+            var r1Str = r1.ToString();
+            var valStr = val.ToString();
+
+            if(r1Str!.Length == 0 || valStr!.Length == 0)
+                return val;
+
+            return valStr.Replace(r1Str, "");
+        }
+
+        /*****************************************************************************/
+        public object? removeany(object? val, object? list)
+        {
+            if(val != null && list != null && list is IEnumerable<object> listOfThingsToRemove)
             { 
-                var sval = val!.ToString(); // ???
-
                 foreach(var r1 in listOfThingsToRemove)
-                { 
-                    var newVal = sval.Replace(r1.ToString(), "");
-
-                    sval = newVal;
-                }
-
-                return CharacterSpan.FromString(sval);
+                    val = remove(val, r1);
             }
 
             return val;
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? padleft(string? val, string? padchar, int totalLen)
-        {
-            if(val == null || padchar == null || padchar.Length == 0)
-                return val;
-
-            return val.PadLeft(totalLen, padchar.FirstOrDefault());
-        }
-
-        /*****************************************************************************/
-        // ??? Change first param to object
-        public string? padright(string val, string padchar, int totalLen)
-        {
-            if(val == null || padchar == null || padchar.Length == 0)
-                return val;
-
-            return val.PadRight(totalLen, padchar.FirstOrDefault());
         }
 
         /*****************************************************************************/
@@ -557,23 +579,42 @@ namespace JTran.Expressions
             return val;
         }
 
+        #endregion
+
+        #region pad
+
+        /*****************************************************************************/
+        public object? padright(object? val, object? pad, int totalLen)
+        {
+            return Pad(val, pad, totalLen, false);
+        }
+
+        /*****************************************************************************/
+        public object? padleft(object? val, object? pad, int totalLen)
+        {
+            return Pad(val, pad, totalLen, true);
+        }
+
+        #endregion
+
         /*****************************************************************************/
         public int stringlength(object? val)
         {
             if(val is null)
                 return 0;
 
-            if(val is string str)
-                return str.Length;
+            if(val is ICharacterSpan cspan)
+                return cspan.Length;
 
-            return val.AsCharacterSpan().Length;
+            return val!.ToString().Length;
         }
 
         /*****************************************************************************/
-        // ??? Change first param to object
-        public int indexof(string val, string substr)
+        public int indexof(object? val, object? search)
         {
-            return val?.IndexOf(substr) ?? -1;
+            return Match(val, search, -1, 
+                        (val, search)=> val.IndexOf(search), 
+                        (val, search)=> val.IndexOf(search));
         }
 
         /*****************************************************************************/
@@ -783,6 +824,68 @@ namespace JTran.Expressions
         public object iif(bool condition, object first, object second)
         {
             return condition ? first : second;  
+        }
+
+        #endregion
+
+        #region Private
+        
+        /*****************************************************************************/
+        private object? Transform(object? val, Func<char, (bool Use, char NewVal)> cspanTransform, Func<string, string> strTransform)
+        {
+            if(val == null)
+                return null;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.Transform(cspanTransform);
+            
+            return strTransform(val.ToString()!);
+        }
+        
+        /*****************************************************************************/
+        private object? Pad(object? val, object? pad, int totalLen, bool left)
+        {
+            if(pad == null || totalLen == 0)
+                return val;
+
+            var padstr = pad.ToString();
+
+            if(padstr!.Length == 0)
+                return val;
+
+            if(val == null)
+                val = CharacterSpan.Empty;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.Pad(padstr[0], totalLen, left);
+
+            var valStr = val.ToString();
+
+            return left ? valStr!.PadLeft(totalLen, padstr[0]) : valStr!.PadRight(totalLen, padstr[0]);
+        }
+
+        /*****************************************************************************/
+        private T Match<T>(object? val, object? substr, T tDefault, Func<ICharacterSpan, ICharacterSpan, T> cspanMatches, Func<string, string, T> strMatches)
+        {
+            if(val == null || substr == null)
+                return tDefault;
+
+            if(val is ICharacterSpan cspan)
+            {
+                var search = substr.AsCharacterSpan(true);
+
+                if(search.Length == 0) 
+                    return tDefault;
+
+                return cspanMatches(cspan, search);
+            }
+
+            var searchStr = substr.ToString();
+
+            if(searchStr.Length == 0) 
+                return tDefault;
+
+            return strMatches(val.ToString(), searchStr);
         }
 
         #endregion

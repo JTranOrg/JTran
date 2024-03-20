@@ -310,7 +310,7 @@ namespace JTran.Expressions
 
             if(context.Data.IsDictionary())
             {
-                var indexVal = _expr.Evaluate(context).ToString();
+                var indexVal = _expr.Evaluate(context).AsCharacterSpan();
                 var rtnVal   = context.Data.GetPropertyValue(indexVal);
 
                 return rtnVal;

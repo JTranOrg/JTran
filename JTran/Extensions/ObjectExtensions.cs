@@ -29,7 +29,7 @@ namespace JTran.Extensions
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal class GroupKey : Dictionary<string, object>
+    internal class GroupKey : Dictionary<ICharacterSpan, object>
     {
         public override string ToString()
         {
@@ -71,7 +71,7 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        internal static GroupKey GetGroupByKey(this object obj, IExpression groupExpr, ExpressionContext context, IList<string> fields)
+        internal static GroupKey GetGroupByKey(this object obj, IExpression groupExpr, ExpressionContext context, IList<ICharacterSpan> fields)
         {
             context.Data = obj;
 
@@ -231,98 +231,6 @@ namespace JTran.Extensions
         #region Private
 
         /****************************************************************************/
-        private static void GetValue(this object obj, List<object> results, ICharacterSpan expression, ExpressionContext context, ref bool isList)
-        {
-            var parts  = expression.Split('.'); 
-            var nParts = parts.Count;
-
-            for(var i = 0; i < (nParts - 1); ++i)
-            { 
-                var part    = parts[i];
-                var partVal = obj.GetPropertyValue(part); 
-
-                // Array object without brackets
-                if(partVal is IList array) // ??? IEnumerable
-                {
-                    isList = true;
-
-                    foreach(var child in array)
-                        child.GetValue(results, string.Join(".", parts, i+1, parts.Count - i - 1), context, ref isList); // ??? need join that returns ICharacterSpan
-
-                    return;
-                }
-                    
-                obj = partVal;
-
-                if(obj == null)
-                    return;
-            }
-
-            var partName = parts[nParts-1];
-            var val      = obj.GetPropertyValue(partName); 
-
-            if(val == null)
-                return;
-
-            if(!val.IsDictionary() && val is IList list) // ??? IEnumerable
-            { 
-                isList = true;
-
-                foreach(var child in list)
-                    results.Add(child);
-            }
-            else
-                results.Add(val);
-        }
-
-        /****************************************************************************/
-        [Obsolete]
-        private static void GetValue(this object obj, List<object> results, string expression, ExpressionContext context, ref bool isList)
-        {
-            var parts  = expression.ToString().Split(new char[] {'.'} );  // ??? Use iCharacterSpan.Split
-            var nParts = parts.Length;
-
-            for(var i = 0; i < (nParts - 1); ++i)
-            { 
-                var part = parts[i].Trim();
-                var partObj = obj.GetPropertyValue(part);
-
-                // Array object without brackets
-                if(partObj is IList array)
-                {
-                    isList = true;
-
-                    foreach(var child in array)
-                        child.GetValue(results, string.Join(".", parts, i+1, parts.Length - i - 1), context, ref isList);
-
-                    return;
-                }
-                    
-                obj = partObj;
-
-                if(obj == null)
-                    return;
-            }
-
-            var partName = parts[nParts-1];
-            var val      = obj.GetPropertyValue(partName);
-
-            if(val == null)
-                return;
-
-            if(!val.IsDictionary() && val is IList list)
-            { 
-                isList = true;
-
-                foreach(var child in list)
-                    results.Add(child);
-            }
-            else
-                results.Add(val);
-        }
-
-
-        /****************************************************************************/
         public static bool GetParent(this object obj, ref object? parent)
         {        
             if(obj is IJsonToken jobj)
@@ -332,18 +240,6 @@ namespace JTran.Extensions
             }
 
             return false;
-        }
-
-        /****************************************************************************/
-        private static bool GetAncestor(this object obj, ICharacterSpan key, ref object? parent)
-        {        
-           if(obj is IJsonToken jobj)
-            { 
-                parent = jobj.Parent;
-                return true;
-            }
-
-            return false; 
         }
 
         /****************************************************************************/

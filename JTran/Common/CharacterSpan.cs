@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -36,15 +37,17 @@ namespace JTran.Common
 
         void                    CopyTo(char[] buffer, int offset, int length = -1);
         bool                    StartsWith(string compare);
-        int                     IndexOf(char ch, int start = 0);
-        int                     IndexOf(ICharacterSpan find, int start = 0);
         ICharacterSpan          SubstringBefore(char ch, int skip = 0);
         ICharacterSpan          SubstringAfter(char ch);
-        ICharacterSpan          Substring(int index, int length = -1000);
+        ICharacterSpan          Substring(int index, int length = -1000, bool trim = false);
         ICharacterSpan          FormatForJsonOutput();
         IList<ICharacterSpan>   Split(char separator, bool trim = true);
         IList<ICharacterSpan>   Split(ICharacterSpan separator, bool trim = true);
         bool                    Equals(string compare);
+        ICharacterSpan          Trim(bool start = true, bool end = true);
+        ICharacterSpan          Transform(Func<char, (bool Use, char NewVal)> transform);
+        ICharacterSpan          Pad(char padChar, int length, bool left);
+        ICharacterSpan          Remove(ICharacterSpan remove);
 
         #region Default Implementations
 
@@ -140,9 +143,112 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
+        public bool Find(ICharacterSpan find, out int index)
+        {
+            index = IndexOf(find);
+
+            return index != -1;
+        }
+
+        /****************************************************************************/
         public bool Contains(char ch)
         {
             return IndexOf(ch) != -1;
+        }
+
+        /****************************************************************************/
+        public bool EndsWith(ICharacterSpan ending)
+        {
+            var endLen = ending?.Length ?? 0;
+
+            if(endLen == 0 || endLen > this.Length)
+                return false;
+
+            if(endLen == this.Length)
+                return this.Equals(ending!);
+
+            var x = this.Length-1;
+
+            for(var i = endLen-1; i >= 0; --i)
+                if(this[x--] != ending![i])
+                    return false;
+
+            return true;
+        }
+
+        
+        /****************************************************************************/
+        public int IndexOf(char ch, int start = 0)
+        {
+            for(var i = start; i < this.Length; ++i)
+            { 
+                if(this[i] == ch)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /****************************************************************************/
+        public int IndexOf(ICharacterSpan find, int start = 0)
+        {
+            var thisLength = this.Length;
+            var findLength = find.Length;
+
+            if(thisLength < findLength || findLength == 0 || thisLength == 0)
+                return -1;
+
+            var i = start;
+
+            while((thisLength-i) >= findLength)
+            {
+                var index = this.IndexOf(find[0], i);
+
+                if(index == -1)
+                    return -1;
+                
+                for(var j = 1; j < findLength-1; ++j)
+                {
+                    if(this[index + j] != find[j])
+                        goto Next;
+                }
+
+                return index;
+                
+              Next:
+                ++i;
+            }
+
+            return -1;
+        }
+
+        /****************************************************************************/
+        public int LastIndexOf(ICharacterSpan find, int start = 0)
+        {
+            var thisLength = this.Length;
+            var findLength = find.Length;
+
+            if(thisLength < findLength || findLength == 0 || thisLength == 0)
+                return -1;
+
+            var index = this.IndexOf(find, start);
+
+            if(index == -1)
+                return -1;
+            
+            while((start + (findLength*2)) < thisLength)
+            {
+                start += findLength;
+
+                var newIndex = this.IndexOf(find, start);
+
+                if(newIndex == -1)
+                    return index;
+
+                index = newIndex;
+            }
+
+            return index;
         }
 
         #endregion
@@ -156,8 +262,8 @@ namespace JTran.Common
         private int     _offset;
         private int     _length;
         private int     _hashCode = 0;
-        private bool    _hasEscapeCharacters;
         private string? _str;
+        private bool    _hasEscapeCharacters;
 
         private static Dictionary<string, ICharacterSpan> _cache = new();
 
@@ -211,8 +317,10 @@ namespace JTran.Common
 
         #endregion
 
+        internal bool Cached { get; set; }
+
         /****************************************************************************/
-        internal static ICharacterSpan Clone(ICharacterSpan source)
+        internal static CharacterSpan Clone(ICharacterSpan source)
         {
             if(source is CharacterSpan cspan)
             {
@@ -247,7 +355,10 @@ namespace JTran.Common
             var cspan = new CharacterSpan(s);
 
             if(cacheable)
-                _cache.TryAdd(s, cspan);
+            { 
+                if(_cache.TryAdd(s, cspan))
+                    cspan.Cached = true;
+            }
 
             cspan._str = s;
 
@@ -268,25 +379,30 @@ namespace JTran.Common
         }
                         
         /****************************************************************************/
-        internal static ICharacterSpan Join(IList<ICharacterSpan> list, char separator)
+        internal static ICharacterSpan Join(IEnumerable<ICharacterSpan> list, char separator)
         {
-            var length = list.Count-1;
+            var listLen = 0;
+            var length = 0;
 
             foreach(var item in list) 
+            { 
                 length += item.Length;
-            
+                ++listLen;
+            }
+
+            length += listLen-1;
+           
             var buffer = new char[length];
             var offset = 0;
+            var i = 0;
 
-            for(var i = 0; i < list.Count; ++i)
+            foreach(var item in list) 
             { 
-                var item = list[i];
-
                 item.CopyTo(buffer, offset);
 
                 offset += item.Length;
 
-                if(i < list.Count-1)
+                if(i++ < listLen-1)
                     buffer[offset++] = separator;
             }
 
@@ -315,51 +431,6 @@ namespace JTran.Common
             }
 
             return true;
-        }
-
-        /****************************************************************************/
-        public int IndexOf(char ch, int start = 0)
-        {
-            for(var i = start; i < this.Length; ++i)
-            { 
-                if(this[i] == ch)
-                    return i;
-            }
-
-            return -1;
-        }
-
-        /****************************************************************************/
-        public int IndexOf(ICharacterSpan find, int start = 0)
-        {
-            var thisLength = this.Length;
-            var findLength = find.Length;
-
-            if(thisLength < findLength || findLength == 0 || thisLength == 0)
-                return -1;
-
-            var i = start;
-
-            while((thisLength-i) >= findLength)
-            {
-                var index = this.IndexOf(find[0], i);
-
-                if(index == -1)
-                    return -1;
-                
-                for(var j = 1; j < findLength-1; ++j)
-                {
-                    if(this[index + j] != find[j])
-                        goto Next;
-                }
-
-                return index;
-                
-              Next:
-                ++i;
-            }
-
-            return -1;
         }
 
         /****************************************************************************/
@@ -395,9 +466,136 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public ICharacterSpan Substring(int index, int length = -1000)
+        public ICharacterSpan Substring(int index, int length = -1000, bool trim = false)
         {
-            return new CharacterSpan(this, index, length == -1000 ? this.Length - index : (length < 0 ? this.Length - index + length : length));
+            length = length == -1000 ? this.Length - index : (length < 0 ? this.Length - index + length : length);
+
+            if(length <= 0)
+                return CharacterSpan.Empty;
+
+            length = Math.Min(length, this.Length - index);
+
+            if(trim)
+                return Trim(_source!, _offset + index, length);
+
+            return new CharacterSpan(_source!, _offset + index, length);
+        }
+
+        /****************************************************************************/
+        public ICharacterSpan Transform(Func<char, (bool Use, char NewVal)> transform)
+        {
+            if(this.Length == 0)
+                return CharacterSpan.Empty;
+
+            if(!this.Cached)
+                return TransformInPlace(transform);
+
+            return TransformOutOfPlace(transform);
+        }
+
+        /****************************************************************************/
+        public ICharacterSpan Pad(char padChar, int length, bool left)
+        {
+            if(this.Length >= length)
+                return this;
+
+            var buffer = new char[length];
+
+            if(left)
+            { 
+                for(var i = 0; i < length - this.Length; ++i)
+                    buffer[i] = padChar;
+              
+                if(_length > 0)
+                    Array.Copy(_source, _offset, buffer, length - this.Length, _length);
+            }
+            else
+            {
+                if(_length > 0)
+                    Array.Copy(_source, _offset, buffer, 0, _length);
+
+                for(var i = _length; i < length; ++i)
+                    buffer[i] = padChar;
+            }
+
+            return new CharacterSpan(buffer, 0, length);
+        }
+
+        /****************************************************************************/
+        public ICharacterSpan Remove(ICharacterSpan remove)
+        {
+            if(this.Length == 0 || this.Length < remove.Length)
+                return this;
+
+            if(this.Equals(remove))
+                return CharacterSpan.Empty;
+
+            if(this.Cached)
+                return RemoveOutOfPlace(remove);
+
+            return RemoveInPlace(remove);
+        }
+
+        /****************************************************************************/
+        private ICharacterSpan RemoveInPlace(ICharacterSpan remove)
+        {
+            ICharacterSpan thisSpan = this;
+            var start = 0;
+            var removeLen = remove.Length;
+            var removed = false;
+
+            while(true)
+            {
+                var index = thisSpan.IndexOf(remove, start);
+
+                if(index == -1)
+                    break;
+
+                if(index == this.Length - removeLen)
+                {
+                    _length -= removeLen;
+                    removed = true;
+                    break;
+                }
+                else if(index == 0)
+                {
+                    _length -= removeLen;
+                    _offset += removeLen;
+                    removed = true;
+                    continue;
+                }
+
+                var src = _offset + index + removeLen;
+                var dst = _offset + index;
+                var len = _length - index - removeLen;
+
+                Array.Copy(_source, src, _source, dst, len);
+
+                start += (index - start);
+                _length -= removeLen;
+
+                removed = true;
+            }
+
+            if(removed)
+            {
+                _str = null;
+                _hashCode = 0;
+            }
+
+            return this;
+        }
+
+        /****************************************************************************/
+        private ICharacterSpan RemoveOutOfPlace(ICharacterSpan remove)
+        {
+            ICharacterSpan thisSpan = this;
+            var index = thisSpan.IndexOf(remove);
+
+            if(index == -1)
+                return this;
+
+            return Clone(this).RemoveInPlace(remove);
         }
 
         /****************************************************************************/
@@ -413,7 +611,13 @@ namespace JTran.Common
             {
                 var ch = this[i];
 
-                if(_escapeCharacters.ContainsKey(ch))
+                if(ch == '\\' ||
+                   ch == '"'  ||
+                   ch == '\r' ||
+                   ch == '\n' ||
+                   ch == '\t' ||
+                   ch == '\f' ||
+                   ch == '\b')
                 {
                     var replacement = _escapeCharacters[ch];
 
@@ -462,7 +666,7 @@ namespace JTran.Common
 
             return true;
         }
-        
+       
         /****************************************************************************/
         public virtual void CopyTo(char[] buffer, int offset, int length = -1)
         {
@@ -483,7 +687,7 @@ namespace JTran.Common
 
             while(start < _length) 
             { 
-                var index = this.IndexOf(separator, start);
+                var index = cspan.IndexOf(separator, start);
 
                 if(index == -1)
                 {
@@ -512,7 +716,7 @@ namespace JTran.Common
 
             while(start < _length) 
             { 
-                var index = this.IndexOf(separator, start);
+                var index = cspan.IndexOf(separator, start);
 
                 if(index == -1)
                 {
@@ -536,20 +740,56 @@ namespace JTran.Common
 
             return new CharacterSpan(source!, offset, length, hasEscapeCharacters);
         }
-
+        
         /****************************************************************************/
-        internal static ICharacterSpan Trim(char[] source, int offset, int length, bool hasEscapeCharacters = false)
+        public ICharacterSpan Trim(bool start = true, bool end = true)
         {
-            var nonWhitespaceBegin = IndexOfNonWhiteSpace(source, offset, length);
+            if(this.Length == 0)
+                return CharacterSpan.Empty;
+
+            var nonWhitespaceBegin = start ? IndexOfNonWhiteSpace(_source, _offset, _length) : _offset;
 
             if(nonWhitespaceBegin == -1)
                 return CharacterSpan.Empty;
 
-            var nonWhitespaceEnd = LastIndexOfNonWhiteSpace(source, nonWhitespaceBegin, length - (nonWhitespaceBegin - offset));
-            
-            length = nonWhitespaceEnd - nonWhitespaceBegin + 1;
+            var newLength = _length - (nonWhitespaceBegin - _offset);
 
-            return new CharacterSpan(source!, nonWhitespaceBegin, length, hasEscapeCharacters);
+            var nonWhitespaceEnd = end ? LastIndexOfNonWhiteSpace(_source, nonWhitespaceBegin, newLength - (nonWhitespaceBegin - _offset)) : _offset + newLength;
+            
+            newLength = nonWhitespaceEnd - nonWhitespaceBegin + 1;
+
+            if(nonWhitespaceBegin == _offset && newLength == _length)
+                return this;
+
+            if(this.Cached)
+                return new CharacterSpan(_source!, nonWhitespaceBegin, newLength, this.HasEscapeCharacters);
+
+            this._offset = nonWhitespaceBegin;
+            this._length = newLength;
+            this._str = null;
+            this._hashCode = 0;
+
+            return this;
+        }
+
+        /****************************************************************************/
+        internal static ICharacterSpan Trim(char[]? source, int offset, int length, bool hasEscapeCharacters = false, bool start = true, bool end = true)
+        {
+            if(source == null || length == 0)
+                return CharacterSpan.Empty;
+
+            var nonWhitespaceBegin = start ? IndexOfNonWhiteSpace(source, offset, length) : offset;
+
+            if(nonWhitespaceBegin == -1)
+                return CharacterSpan.Empty;
+
+            var newLength = Math.Min(length, source.Length - offset);
+
+            var nonWhitespaceEnd = end ? LastIndexOfNonWhiteSpace(source, nonWhitespaceBegin, newLength - (nonWhitespaceBegin - offset)) : offset + newLength;
+            
+            newLength = nonWhitespaceEnd - nonWhitespaceBegin + 1;
+
+            return new CharacterSpan(source!, nonWhitespaceBegin, newLength, hasEscapeCharacters);
         }
 
         /****************************************************************************/
@@ -620,6 +860,12 @@ namespace JTran.Common
             }
 
             return hashCode;
+
+            /****************************************************************************/
+            static int CombineHashCodes(int h1, int h2) 
+            {
+                return (((h1 << 5) + h1) ^ h2);
+            }
         }
 
         /****************************************************************************/
@@ -724,11 +970,79 @@ namespace JTran.Common
 
             return false;
         }
+                       
+        /****************************************************************************/
+        private ICharacterSpan TransformOutOfPlace(Func<char, (bool Use, char NewVal)> transform)
+        {
+            char[]? buffer = null;
+            var index = 0;
+            var notUse = 0;
+
+            for(int i = 0; i < this.Length; ++i)
+            {
+                var oldVal = this[i];
+                var result = transform(oldVal);
+
+                if(result.Use && oldVal == result.NewVal && buffer == null)
+                    continue;
+
+                if(this.Cached && buffer == null)
+                { 
+                     buffer = new char[this.Length];
+
+                     if(i > 0)
+                        Array.Copy(_source, _offset, buffer, 0, i);
+
+                    index = i - notUse; 
+                }
+
+                if(!result.Use)
+                { 
+                    ++notUse;
+                    continue;
+                }
+
+                buffer![index++] = result.NewVal;
+            }
+
+            if(buffer == null)
+                return this;
+
+            return new CharacterSpan(buffer, 0, index);
+        }
 
         /****************************************************************************/
-        private static int CombineHashCodes(int h1, int h2) 
+        private ICharacterSpan TransformInPlace(Func<char, (bool Use, char NewVal)> transform)
         {
-            return (((h1 << 5) + h1) ^ h2);
+            var index = 0;
+            var notUse = 0;
+            var length = this.Length;
+
+            for(int i = 0; i < length; ++i)
+            {
+                var oldVal = this[i];
+                var result = transform(oldVal);
+
+                if(result.Use && oldVal == result.NewVal && notUse == 0)
+                { 
+                    ++index;
+                    continue;
+                }
+
+                this._str = null;
+                this._hashCode = 0;
+
+                if(!result.Use)
+                { 
+                    ++notUse;
+                    --this._length;
+                    continue;
+                }
+
+                _source![_offset + index++] = result.NewVal;
+            }
+
+            return this;
         }
 
         #endregion

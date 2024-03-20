@@ -25,9 +25,7 @@ namespace JTran
 
             if(value is IEnumerable<object> list)
             {
-                var numItems = list.Count();
-
-                if(numItems > 0)
+                if(list.Any())
                 { 
                     output.StartChild(); 
 

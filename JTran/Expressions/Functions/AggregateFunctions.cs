@@ -32,7 +32,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class AggregateFunctions
     {
-        private readonly IDictionary<string, IComparer<object>> _sortComparers = new Dictionary<string, IComparer<object>>();
+        private readonly Dictionary<ICharacterSpan, IComparer<object>> _sortComparers = new();
 
         /*****************************************************************************/
         public int count(object val)
@@ -178,7 +178,7 @@ namespace JTran.Expressions
 
         /*****************************************************************************/
         [IgnoreParameterCount]
-        public object? sort(object expr, params string[] sortFields) // ??? ICharacterSpan
+        public object? sort(object expr, params object?[] sortFields) 
         {
             if(expr is null)
                 return null;
@@ -188,9 +188,10 @@ namespace JTran.Expressions
                 if(list.IsSingle() || sortFields.Length == 0)
                     return list;
 
+                var chSortFields = sortFields.Where(f=> f != null).Select(f=> f!.AsCharacterSpan(true));
                 var copy = new List<object>(list);
 
-                copy.Sort(GetComparer(sortFields));
+                copy.Sort(GetComparer(chSortFields));
 
                 return copy;
             }
@@ -206,33 +207,38 @@ namespace JTran.Expressions
         {
             private readonly IList<SortField> _sortFields = new List<SortField>();
 
+            private static ICharacterSpan _asc        = CharacterSpan.FromString("asc");
+            private static ICharacterSpan _desc       = CharacterSpan.FromString("desc");
+            private static ICharacterSpan _ascSpaced  = CharacterSpan.FromString(" asc");
+            private static ICharacterSpan _descSpaced = CharacterSpan.FromString(" desc");
+
             /*****************************************************************************/
-            internal SortComparer(string[] sortFields) // ??? ICharacterSpan
+            internal SortComparer(IEnumerable<ICharacterSpan> sortFields)
             {
                 foreach(var sortField in sortFields)
                 {
-                    if(sortField == "asc")
+                    if(sortField.Equals(_asc))
                     {
                         _sortFields.Last().Ascending = true;
                         continue;
                     }
 
-                    if(sortField == "desc")
+                    if(sortField.Equals(_desc))
                     {
                         _sortFields.Last().Ascending = false;
                         continue;
                     }
 
-                    var field = new SortField { Name = sortField.Trim(), Ascending = true };
+                    var field = new SortField { Name = sortField, Ascending = true };
 
-                    if(field.Name.EndsWith(" desc"))
+                    if(field.Name.EndsWith(_descSpaced))
                     { 
                         field.Ascending = false;
-                        field.Name = field.Name.Substring(0, field.Name.Length - 4).Trim();
+                        field.Name = field.Name.Substring(0, field.Name.Length - 4, trim: true);
                     }
-                    else if(field.Name.EndsWith(" asc"))
+                    else if(field.Name.EndsWith(_ascSpaced))
                     { 
-                        field.Name = field.Name.Substring(0, field.Name.Length - 3).Trim();
+                        field.Name = field.Name.Substring(0, field.Name.Length - 3, trim: true);
                     }
 
                     _sortFields.Add(field);
@@ -258,15 +264,15 @@ namespace JTran.Expressions
             /*****************************************************************************/
             private class SortField
             {
-                internal string Name      { get; set; } = ""; // ??? ICharacterSpan
-                internal bool   Ascending { get; set; } = true;
+                internal ICharacterSpan Name      { get; set; } = CharacterSpan.Empty;
+                internal bool           Ascending { get; set; } = true;
             }
         }
 
         /*****************************************************************************/
-        private IComparer<object> GetComparer(string[] sortFields)// ??? ICharacterSpan
+        private IComparer<object> GetComparer(IEnumerable<ICharacterSpan> sortFields)
         {
-            var key = string.Join("", sortFields);
+            var key = CharacterSpan.Join(sortFields, '_');
 
             if(_sortComparers.ContainsKey(key))
                 return _sortComparers[key];

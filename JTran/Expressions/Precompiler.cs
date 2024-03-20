@@ -287,7 +287,9 @@ namespace JTran.Expressions
         {
             if(outputTokens.Count > numOperators)
             { 
-                for(var i = 1; i < outputTokens.Count(); ++i)
+                var numTokens = outputTokens.Count;
+
+                for(var i = 1; i < numTokens; ++i)
                 { 
                     var op = outputTokens[i];
 

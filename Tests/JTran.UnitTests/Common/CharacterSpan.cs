@@ -75,6 +75,34 @@ namespace JTran.UnitTests
             Assert.IsFalse(c1.Contains(c3));
         }
 
+        [TestMethod]
+        public void CharacterSpan_EndsWith()
+        {
+            var source = "abc12345678def".ToArray();
+            ICharacterSpan c1 = new CharacterSpan(source, 0, 3);
+            ICharacterSpan c2 = new CharacterSpan(source, 3, 8);
+            ICharacterSpan c3 = new CharacterSpan(source, 11, 3);
+
+            Assert.IsFalse(c1.EndsWith(CharacterSpan.FromString("")));
+            Assert.IsFalse(c1.EndsWith(null));
+            Assert.IsFalse(c2.EndsWith(CharacterSpan.FromString("hashkjdsakhdjsadas")));
+            Assert.IsFalse(c2.EndsWith(CharacterSpan.FromString("123")));
+
+            Assert.IsTrue(c1.EndsWith(CharacterSpan.FromString("abc")));
+            Assert.IsTrue(c1.EndsWith(CharacterSpan.FromString("c")));
+            Assert.IsTrue(c1.EndsWith(CharacterSpan.FromString("bc")));
+            Assert.IsTrue(c2.EndsWith(CharacterSpan.FromString("678")));
+            Assert.IsTrue(c2.EndsWith(CharacterSpan.FromString("8")));
+            Assert.IsTrue(c3.EndsWith(CharacterSpan.FromString("def")));
+            Assert.IsTrue(c3.EndsWith(CharacterSpan.FromString("ef")));
+
+            Assert.IsFalse(c1.EndsWith(CharacterSpan.FromString("fr")));
+            Assert.IsFalse(c1.EndsWith(CharacterSpan.FromString("abcd")));
+            Assert.IsFalse(c2.EndsWith(CharacterSpan.FromString("876")));
+            Assert.IsFalse(c2.EndsWith(CharacterSpan.FromString("123")));
+            Assert.IsFalse(c1.EndsWith(CharacterSpan.FromString("cdef")));
+        }
+
         #region IndexOf
 
         [TestMethod]
@@ -90,6 +118,20 @@ namespace JTran.UnitTests
             Assert.AreEqual(2,  c2.IndexOf(find));
             Assert.AreEqual(2,  c2.IndexOf(find, 2));
             Assert.AreEqual(-1, c2.IndexOf(CharacterSpan.FromString("xyz")));
+        }
+
+        #endregion
+        #region IndexOf
+
+        [TestMethod]
+        public void CharacterSpan_LastIndexOf_cspan()
+        {
+            Assert.AreEqual(2,   CharacterSpan.FromString("bob").LastIndexOf(CharacterSpan.FromString("b")));
+            Assert.AreEqual(1,   CharacterSpan.FromString("bob").LastIndexOf(CharacterSpan.FromString("ob")));
+            Assert.AreEqual(0,   CharacterSpan.FromString("bosh").LastIndexOf(CharacterSpan.FromString("bo")));
+            Assert.AreEqual(-1,  CharacterSpan.FromString("bosh").LastIndexOf(CharacterSpan.FromString("mary")));
+            Assert.AreEqual(-1,  CharacterSpan.FromString("bosh").LastIndexOf(CharacterSpan.FromString("")));
+            Assert.AreEqual(-1,  CharacterSpan.FromString("").LastIndexOf(CharacterSpan.FromString("mary")));
         }
 
         [TestMethod]
@@ -171,14 +213,52 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("    bob ", 0, 8, "bob")]
-        [DataRow("    bob ", 1, 7, "bob")]
-        [DataRow("    bob .   fred", 1, 7, "bob")]
-        [DataRow("    bob .   fred   ", 9, 9, "fred")]
-        [DataRow("    bob . \r\tfred \n ", 9, 9, "fred")]
-        public void CharacterSpan_Trim(string src, int offset, int length, string result)
+        [DataRow("    bob ", 0, 8, "bob", true, true)]
+        [DataRow("    bob ", 1, 7, "bob", true, true)]
+        [DataRow("    bob .   fred", 1, 7, "bob", true, true)]
+        [DataRow("    bob .   fred   ", 9, 9, "fred", true, true)]
+        [DataRow("    bob . \r\tfred \n ", 9, 9, "fred", true, true)]
+        [DataRow("    bob .  fred  ", 9, 9, "fred", true, true)]
+        public void CharacterSpan_Trim_static(string src, int offset, int length, string result, bool start, bool end)
         {
             Assert.AreEqual(result,  CharacterSpan.Trim(src.ToArray(), offset, length).ToString());
+        }
+
+        [TestMethod]
+        public void CharacterSpan_Trim()
+        {
+            Assert.AreEqual("",     CharacterSpan.FromString("", false).Trim(true, true).ToString());
+            Assert.AreEqual("",     CharacterSpan.FromString(" \r\n\t ", false).Trim(true, true).ToString());
+            Assert.AreEqual("bob",  CharacterSpan.FromString(" bob ", false).Trim(true, true).ToString());
+            Assert.AreEqual("bob ", CharacterSpan.FromString(" bob ", false).Trim(true, false).ToString());
+            Assert.AreEqual(" bob", CharacterSpan.FromString(" bob ", false).Trim(false, true).ToString());
+
+            Assert.AreEqual("",     CharacterSpan.FromString("", true).Trim(true, true).ToString());
+            Assert.AreEqual("",     CharacterSpan.FromString(" \r\n\t ", true).Trim(true, true).ToString());
+            Assert.AreEqual("bob",  CharacterSpan.FromString(" bob ", true).Trim(true, true).ToString());
+            Assert.AreEqual("bob ", CharacterSpan.FromString(" bob ", true).Trim(true, false).ToString());
+            Assert.AreEqual(" bob", CharacterSpan.FromString(" bob ", true).Trim(false, true).ToString());
+        }
+
+        [TestMethod]
+        public void CharacterSpan_Transform()
+        {
+            TransformTest("",      "",     (ch)=> (true, char.ToLower(ch)),  false);
+            TransformTest("TED",   "ted",  (ch)=> (true, char.ToLower(ch)),  false);
+            TransformTest("john",  "JOHN", (ch)=> (true, char.ToUpper(ch)),  false);
+            TransformTest("fair",  "fir",   (ch)=> (ch != 'a', ch),          false);
+            TransformTest("linda", "linda", (ch)=> (true, char.ToLower(ch)), false);
+
+            TransformTest("",      "",     (ch)=> (true, char.ToLower(ch)),  true);
+            TransformTest("BOB",   "bob",  (ch)=> (true, char.ToLower(ch)),  true);
+            TransformTest("bob",   "BOB",  (ch)=> (true, char.ToUpper(ch)),  true);
+            TransformTest("bread", "bred", (ch)=> (ch != 'a', ch),           true);
+            TransformTest("fred",  "fred", (ch)=> (true, char.ToLower(ch)),  true);
+        }
+
+        private void TransformTest(string? input, string? output, Func<char, (bool use, char newVal)> transform, bool cache)
+        {
+            Assert.AreEqual(output, CharacterSpan.FromString(input, cache).Transform(transform).ToString());
         }
 
         [TestMethod]   
@@ -215,6 +295,68 @@ namespace JTran.UnitTests
             Assert.AreEqual("def", parts[1].ToString());
             Assert.AreEqual("ghi", parts[2].ToString());
             Assert.AreEqual("jk",  parts[3].ToString());
+        }
+
+        [TestMethod]   
+        public void CharacterSpan_Substring()
+        {
+            ICharacterSpan c1 = CharacterSpan.FromString("abc.def.ghi.jk");
+            ICharacterSpan c2 = CharacterSpan.FromString(" abc . def .ghi . jk  ");
+
+            Assert.AreEqual("abc", c1.Substring(0, 3).ToString());
+            Assert.AreEqual("def", c1.Substring(4, 3).ToString());
+            Assert.AreEqual("ghi", c1.Substring(8, 3).ToString());
+            Assert.AreEqual("jk",  c1.Substring(12, 2).ToString());
+            Assert.AreEqual("jk",  c1.Substring(12).ToString());
+            Assert.AreEqual("jk",  c1.Substring(12, 5).ToString());
+
+            Assert.AreEqual("abc", c2.Substring(0, 5, true).ToString());
+            Assert.AreEqual("def", c2.Substring(6, 5, true).ToString());
+            Assert.AreEqual("ghi", c2.Substring(12, 4, true).ToString());
+            Assert.AreEqual("jk",  c2.Substring(17, 5, true).ToString());
+            Assert.AreEqual("jk",  c2.Substring(17, 9, true).ToString());
+            Assert.AreEqual("jk",  c2.Substring(17, trim: true).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("",         'a', 8, true,  "aaaaaaaa")]
+        [DataRow("fred",     'a', 8, true,  "aaaafred")]
+        [DataRow("12345678", 'a', 8, true,  "12345678")]
+        [DataRow("1234567",  'a', 8, true,  "a1234567")]
+        [DataRow("b",        'a', 8, true,  "aaaaaaab")]
+        [DataRow("bc",       'a', 8, true,  "aaaaaabc")]
+        [DataRow("",         'a', 8, false, "aaaaaaaa")]
+        [DataRow("fred",     'a', 8, false, "fredaaaa")]
+        [DataRow("12345678", 'a', 8, false, "12345678")]
+        [DataRow("1234567",  'a', 8, false, "1234567a")]
+        [DataRow("b",        'a', 8, false, "baaaaaaa")]
+        [DataRow("bc",       'a', 8, false, "bcaaaaaa")]
+        public void CharacterSpan_Pad(string val, char pad, int len, bool left, string expected)
+        {
+            Assert.AreEqual(expected, CharacterSpan.FromString(val).Pad(pad, len,left).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("bobfred",          "",     "bobfred", false)]
+        [DataRow("",                 "",     "",        false)]
+        [DataRow("bobfred",          "fred", "bob",     false)]
+        [DataRow("bobfred",          "bob",  "fred",    false)]
+        [DataRow("fredtedred",       "ted",  "fredred", false)]
+        [DataRow("fredtedred",       "ted",  "fredred", false)]
+        [DataRow("tedfredtedredted", "ted",  "fredred", false)]
+        [DataRow("john",             "ted",  "john",    false)]
+        [DataRow("bobfred",          "",     "bobfred", true)]
+        [DataRow("",                 "",     "",        true)]
+        [DataRow("bobfred",          "fred", "bob",     true)]
+        [DataRow("bobfred",          "bob",  "fred",    true)]
+        [DataRow("fredtedred",       "ted",  "fredred", true)]
+        [DataRow("fredtedred",       "ted",  "fredred", true)]
+        [DataRow("tedfredtedredted", "ted",  "fredred", true)]
+        [DataRow("fredtedtedtedred", "ted",  "fredred", true)]
+        [DataRow("john",             "ted",  "john",    true)]
+        public void CharacterSpan_Remove(string val, string remove, string expected, bool cached)
+        {
+            Assert.AreEqual(expected, CharacterSpan.FromString(val, cached).Remove(CharacterSpan.FromString(remove)).ToString());
         }
 
         private void TestNumber(string val, decimal expected)

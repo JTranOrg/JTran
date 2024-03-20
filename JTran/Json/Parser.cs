@@ -139,11 +139,13 @@ namespace JTran.Json
             if (_nameCache.ContainsKey(name))
                 return _nameCache[name];
 
-            name = CharacterSpan.Clone(name);
+            var newName = CharacterSpan.Clone(name);
 
-            _nameCache.Add(name, name);
+            _nameCache.Add(newName, newName);
 
-            return name;
+            newName.Cached = true;
+
+            return newName;
         }
 
         /****************************************************************************/

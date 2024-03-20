@@ -59,8 +59,8 @@ namespace JTran.Expressions
             this.Name = name;
 
             var customAttributes = method.CustomAttributes?.ToList();
-            var ignoreType = typeof(IgnoreParameterCount);
-            var literalType = typeof(LiteralParameters);
+            var ignoreType       = typeof(IgnoreParameterCount);
+            var literalType      = typeof(LiteralParameters);
 
             this.IgnoreParams = customAttributes == null ? false : customAttributes.Any(a=> a.AttributeType.Equals(ignoreType));
 

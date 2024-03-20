@@ -14,7 +14,7 @@ using JTran.Common;
 namespace JTran.UnitTests
 {
     [TestClass]
-    [TestCategory("Built-in Functions")]
+    [TestCategory("Aggregate Functions")]
     public class AggregateFunctionsTests
     {
         [TestMethod]

@@ -8,7 +8,7 @@
  *          Purpose: Extension methods for string                 
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
- *    Creation Date: 25 Apr 2020                                             
+ *    Creation Date: 19 Mar 2024                                             
  *                                                                          
  *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
@@ -31,6 +31,14 @@ namespace JTran.Extensions
     /****************************************************************************/
     public static class StringExtensions
     {
+        /****************************************************************************/
+        public static bool Find(this string str, string find, out int index)
+        {
+            index = str.IndexOf(find);
+
+            return index != -1;
+        }
+
         /****************************************************************************/
         public static string SubstringBefore(this string str, string part)
         {            

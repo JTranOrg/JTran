@@ -179,9 +179,9 @@ namespace JTran
         /****************************************************************************/
         private class GroupByComparer : IEqualityComparer<GroupKey>
         {
-            private readonly IEnumerable<string> _fields; // ??? ICharacterSpan
+            private readonly IEnumerable<ICharacterSpan> _fields; 
 
-            public GroupByComparer(IEnumerable<string> fields) // ??? ICharacterSpan
+            public GroupByComparer(IEnumerable<ICharacterSpan> fields) 
             {
                 _fields = fields;
             }
@@ -221,30 +221,28 @@ namespace JTran
             // Get the groups
             IEnumerable<JsonObject>? groups;
             var newContext = new ExpressionContext(null, context);
-            var groupNames = ((_groupBy is ArrayExpression array) ? array.SubExpressions.Select( s=> s.ToString()) : new[] {_groupBy!.ToString() }).ToList();
+            var groupNames = ((_groupBy is ArrayExpression array) ? array.SubExpressions.Select( s=> s.AsCharacterSpan(true)) : new[] {_groupBy!.AsCharacterSpan(true) }).ToList();
 
             var list = enm.ToList(); // No way to avoid loading the entire thing into memory
 
             groups = list.GroupBy
             (
-                (item)=> item.GetGroupByKey(_groupBy, newContext, groupNames),
+                (item)=> item.GetGroupByKey(_groupBy!, newContext, groupNames),
                 (item)=> item,
                 (groupValue, items) => {    
-                                            var newObj = new JsonObject(null); // ??? parent
+                                            var newObj = new JsonObject(context.Data is IJsonToken token ? token.Parent : null);
 
                                             foreach(var item in groupValue)
-                                                newObj.TryAdd(CharacterSpan.FromString(item.Key, true), item.Value);
+                                                newObj.TryAdd(item.Key, item.Value);
 
                                             newObj.TryAdd(_groupItems, items); 
                                                     
                                             return newObj;
-                },
+                                       },
                 new GroupByComparer(groupNames)
             );
 
-            var numGroups = groups.Count();
-
-            if(numGroups == 0)
+            if(!groups.Any())
                 return;
 
             wrap( ()=>

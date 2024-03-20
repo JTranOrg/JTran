@@ -1069,15 +1069,75 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_lowercase_Success()
+        [DataRow("lowercase('')",       "")]
+        [DataRow("lowercase(null)",     null)]
+        [DataRow("lowercase('ABcDeF')", "abcdef")]
+        [DataRow("lowercase('abc')",    "abc")]
+        [DataRow("lowercase('ABC')",    "abc")]
+        public void Compiler_function_lowercase(string expression, string? expected)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("lowercase('ABcDeF')");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("uppercase('')",       "")]
+        [DataRow("uppercase(null)",     null)]
+        [DataRow("uppercase('ABcDeF')", "ABCDEF")]
+        [DataRow("uppercase('abc')",    "ABC")]
+        [DataRow("uppercase('ABC')",    "ABC")]
+        public void Compiler_function_uppercase(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("padleft('',           'abc', 8)", "aaaaaaaa")]
+        [DataRow("padleft(null,         'a',   8)", "aaaaaaaa")]
+        [DataRow("padleft('b',          'ab',  8)", "aaaaaaab")]
+        [DataRow("padleft('12345678',   'a',   8)", "12345678")]
+        [DataRow("padleft('1234567890', 'a',   8)", "1234567890")]
+        [DataRow("padleft('bcde',       'a',   8)", "aaaabcde")]
+        [DataRow("padleft('bcde',       'a',   0)", "bcde")]
+        [DataRow("padleft('bcde',       '',    8)", "bcde")]
+        public void Compiler_function_padleft(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("padright('',           'abc', 8)", "aaaaaaaa")]
+        [DataRow("padright(null,         'a',   8)", "aaaaaaaa")]
+        [DataRow("padright('b',          'ab',  8)", "baaaaaaa")]
+        [DataRow("padright('12345678',   'a',   8)", "12345678")]
+        [DataRow("padright('1234567890', 'a',   8)", "1234567890")]
+        [DataRow("padright('bcde',       'a',   8)", "bcdeaaaa")]
+        [DataRow("padright('bcde',       'a',   0)", "bcde")]
+        [DataRow("padright('bcde',       '',    8)", "bcde")]
+        public void Compiler_function_padright(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("normalizespace('')",        "")]
+        [DataRow("normalizespace(null)",      null)]
+        [DataRow("normalizespace('abcdef')",  "abcdef")]
+        [DataRow("normalizespace('  abc  def  ')",  "abc def")]
+        [DataRow("normalizespace('  a        b   c  de f  ')",  "a b c de f")]
+        public void Compiler_function_normalizespace(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        private void TestStringExpression(string expression, string? expected)
+        {
+            var parser   = new JTranParser();
+            var compiler = new Compiler();
+            var tokens   = parser.Parse(expression);
+            var expr     = compiler.Compile(tokens);
+            var context  = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("abcdef", expression.Evaluate(context).ToString());
+            Assert.AreEqual(expected, expr.Evaluate(context)?.ToString());
         }
 
         [TestMethod]
@@ -1178,15 +1238,18 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_substring_Success()
+        [DataRow("franklin", 0, 5, "frank")]
+        [DataRow("franklin", 5, -1000, "lin")]
+        [DataRow("", 5, 3, "")]
+        public void Compiler_function_substring_Success(string? str, int index, int length, string? result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substring('franklin', 0, 5)");
+            var tokens     = parser.Parse($"substring('{str}', {index}, {length})");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("frank", expression.Evaluate(context).ToString());
+            Assert.AreEqual(result, expression.Evaluate(context)?.ToString());
         }
 
         [TestMethod]
@@ -1202,39 +1265,37 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_substringbefore_Success()
+        [DataRow("franklin", "ran",           "f")]
+        [DataRow("franklin", "lin",           "frank")]
+        [DataRow("franklin", "franklin",      "")]
+        [DataRow("franklin", "bobsyouruncle", "franklin")]
+        [DataRow("beebop",   "/",              "beebop")]
+        public void Compiler_function_substringbefore_Success(string str, string search, string result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringbefore('beebop', 'bop')");
+            var tokens     = parser.Parse($"substringbefore('{str}', '{search}')");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bee", expression.Evaluate(context).ToString());
+            Assert.AreEqual(result, expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
-        public void Compiler_function_substringbefore2_Success()
+        [DataRow("franklin", "frank",   "lin")]
+        [DataRow("franklin", "f",       "ranklin")]
+        [DataRow("franklin", "franklin", "")]
+        [DataRow("franklin", "bobsyouruncle", "")]
+        [DataRow("franklin", "", "franklin")]
+        public void Compiler_function_substringafter_Success(string str, string search, string result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringbefore('beebop', '/')");
+            var tokens     = parser.Parse($"substringafter('{str}', '{search}')");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("beebop", expression.Evaluate(context).ToString());
-        }
-
-        [TestMethod]
-        public void Compiler_function_substringafter_Success()
-        {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringafter('beebop', 'bee')");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-   
-            Assert.AreEqual("bop", expression.Evaluate(context).ToString());
+            Assert.AreEqual(result, expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1247,6 +1308,43 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Foo = "Foo"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.AreEqual("bopFoo", expression.Evaluate(context).ToString());
+        }
+
+        [TestMethod]
+        [DataRow("franklin", "frank",         true)]
+        [DataRow("franklin", "f",             true)]
+        [DataRow("franklin", "franklin",      true)]
+        [DataRow("franklin", "bobsyouruncle", false)]
+        [DataRow("franklin", "",              false)]
+        [DataRow("", "",                      false)]
+        public void Compiler_function_startswith(string str, string search, bool result)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse($"startswith('{str}', '{search}')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(result, expression.Evaluate(context));
+        }
+
+
+        [TestMethod]
+        [DataRow("franklin", "lin",           true)]
+        [DataRow("franklin", "n",             true)]
+        [DataRow("franklin", "franklin",      true)]
+        [DataRow("franklin", "bobsyouruncle", false)]
+        [DataRow("franklin", "",              false)]
+        [DataRow("", "",                      false)]
+        public void Compiler_function_endswith(string str, string search, bool result)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse($"endswith('{str}', '{search}')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(result, expression.Evaluate(context));
         }
 
         [TestMethod]
