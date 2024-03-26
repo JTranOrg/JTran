@@ -39,7 +39,6 @@ namespace JTran
         void StartChild();
         void EndChild();
      
-        // ??? simplify so we can implement a JsonWriter that creates a JsonObject or JsonArray
         void WriteContainerName(ICharacterSpan name);
         void WriteSimpleArrayItem(object item);
         void WriteItem(object item, bool newContainer = true);
@@ -232,7 +231,7 @@ namespace JTran
         {
             StartChild();
 
-            if(val is JsonObject expObject)
+            if(val is IObject expObject)
             { 
                 this.WriteContainerName(name);
                 
@@ -337,14 +336,6 @@ namespace JTran
         /****************************************************************************/
         protected abstract void AppendLine(char ch);
         
-        /****************************************************************************/
-        [Obsolete]
-        protected abstract void AppendLine(string line);
-
-        /****************************************************************************/
-        [Obsolete]
-        protected abstract void Append(string text);
-
         /****************************************************************************/
         protected abstract void AppendLine(ICharacterSpan line);
 

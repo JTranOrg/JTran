@@ -78,7 +78,7 @@ namespace JTran
         /****************************************************************************/
         private protected IValue InternalCreateValue(ICharacterSpan? sval, bool name, long lineNumber)
         {
-            if(sval.Length == 0)
+            if(sval == null || sval.Length == 0)
                 throw new ArgumentException();
 
             if(sval![0] != '#' || sval.Length == 1) // Allow "#" as a string literal
@@ -92,7 +92,7 @@ namespace JTran
 
                 try
                 { 
-                    return new ExpressionValue(expr!.ToString());
+                    return new ExpressionValue(expr);
                 }
                 catch(JsonParseException ex)
                 {

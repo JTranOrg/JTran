@@ -143,8 +143,6 @@ namespace JTran.Json
 
             _nameCache.Add(newName, newName);
 
-            newName.Cached = true;
-
             return newName;
         }
 

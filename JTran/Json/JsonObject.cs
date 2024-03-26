@@ -48,5 +48,14 @@ namespace JTran
 
             return null;
         }
+        
+        /****************************************************************************/
+        public void ForEachProperty(Action<ICharacterSpan, object> onProperty)
+        {
+            foreach(var kv in this)
+            {
+                onProperty(kv.Key, kv.Value);
+            }
+        }
     }
 }

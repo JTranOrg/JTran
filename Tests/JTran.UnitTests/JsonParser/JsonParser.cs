@@ -186,9 +186,9 @@ namespace JTran.UnitTests
         [DataRow("array_not_supported")]
         public void JsonParser_Parse_array(string fileName)
         {
-            var data       = LoadSample(fileName);
-            using var parser     = new Json.Parser(new JsonModelBuilder());
-            using var strm = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            var data         = LoadSample(fileName);
+            using var parser = new Json.Parser(new JsonModelBuilder());
+            using var strm   = new MemoryStream(Encoding.UTF8.GetBytes(data));
             
             var result = parser.Parse(strm);
 

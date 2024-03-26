@@ -21,6 +21,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using JTran.Collections;
@@ -201,6 +202,12 @@ namespace JTran.Expressions
         public void AddPart(IExpression expr)
         {
             _parts.Add(expr);
+        }
+
+        /*****************************************************************************/
+        public override string ToString()
+        {
+            return JoinLiteral(null).ToString();
         }
 
         /*****************************************************************************/

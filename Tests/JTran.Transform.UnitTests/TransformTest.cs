@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using JTran.Common;
 using Newtonsoft.Json.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JTran.Transform.UnitTests
 {
@@ -15,7 +16,17 @@ namespace JTran.Transform.UnitTests
             return await TestData(transformName, data, extFunctions, dataTransform, includeSource, context);
         }
 
-        public static async Task<string> TestData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
+        public static async Task TestData(string transformName, Stream input, Stream output, IEnumerable extFunctions = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
+        {
+            var transform   = await LoadTransform(transformName);
+            var transformer = new JTran.Transformer(transform, extFunctions, includeSource: includeSource);
+
+            transformer.Transform(input, output, context);
+
+            return;
+        }
+
+        public static async Task TestData(string transformName, string data, Stream output, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
         {
             var transform   = await LoadTransform(transformName);
             var transformer = new JTran.Transformer(transform, extFunctions, includeSource: includeSource);
@@ -23,15 +34,22 @@ namespace JTran.Transform.UnitTests
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            using var output = new MemoryStream();
             using var input = new MemoryStream(UTF8Encoding.Default.GetBytes(data));
 
             transformer.Transform(input, output, context);
 
+            return;
+        }
+
+        public static async Task<string> TestData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)
+        {
+            using var output = new MemoryStream();
+
+            await TestData(transformName, data, output, extFunctions, dataTransform, includeSource, context);
+
             var result = await output.ReadStringAsync();
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));
-            Assert.AreNotEqual(result, transform);
             Assert.AreNotEqual(result, data);
 
             return result;

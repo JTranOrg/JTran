@@ -6,11 +6,11 @@
         "#noobject":     "#copyof(@)",
         "yearmo":        "#(formatdatetime(//date, 'yyyyMM')",
         "month":         "#(formatdatetime(//date, 'MMM')",
-        "year":          "#(formatdatetime(//date, 'yyy')"
+        "year":          "#(formatdatetime(//date, 'yyyy')"
       }
   },
 
-  "#foreachgroup(sort($items.products, 'year', 'month'), [year, month], products)": 
+  "#foreachgroup(sort($items.products, 'yearmo'), [year, month], products)": 
   {
     "month": "#(string(month) + ' ' + string(year))",
     "units": "#(sum(currentgroup().quantity))",

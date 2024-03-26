@@ -1,7 +1,7 @@
 {
-  "#foreachgroup(customers, Address.City, cities)": 
+  "#foreachgroup(customers, Address.State, states)": 
   {
-    "city":          "#(City)",
+    "state":          "#(State)",
     "units":         "#(count(currentgroup().orders[status != 'cancelled'].items[price > 0]))",
     "sales":         "#(precision(sum(currentgroup().orders[status != 'cancelled'].items[price > 0].price), 2))"
   }

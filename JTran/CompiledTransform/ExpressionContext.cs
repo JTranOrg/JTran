@@ -237,7 +237,7 @@ namespace JTran
 
             if(this.Data is IEnumerable<object> list)
             {
-                var result = new ChildEnumerable<object, object>(list, name.AsCharacterSpan()); 
+                var result = new ChildEnumerable<object, object>(list, name); 
 
                 if(!result.Any())
                     return null;

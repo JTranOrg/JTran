@@ -44,20 +44,6 @@ namespace JTran
         }
 
         /****************************************************************************/
-        [Obsolete]
-        protected override void AppendLine(string line)
-        {
-            _output.AppendLine(line);
-        }        
-
-        /****************************************************************************/
-        [Obsolete]
-        protected override void Append(string text)
-        {
-            _output.Append(text);
-        } 
-
-        /****************************************************************************/
         protected override void AppendLine(ICharacterSpan line)
         {
             _output.AppendLine(line.ToString());

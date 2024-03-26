@@ -21,8 +21,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-
+using JTran.Collections;
+using JTran.Common;
 using JTran.Expressions;
+using JTran.Extensions;
 
 namespace JTran
 {
@@ -84,6 +86,18 @@ namespace JTran
         /****************************************************************************/
         public void Transform(IEnumerable list, Stream output, TransformerContext? context = null)
         {
+            if(list is IEnumerable<object> enm)
+                Transform(enm, output, context);
+            else
+                _transform.Transform(list, output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public void Transform(IEnumerable<object> list, Stream output, TransformerContext? context = null)
+        {
+            if(list.IsPocoList(out Type? type))
+                list = new PocoEnumerableWrapper(type!, list);
+                
              _transform.Transform(list, output, context, _extensionFunctions);
         }
 

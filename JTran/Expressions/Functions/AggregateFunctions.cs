@@ -252,7 +252,7 @@ namespace JTran.Expressions
                 {
                     var xVal   = x.GetPropertyValue(sortField.Name);
                     var yVal   = y.GetPropertyValue(sortField.Name);
-                    var result = sortField.Ascending ? xVal.CompareTo(yVal, out Type type) : yVal.CompareTo(xVal, out Type type2);
+                    var result = sortField.Ascending ? xVal.CompareTo(yVal) : yVal.CompareTo(xVal);
 
                     if(result != 0)
                         return result;

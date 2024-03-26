@@ -8,6 +8,7 @@ using JTran.Extensions;
 using JTran.Expressions;
 using JTran.Parser;
 using JTran.Common;
+using JTran.Collections;
 
 namespace JTran
 {
@@ -71,7 +72,10 @@ namespace JTran
             { 
                 var index = 0L;
 
-                foreach(var childScope in list) // ??? check for poco array
+                if(list is IEnumerable<object> enm && enm.IsPocoList(out Type? type))
+                    list = new PocoEnumerableWrapper(type!, enm);
+
+                foreach(var childScope in list) 
                 { 
                     if(EvaluateChild(output, arrayName, childScope, context, ref index))
                         break;
@@ -190,7 +194,7 @@ namespace JTran
             {
                 foreach(var field in _fields)
                 {
-                    var compare = x[field].CompareTo(y[field], out Type t); 
+                    var compare = x[field].CompareTo(y[field]); 
 
                     if(compare != 0)
                         return false;
@@ -233,7 +237,7 @@ namespace JTran
                                             var newObj = new JsonObject(context.Data is IJsonToken token ? token.Parent : null);
 
                                             foreach(var item in groupValue)
-                                                newObj.TryAdd(item.Key, item.Value);
+                                                newObj.TryAdd(item.Key.LastItemIn('.'), item.Value);
 
                                             newObj.TryAdd(_groupItems, items); 
                                                     

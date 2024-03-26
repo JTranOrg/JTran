@@ -100,12 +100,12 @@ namespace JTran.Extensions
         }
 
         /****************************************************************************/
-        public static string ReplaceEnding(this string s, string ending, string replace)
+        public static string ReplaceEnding(this string s, string ending, string? replace)
         {
             if(!s.EndsWith(ending))
                 return s;
             
-            return s.Substring(0, s.Length - ending.Length) + replace;
+            return s.Substring(0, s.Length - ending.Length) + (replace ?? "");
         }
 
         /****************************************************************************/

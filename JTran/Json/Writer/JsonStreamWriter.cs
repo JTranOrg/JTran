@@ -52,25 +52,6 @@ namespace JTran
         internal Stream Output => _output;
 
         /****************************************************************************/
-        [Obsolete]
-        protected override void AppendLine(string line)
-        {
-             Append(line);
-             AppendNewLine();
-        }        
-
-        /****************************************************************************/
-        protected override void Append(string text)
-        {
-            if(_bufferWritten + text.Length > _bufferSize)
-                Flush();
-
-            text.CopyTo(0, _buffer, _bufferWritten, text.Length);
-
-            _bufferWritten += text.Length;
-        }
-
-        /****************************************************************************/
         protected override void Append(char ch)
         {
             if(_bufferWritten + 1 > _bufferSize)
@@ -128,7 +109,7 @@ namespace JTran
         /****************************************************************************/
         protected override void AppendNumber(decimal val)
         {
-            Append(val.ToString().ReplaceEnding(".0", ""));
+            Append(CharacterSpan.FromString(val.ToString().ReplaceEnding(".0", ""))); 
         }
 
         /****************************************************************************/

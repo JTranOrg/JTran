@@ -11,6 +11,8 @@ using JTran.Json;
 using JTranParser = JTran.Parser.ExpressionParser;
 using JTran.Common;
 using System.ComponentModel.DataAnnotations;
+using System.Collections;
+using System.Diagnostics.Metrics;
 
 namespace JTran.UnitTests
 {
@@ -25,64 +27,102 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void BuiltinFunctions_substring()
+        [DataRow("franklin", 0, 5,      "frank")]
+        [DataRow("franklin", 5, -1000,  "lin")]
+        [DataRow("franklin", 5, 11,     "lin")]
+        [DataRow("franklin", 3, 3,      "nkl")]
+        [DataRow(null,       3, 3,      null)]
+        [DataRow("",         3,3 ,      "")]
+        public void BuiltinFunctions_substring(string? val, int start, int length, string? expected)
         {
-            Assert.AreEqual("frank", _fn.substring("franklin", 0, 5)!.ToString());
-            Assert.AreEqual("lin",   _fn.substring("franklin", 5)!.ToString());
-            Assert.AreEqual("lin",   _fn.substring("franklin", 5, 11)!.ToString());
-            Assert.AreEqual("nkl",   _fn.substring("franklin", 3, 3)!.ToString());
-            Assert.IsNull(null,      _fn.substring(null, 3, 3)?.ToString());
-            Assert.AreEqual("",      _fn.substring("", 3, 3)?.ToString());
+            TestFunction(val, expected, (s)=> _fn.substring(s, start, length));
         }
 
         [TestMethod]
-        public void BuiltinFunctions_substringafter()
+        [DataRow("franklin", "ran",   "bob",     "fbobklin")]
+        [DataRow("franklin", "frank", "john",    "johnlin")]
+        [DataRow("franklin", "lin",   "enstein", "frankenstein")]
+        [DataRow(null,       "",      "",        null)]
+        [DataRow("",         null,    null,      "")]
+        public void BuiltinFunctions_replace(string? val, string? replace, string? with, string? expected)
         {
-            Assert.AreEqual("klin",    _fn.substringafter("franklin", "ran")!.ToString());
-            Assert.AreEqual("ranklin", _fn.substringafter("franklin", "f")!.ToString());
-            Assert.AreEqual("",        _fn.substringafter("franklin", "john")!.ToString());
-            Assert.AreEqual("",        _fn.substringafter("franklin", "johnsyouruncle")!.ToString());
-            Assert.IsNull(null,        _fn.substringafter(null, "")?.ToString());
-            Assert.AreEqual("",        _fn.substringafter("", null)?.ToString());
+            TestFunction(val, expected, (s)=> _fn.replace(s, replace, with));
         }
 
         [TestMethod]
-        public void BuiltinFunctions_substringbefore()
+        [DataRow("franklin", "ran",      "bob",     "franklin")]
+        [DataRow("franklin", "frank",    "john",    "franklin")]
+        [DataRow("franklin", "lin",      "enstein", "frankenstein")]
+        [DataRow("franklin", "franklin", "george",  "george")]
+        [DataRow(null,       "",      "",        null)]
+        [DataRow("",         null,    null,      "")]
+        public void BuiltinFunctions_replaceending(string? val, string? replace, string? with, string? expected)
         {
-            Assert.AreEqual("f",        _fn.substringbefore("franklin", "ran")!.ToString());
-            Assert.AreEqual("frank",    _fn.substringbefore("franklin", "lin")!.ToString());
-            Assert.AreEqual("franklin", _fn.substringbefore("franklin", "john")!.ToString());
-            Assert.AreEqual("franklin", _fn.substringbefore("franklin", "johnsyouruncle")!.ToString());
-            Assert.IsNull(null,         _fn.substringbefore(null, "")?.ToString());
-            Assert.AreEqual("",         _fn.substringbefore("", null)?.ToString());
+            TestFunction(val, expected, (s)=> _fn.replaceending(s, replace, with));
         }
 
         [TestMethod]
-        public void BuiltinFunctions_lowercase()
+        [DataRow("franklin", "ran",   "f")]
+        [DataRow("franklin", "lin",   "frank")]
+        [DataRow("franklin", "john",  "franklin")]
+        [DataRow("franklin", "johnsyouruncle",   "franklin")]
+        [DataRow(null,       "",        null)]
+        [DataRow("",         null,      "")]
+        public void BuiltinFunctions_substringbefore(string? val, string? before, string? expected)
         {
-            Assert.AreEqual("frank", _fn.lowercase("FRANK")!.ToString());
-            Assert.AreEqual("frank", _fn.lowercase("frank")!.ToString());
-            Assert.AreEqual("",      _fn.lowercase("")?.ToString());
+            TestFunction(val, expected, (s)=> _fn.substringbefore(s, before));
         }
 
         [TestMethod]
-        public void BuiltinFunctions_padleft()
+        [DataRow("franklin", "ran", "klin")]
+        [DataRow("franklin", "f",   "ranklin")]
+        [DataRow("franklin", "john",    "")]
+        [DataRow("franklin", "johnsyouruncle",    "")]
+        [DataRow(null,       "",    null)]
+        [DataRow("",         null, "")]
+        public void BuiltinFunctions_substringafter(string? val, string? replace, string? expected)
         {
-            Assert.AreEqual("aaaaaaaa",   _fn.padleft("", "a", 8)!.ToString());
-            Assert.AreEqual("aaaaaaab",   _fn.padleft("b", "a", 8)!.ToString());
-            Assert.AreEqual("12345678",   _fn.padleft("12345678", "a", 8)!.ToString());
-            Assert.AreEqual("1234567890", _fn.padleft("1234567890", "a", 8)!.ToString());
-            Assert.AreEqual("aaaabcde",    _fn.padleft("bcde", "a", 8)!.ToString());
+            TestFunction(val, expected, (s)=> _fn.substringafter(s, replace));
         }
 
         [TestMethod]
-        public void BuiltinFunctions_padright()
+        [DataRow("FRANK", "frank")]
+        [DataRow("frank", "frank")]
+        [DataRow("",      "")]
+        public void BuiltinFunctions_lowercase(string val, string expected)
         {
-            Assert.AreEqual("aaaaaaaa",   _fn.padright("", "a", 8)!.ToString());
-            Assert.AreEqual("baaaaaaa",   _fn.padright("b", "a", 8)!.ToString());
-            Assert.AreEqual("12345678",   _fn.padright("12345678", "a", 8)!.ToString());
-            Assert.AreEqual("1234567890", _fn.padright("1234567890", "a", 8)!.ToString());
-            Assert.AreEqual("bcdeaaaa",   _fn.padright("bcde", "a", 8)!.ToString());
+            TestFunction(val, expected, (s)=> _fn.lowercase(s));
+        }
+
+        [TestMethod]
+        [DataRow("FRANK", "FRANK")]
+        [DataRow("frank", "FRANK")]
+        [DataRow("",      "")]
+        public void BuiltinFunctions_uppercase(string val, string expected)
+        {
+            TestFunction(val, expected, (s)=> _fn.uppercase(s));
+        }
+
+        [TestMethod]
+        [DataRow("",            "aaaaaaaa")]
+        [DataRow("b",           "aaaaaaab")]
+        [DataRow("12345678",    "12345678")]
+        [DataRow("1234567890",  "1234567890")]
+        [DataRow("bcde",        "aaaabcde")]
+        public void BuiltinFunctions_padleft(string val, string expected)
+        {
+            TestFunction(val, expected, (s)=> _fn.padleft(s, "a", 8));
+        }
+
+        [TestMethod]
+        [DataRow("",            "aaaaaaaa")]
+        [DataRow("b",            "baaaaaaa")]
+        [DataRow("12345678",    "12345678")]
+        [DataRow("1234567890",  "1234567890")]
+        [DataRow("bcde",        "bcdeaaaa")]
+        public void BuiltinFunctions_padright(string val, string expected)
+        {
+            TestFunction(val, expected, (s)=> _fn.padright(s, "a", 8));
         }
 
         [TestMethod]
@@ -93,10 +133,7 @@ namespace JTran.UnitTests
         [DataRow("  a        b   c  de f  ", "a b c de f")]
         public void BuiltinFunctions_normalizespace(string? val, string? expected)
         {
-            Assert.AreEqual(expected, _fn.normalizespace(val)?.ToString());
-
-            if(val != null)
-                Assert.AreEqual(expected, _fn.normalizespace(CharacterSpan.FromString(val))?.ToString());
+            TestFunction(val, expected, (s)=> _fn.normalizespace(s));
         }
 
         [TestMethod]
@@ -110,45 +147,114 @@ namespace JTran.UnitTests
         [DataRow("john",             "ted",  "john")]
         [DataRow("bobfred",          "",     "bobfred")]
         [DataRow("",                 "",     "")]
-        [DataRow("bobfred",          "fred", "bob")]
-        [DataRow("bobfred",          "bob",  "fred")]
-        [DataRow("fredtedred",       "ted",  "fredred")]
-        [DataRow("fredtedred",       "ted",  "fredred")]
-        [DataRow("tedfredtedredted", "ted",  "fredred")]
-        [DataRow("john",             "ted",  "john")]
         public void BuiltinFunctions_remove(string val, string remove, string expected)
         {
-            Assert.AreEqual(expected, _fn.remove(val, remove)?.ToString());
+            TestFunction(val, expected, (s)=> _fn.remove(s, remove));
+        }
 
-            if(val != null)
-            {
-                Assert.AreEqual(expected, _fn.remove(CharacterSpan.FromString(val, false), CharacterSpan.FromString(remove))?.ToString());
-                Assert.AreEqual(expected, _fn.remove(CharacterSpan.FromString(val, true), CharacterSpan.FromString(remove))?.ToString());
-            }
+        [TestMethod]
+        [DataRow("bobfred",          "",     "bobfred")]
+        [DataRow("",                 "",     "")]
+        [DataRow("bobfred",          "fred", "bob")]
+        [DataRow("bobfred",          "bob",  "bobfred")]
+        [DataRow("fredtedred",       "ted",  "fredtedred")]
+        [DataRow("fredtedredred",    "red",  "fredtedred")]
+        [DataRow("tedfredtedredted", "ted",  "tedfredtedred")]
+        [DataRow("john",             "ted",  "john")]
+        [DataRow("bobfred",          "",     "bobfred")]
+        [DataRow("",                 "",     "")]
+        public void BuiltinFunctions_removeending(string val, string remove, string expected)
+        {
+            TestFunction(val, expected, (s)=> _fn.removeending(s, remove));
         }
 
         [TestMethod]
         public void BuiltinFunctions_startswith()
         {
-            Assert.IsTrue(_fn.startswith("franklin", "frank"));
-            Assert.IsTrue(_fn.startswith("john",     "j"));
-            
-            Assert.IsFalse(_fn.startswith("franklin", "john"));
-            Assert.IsFalse(_fn.startswith("john",     ""));
-            Assert.IsFalse(_fn.startswith("frank",    null));
-            Assert.IsFalse(_fn.startswith(null,       ""));
+            TestFunctionTrue("franklin",  (s)=> _fn.startswith(s, "frank"));
+            TestFunctionTrue("john",      (s)=> _fn.startswith(s, "j"));
+                                                                
+            TestFunctionFalse("franklin", (s)=> _fn.startswith(s, "john"));
+            TestFunctionFalse("john",     (s)=> _fn.startswith(s, ""));
+            TestFunctionFalse("frank",    (s)=> _fn.startswith(s, null));
+            TestFunctionFalse(null,       (s)=> _fn.startswith(s, ""));
         }
 
         [TestMethod]
         public void BuiltinFunctions_endswith()
         {
-            Assert.IsTrue(_fn.endswith("franklin", "lin"));
-            Assert.IsTrue(_fn.endswith("john",     "n"));
+            TestFunctionTrue("franklin", (s)=> _fn.endswith(s, "lin"));
+            TestFunctionTrue("john",     (s)=> _fn.endswith(s, "n"));
                                
-            Assert.IsFalse(_fn.endswith("franklin", "john"));
-            Assert.IsFalse(_fn.endswith("john",     ""));
-            Assert.IsFalse(_fn.endswith("frank",    null));
-            Assert.IsFalse(_fn.endswith(null,       ""));
+            TestFunctionFalse("franklin", (s)=> _fn.endswith(s, "john"));
+            TestFunctionFalse("john",     (s)=> _fn.endswith(s, ""));
+            TestFunctionFalse("frank",    (s)=> _fn.endswith(s, null));
+            TestFunctionFalse(null,       (s)=> _fn.endswith(s, ""));
+        }
+
+        private void TestFunction(string? val, string? expected, Func<object?, object?> fn)
+        {
+            Assert.AreEqual(expected, fn(val)?.ToString());
+
+            if(val != null)
+            {
+                var valSpan = CharacterSpan.FromString(val);
+
+                Assert.AreEqual(expected, fn(valSpan)?.ToString());
+
+                valSpan.ExpressionResult = true;
+
+                Assert.AreEqual(expected, fn(valSpan)?.ToString());
+            }
+        }
+
+        private void TestFunctionBool(string? val, bool expected, Func<object?, bool> fn)
+        {
+            Assert.AreEqual(expected, fn(val));
+
+            if(val != null)
+            {
+                var valSpan = CharacterSpan.FromString(val);
+
+                if(expected)
+                    Assert.AreEqual(expected, fn(valSpan));
+
+                valSpan.ExpressionResult = true;
+
+                Assert.AreEqual(expected, fn(valSpan));
+            }
+        }
+
+        private void TestFunctionTrue(string? val, Func<object?, bool> fn)
+        {
+            Assert.IsTrue(fn(val));
+
+            if(val != null)
+            {
+                var valSpan = CharacterSpan.FromString(val);
+
+                Assert.IsTrue(fn(valSpan));
+
+                valSpan.ExpressionResult = true;
+
+                Assert.IsTrue( fn(valSpan));
+            }
+        }
+
+        private void TestFunctionFalse(string? val, Func<object?, bool> fn)
+        {
+            Assert.IsFalse(fn(val));
+
+            if(val != null)
+            {
+                var valSpan = CharacterSpan.FromString(val);
+
+                Assert.IsFalse(fn(valSpan));
+
+                valSpan.ExpressionResult = true;
+
+                Assert.IsFalse( fn(valSpan));
+            }
         }
     }
 }

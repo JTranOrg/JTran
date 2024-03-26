@@ -1,4 +1,5 @@
 {
+    // Simple transform
     "#foreach(Customers, Customers)":
     {
         "LastName":    "#(Surname)",

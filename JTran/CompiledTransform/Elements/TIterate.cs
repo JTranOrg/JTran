@@ -41,12 +41,6 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal protected TIterate(string expression, bool expr) 
-        {
-            _expression = Compiler.Compile(expression);
-        }
-
-        /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var result = _expression.Evaluate(context);

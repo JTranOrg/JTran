@@ -121,6 +121,7 @@
     <None Remove="Test Transforms\JTranFunctions\nested.jtran" />
     <None Remove="Test Transforms\Map\map5.jtran" />
     <None Remove="Test Transforms\Scenarios\sales_report_by_city.jtran" />
+    <None Remove="Test Transforms\Scenarios\sales_report_by_state.jtran" />
     <None Remove="Test Transforms\Templates\after.jtran" />
     <None Remove="Test Transforms\Templates\after2.jtran" />
     <None Remove="Test Transforms\Templates\aselement.jtran" />
@@ -249,6 +250,7 @@
     <EmbeddedResource Include="Test Transforms\ForEach\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\JTranFunctions\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map5.jtran" />
+    <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_state.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_city.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\aselement.jtran" />

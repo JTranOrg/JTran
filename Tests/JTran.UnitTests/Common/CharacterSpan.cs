@@ -337,6 +337,107 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]   
+        [DataRow("bobfred",          "",     "",        "bobfred",     false)]
+        [DataRow("",                 "",     "",        "",            false)]
+        [DataRow("bobfred",          "fred", "john",    "bobjohn",     false)]
+        [DataRow("bobfred",          "bob",  "john",    "johnfred",    false)]
+        [DataRow("fredtedred",       "ted",  "john",    "fredjohnred", false)]
+        [DataRow("fredtedred",       "john", "george",  "fredtedred",     false)]
+        [DataRow("tedfredtedredted", "ted",  "john",    "johnfredjohnredjohn", false)]
+        [DataRow("john",             "ted",  "led",     "john",        false)]
+
+        [DataRow("bobfred",          "",     "",        "bobfred",     true)]
+        [DataRow("",                 "",     "",        "",            true)]
+        [DataRow("bobfred",          "fred", "john",    "bobjohn",     true)]
+        [DataRow("bobfred",          "bob",  "john",    "johnfred",    true)]
+        [DataRow("fredtedred",       "ted",  "john",    "fredjohnred", true)]
+        [DataRow("fredtedred",       "john", "george",  "fredtedred",     true)]
+        [DataRow("tedfredtedredted", "ted",  "john",    "johnfredjohnredjohn", true)]
+        [DataRow("john",             "ted",  "led",     "john",        true)]
+        public void CharacterSpan_Replace(string val, string find, string replace, string expected, bool expression)
+        {
+            var ival = CharacterSpan.FromString(val);
+
+            ival.ExpressionResult = expression;
+
+            Assert.AreEqual(expected, ival.Replace(CharacterSpan.FromString(find), CharacterSpan.FromString(replace)).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("",                 'a', "")]
+        [DataRow("bobfred",          'f', "bob")]
+        [DataRow("bobfred",          'x', "bobfred")]
+        [DataRow("fred.ted.red",     '.', "fred")]
+        public void CharacterSpan_SubstringBefore(string val, char find, string expected)
+        {
+            var ival = CharacterSpan.FromString(val);
+
+            Assert.AreEqual(expected, ival.SubstringBefore(find).ToString());
+
+            ival.ExpressionResult = true;
+
+            Assert.AreEqual(expected, ival.SubstringBefore(find).ToString());
+        }
+
+        [TestMethod]    
+        [DataRow("",        "",         "")]
+        [DataRow("bobfred", "",         "bobfred")]
+        [DataRow("bob",     "fred",     "bobfred")]
+        [DataRow("",        "bobfred",  "bobfred")]
+        public void CharacterSpan_Concat(string str1, string str2, string expected)
+        {
+            var i1 = CharacterSpan.FromString(str1);
+            var i2 = CharacterSpan.FromString(str2);
+
+            Assert.AreEqual(expected, i1.Concat(i2).ToString());
+
+            i1.ExpressionResult = true;
+
+            Assert.AreEqual(expected, i1.Concat(i2).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("",                 'a', "")]
+        [DataRow("bobfred",          'f', "red")]
+        [DataRow("bobfred",          'x', "")]
+        [DataRow("fred.ted.red",     '.', "ted.red")]
+        public void CharacterSpan_SubstringAfter(string val, char find, string expected)
+        {
+            var ival = CharacterSpan.FromString(val);
+
+            Assert.AreEqual(expected, ival.SubstringAfter(find).ToString());
+
+            ival.ExpressionResult = true;
+
+            Assert.AreEqual(expected, ival.SubstringAfter(find).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("bobfred",          "",     "",        "bobfred",     false)]
+        [DataRow("",                 "",     "",        "",            false)]
+        [DataRow("bobfred",          "fred", "john",    "bobjohn",     false)]
+        [DataRow("bobfred",          "bob",  "john",    "bobfred",     false)]
+        [DataRow("fredtedted",       "ted",  "john",    "fredtedjohn", false)]
+        [DataRow("fredtedred",       "john", "george",  "fredtedred",  false)]
+        [DataRow("john",             "ted",  "led",     "john",        false)]
+
+        [DataRow("bobfred",          "",     "",        "bobfred",     true)]
+        [DataRow("",                 "",     "",        "",            true)]
+        [DataRow("bobfred",          "fred", "john",    "bobjohn",     true)]
+        [DataRow("bobfred",          "bob",  "john",    "bobfred",     true)]
+        [DataRow("fredtedted",       "ted",  "john",    "fredtedjohn", true)]
+        [DataRow("fredtedred",       "john", "george",  "fredtedred",  true)]
+        [DataRow("john",             "ted",  "led",     "john",        true)]
+        public void CharacterSpan_ReplaceEnding(string val, string find, string replace, string expected, bool expression)
+        {
+            var ival = CharacterSpan.FromString(val);
+
+            ival.ExpressionResult = expression;
+
+            Assert.AreEqual(expected, ival.ReplaceEnding(CharacterSpan.FromString(find), CharacterSpan.FromString(replace)).ToString());
+        }
+
+        [TestMethod]   
         [DataRow("bobfred",          "",     "bobfred", false)]
         [DataRow("",                 "",     "",        false)]
         [DataRow("bobfred",          "fred", "bob",     false)]
@@ -354,9 +455,30 @@ namespace JTran.UnitTests
         [DataRow("tedfredtedredted", "ted",  "fredred", true)]
         [DataRow("fredtedtedtedred", "ted",  "fredred", true)]
         [DataRow("john",             "ted",  "john",    true)]
-        public void CharacterSpan_Remove(string val, string remove, string expected, bool cached)
+        public void CharacterSpan_Remove(string val, string remove, string expected, bool expression)
         {
-            Assert.AreEqual(expected, CharacterSpan.FromString(val, cached).Remove(CharacterSpan.FromString(remove)).ToString());
+            var ival = CharacterSpan.FromString(val);
+
+            ival.ExpressionResult = expression;
+
+            Assert.AreEqual(expected, ival.Remove(CharacterSpan.FromString(remove)).ToString());
+        }
+
+        [TestMethod]   
+        [DataRow("bob.fred",     "fred")]
+        [DataRow("bob",          "bob")]
+        [DataRow("bob.fred.ted", "ted")]
+        [DataRow("bob,fred,ted", "bob,fred,ted")]
+        [DataRow("",             "")]
+        public void CharacterSpan_LastItemIn(string? val, string? expected)
+        {
+            var ival = CharacterSpan.FromString(val);
+
+            Assert.AreEqual(expected, ival.LastItemIn('.')?.ToString());
+
+            ival.ExpressionResult = true;
+
+            Assert.AreEqual(expected, ival.LastItemIn('.')?.ToString());
         }
 
         private void TestNumber(string val, decimal expected)

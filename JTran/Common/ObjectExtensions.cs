@@ -51,6 +51,9 @@ namespace JTran.Common
         /****************************************************************************/
         public static ICharacterSpan AsCharacterSpan(this object obj, bool cacheable = false)
         {
+            if(obj == null)
+                return null;
+
             if(obj is ICharacterSpan cspan)
                 return cspan;
 

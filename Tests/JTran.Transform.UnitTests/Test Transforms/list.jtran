@@ -6,6 +6,15 @@
       "Model":    "#(Model)",
       "Year":     "#(Year)",
       "Color":    "#(Color)",
-      "Sponsor":  "Jimbo"
+      "Sponsor":  "Jimbo",
+
+      "Driver":   "#GetDriver(@)"
+  },
+
+  "#template(GetDriver, car)": 
+  {
+    "FirstName":  "Bob",
+    "LastName":   "#($car.Make)",
+    "Age":        "#($car.Year - 1950)"
   }
 }

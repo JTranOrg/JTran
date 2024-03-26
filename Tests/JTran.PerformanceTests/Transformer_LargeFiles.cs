@@ -25,13 +25,48 @@ namespace JTran.PerformanceTests
         [InlineData(100000)]
         [InlineData(200000)]
         [InlineData(2000000)]
+        public async Task Transform_create_test_list_files(int numItems)
+        {
+            var dataSource = CreateLargeDataSource(numItems);
+
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_list_{numItems}.json", dataSource);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
         public async Task Transform_create_test_files(int numItems)
         {
-            using var dataSource = CreateLargeDataSource(numItems);
+            var dataSource = CreateLargeDataSource(numItems, false);
 
-            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", await dataSource.ReadStringAsync());
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource);
         }
         
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Transform_Transform_large_array_file(int numItems)
+        {
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
+
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_list_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
+
+            transformer.Transform(input, output);
+        }
+
         [Theory]
         [InlineData(10)]
         [InlineData(100)]
@@ -129,13 +164,18 @@ namespace JTran.PerformanceTests
 
         #region Private
 
-        private Stream CreateLargeDataSource(int numItems = 100000)
+        private string CreateLargeDataSource(int numItems = 100000, bool list = true)
         {
-            var orgs = CreateLargeList(numItems);
+            var customers = CreateLargeList(numItems);
 
-            var cstr = JsonConvert.SerializeObject(orgs, Formatting.Indented);
+            if(!list)
+            { 
+                var org = new Organization { Name = "Acme Widgets", Customers = customers};
 
-            return new MemoryStream(Encoding.UTF8.GetBytes(cstr));
+                return JsonConvert.SerializeObject(org, Formatting.Indented);
+            }
+
+            return JsonConvert.SerializeObject(customers, Formatting.Indented);
         }
 
         private List<Customer> CreateLargeList(int numItems = 100000)

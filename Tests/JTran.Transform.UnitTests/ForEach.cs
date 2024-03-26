@@ -127,14 +127,17 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
             Assert.AreEqual("Corvette",  owner.Cars[0].Model);
             Assert.AreEqual(1956,        owner.Cars[0].Year);
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Driver.LastName);
 
             Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
             Assert.AreEqual("Firebird",  owner.Cars[1].Model);
             Assert.AreEqual(1969,        owner.Cars[1].Year);
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Driver.LastName);
 
             Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
             Assert.AreEqual("Camaro",    owner.Cars[2].Model);
             Assert.AreEqual(1970,        owner.Cars[2].Year);
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Driver.LastName);
         }
 
         internal class TestEnumerable : IEnumerable

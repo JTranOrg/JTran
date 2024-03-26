@@ -124,7 +124,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(2010L, expression.Evaluate(context));
+            Assert.AreEqual(2010m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -136,7 +136,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(2006L, expression.Evaluate(context));
+            Assert.AreEqual(2006m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -222,7 +222,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1966L, expression.Evaluate(context));
+            Assert.AreEqual(1966m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -234,7 +234,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1200L, expression.Evaluate(context));
+            Assert.AreEqual(1200m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -247,7 +247,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1300L, expression.Evaluate(context));
+            Assert.AreEqual(1300m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -259,7 +259,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Paycheck = 1200, Months = 12 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(100L, expression.Evaluate(context));
+            Assert.AreEqual(100m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -645,7 +645,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12} ));
    
            Assert.IsNotNull(expression);
-            Assert.AreEqual(2380L, expression.Evaluate(context));
+            Assert.AreEqual(2380m, expression.Evaluate(context));
         }
 
         #endregion
@@ -1238,14 +1238,16 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        [DataRow("franklin", 0, 5, "frank")]
-        [DataRow("franklin", 5, -1000, "lin")]
-        [DataRow("", 5, 3, "")]
-        public void Compiler_function_substring_Success(string? str, int index, int length, string? result)
+        [DataRow("franklin", 0, 5,     "frank")]
+        [DataRow("franklin", 5, -1000, "lin_ted")]
+        [DataRow("",         0, 3,     "_te")]
+        [DataRow("",         5, 3,     "")]
+        [DataRow("franklin", 9000, 3,  "")]
+        public void Compiler_function_substring(string? str, int index, int length, string? result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse($"substring('{str}', {index}, {length})");
+            var tokens     = parser.Parse($"substring('{str}' + '_ted', {index}, {length})");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
@@ -1269,7 +1271,7 @@ namespace JTran.UnitTests
         [DataRow("franklin", "lin",           "frank")]
         [DataRow("franklin", "franklin",      "")]
         [DataRow("franklin", "bobsyouruncle", "franklin")]
-        [DataRow("beebop",   "/",              "beebop")]
+        [DataRow("beebop",   "/",             "beebop")]
         public void Compiler_function_substringbefore_Success(string str, string search, string result)
         {
             var parser     = new JTranParser();

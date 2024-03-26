@@ -29,11 +29,10 @@ namespace JTran
             if(this.Name != null)
                 arrayName = this.Name.Evaluate(context);
 
-            if(arrayName is ICharacterSpan cspan)
-            {
-                 if(!(cspan?.IsNullOrWhiteSpace() ?? true))
-                     return cspan;
-            }
+            var cspan = arrayName.AsCharacterSpan();
+
+            if(!(cspan?.IsNullOrWhiteSpace() ?? true))
+                return cspan;
 
             return null;
         }

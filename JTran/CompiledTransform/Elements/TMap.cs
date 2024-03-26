@@ -100,7 +100,7 @@ namespace JTran
                         goto Next;
                     }
 
-                    if(context.Data.CompareTo(val, out _) != 0)
+                    if(context.Data.CompareTo(val) != 0)
                         return;
                 }
             }

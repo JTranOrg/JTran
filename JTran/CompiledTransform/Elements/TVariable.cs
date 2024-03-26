@@ -1,4 +1,5 @@
 ﻿using System;
+
 using JTran.Common;
 using JTran.Json;
 
@@ -8,7 +9,7 @@ namespace JTran
     /****************************************************************************/
     internal interface IVariable
     {
-        object GetActualValue(ExpressionContext context);
+        object? GetActualValue(ExpressionContext context);
     }
 
     /****************************************************************************/
@@ -34,10 +35,20 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public object GetActualValue(ExpressionContext context)
+        public object? GetActualValue(ExpressionContext context)
         {
             // Use the context when first evaluated. The param here is the context where the var is being used which we don't want to use.
-            return this.Value.Evaluate(_context!);
+            var result = this.Value.Evaluate(_context!);
+
+            if(result != null && result is ICharacterSpan cspan)
+                cspan.ExpressionResult = false; // Suppress inline string transforms
+
+            var name = this.Name.Evaluate(context) as ICharacterSpan;
+
+            if(name.StartsWith("Tempor"))
+                return result;
+
+            return result;
         }
     }
 
@@ -60,7 +71,18 @@ namespace JTran
         }
         
         /****************************************************************************/
-        public object GetActualValue(ExpressionContext context)
+        public object? GetActualValue(ExpressionContext context)
+        {
+            var result = GetActualValueInternal(context);
+
+            if(result != null && result is ICharacterSpan cspan)
+                cspan.ExpressionResult = false; // Suppress inline string transforms
+
+            return result;
+        }
+
+        /****************************************************************************/
+        private object? GetActualValueInternal(ExpressionContext context)
         {
             var newContext = new ExpressionContext(context.Data, context);
 

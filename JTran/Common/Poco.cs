@@ -17,10 +17,12 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace JTran.Common
 {
@@ -176,6 +178,13 @@ namespace JTran.Common
         public object? GetPropertyValue(ICharacterSpan name)
         {
             return _poco.GetValue(this.Data, name);
+        }
+
+        /****************************************************************************/
+        public void ForEachProperty(Action<ICharacterSpan, object> onProperty)
+        {
+            if(this.Data != null)
+                _poco.ForEachProperty(this.Data, onProperty);
         }
     }
 }

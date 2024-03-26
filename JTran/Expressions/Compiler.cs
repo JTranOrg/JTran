@@ -43,16 +43,6 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        [Obsolete]
-        internal static IExpression Compile(string expr)
-        {
-            var parser   = new JTranParser();
-            var compiler = new Compiler();
-
-            return compiler.Compile(parser.Parse(CharacterSpan.FromString(expr)));
-        }
-
-        /*****************************************************************************/
         internal static IExpression Compile(ICharacterSpan expr)
         {
             var parser   = new JTranParser();

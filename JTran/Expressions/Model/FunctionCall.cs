@@ -45,11 +45,17 @@ namespace JTran.Expressions
         {
             var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
 
+            // Built-in or custom functions (e.g. in .Net)
             if(func != null)
             { 
                 try
                 { 
-                    return func.Evaluate(_parameters, context);
+                    var result = func.Evaluate(_parameters, context);
+
+                    if(result != null && result is ICharacterSpan cspan)
+                        cspan.ExpressionResult = true;
+
+                    return result;
                 }
                 catch(Transformer.UserError) 
                 {
@@ -72,6 +78,7 @@ namespace JTran.Expressions
                 }
             }
 
+            // JTran defined functons, e.g. #function(...)
             var tfunc = context.GetFunction(_functionName);
             
             if(tfunc == null)

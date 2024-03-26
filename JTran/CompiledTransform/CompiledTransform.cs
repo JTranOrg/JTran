@@ -355,17 +355,12 @@ namespace JTran
     /****************************************************************************/
     internal class SimpleValue : IValue
     {
-        private ICharacterSpan? _value;
+        private object? _value;
 
         /****************************************************************************/
         internal SimpleValue(object? value)
         {
-            if(value is null)
-                _value = null;
-            else if(value is ICharacterSpan cspan)
-                _value = cspan;
-            else
-                _value = CharacterSpan.FromString(value!.ToString());
+            _value = value;
         }
 
         /*****************************************************************************/
@@ -427,7 +422,7 @@ namespace JTran
         private IExpression _expression;
 
         /****************************************************************************/
-        internal ExpressionValue(string value)
+        internal ExpressionValue(ICharacterSpan value)
         {
             _expression = Compiler.Compile(value);
         }
@@ -435,17 +430,7 @@ namespace JTran
         /****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var val = _expression?.Evaluate(context);
-
-            if(val == null)
-                return null;
-
-           // if(!(val is IStringValue) && decimal.TryParse(val.ToString(), out decimal dval)) 
-            //{
-            //    return dval;
-            //}
-
-            return val;
+            return _expression?.Evaluate(context);
         }
     }
 

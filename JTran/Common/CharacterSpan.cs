@@ -22,7 +22,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -34,6 +33,7 @@ namespace JTran.Common
     {
         int  Length               { get; }
         bool HasEscapeCharacters  { get; }
+        bool ExpressionResult     { get; set; }
 
         void                    CopyTo(char[] buffer, int offset, int length = -1);
         bool                    StartsWith(string compare);
@@ -47,7 +47,10 @@ namespace JTran.Common
         ICharacterSpan          Trim(bool start = true, bool end = true);
         ICharacterSpan          Transform(Func<char, (bool Use, char NewVal)> transform);
         ICharacterSpan          Pad(char padChar, int length, bool left);
-        ICharacterSpan          Remove(ICharacterSpan remove);
+        ICharacterSpan          Remove(ICharacterSpan remove, int start = 0);
+        ICharacterSpan          Replace(ICharacterSpan find, ICharacterSpan replace, int start = 0);
+        ICharacterSpan          ReplaceEnding(ICharacterSpan find, ICharacterSpan replace);
+        ICharacterSpan          Concat(ICharacterSpan val);
 
         #region Default Implementations
 
@@ -176,7 +179,6 @@ namespace JTran.Common
             return true;
         }
 
-        
         /****************************************************************************/
         public int IndexOf(char ch, int start = 0)
         {
@@ -251,6 +253,29 @@ namespace JTran.Common
             return index;
         }
 
+        /****************************************************************************/
+        public int LastIndexOf(char ch, int start = 0)
+        {
+            for(var i = this.Length-1; i >= start; --i)
+            { 
+                if(this[i] == ch)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /****************************************************************************/
+        public ICharacterSpan LastItemIn(char separator)
+        {
+            var index = LastIndexOf(separator);
+
+            if(index == -1) 
+                return this;
+
+            return Substring(index + 1, this.Length - index - 1);
+        }
+
         #endregion
     }
 
@@ -317,8 +342,6 @@ namespace JTran.Common
 
         #endregion
 
-        internal bool Cached { get; set; }
-
         /****************************************************************************/
         internal static CharacterSpan Clone(ICharacterSpan source)
         {
@@ -344,6 +367,18 @@ namespace JTran.Common
             _length              = length;
             _hasEscapeCharacters = hasEscapeCharacters;
             _hashCode            = 0;
+            _str                 = null;
+        }
+
+        /****************************************************************************/
+        private ICharacterSpan Reset(int offset, int length)
+        {
+            _offset              = offset;
+            _length              = length;
+            _hashCode            = 0;
+            _str                 = null;
+
+            return this;
         }
 
         /****************************************************************************/
@@ -357,7 +392,7 @@ namespace JTran.Common
             if(cacheable)
             { 
                 if(_cache.TryAdd(s, cspan))
-                    cspan.Cached = true;
+                    cspan.ExpressionResult = false;
             }
 
             cspan._str = s;
@@ -417,6 +452,7 @@ namespace JTran.Common
 
         public virtual int Length              => _length;
         public bool        HasEscapeCharacters => _hasEscapeCharacters;
+        public bool        ExpressionResult { get; set; }
 
         /****************************************************************************/
         public bool StartsWith(string compare)
@@ -436,14 +472,22 @@ namespace JTran.Common
         /****************************************************************************/
         public ICharacterSpan SubstringBefore(char ch, int skip = 0)
         {
-            for(var i = skip; i < this.Length; ++i)
+            if(this.Length > 0)
             { 
-                if(this[i] == ch)
-                    return new CharacterSpan(this, skip, i-skip);
-            }
+                for(var i = skip; i < this.Length; ++i)
+                { 
+                    if(this[i] == ch)
+                    { 
+                        if(!this.ExpressionResult)
+                            return new CharacterSpan(this, skip, i-skip);
 
-            if(skip != 0)
-                return this.Substring(skip, this.Length - skip);
+                        return Reset(_offset + skip, i - skip);
+                    }
+                }
+
+                if(skip != 0)
+                    return this.Substring(skip, this.Length - skip);
+            }
 
             return this;
         }
@@ -451,14 +495,20 @@ namespace JTran.Common
         /****************************************************************************/
         public ICharacterSpan SubstringAfter(char ch)
         {
-            for(var i = 0; i < this.Length; ++i)
+            if(this.Length > 0)
             { 
-                if(this[i] == ch)
-                {
-                    if((this.Length - i - 1) == 0)
-                        return Empty;
+                for(var i = 0; i < this.Length; ++i)
+                { 
+                    if(this[i] == ch)
+                    {
+                        if((this.Length - i - 1) == 0)
+                            return Empty;
                     
-                    return new CharacterSpan(this, i+1, this.Length - i - 1);
+                        if(this.ExpressionResult)
+                            return Reset(i+1, this.Length - i - 1);
+
+                        return new CharacterSpan(this, i+1, this.Length - i - 1);
+                    }
                 }
             }
 
@@ -468,6 +518,9 @@ namespace JTran.Common
         /****************************************************************************/
         public ICharacterSpan Substring(int index, int length = -1000, bool trim = false)
         {
+            if(this.Length == 0)
+                return this;
+
             length = length == -1000 ? this.Length - index : (length < 0 ? this.Length - index + length : length);
 
             if(length <= 0)
@@ -478,7 +531,10 @@ namespace JTran.Common
             if(trim)
                 return Trim(_source!, _offset + index, length);
 
-            return new CharacterSpan(_source!, _offset + index, length);
+            if(!this.ExpressionResult)
+                return new CharacterSpan(_source!, _offset + index, length);
+                    
+            return Reset(_offset + index, length);
         }
 
         /****************************************************************************/
@@ -487,7 +543,7 @@ namespace JTran.Common
             if(this.Length == 0)
                 return CharacterSpan.Empty;
 
-            if(!this.Cached)
+            if(this.ExpressionResult)
                 return TransformInPlace(transform);
 
             return TransformOutOfPlace(transform);
@@ -522,7 +578,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        public ICharacterSpan Remove(ICharacterSpan remove)
+        public ICharacterSpan Remove(ICharacterSpan remove, int start = 0)
         {
             if(this.Length == 0 || this.Length < remove.Length)
                 return this;
@@ -530,17 +586,103 @@ namespace JTran.Common
             if(this.Equals(remove))
                 return CharacterSpan.Empty;
 
-            if(this.Cached)
-                return RemoveOutOfPlace(remove);
+            if(this.ExpressionResult)
+                return RemoveOutOfPlace(remove, start);
 
-            return RemoveInPlace(remove);
+            return RemoveInPlace(remove, start);
         }
 
         /****************************************************************************/
-        private ICharacterSpan RemoveInPlace(ICharacterSpan remove)
+        public ICharacterSpan Replace(ICharacterSpan find, ICharacterSpan replace, int start = 0)
+        {
+            // These are no-ops
+            if(find == null || this.Length == 0 || replace.Length > this.Length)
+                return this;
+
+            // If we're replacing with nothing then call Remove instead
+            if(replace == null || replace.Length == 0)
+                return this.Remove(find);
+
+            ICharacterSpan thisSpan = this;
+
+            var index = thisSpan.IndexOf(find, start);
+
+            // If we don't find the string just return
+            if(index == -1)
+                return this;
+
+            // If we're just replacing the whole string
+            if(index == 0 && this.Length == find.Length)
+                return replace;
+
+            var replaceSpan = (replace is CharacterSpan cspan) ? cspan : CharacterSpan.Clone(replace);
+            var destIndex   = start;
+            var destLen     = this.Length;
+            char[]? buffer  = CheckBuffer(null, destLen);
+
+            if(start > 0)
+                Array.Copy(_source!, _offset, buffer, 0, start);
+
+            while(true)
+            {
+                index = thisSpan.IndexOf(find, start);
+                
+                if(index == -1)
+                    break;
+
+                destLen = (destLen - find.Length) + replace.Length;
+
+                CheckBuffer(buffer, destLen);
+
+                // Copy all characters before the search string
+                if(index > start)
+                { 
+                    Array.Copy(_source!, _offset + start, buffer, destIndex, index - start);
+                    destIndex += index - start;
+                }
+
+                // Now copy the replace string
+                Array.Copy(replaceSpan._source!, replaceSpan._offset, buffer, destIndex, replaceSpan.Length);
+
+                destIndex += replaceSpan.Length;
+                start = index + find.Length;
+            }
+
+            if(start < thisSpan.Length)
+            {
+                CheckBuffer(buffer, destLen + thisSpan.Length - start);
+                Array.Copy(_source!, _offset + start, buffer, destIndex, thisSpan.Length - start);
+                destIndex += thisSpan.Length - start;
+            }
+
+            return new CharacterSpan(buffer, 0, destIndex);
+        }
+
+        /****************************************************************************/
+        public ICharacterSpan ReplaceEnding(ICharacterSpan find, ICharacterSpan replace)
+        {
+            // These are no-ops
+            if(find == null || this.Length == 0 || replace.Length > this.Length)
+                return this;
+
+            ICharacterSpan thisSpan = this;
+
+            if(!thisSpan.EndsWith(find))
+                return this;
+
+            var index = thisSpan.LastIndexOf(find);
+
+            // If we're just replacing the whole string
+            if(index == 0 && this.Length == find.Length)
+                return replace;
+
+            return this.Replace(find, replace, index);
+        }
+
+        /****************************************************************************/
+        private ICharacterSpan RemoveInPlace(ICharacterSpan remove, int start = 0)
         {
             ICharacterSpan thisSpan = this;
-            var start = 0;
             var removeLen = remove.Length;
             var removed = false;
 
@@ -587,7 +729,7 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        private ICharacterSpan RemoveOutOfPlace(ICharacterSpan remove)
+        private ICharacterSpan RemoveOutOfPlace(ICharacterSpan remove, int start = 0)
         {
             ICharacterSpan thisSpan = this;
             var index = thisSpan.IndexOf(remove);
@@ -595,7 +737,7 @@ namespace JTran.Common
             if(index == -1)
                 return this;
 
-            return Clone(this).RemoveInPlace(remove);
+            return Clone(this).RemoveInPlace(remove, start);
         }
 
         /****************************************************************************/
@@ -611,20 +753,14 @@ namespace JTran.Common
             {
                 var ch = this[i];
 
-                if(ch == '\\' ||
-                   ch == '"'  ||
-                   ch == '\r' ||
-                   ch == '\n' ||
-                   ch == '\t' ||
-                   ch == '\f' ||
-                   ch == '\b')
+                if(IsEscapedCharacter(ch))
                 {
                     var replacement = _escapeCharacters[ch];
 
                     if(buffer == null)
                         buffer = GetBuffer(buffer, i, ref bufferIndex);
                     else 
-                        buffer = CheckBuffer(buffer, bufferIndex);
+                        buffer = CheckBuffer(buffer, bufferIndex+2);
                      
                     buffer[bufferIndex++] = '\\';
                     buffer[bufferIndex++] = replacement;
@@ -761,16 +897,38 @@ namespace JTran.Common
             if(nonWhitespaceBegin == _offset && newLength == _length)
                 return this;
 
-            if(this.Cached)
+            if(!this.ExpressionResult)
                 return new CharacterSpan(_source!, nonWhitespaceBegin, newLength, this.HasEscapeCharacters);
 
-            this._offset = nonWhitespaceBegin;
-            this._length = newLength;
-            this._str = null;
-            this._hashCode = 0;
-
-            return this;
+            return Reset(nonWhitespaceBegin, newLength);
         }
+
+        /****************************************************************************/
+        public ICharacterSpan Concat(ICharacterSpan val)
+        {
+            if(val == null || val.Length == 0)
+                return this;
+
+            if(this.Length == 0)
+                return val;
+
+            if(_source != null && this.ExpressionResult)
+            {
+                Array.Resize(ref _source, this.Length + val.Length);
+                val.CopyTo(_source, _offset + this.Length);
+
+                return Reset(0, _length + val.Length);
+            }
+
+            var buffer = new char[this.Length + val.Length];
+
+            this.CopyTo(buffer, 0);
+            val.CopyTo(buffer, this.Length);
+
+            return new CharacterSpan(buffer, 0, this.Length + val.Length);
+        }
+
+        #endregion
 
         /****************************************************************************/
         internal static ICharacterSpan Trim(char[]? source, int offset, int length, bool hasEscapeCharacters = false, bool start = true, bool end = true)
@@ -829,8 +987,6 @@ namespace JTran.Common
 
             return -1;
         }
-
-        #endregion
 
         /****************************************************************************/
         public override string ToString()
@@ -950,14 +1106,18 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
-        private char[] CheckBuffer(char[] buffer, int bufferIndex) 
+        private char[] CheckBuffer(char[]? buffer, int length) 
         {        
-            if((bufferIndex + 2) >= buffer.Length)
-                Array.Resize(ref buffer, (int)(bufferIndex / 16) * 16 + 32);
+            if(buffer == null)
+                return new char[(int)((this.Length + 16) / 16) * 16];
+
+            if(length >= buffer.Length)
+                Array.Resize(ref buffer, (int)((length + 32) / 16) * 16);
 
             return buffer;
         }
         
+        /****************************************************************************/
         private static bool IsEscapedCharacter(char ch)
         {
             if(ch == '\\') return true;
@@ -974,41 +1134,18 @@ namespace JTran.Common
         /****************************************************************************/
         private ICharacterSpan TransformOutOfPlace(Func<char, (bool Use, char NewVal)> transform)
         {
-            char[]? buffer = null;
-            var index = 0;
-            var notUse = 0;
-
             for(int i = 0; i < this.Length; ++i)
             {
                 var oldVal = this[i];
                 var result = transform(oldVal);
 
-                if(result.Use && oldVal == result.NewVal && buffer == null)
+                if(result.Use && oldVal == result.NewVal)
                     continue;
 
-                if(this.Cached && buffer == null)
-                { 
-                     buffer = new char[this.Length];
-
-                     if(i > 0)
-                        Array.Copy(_source, _offset, buffer, 0, i);
-
-                    index = i - notUse; 
-                }
-
-                if(!result.Use)
-                { 
-                    ++notUse;
-                    continue;
-                }
-
-                buffer![index++] = result.NewVal;
+                return Clone(this).TransformInPlace(transform);
             }
 
-            if(buffer == null)
-                return this;
-
-            return new CharacterSpan(buffer, 0, index);
+            return this;
         }
 
         /****************************************************************************/
@@ -1079,6 +1216,13 @@ namespace JTran.Common
             }
 
             _buffer[_length++] = ch;
+        }
+
+        /****************************************************************************/
+        internal void RemoveLastCharacter()
+        {
+            if(_length > 0 ) 
+            --_length;
         }
 
         /****************************************************************************/

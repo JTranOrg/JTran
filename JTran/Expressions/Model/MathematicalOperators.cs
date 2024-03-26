@@ -18,6 +18,7 @@
  *                                                                          
  ****************************************************************************/
 
+using JTran.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -35,52 +36,65 @@ namespace JTran.Expressions
         {
             var leftVal     = left.Evaluate(context);
             var rightVal    = right.Evaluate(context);
-            var leftValStr  = leftVal?.ToString(); 
-            var rightValStr = rightVal?.ToString(); 
 
-            if(!(leftVal is IStringValue || rightVal is IStringValue))
-            { 
-                if(long.TryParse(leftValStr, out long leftLong))
-                    if(long.TryParse(rightValStr, out long rightLong))
-                        return DoLongMath(leftLong, rightLong);
+            if(leftVal is bool bLeft && rightVal is bool bRight)
+                return DoBoolMath(bLeft, bRight);
 
-                if(decimal.TryParse(leftValStr, out decimal leftdecimal))
-                    if(decimal.TryParse(rightValStr, out decimal rightdecimal))
-                        return DoDecimalMath(leftdecimal, rightdecimal);
+            if(leftVal is long lLeft && rightVal is long lRight)
+                return DoLongMath(lLeft, lRight);
 
-                if(bool.TryParse(leftValStr, out bool leftBool))
-                    if(bool.TryParse(rightValStr, out bool rightBool))
-                        return DoBoolMath(leftBool, rightBool);
-            }
+            if(leftVal is int iLeft && rightVal is int iRight)
+                return DoLongMath(iLeft, iRight);
 
-            return DoStringMath(leftValStr, rightValStr);
+            if(leftVal is short sLeft && rightVal is short sRight)
+                return DoLongMath(sLeft, sRight);
+
+            if(leftVal is ICharacterSpan cspanLeft)
+                return DoSpanMath(cspanLeft, rightVal.AsCharacterSpan());
+
+            if(leftVal is string strLeft)
+                return DoStringMath(strLeft, rightVal?.ToString() ?? "");
+
+            if(leftVal.TryParseDecimal(out decimal dLeft) && rightVal.TryParseDecimal(out decimal dRight))
+                return DoDecimalMath(dLeft, dRight);
+
+            return DoStringMath(leftVal?.ToString() ?? "", rightVal?.ToString() ?? "");
         }
 
         /*****************************************************************************/
         public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
-            var leftVal  = left.Evaluate(context).ToString(); 
-            var rightVal = right.Evaluate(context).ToString(); 
+            var result = Evaluate(left, right, context);
 
-            if(long.TryParse(leftVal, out long leftLong))
-                if(long.TryParse(rightVal, out long rightLong))
-                    return DoLongMath(leftLong, rightLong) > 0;
+            if(result is bool bVal)
+                return bVal;
 
-            if(decimal.TryParse(leftVal, out decimal leftdecimal))
-                if(decimal.TryParse(rightVal, out decimal rightdecimal))
-                    return DoDecimalMath(leftdecimal, rightdecimal) > 0m;
+            if(result is decimal dVal )
+                return dVal > 0m;
 
-            if(bool.TryParse(leftVal, out bool leftBool))
-                if(bool.TryParse(rightVal, out bool rightBool))
-                    return DoBoolMath(leftBool, rightBool);
+            if(result is long lVal)
+                return lVal > 0M;
 
-            return !string.IsNullOrEmpty(DoStringMath(leftVal, rightVal));
+            if(result is int iVal)
+                return iVal > 0;
+
+            if(result is short sVal)
+                return sVal > 0;
+
+            if(result is ICharacterSpan cspan)
+                return cspan.IsNullOrWhiteSpace();
+
+            if(result is string str)
+                return string.IsNullOrWhiteSpace(str);
+
+            return !string.IsNullOrWhiteSpace(result.ToString());
         }
 
-        protected abstract long    DoLongMath(long left, long right);
-        protected abstract decimal DoDecimalMath(decimal left, decimal right);
-        protected abstract bool    DoBoolMath(bool left, bool right);
-        protected abstract string  DoStringMath(string left, string right);
+        protected abstract long            DoLongMath(long left, long right);
+        protected abstract decimal         DoDecimalMath(decimal left, decimal right);
+        protected abstract bool            DoBoolMath(bool left, bool right);
+        protected abstract string          DoStringMath(string left, string right);
+        protected abstract ICharacterSpan  DoSpanMath(ICharacterSpan left, ICharacterSpan right);
     }
 
     /*****************************************************************************/
@@ -89,10 +103,11 @@ namespace JTran.Expressions
     {
         public override int Precedence => OperatorPrecendence.AdditionOperator;
 
-        protected override long    DoLongMath(long left, long right)            { return left + right; }
-        protected override decimal DoDecimalMath(decimal left, decimal right)   { return left + right; }
-        protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
-        protected override string  DoStringMath(string left, string right)      { return left + right; }
+        protected override long             DoLongMath(long left, long right)                       { return left + right; }
+        protected override decimal          DoDecimalMath(decimal left, decimal right)              { return left + right; }
+        protected override bool             DoBoolMath(bool left, bool right)                       { return left && right; }
+        protected override string           DoStringMath(string left, string right)                 { return left + right; }
+        protected override ICharacterSpan   DoSpanMath(ICharacterSpan left, ICharacterSpan right)   { return left.Concat(right); }
     }
 
     /*****************************************************************************/
@@ -101,10 +116,11 @@ namespace JTran.Expressions
     {
         public override int Precedence => OperatorPrecendence.SubtractionOperator;
 
-        protected override long    DoLongMath(long left, long right)            { return left - right; }
-        protected override decimal DoDecimalMath(decimal left, decimal right)   { return left - right; }
-        protected override bool    DoBoolMath(bool left, bool right)            { return left || right; }
-        protected override string  DoStringMath(string left, string right)      { return left.Replace(right, ""); }
+        protected override long             DoLongMath(long left, long right)                       { return left - right; }
+        protected override decimal          DoDecimalMath(decimal left, decimal right)              { return left - right; }
+        protected override bool             DoBoolMath(bool left, bool right)                       { return left || right; }
+        protected override string           DoStringMath(string left, string right)                 { return left.Replace(right, ""); }
+        protected override ICharacterSpan   DoSpanMath(ICharacterSpan left, ICharacterSpan right)   { return left.Remove(right); }
     }
 
     /*****************************************************************************/
@@ -113,10 +129,11 @@ namespace JTran.Expressions
     {
         public override int Precedence => OperatorPrecendence.MultiplyOperator;
 
-        protected override long    DoLongMath(long left, long right)            { return left * right; }
-        protected override decimal DoDecimalMath(decimal left, decimal right)   { return left * right; }
-        protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
-        protected override string  DoStringMath(string left, string right)      { return left; }
+        protected override long             DoLongMath(long left, long right)                       { return left * right; }
+        protected override decimal          DoDecimalMath(decimal left, decimal right)              { return left * right; }
+        protected override bool             DoBoolMath(bool left, bool right)                       { return left && right; }
+        protected override string           DoStringMath(string left, string right)                 { return left; }
+        protected override ICharacterSpan   DoSpanMath(ICharacterSpan left, ICharacterSpan right)   { return left; }
     }
 
     /*****************************************************************************/
@@ -125,10 +142,11 @@ namespace JTran.Expressions
     {
         public override int Precedence => OperatorPrecendence.DivisionOperator;
 
-        protected override long    DoLongMath(long left, long right)            { return left / right; }
-        protected override decimal DoDecimalMath(decimal left, decimal right)   { return left / right; }
-        protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
-        protected override string  DoStringMath(string left, string right)      { return left; }
+        protected override long             DoLongMath(long left, long right)                       { return left / right; }
+        protected override decimal          DoDecimalMath(decimal left, decimal right)              { return left / right; }
+        protected override bool             DoBoolMath(bool left, bool right)                       { return left && right; }
+        protected override string           DoStringMath(string left, string right)                 { return left; }
+        protected override ICharacterSpan   DoSpanMath(ICharacterSpan left, ICharacterSpan right)   { return left; }
     }
 
     /*****************************************************************************/
@@ -137,9 +155,10 @@ namespace JTran.Expressions
     {
         public override int Precedence => OperatorPrecendence.ModulusOperator;
 
-        protected override long    DoLongMath(long left, long right)            { return left % right; }
-        protected override decimal DoDecimalMath(decimal left, decimal right)   { return left % right; }
-        protected override bool    DoBoolMath(bool left, bool right)            { return left && right; }
-        protected override string  DoStringMath(string left, string right)      { return left; }
+        protected override long             DoLongMath(long left, long right)                       { return left % right; }
+        protected override decimal          DoDecimalMath(decimal left, decimal right)              { return left % right; }
+        protected override bool             DoBoolMath(bool left, bool right)                       { return left && right; }
+        protected override string           DoStringMath(string left, string right)                 { return left; }
+        protected override ICharacterSpan   DoSpanMath(ICharacterSpan left, ICharacterSpan right)   { return left; }
     }
 }

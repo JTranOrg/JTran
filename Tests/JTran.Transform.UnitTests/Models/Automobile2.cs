@@ -11,6 +11,15 @@ namespace JTran.Transform.UnitTests
         public string        Color     { get; set; }
         public Engine?       Engine    { get; set; }
         public int?          Index     { get; set; }
+
+        public Driver3?          Driver { get; set; }
+    }    
+    
+    public class Driver3
+    {
+        public string        FirstName { get; set; } = "";
+        public string        LastName  { get; set; } = "";
+        public int           Age       { get; set; }
     }
 
     public class Engine

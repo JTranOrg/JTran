@@ -51,6 +51,11 @@ namespace JTran.UnitTests
                                                                              
             Assert.AreEqual(JsonToken.TokenType.Boolean,        Test("  false,").Type);
             Assert.IsFalse((bool)Test("  false,").Value!);
+
+            Assert.AreEqual("bob",                              Test(" bob, // fred").Value.ToString());
+            Assert.AreEqual("bob",                              Test(" bob// fred").Value.ToString());
+            Assert.AreEqual("end of file",                      Test(" // fred").Value.ToString());
+            Assert.AreEqual("//",                                 Test(" '//' fred").Value.ToString());
         }
 
         private (JsonToken.TokenType Type, object? Value) Test(string text)

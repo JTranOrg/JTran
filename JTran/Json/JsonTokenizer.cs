@@ -86,10 +86,25 @@ namespace JTran.Json
                 else
                     _builder.Append(ch); 
 
+                previousChar = ch;
+                
                 while(reader.ReadNext(quoted: doubleQuoted || singleQuoted))
                 {
                     this.TokenLineNumber = lineNumber = reader.LineNumber;
                     ch = reader.Current;
+
+                    if(ch == '/' && previousChar == '/' && !doubleQuoted && !singleQuoted)
+                    {
+                        reader.SkipToEndOfLine();
+
+                        // Need to remove that first '/'
+                        _builder.RemoveLastCharacter();
+
+                        if(_builder.Length > 0)
+                            goto ReturnToken;
+
+                        return ReadNextToken(reader, ref lineNumber);
+                    }
 
                     if(escape)
                     {
@@ -153,6 +168,8 @@ namespace JTran.Json
                 if(_builder.Length == 0)
                     throw new JsonParseException("Unexpected end of file", lineNumber);
             }
+
+          ReturnToken:
 
             this.TokenValue = _builder.Current;
 

@@ -101,47 +101,6 @@ namespace JTran.Extensions
             return obj is IEnumerable && obj.GetType().Name.Contains("Dictionary");
         }
 
-        /****************************************************************************/
-        // ??? what about DateTimeOffset
-        internal static bool TryParseDateTime(this object data, out DateTime? dtValue)
-        {
-            dtValue = null;
-
-            if(data == null)
-                return false;
-
-            if(data is DateTime dtValue2)
-            {
-                dtValue = dtValue2;
-                return true;
-            }
-
-            if(data is DateTimeOffset dtValue3)
-            {
-                dtValue = dtValue3.DateTime;
-                return true;
-            }
-
-            var sdate = data.ToString();
-
-            if(sdate.EndsWith("Z"))
-            {
-                if(!DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue)) 
-                    return false;
-
-                dtValue = dtoValue.UtcDateTime;
-                return true;
-            }
-
-            if(DateTime.TryParse(sdate, out DateTime dtValue4))
-            {
-                dtValue = dtValue4;
-                return true;
-            }
-
-            return false;
-        }
-
         /*****************************************************************************/
         internal static int Compare(object? leftVal, object? rightVal, out object? lVal, out object? rVal)
         {
@@ -160,72 +119,46 @@ namespace JTran.Extensions
             if(leftVal is bool b1 && rightVal is bool b2)
                 return b1.CompareTo(b2);
 
+            if(leftVal is DateTime dt1 && rightVal is DateTime dt2)
+                return dt1.CompareTo(dt2);
+
+            if(leftVal is DateTimeOffset dto1 && rightVal is DateTimeOffset dto2)
+                return dto1.CompareTo(dto2);
+
             if(leftVal.TryParseDecimal(out decimal d1) && rightVal.TryParseDecimal(out decimal d2))
             { 
                 lVal = d1;
                 rVal = d2;
+
                 return d1.CompareTo(d2);
             }
 
             var leftValStr  = leftVal.ToString(); 
             var rightValStr = rightVal.ToString(); 
 
-            if(leftVal.TryParseDateTime(out DateTime? dtLeft) && rightVal.TryParseDateTime(out DateTime? dtRight))
+            if(DateTimeOffset.TryParse(leftValStr, out DateTimeOffset dtoLeft) && DateTimeOffset.TryParse(rightValStr, out DateTimeOffset dtoRight))
             { 
-                lVal = dtLeft!.Value.ToString("s");
-                rVal = dtRight!.Value.ToString("s");
-                return DateTime.Compare(dtLeft!.Value, dtRight!.Value);
+                lVal = dtoLeft.ToString("s");
+                rVal = dtoRight.ToString("s");
+
+                return DateTimeOffset.Compare(dtoLeft, dtoRight);
             }
-                    
+                   
+            if(DateTime.TryParse(leftValStr, out DateTime dtLeft) && DateTime.TryParse(rightValStr, out DateTime dtRight))
+            { 
+                lVal = dtLeft.ToString("s");
+                rVal = dtRight.ToString("s");
+
+                return DateTime.Compare(dtLeft, dtRight);
+            }
+                   
             return leftValStr.CompareTo(rightValStr);
         }
 
         /*****************************************************************************/
-        internal static int compareto(object? leftVal, object? rightVal, out Type type)
+        internal static int CompareTo(this object? leftVal, object? rightVal)
         {
-            type = typeof(object);
-
-            if(leftVal == null && rightVal == null)
-                return 0;
-
-            if(rightVal == null)
-                return 1;
-
-            if(leftVal == null)
-                return -1;
-
-            if(leftVal is bool b1 && rightVal is bool b2)
-            { 
-                type = typeof(bool);
-                return b1.CompareTo(b2);
-            }
-
-            if(leftVal.TryParseDecimal(out decimal d1) && rightVal.TryParseDecimal(out decimal d2))
-            { 
-                type = typeof(bool);
-                return d1.CompareTo(d2);
-            }
-
-            var leftValStr  = leftVal.ToString(); 
-            var rightValStr = rightVal.ToString(); 
-
-            if(leftVal.TryParseDateTime(out DateTime? dtLeft))
-            { 
-                if(rightVal.TryParseDateTime(out DateTime? dtRight))
-                { 
-                    type = typeof(DateTime);
-                    return DateTime.Compare(dtLeft.Value, dtRight.Value);
-                }
-            }
-                    
-            type = typeof(string);
-            return leftValStr.CompareTo(rightValStr);
-        }
-
-        /*****************************************************************************/
-        internal static int CompareTo(this object leftVal, object rightVal, out Type type)
-        {
-            return compareto(leftVal, rightVal, out type);
+            return Compare(leftVal, rightVal, out object? _, out object? _);
         }
 
         #region Private
@@ -330,13 +263,6 @@ namespace JTran.Extensions
             }
 
             return Poco.FromObject(obj).GetValue(obj, nameSpan);
-        }
-
-        /****************************************************************************/
-        [Obsolete("Replaced by ICharacterSpan version")]
-        internal static object GetPropertyValue(this object obj, string name)       
-        {
-            return obj.GetPropertyValue(CharacterSpan.FromString(name));
         }
 
         #endregion

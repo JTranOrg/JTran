@@ -46,7 +46,7 @@ namespace JTran.Expressions
             var leftVal  = left.Evaluate(context);
             var rightVal = right.Evaluate(context);
 
-            return leftVal.CompareTo(rightVal, out Type type);
+            return leftVal.CompareTo(rightVal);
         }
     }
 

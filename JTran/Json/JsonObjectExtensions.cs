@@ -92,7 +92,7 @@ namespace JTran.Json
 
                 writer.WriteList(list);
             }
-            else if(value is JsonObject jobj)
+            else if(value is IObject jobj)
             {
                 writer.WriteContainerName(key);
                 jobj.ToJson(writer);                   
@@ -109,14 +109,14 @@ namespace JTran.Json
         /****************************************************************************/
         internal static void ChildrenToJson(this object obj, IJsonWriter writer)
         {
-            if(obj is JsonObject jobj)
+            if(obj is IObject jobj)
             { 
-                foreach(var kv in jobj)
+                jobj.ForEachProperty((name, val)=>
                 {
                     writer.StartChild();
-                    ToJson(kv.Key, kv.Value, writer);
+                    ToJson(name, val, writer);
                     writer.EndChild();
-                }
+                });
             }
             else 
             {

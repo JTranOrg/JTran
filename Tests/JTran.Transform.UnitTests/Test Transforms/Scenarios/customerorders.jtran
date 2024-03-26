@@ -255,7 +255,7 @@
     }
   ],
 
-  "#iterate(53, customers)": 
+  "#iterate($NumCustomers, customers)": 
   {
     "id":               "#(guid())",
     "FirstName":        "#(pickrandom($firstnames))",
@@ -269,13 +269,13 @@
       "PhoneNumber":    "#('(' + randominteger(201, 987) + ') ' + randominteger(201, 987) + '-' + randominteger(1027, 9981))"
     },
 
-    "#iterate(17, orders)": 
+    "#iterate($NumOrders, orders)": 
     {
       "id":             "#(guid())",
       "date":           "#(formatdatetime(adddays(currentdatetime(), randominteger(-365, -1)), 'yyyy-MM-dd'))",
       "status":         "#(pickrandom($statuses))",
 
-      "#iterate(32, items)": 
+      "#iterate(randominteger(17, 54), items)": 
       {
         "#variable(product)":  "#(pickrandomunique($products, 'products'))",
 

@@ -33,6 +33,7 @@ namespace JTran.Json
     internal interface ICharacterReader : IDisposable
     {
         bool    ReadNext(bool skipWhiteSpace = false, bool quoted = false);    
+        void    SkipToEndOfLine();    
         void    GoBack();    
         char    Current    { get; }
         long    LineNumber { get; }
@@ -98,7 +99,13 @@ namespace JTran.Json
         }
 
         /****************************************************************************/
-        private bool InternalReadNext(char prev, bool skipWhiteSpace, bool quoted)
+        public void SkipToEndOfLine()
+        {
+            InternalReadNext('\0', false, endOfLine: true);
+        }
+
+        /****************************************************************************/
+        private bool InternalReadNext(char prev, bool skipWhiteSpace, bool quoted = false, bool endOfLine = false)
         {
             while(true)
             { 
@@ -138,10 +145,16 @@ namespace JTran.Json
                         return true;
                     }
 
+                    if(endOfLine)
+                        return true;
+
                     return InternalReadNext(ch, skipWhiteSpace, false);
                 }
 
-                 if(prev == '\r' || prev == '\n')
+                if(!quoted && endOfLine)
+                    continue;
+
+                if(prev == '\r' || prev == '\n')
                     ++_lineNumber;
 
                 if(skipWhiteSpace && (ch == ' ' || ch == '\t'))

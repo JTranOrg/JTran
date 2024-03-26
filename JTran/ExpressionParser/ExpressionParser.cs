@@ -11,7 +11,6 @@ namespace JTran.Parser
     /// </summary>
     internal class ExpressionParser
     {
-        private static readonly IDictionary<string, string> _transformOperators = new Dictionary<string, string> { {"and", "&&" }, { "or", "||"} };
         private static readonly IList<string> _operators = new List<string> { "[", "]", "*", "/", "++", "--", "+=", "-=", "*=", "/=", "+", "-", "%", "<", "<=", ">", ">=", "=", "==", "===", "!=", "!==", "!", "||", "&&", "??", "?", ":", "(", ")", "~", "^", ">>", "<<", ",", ".", "=>", "=:", "and", "or", "=" };
         
         private readonly List<Token> _sb = new List<Token>();
@@ -25,7 +24,6 @@ namespace JTran.Parser
         }
 
         /*****************************************************************************/
-        // ??? Need to optimize tokens to use ICharacterSpan
         internal IReadOnlyList<Token> Parse(ICharacterSpan expression)
         {
             var   n    = expression.Length;
