@@ -1,0 +1,12 @@
+{
+  "#foreach(data, [])": 
+  {
+    "Code":       "#(municipio_codigo)",
+    "Name":       "#(municipio_nombre)",
+    "Nuts4Code":  "#(nuts4_codigo)",
+    "Nuts4Name":  "#(nuts4_nombre)",
+    "INECode":    "#(municipio_codigo_ine)",
+    "Density":    "#(densidad_por_km2)",
+    "Area":       "#(superficie_km2)"
+  }
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Transforms\Municipality.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Transforms\Municipality.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Libraries\MondoCore\MondoCore.Rest\MondoCore.Rest\MondoCore.Rest.csproj" />
+    <ProjectReference Include="..\..\JTran\JTran.csproj" />
+  </ItemGroup>
+
+</Project>

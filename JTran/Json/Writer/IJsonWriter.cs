@@ -231,15 +231,20 @@ namespace JTran
         {
             StartChild();
 
-            if(val is IObject expObject)
+            if(val is IObject obj)
             { 
-                this.WriteContainerName(name);
-                
-                expObject.ToJson(this);
+                if(name != null)
+                { 
+                    WriteContainerName(name);
+                    obj.ToJson(this);
+                }
+                else
+                    WriteProperties(obj);
             }
             else if(val is IEnumerable<object> list)
             { 
-                this.WriteContainerName(name);
+                if(name != null)
+                    WriteContainerName(name);
                 
                 WriteList(list);
             }

@@ -10,7 +10,7 @@
 
         static void Test1()
         {        
-            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_2000000.json");
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_list_2000000.json");
             var transformer  = new JTran.Transformer( "{ '#foreach(@, [])': { '#noobject': '#copyof(@)' } }" );
             using var output = File.OpenWrite($"c:\\Documents\\Testing\\JTran\\largefile_output_2000000.json");
                 
@@ -58,7 +58,7 @@
                 }
             };
 
-            var transformer  = new JTran.Transformer( "{ 'foreach(@, [])}': { '#noobject': '#copyof(@)' } }" );
+            var transformer  = new JTran.Transformer( "{ '#foreach(@, [])}': { '#noobject': '#copyof(@)' } }" );
             using var output = new MemoryStream();
             
             transformer.Transform(list, output);

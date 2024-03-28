@@ -44,7 +44,9 @@ namespace JTran.Random
 
             _uniqueTracker[name].Add(index, true);
 
-            return list.Skip(index).Take(1).Single();
+            var val = list.Skip(index).Take(1).Single();
+
+            return val;
         }
 
         /// <summary>

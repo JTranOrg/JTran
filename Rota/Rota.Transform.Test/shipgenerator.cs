@@ -6,18 +6,19 @@ namespace Rota.Transform.Test
     public class ShipGeneratorTests
     {
         [TestMethod]
-        public async Task ShipGenerator_success()
+        [DataRow(1415)]
+        public async Task ShipGenerator_success(int numShips)
         {
-            var result = await Test("shipgenerator", "{ 'bob': 'bob'}");
+            var result = await Test("shipgenerator", "{ 'bob': 'bob'}", new { NumShips = numShips });
 
             Assert.IsNotNull(result);
         }
         
         #region Private
 
-        public async Task<string> Test(string transform, string data)
+        public async Task<string> Test(string transform, string data, object? args = null)
         {
-            var result = await TransformerTest.TestStaticData(transform, data);           
+            var result = await TransformerTest.TestStaticData(transform, data, args: args);           
             var array   = JArray.Parse(result)!;
 
             Assert.IsNotNull(array);

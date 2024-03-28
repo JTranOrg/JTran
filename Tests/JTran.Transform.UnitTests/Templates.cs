@@ -1,5 +1,6 @@
 
 using Newtonsoft.Json.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JTran.Transform.UnitTests
 {
@@ -19,9 +20,19 @@ namespace JTran.Transform.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse(expected), JObject.Parse(result)));
         }
 
+        [TestMethod]
+        [DataRow("aselement2")]
+        public async Task Templates_as_element(string transform)
+        {
+            var result = await TransformerTest.Test("Templates." + transform, "Templates.after"); 
+            var expected = "[ { Make: \"Chevy\", Model: \"Corvette\" },  { Make: \"Pontiac\", Model: \"Firebird\" } ]";
+
+            Assert.IsTrue(JToken.DeepEquals(JArray.Parse(expected), JArray.Parse(result)));
+        }
+
         #region Private
 
-        public async Task<string> Test(string transform, string data)
+        private async Task<string> Test(string transform, string data)
         {
             var result = await TransformerTest.Test("Templates." + transform, "Templates." + data);           
             var jobj   = JObject.Parse(result)!;

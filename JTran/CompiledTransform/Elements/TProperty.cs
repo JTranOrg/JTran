@@ -9,13 +9,15 @@ namespace JTran
     /****************************************************************************/
     internal class TProperty : TToken
     {
+        private static ICharacterSpan _noobject = CharacterSpan.FromString("#noobject");
+
         /****************************************************************************/
         internal TProperty(ICharacterSpan name, object val, long lineNumber)
         {
             if(name.Length == 0)
                 throw new ArgumentException();
 
-            this.Name  = CreateValue(name, true, lineNumber);
+            this.Name = _noobject.Equals(name) ? null : CreateValue(name, true, lineNumber);
 
             try
             { 
@@ -28,8 +30,8 @@ namespace JTran
 
         }
 
-        internal IValue Name  { get; set; }
-        internal IValue Value { get; set; }
+        internal IValue? Name  { get; set; }
+        internal IValue Value  { get; set; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)

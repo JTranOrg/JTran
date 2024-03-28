@@ -125,6 +125,7 @@
     <None Remove="Test Transforms\Templates\after.jtran" />
     <None Remove="Test Transforms\Templates\after2.jtran" />
     <None Remove="Test Transforms\Templates\aselement.jtran" />
+    <None Remove="Test Transforms\Templates\aselement2.jtran" />
     <None Remove="Test Transforms\Variables\variable.jtran" />
     <None Remove="Test Transforms\Map\map.jtran" />
     <None Remove="Test Transforms\Map\map2.jtran" />
@@ -253,6 +254,7 @@
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_state.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_city.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after.jtran" />
+    <EmbeddedResource Include="Test Transforms\Templates\aselement2.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\aselement.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after2.jtran" />
     <EmbeddedResource Include="Test Transforms\Variables\variable.jtran" />

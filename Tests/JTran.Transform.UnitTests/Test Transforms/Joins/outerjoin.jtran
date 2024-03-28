@@ -57,6 +57,10 @@
 
   "#foreach($joined_drivers, [])": 
   {
-    "#noobject": "#copyof(@)"
+    "Driver": "#(left.FirstName + ' ' + left.LastName)",
+    "From":   "#(left.From)",
+    "Make":   "#(right.Make)",
+    "Model":  "#(right.Model)",
+    "Year":   "#(right.Year)"
   }
 }

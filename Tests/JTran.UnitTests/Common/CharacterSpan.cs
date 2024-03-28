@@ -380,11 +380,30 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]    
-        [DataRow("",        "",         "")]
-        [DataRow("bobfred", "",         "bobfred")]
-        [DataRow("bob",     "fred",     "bobfred")]
-        [DataRow("",        "bobfred",  "bobfred")]
-        public void CharacterSpan_Concat(string str1, string str2, string expected)
+        public void CharacterSpan_Concat()
+        {
+            TestConcat("",        "",         "");
+            TestConcat("bobfred", "",         "bobfred");
+            TestConcat("bob",     "fred",     "bobfred");
+            TestConcat("",        "bobfred",  "bobfred");
+            TestConcat("Ella",    "Marshall", "EllaMarshall");
+
+            var cspan0   = CharacterSpan.FromString("bobfredEllaMarshall");
+            var bob      = new CharacterSpan(cspan0, 0, 3);
+            var fred     = new CharacterSpan(cspan0, 3, 4);
+            var ella     = new CharacterSpan(cspan0, 7, 4);
+            var marshall = new CharacterSpan(cspan0, 11);
+
+            bob.ExpressionResult = true;
+            fred.ExpressionResult = true;
+            ella.ExpressionResult = true;
+            marshall.ExpressionResult = true;
+
+            Assert.AreEqual("bobfred",      bob.Concat(fred).ToString());
+            Assert.AreEqual("EllaMarshall", ella.Concat(marshall).ToString());
+       }
+
+        private void TestConcat(string str1, string str2, string expected)
         {
             var i1 = CharacterSpan.FromString(str1);
             var i2 = CharacterSpan.FromString(str2);

@@ -911,15 +911,7 @@ namespace JTran.Common
 
             if(this.Length == 0)
                 return val;
-
-            if(_source != null && this.ExpressionResult)
-            {
-                Array.Resize(ref _source, this.Length + val.Length);
-                val.CopyTo(_source, _offset + this.Length);
-
-                return Reset(0, _length + val.Length);
-            }
-
+            
             var buffer = new char[this.Length + val.Length];
 
             this.CopyTo(buffer, 0);
@@ -1005,11 +997,12 @@ namespace JTran.Common
         {
             var comparer = EqualityComparer<int>.Default;
             var hashCode = 0;
+            var cspanLen = cspan.Length;
 
-            for(int i = 0; i < cspan.Length; i += 2) 
+            for(int i = 0; i < cspanLen; i += 2) 
             { 
                 var value1 = (int)cspan[i];
-                var value2 = (i < cspan.Length-1) ? (int)cspan[i+1] : 0;
+                var value2 = (i < cspanLen-1) ? (int)cspan[i+1] : 0;
                 var value  = value1 << 16 | value2;
                         
                 hashCode = i == 0 ? comparer.GetHashCode(value) : CombineHashCodes(hashCode, comparer.GetHashCode(value));

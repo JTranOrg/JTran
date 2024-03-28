@@ -16,7 +16,7 @@ namespace Rota.Transform.Test
             return await TestStaticData(transformName, data, extFunctions, dataTransform, includeSource);
         }
 
-        public static async Task<string> TestStaticData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null)
+        public static async Task<string> TestStaticData(string transformName, string data, IEnumerable extFunctions = null, Func<string, string>? dataTransform = null, IDictionary<string, string>? includeSource = null, object? args = null)
         {
             var transform   = await LoadTransform(transformName);
             var transformer = new JTran.Transformer(transform, new List<object> { new JTran.Random.RandomExtensions() }, includeSource: includeSource);
@@ -24,7 +24,7 @@ namespace Rota.Transform.Test
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            var context = new TransformerContext() { DocumentRepositories = new Dictionary<string, IDocumentRepository> { { "docs", new DocumentRepository() } }, Arguments = null};
+            var context = new TransformerContext() { DocumentRepositories = new Dictionary<string, IDocumentRepository> { { "docs", new DocumentRepository() } }, Arguments = args?.ToDictionary()};
             var result = transformer.Transform(data, context);
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));

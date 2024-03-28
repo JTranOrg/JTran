@@ -255,11 +255,13 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[iif](#iif)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[include (as a property)](#include (as a property))</strong> - Outputs the specified properties of an object 
+- <strong>[innerjoin](#innerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the matching objects 
 - <strong>[iterate](#iterate)</strong> - Create an array by looping over the contents
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
 - <strong>[map](#map)</strong> - Maps a set of a keys or expressions to a single output value 
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
 - <strong>[message](#message)</strong> - Writes a message to the console 
+- <strong>[outerjoin](#outerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
 - <strong>[try](#trycatch)</strong> - Part of a try/catch block
@@ -796,6 +798,84 @@ You must specify how the included files are loaded when instantiating the transf
         }
     }
 
+
+#### #innerjoin
+    
+    Joins the objects from two arrays based on a query and outputs the matching objects. In the query to match objects the object from the first list is referenced by "left" and the second by "right"
+
+###### Transform
+
+    {
+        "#variable(joined_drivers)": "#innerjoin(Drivers, Cars, left.CarId == right.Id)",
+
+        "#foreach($joined_drivers, [])": 
+        {
+          "Driver": "#(left.FirstName + ' ' + left.LastName)",
+          "From":   "#(left.From)",
+          "Make":   "#(right.Make)",
+          "Model":  "#(right.Model)",
+          "Year":   "#(right.Year)",
+        }
+    }
+
+###### Source Document
+
+    {
+      "Cars": 
+      [
+        {
+          "Id":     1,
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+        },
+        {
+          "Id":     2,
+          "Make":   "Pontiac",
+          "Model":  "Firebird",
+          "Year":   1970
+        }
+      ],
+
+      "Drivers": 
+      [
+        {
+          "CarId":      1,
+          "FirstName":  "Linda",
+          "LastName":   "Martinez",
+          "From":       "Seattle, WA",
+          "Age":        28
+        },
+        {
+          "CarId":      2,
+          "FirstName":  "Frank",
+          "LastName":   "Anderson",
+          "From":       "Casper, WY",
+          "Age":        34
+        }
+      ]
+    }
+
+ ###### Output
+
+    [
+        {
+          "Driver": "Linda Martinez",
+          "From":   "Seattle, WA",
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+
+        },
+        {
+          "Driver": "Frank Anderson",
+          "From":   "Casper, WY",
+          "Make":   "Pontiac",
+          "Model":  "Firebird",
+          "Year":   1970
+       }
+    ]
+
 #### #iterate
 
 #iterate will create an array with the given name and iterate the number of times (derived from the expression) over the contents
@@ -803,7 +883,7 @@ You must specify how the included files are loaded when instantiating the transf
 ###### Transform
 
     {
-        "#iterate(length(Cars), Cars)":
+        "#iterate(count(Cars), Cars)":
         {
             Index: "#(position() + 1)",
             Make:  "Cars[position()]"
@@ -847,7 +927,7 @@ You must specify how the included files are loaded when instantiating the transf
                 Index: "3",
                 Make:  "Dodge"
             }
-       ]
+        ]
     }
 
 #### #if
@@ -1540,6 +1620,94 @@ You can also use expressions in the #mapitem but then you'll need to use the sco
         ]   
     }
 
+#### #message
+    
+    Writes a message to the console
+
+    ###### Transform
+
+    {
+        "#foreach(Drivers, []":  
+        {
+            "Name":        "#(Name)",
+
+            "#if(position() == 1000)":
+            {
+                "#message": "#('The 1000th driver is ' + Name)"
+            }
+        }
+    }
+
+#### #outerjoin
+    
+    Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
+
+###### Transform
+
+    {
+        "#variable(joined_drivers)": "#outerjoin(Drivers, Cars, left.CarId == right.Id)",
+
+        "#foreach($joined_drivers, [])": 
+        {
+          "Driver": "#(left.FirstName + ' ' + left.LastName)",
+          "From":   "#(left.From)",
+          "Make":   "#(right.Make)",
+          "Model":  "#(right.Model)",
+          "Year":   "#(right.Year)",
+        }
+    }
+
+###### Source Document
+
+    {
+      "Cars": 
+      [
+        {
+          "Id":     1,
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+        }
+      ],
+
+      "Drivers": 
+      [
+        {
+          "CarId":      1,
+          "FirstName":  "Linda",
+          "LastName":   "Martinez",
+          "From":       "Seattle, WA",
+          "Age":        28
+        },
+        {
+          "CarId":      2,
+          "FirstName":  "Frank",
+          "LastName":   "Anderson",
+          "From":       "Casper, WY",
+          "Age":        34
+        }
+      ]
+    }
+
+ ###### Output
+
+    [
+        {
+          "Driver": "Linda Martinez",
+          "From":   "Seattle, WA",
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+
+        },
+        {
+          "Driver": "Frank Anderson",
+          "From":   "Casper, WY",
+          "Make":   null,
+          "Model":  null,
+          "Year":   null
+       }
+    ]
 
 ### <a id="Templates">Templates</a>
 
@@ -1615,7 +1783,7 @@ You can pass parameters to a template
 ###### Transform
 
     {
-        "foreach(Cars, Vehicles)":
+        "#foreach(Cars, Vehicles)":
         {
             "#calltemplate(Automobile)":  
             {
@@ -1625,6 +1793,24 @@ You can pass parameters to a template
         }
 
         // Templates must be defined in the root object but can be defined before or after it's use
+        "#template(Automobile, Make, Model)":
+        {
+            "Make":   "#($Make)",
+            "Model":  "#($Model)",
+            "Active":  true
+        }
+    }
+
+You can use a shortcut syntax to call a template by using the template name as an element
+
+###### Transform
+
+    {
+        "#foreach(Cars, Vehicles)":
+        {
+            "#noobject": "#Automobile(Make, Model)"
+        },
+
         "#template(Automobile, Make, Model)":
         {
             "Make":   "#($Make)",

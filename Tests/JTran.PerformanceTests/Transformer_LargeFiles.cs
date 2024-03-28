@@ -397,7 +397,7 @@ namespace JTran.PerformanceTests
             "Luna",          "Isabella",    "Esme",          "Evelyn",
             "Hazel",         "Lucy",        "Mia",           "Rose",
             "Chloe",         "Ophelia",     "Daisy",         "Harper",
-            "Aria/Arya",     "Eloise",      "Ruby",          "Josephine",
+            "Arya",          "Eloise",      "Ruby",          "Josephine",
             "Scarlett",      "Vivian",      "Margot",        "Felicity",
             "Isla",          "Lorelei",     "Layla",         "Delilah",
             "Abigail",       "Wren",        "Anastasia",     "Amaya",
