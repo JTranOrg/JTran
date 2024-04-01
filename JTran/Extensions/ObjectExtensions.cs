@@ -178,6 +178,9 @@ namespace JTran.Extensions
         /****************************************************************************/
         private static object EvaluateAncestors(this object obj, ref ICharacterSpan expression)
         {
+            if(expression.Length == 0)
+                return obj;
+
             var result = obj;
             var index = 0;
 

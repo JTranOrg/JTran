@@ -1,5 +1,5 @@
 {
-  "#bind(data[municipio_codigo == $Code])": 
+  "#foreach(data, [])": 
   {
     "Code":       "#(municipio_codigo)",
     "Name":       "#(municipio_nombre)",

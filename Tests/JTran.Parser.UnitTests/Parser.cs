@@ -338,6 +338,28 @@ namespace JTran.Parser.UnitTests
             Assert.IsNotNull(tokens);
             Assert.AreEqual(count, tokens.Count);
         }
+
+        [TestMethod]
+        [DataRow("replace(abc, xyz, '\\\"')", 8)]
+        public void Expression_quote(string expr, int count)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(expr);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(count, tokens.Count);
+        }
+
+        [TestMethod]
+        [DataRow("iif(date < 0, string(abs(date)) + ' BC', iif(year(date) < 1000, string(year(date)) + ' AD', formatdatetime(date, 'MMM d, yyyy')))", 43)]
+        public void Expression_supercomplex(string expr, int count)
+        {
+            var parser = new JTranParser();
+            var tokens = parser.Parse(expr);
+   
+            Assert.IsNotNull(tokens);
+            Assert.AreEqual(count, tokens.Count);
+        }
     }
 
     internal static class Extensions

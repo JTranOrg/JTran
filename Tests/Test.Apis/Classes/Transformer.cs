@@ -8,7 +8,7 @@ namespace Test.Apis.Classes
 {
     public interface ITransformer<T>
     {
-        string Transform(string data);
+        string Transform(string data, object? args = null);
     }    
     
     public class Transformer<T> : ITransformer<T>
@@ -20,9 +20,14 @@ namespace Test.Apis.Classes
             _transformer = new JTran.Transformer(LoadTransform(transformName));
         }
 
-        public string Transform(string data)
+        public string Transform(string data, object? args = null)
         {
-            return _transformer.Transform(data);
+            JTran.TransformerContext? context = null;
+
+            if(args != null) 
+                context = new JTran.TransformerContext() { Arguments = args.ToDictionary() };
+
+            return _transformer.Transform(data, context);
         }
 
         private string LoadTransform(string name)

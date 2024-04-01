@@ -1,0 +1,35 @@
+{
+  "#foreach(results[$Year == 'all' or year(release_date) == $Year], [])": 
+  {
+    "Title":    "#(title)",
+    "Year":     "#(year(release_date))",
+    "Language": 
+    {
+      "#map(language)":
+      {
+        "#mapitem('en')":  "English",
+        "#mapitem('th')":  "Thai",
+        "#mapitem":        "Unknown"
+      }
+    },
+
+    "#if(any(details[language == 'en']))": 
+    {
+      "#bind(details[language == 'en'])": 
+      {
+        "Synopsis": "#(storyline)",
+        "Director": "#(director)",
+        "Cast":     "#(split(cast, ','))"
+      }
+    },
+    "#else": 
+    {
+      "#bind(details[0])": 
+      {
+        "Synopsis": "#(storyline)",
+        "Director": "#(director)",
+        "Cast":     "#(split(cast, ','))"
+      }
+    }
+  }
+}

@@ -10,31 +10,39 @@ namespace Test.Apis.Controllers
     public class MadridController : ControllerBase
     {
         private readonly IRestApi<Municipality> _api;
-        private readonly ITransformer<Municipality> _transform;
+        private readonly ITransformer<List<Municipality>> _transformAll;
+        private readonly ITransformer<Municipality> _transformOne;
 
-        public MadridController(IRestApi<Municipality> api, ITransformer<Municipality> transform)
+        public MadridController(IRestApi<Municipality> api, ITransformer<List<Municipality>> transformAll, ITransformer<Municipality> transformOne)
         {
-            _api       = api ?? throw new ArgumentNullException(nameof(api));
-            _transform = transform ?? throw new ArgumentNullException(nameof(transform));
+            _api          = api ?? throw new ArgumentNullException(nameof(api));
+            _transformAll = transformAll ?? throw new ArgumentNullException(nameof(transformAll));
+            _transformOne = transformOne ?? throw new ArgumentNullException(nameof(transformOne));
         }
 
-        [HttpGet(Name = "GetMunicipalities")]
-        public async Task<string> Get()
+        [Route("municipalities")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<string> GetMunicipalities()
         {
             var result = await _api.Get<string>("");
 
-            return _transform.Transform(result);
+            return _transformAll.Transform(result);
+        }
+
+        [Route("municipality/{code}")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<string> GetMunicipality(string code)
+        {
+            var result = await _api.Get<string>("");
+
+            return _transformOne.Transform(result, new { Code = code} );
         }
     }
 
     public class Municipality
     {
-        public string? Code             { get; set; }
-        public string? Name             { get; set; }
-        public string? Nuts4Code        { get; set; }
-        public string? Nuts4Name        { get; set; }
-        public string? INECode          { get; set; }
-        public double? Density          { get; set; }
-        public double? Area             { get; set; }
+        // Don't actually need anything in here. Just used for DI
     }
 }

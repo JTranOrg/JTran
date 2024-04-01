@@ -271,7 +271,7 @@ namespace JTran.Expressions
                     if(lval == "false")
                         return new Value(false);
 
-                    if(token.Value[0] == '$')
+                    if(token.Value.Length > 0 && token.Value[0] == '$')
                     { 
                         if(token.Value.Contains("."))
                         {

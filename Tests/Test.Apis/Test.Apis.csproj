@@ -7,19 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Transforms\History.jtran" />
+    <None Remove="Transforms\Movies.jtran" />
+    <None Remove="Transforms\Municipalities.jtran" />
     <None Remove="Transforms\Municipality.jtran" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Transforms\History.jtran" />
+    <EmbeddedResource Include="Transforms\Municipalities.jtran" />
+    <EmbeddedResource Include="Transforms\Movies.jtran" />
     <EmbeddedResource Include="Transforms\Municipality.jtran" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="MondoCore.Rest" Version="1.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Libraries\MondoCore\MondoCore.Rest\MondoCore.Rest\MondoCore.Rest.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>
 

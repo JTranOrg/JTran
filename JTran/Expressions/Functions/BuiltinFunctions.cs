@@ -52,25 +52,31 @@ namespace JTran.Expressions
         #region Math Functions
 
         /*****************************************************************************/
-        public object? floor(object val)
+        public object? abs(object? val)
+        {
+            return numberoperation(val, (dVal)=> Math.Abs(dVal));
+        }
+
+        /*****************************************************************************/
+        public object? floor(object? val)
         {
             return numberoperation(val, (dVal)=> Math.Floor(dVal));
         }
 
         /*****************************************************************************/
-        public object? ceiling(object val)
+        public object? ceiling(object? val)
         {
             return numberoperation(val, (dVal)=> Math.Ceiling(dVal));
         }
 
         /*****************************************************************************/
-        public object? round(object val)
+        public object? round(object? val)
         {
             return numberoperation(val, (dVal)=> Math.Round(dVal));
         }
 
         /*****************************************************************************/
-        public object? precision(object val, int numPlaces)
+        public object? precision(object? val, int numPlaces)
         {
             var multiplier = (decimal)Math.Pow(10, numPlaces);
 
@@ -84,55 +90,55 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object? sqrt(object val)
+        public object? sqrt(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Sqrt((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? sin(object val)
+        public object? sin(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Sin((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? cos(object val)
+        public object? cos(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Cos((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? sinh(object val)
+        public object? sinh(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Sinh((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? cosh(object val)
+        public object? cosh(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Cosh((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? tan(object val)
+        public object? tan(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Tan((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? acos(object val)
+        public object? acos(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Acos((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? asin(object val)
+        public object? asin(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Asin((double)dVal));
         }
 
         /*****************************************************************************/
-        public object? atan(object val)
+        public object? atan(object? val)
         {            
             return numberoperation(val, (dVal)=> (decimal)Math.Atan((double)dVal));
         }
@@ -150,7 +156,7 @@ namespace JTran.Expressions
         }
         
         /*****************************************************************************/
-        public bool isnumber(object val)
+        public bool isnumber(object? val)
         {
             if(val == null)
                 return false;
@@ -174,13 +180,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object? max(object val1, object val2)
+        public object? max(object? val1, object? val2)
         {
             return JTran.Extensions.ObjectExtensions.Compare(val1, val2, out object? t1, out object? t2) == 1 ? t1 : t2;
         }
 
         /*****************************************************************************/
-        public object? min(object val1, object val2)
+        public object? min(object? val1, object? val2)
         {
             return JTran.Extensions.ObjectExtensions.Compare(val1, val2, out object? t1, out object? t2) == -1 ? t1 : t2;
         }
@@ -208,7 +214,7 @@ namespace JTran.Expressions
         #region String Functions
 
         /*****************************************************************************/
-        public object ___string(object val)
+        public object ___string(object? val)
         {
             if(val == null)
                 return null;
@@ -566,13 +572,13 @@ namespace JTran.Expressions
         #region General Functions
 
         /*****************************************************************************/
-        public bool not(object val)
+        public bool not(object? val)
         {
             return !System.Convert.ToBoolean(val);
         }
         
         /*****************************************************************************/
-        public bool empty(object val)
+        public bool empty(object? val)
         {
             if(val == null)
                 return true;
@@ -612,7 +618,7 @@ namespace JTran.Expressions
         }
         
         /*****************************************************************************/
-        public object required(object val, string errorMessage)
+        public object required(object? val, string errorMessage)
         {
             if(empty(val))
                  throw new Transformer.UserError(errorMessage);
