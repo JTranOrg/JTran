@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Extensions;
+using JTran.Common;
 using JTran.Json;
 
 namespace JTran.UnitTests
@@ -8,49 +9,33 @@ namespace JTran.UnitTests
     [TestClass]
     public class ObjectExtensionsTests
     {
-        [TestMethod]
-        public void ObjectExtensions_GetValue_Success()
+        public class Automobile
         {
-            var obj = _data1.JsonToExpando();
-
-            Assert.AreEqual("John",  obj.GetValue("FirstName", null));
-            Assert.AreEqual("Chevy", obj.GetValue("Car.Make", null));
-            Assert.AreEqual(375L,    obj.GetValue("Car.Engine.Displacement", null));
-            Assert.AreEqual(210.79M, Convert.ToDecimal(obj.GetSingleValue("Car.ServiceCalls.Invoice", null)));
+            public string Make  { get; set; }
+            public string Model { get; set; }
         }
 
         [TestMethod]
-        public void ObjectExtensions_GetValue_Fail()
+        public void ObjectExtensions_EnsureObjectEnumerable_Success()
         {
-            var obj = _data1.JsonToExpando();
+            var obj = new Automobile { Make = "Chevy", Model = "Corvette" };
+            var enm = obj.EnsureObjectEnumerable();
+            var t = enm.GetType();
+            var list = enm.ToList();
 
-            Assert.IsNull(obj.GetValue("Car.DontHaveThisProp", null));
+            Assert.AreEqual(1, list.Count);
         }
 
         [TestMethod]
-        public void ObjectExtensions_GetValue_wGGParent_Success()
+        public void EnumerableExtensions_IsSingle_Success()
         {
-            var obj = _datagg1.JsonToExpando();
-            var driver = obj.GetValue("parent.Driver", null);
+            var list1 = Array.Empty<object>();
+            var list2 = new [] { "bob" };
+            var list3 = new [] { "bob", "fred" };
 
-            Assert.AreEqual("Talahooga Race Night", driver.GetValue("/Name", null));
-            Assert.AreEqual("January Events", driver.GetValue("//Name", null));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_var_Success()
-        {
-            var obj = _data1.JsonToExpando();
-
-            Assert.AreEqual("Bob", obj.GetValue("$EventCoordinator", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", "Bob" }}})));
-        }
-
-        [TestMethod]
-        public void ObjectExtensions_GetValue_varObject_Success()
-        {
-            var obj = _data1.JsonToExpando();
-
-            Assert.AreEqual("226-555-1212", obj.GetValue("$EventCoordinator.Phone", new ExpressionContext(null, "", new TransformerContext { Arguments = new Dictionary<string, object> { {"EventCoordinator", new {Phone = "226-555-1212"} }}})));
+            Assert.IsFalse(list1.IsSingle());
+            Assert.IsTrue(list2.IsSingle());
+            Assert.IsFalse(list3.IsSingle());
         }
 
         #region Data

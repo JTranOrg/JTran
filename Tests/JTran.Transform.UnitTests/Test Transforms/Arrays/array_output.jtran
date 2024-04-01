@@ -1,0 +1,7 @@
+{
+  "#foreach(@, [])":
+  {
+    "Make":   "#(Make + 'bob')",
+    "Model":  "#(Model + 'bob')"
+  }
+}

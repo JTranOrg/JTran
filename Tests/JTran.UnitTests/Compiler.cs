@@ -1,19 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-
 using Newtonsoft.Json.Linq;
 
-using JTran.Expressions;
-
 using JTran.Extensions;
+using JTran.Expressions;
 using JTran.Json;
-using JTranParser = JTran.Parser.Parser;
-
-using System.Collections;
+using JTranParser = JTran.Parser.ExpressionParser;
+using JTran.Common;
+using JTran.Parser;
 
 namespace JTran.UnitTests
 {
@@ -101,10 +95,24 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(parser.Parse("$IsLicensed && Licensed && Age < 21"));
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
    
-            context.SetVariable("IsLicensed", true);
+            context.SetVariable(CharacterSpan.FromString("IsLicensed"), true);
 
             Assert.IsNotNull(expression);
             Assert.IsTrue(expression.EvaluateToBool(context));
+        }
+
+        [TestMethod]
+        [DataRow("-14 * .53 + 3.5", -3.92)]
+        [DataRow("-14 - -.53 - 3.5", -16.97)]
+        public void Compiler_complex_bool_Success(string expr, decimal val)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse(expr));
+            var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(val, Convert.ToDecimal(expression.Evaluate(context)));
         }
 
         [TestMethod]
@@ -116,7 +124,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(2010L, expression.Evaluate(context));
+            Assert.AreEqual(2010m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -128,7 +136,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(2006L, expression.Evaluate(context));
+            Assert.AreEqual(2006m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -140,7 +148,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobFred", expression.Evaluate(context));
+            Assert.AreEqual("BobFred", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -152,7 +160,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Bob32Fred", expression.Evaluate(context));
+            Assert.AreEqual("Bob32Fred", expression.Evaluate(context).ToString());
         }        
         
         [TestMethod]
@@ -160,15 +168,27 @@ namespace JTran.UnitTests
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var expression = compiler.Compile(parser.Parse("Customer.FirstName + Customer.LastName"));
+            var expression = compiler.Compile(parser.Parse("Customer.FirstName"));
             var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobJones", expression.Evaluate(context));
+            Assert.AreEqual("Bob", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
         public void Compiler_Addition_multipart2_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("Customer.FirstName + Customer.LastName"));
+            var context    = new ExpressionContext(CreateTestData(new {Customer = new { FirstName = "Bob", LastName = "Jones"} } ));
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("BobJones", expression.Evaluate(context).ToString());
+        }
+
+        [TestMethod]
+        public void Compiler_Addition_multipart3_Success()
         {
             var expression = Compile("$Customer.FirstName + $Customer.LastName");
 
@@ -181,7 +201,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {} ), "", tContext);
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("BobJones", expression.Evaluate(context));
+            Assert.AreEqual("BobJones", expression.Evaluate(context).ToString());
         }
 
         private IExpression Compile(string expression)
@@ -202,7 +222,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 22, Year = 1988 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1966L, expression.Evaluate(context));
+            Assert.AreEqual(1966m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -214,7 +234,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12 } ));
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1200L, expression.Evaluate(context));
+            Assert.AreEqual(1200m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -227,7 +247,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(1300L, expression.Evaluate(context));
+            Assert.AreEqual(1300m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -239,7 +259,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Paycheck = 1200, Months = 12 } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(100L, expression.Evaluate(context));
+            Assert.AreEqual(100m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -252,7 +272,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, State = "WA" } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Coke", expression.Evaluate(context));
+            Assert.AreEqual("Coke", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -265,11 +285,11 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Name = "bob", Age = 35, FirstName = "Robert", LastName = "Jones" } ));
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual("Robert", expression.Evaluate(context));
+            Assert.AreEqual("Robert", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
-        public void Compiler_Multple_Ands_Success()
+        public void Compiler_Multiple_Ands_Success()
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
@@ -441,7 +461,7 @@ namespace JTran.UnitTests
                                                                         extensionFunctions: Transformer.CompileFunctions(null) );
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("1986-04-05T10:00:00.0000000", expression.Evaluate(context));
+            Assert.AreEqual("1986-04-05T10:00:00", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -455,7 +475,49 @@ namespace JTran.UnitTests
                                                                         extensionFunctions: Transformer.CompileFunctions(null) );
 
             Assert.IsNotNull(expression);
-            Assert.AreEqual("1984-10-22T10:00:00.0000000", expression.Evaluate(context));
+            Assert.AreEqual("1984-10-22T10:00:00", expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_max_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("max(Husband.Age, Wife.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (short)90 },
+                                                                        Wife    = new { Age = 89f }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(90m, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_min_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("min(Husband.Age, Wife.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (short)90 },
+                                                                        Wife    = new { Age = (ushort)89 }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual(89m, expression.Evaluate(context));
+        }
+
+        [TestMethod]
+        public void Compiler_reverse_primitive()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var expression = compiler.Compile(parser.Parse("reverse(Husband.Age)"));
+            var context    = new ExpressionContext(CreateTestData(new { Husband = new { Age = (uint)90438921 },
+                                                                        Wife    = new { Age = (ushort)89 }}), 
+                                                                        extensionFunctions: Transformer.CompileFunctions(null) );
+
+            Assert.IsNotNull(expression);
+            Assert.AreEqual("12983409", expression.Evaluate(context));
         }
 
         #endregion
@@ -503,6 +565,27 @@ namespace JTran.UnitTests
         #endregion
 
         #region Parenthesis
+
+        [TestMethod]
+        [DataRow("10 - 3 + (9 - 1)", 15)]
+        [DataRow("10 - 3 * (3 - 1)", 4)]
+        [DataRow("10 - 3 * 3 - 1", 0)]
+        [DataRow("5 * 3 - (3 + 1)", 11)]
+        [DataRow("12 - 3 / (4 - 1)", 11)]
+        [DataRow("12 - 3 * 3 / (4 - 1)", 9)]
+        [DataRow("12 - 3 * 3 % (4 - 2)", 11)]
+        [DataRow("8 / 2 * 2", 8)]
+        public void Compiler_precedence(string expressionStr, double result)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(expressionStr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 22, State = "WA" } ));
+   
+            Assert.IsNotNull(expression);
+            Assert.AreEqual((decimal)result, Convert.ToDecimal(expression.Evaluate(context)));
+        }
 
         [TestMethod]
         public void Compiler_Parenthesis_And_True()
@@ -562,19 +645,19 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Salary = 100, Months = 12} ));
    
            Assert.IsNotNull(expression);
-            Assert.AreEqual(2380L, expression.Evaluate(context));
+            Assert.AreEqual(2380m, expression.Evaluate(context));
         }
 
         #endregion
 
-        #region Array Indexers
+        #region Arrays
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Number_Success()
+        public void Compiler_Array_Success()
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[2]");
+            var tokens     = parser.Parse("[1, 2, 3]");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Cars = _cars} ));
    
@@ -582,23 +665,84 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual("Dodge", result.GetSingleValue("Make", null));
+            Assert.IsTrue(result is IEnumerable<object>);
+
+            var list = ((IEnumerable<object>)result).ToList();
+            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(1, int.Parse(list![0].ToString()!));
+            Assert.AreEqual(2, int.Parse(list![1].ToString()!));
+            Assert.AreEqual(3, int.Parse(list![2].ToString()!));
         }
 
+
         [TestMethod]
-        public void Compiler_Array_Indexer_Number_int_array_Success()
+        public void Compiler_Array_Success2()
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[0]");
+            var tokens     = parser.Parse("[a || b ? 1 : 99, iif(a && b, 2, 98), x - 6 + y]");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = new List<int> {21, 35, 62} } ));
+            var context    = new ExpressionContext(CreateTestData(new {a = true, b = true, c = true, x = 9, y = 0} ), extensionFunctions: Transformer.CompileFunctions(null));
    
             Assert.IsNotNull(expression);
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(21m, decimal.Parse(result.ToString()));
+            Assert.IsTrue(result is IEnumerable<object>);
+
+            var list = ((IEnumerable<object>)result).ToList();
+            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(1, int.Parse(list?[0]?.ToString()));
+            Assert.AreEqual(2, int.Parse(list?[1]?.ToString()));
+            Assert.AreEqual(3, int.Parse(list?[2]?.ToString()));
+        }
+
+        [TestMethod]
+        [DataRow("[5 + 6, 7, 8]", 11, 7, 8)]
+        [DataRow("[5, 7 + 6, 8]", 5, 13, 8)]
+        [DataRow("[5 + (6 + 1) - 3, 7 + 6, 8 * 2 / 4]", 9, 13, 4)]
+        public void Compiler_Array2_Success(string expressionStr, int v1, int v2, int v3)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse(expressionStr);
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars} ));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.IsTrue(result is IEnumerable<object>);
+
+            var list = ((IEnumerable<object>)result).ToList()!;
+            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(v1, int.Parse(list[0]!.ToString()!));
+            Assert.AreEqual(v2, int.Parse(list[1]!.ToString()!));
+            Assert.AreEqual(v3, int.Parse(list[2]!.ToString()!));
+        }
+
+        #endregion
+
+        #region Array Indexers
+
+        [TestMethod]
+        [DataRow("0", 21)]
+        [DataRow("1", 35)]
+        [DataRow("2", 62)]
+        public void Compiler_Array_Indexer_Number_int_array_Success(string index, int expected)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse($"Cars[{index}]");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Cars = new List<int> {21, 35, 62}, bob = 2 } ));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(expected, int.Parse(result!.ToString()));
         }
 
         [TestMethod]
@@ -610,7 +754,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Model = "Chevy" } ));
    
-            context.SetVariable("Indices", new List<int> {21, 35, 62} );
+            context.SetVariable(CharacterSpan.FromString("Indices"), new List<int> {21, 35, 62} );
             Assert.IsNotNull(expression);
 
             var result = expression.Evaluate(context);
@@ -629,9 +773,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result.Make);
+            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
         }
 
         [TestMethod]
@@ -645,9 +789,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = expression.Evaluate(context) as JsonObject;
 
-            Assert.AreEqual("Dodge", result.Make);
+            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
         }
 
         [TestMethod]
@@ -661,9 +805,9 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
+            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
 
-            Assert.AreEqual(3, (result as IList).Count);
+            Assert.AreEqual(3, result!.Count);
         }
 
         [TestMethod]
@@ -677,11 +821,13 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            dynamic result = expression.Evaluate(context);
-            decimal amount = decimal.Parse(result.Amount.ToString());
+            var result = expression.Evaluate(context) as JsonObject;
+            decimal amount = decimal.Parse(result[_amount].ToString());
 
             Assert.AreEqual(120M, amount);
         }
+
+        private static readonly ICharacterSpan _amount = CharacterSpan.FromString("Amount");
 
         [TestMethod]
         public void Compiler_Array_Indexer_Multi2_Success()
@@ -694,18 +840,18 @@ namespace JTran.UnitTests
    
             Assert.IsNotNull(expression);
 
-            var result = expression.Evaluate(context) as IList<object>;
+            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
 
             Assert.IsNotNull(result);
-            dynamic firstTicket = result[0];
-            dynamic firstAmount = firstTicket.Amount;
-            decimal dFirstAmount = decimal.Parse(firstAmount.ToString());
-            dynamic secondTicket = result[1];
-            dynamic secondAmount = secondTicket.Amount;
-            decimal dSecondAmount = decimal.Parse(secondAmount.ToString());
+            var firstTicket     = result[0] as JsonObject;
+            var firstAmount     = firstTicket![_amount]!;
+            var dFirstAmount    = decimal.Parse(firstAmount!.ToString());
+            var secondTicket    = result[1] as JsonObject;
+            var secondAmount    = secondTicket![_amount]!;
+            var dSecondAmount   = decimal.Parse(secondAmount!.ToString());
 
-            Assert.AreEqual(180M, dFirstAmount);
-            Assert.AreEqual(400M, dSecondAmount);
+            Assert.AreEqual(180m, dFirstAmount);
+            Assert.AreEqual(400m, dSecondAmount);
         }
 
         #endregion
@@ -725,7 +871,23 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(3M, result);
+            Assert.AreEqual(3m, result);
+        }
+
+        [TestMethod]
+        public void Compiler_function_floor2_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse("floor(3 + 2.25)");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.IsNotNull(expression);
+
+            var result = expression.Evaluate(context);
+
+            Assert.AreEqual(5m, result);
         }
 
         [TestMethod]
@@ -741,7 +903,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(4M, result);
+            Assert.AreEqual(4m, result);
         }
 
         [TestMethod]
@@ -757,7 +919,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(4M, result);
+            Assert.AreEqual(4m, result);
         }
 
         [TestMethod]
@@ -773,7 +935,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(100M, result);
+            Assert.AreEqual(100m, result);
         }
 
         [TestMethod]
@@ -789,7 +951,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(10M, result);
+            Assert.AreEqual(10m, result);
         }
 
         [TestMethod]
@@ -813,7 +975,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Make = "Chevy"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("Chevy Camaro", expression.Evaluate(context));
+            Assert.AreEqual("Chevy Camaro", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -894,15 +1056,88 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_lowercase_Success()
+        public void Compiler_function_sequence_empty_Success()
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("lowercase('ABcDeF')");
+            var tokens     = parser.Parse("sequence('bob', 2, -2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
    
-            Assert.AreEqual("abcdef", expression.Evaluate(context));
+            Assert.AreEqual(0,  list.Count);
+        }
+
+        [TestMethod]
+        [DataRow("lowercase('')",       "")]
+        [DataRow("lowercase(null)",     null)]
+        [DataRow("lowercase('ABcDeF')", "abcdef")]
+        [DataRow("lowercase('abc')",    "abc")]
+        [DataRow("lowercase('ABC')",    "abc")]
+        public void Compiler_function_lowercase(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("uppercase('')",       "")]
+        [DataRow("uppercase(null)",     null)]
+        [DataRow("uppercase('ABcDeF')", "ABCDEF")]
+        [DataRow("uppercase('abc')",    "ABC")]
+        [DataRow("uppercase('ABC')",    "ABC")]
+        public void Compiler_function_uppercase(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("padleft('',           'abc', 8)", "aaaaaaaa")]
+        [DataRow("padleft(null,         'a',   8)", "aaaaaaaa")]
+        [DataRow("padleft('b',          'ab',  8)", "aaaaaaab")]
+        [DataRow("padleft('12345678',   'a',   8)", "12345678")]
+        [DataRow("padleft('1234567890', 'a',   8)", "1234567890")]
+        [DataRow("padleft('bcde',       'a',   8)", "aaaabcde")]
+        [DataRow("padleft('bcde',       'a',   0)", "bcde")]
+        [DataRow("padleft('bcde',       '',    8)", "bcde")]
+        public void Compiler_function_padleft(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("padright('',           'abc', 8)", "aaaaaaaa")]
+        [DataRow("padright(null,         'a',   8)", "aaaaaaaa")]
+        [DataRow("padright('b',          'ab',  8)", "baaaaaaa")]
+        [DataRow("padright('12345678',   'a',   8)", "12345678")]
+        [DataRow("padright('1234567890', 'a',   8)", "1234567890")]
+        [DataRow("padright('bcde',       'a',   8)", "bcdeaaaa")]
+        [DataRow("padright('bcde',       'a',   0)", "bcde")]
+        [DataRow("padright('bcde',       '',    8)", "bcde")]
+        public void Compiler_function_padright(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        [TestMethod]
+        [DataRow("normalizespace('')",        "")]
+        [DataRow("normalizespace(null)",      null)]
+        [DataRow("normalizespace('abcdef')",  "abcdef")]
+        [DataRow("normalizespace('  abc  def  ')",  "abc def")]
+        [DataRow("normalizespace('  a        b   c  de f  ')",  "a b c de f")]
+        public void Compiler_function_normalizespace(string expression, string? expected)
+        {
+            TestStringExpression(expression, expected);
+        }
+
+        private void TestStringExpression(string expression, string? expected)
+        {
+            var parser   = new JTranParser();
+            var compiler = new Compiler();
+            var tokens   = parser.Parse(expression);
+            var expr     = compiler.Compile(tokens);
+            var context  = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(expected, expr.Evaluate(context)?.ToString());
         }
 
         [TestMethod]
@@ -914,7 +1149,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("ABCDEF", expression.Evaluate(context));
+            Assert.AreEqual("ABCDEF", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -958,6 +1193,19 @@ namespace JTran.UnitTests
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
+            var tokens     = parser.Parse("isnumber(MaxAge) ? MaxAge : 10000");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Age = 8, MaxAge = "bob"} ), extensionFunctions: Transformer.CompileFunctions(null));
+            var result     = expression.Evaluate(context);
+   
+            Assert.AreEqual(10000m, (decimal)Convert.ChangeType(result, typeof(decimal)));
+        }
+
+        [TestMethod]
+        public void Compiler_function_isnumber2_Success()
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
             var tokens     = parser.Parse("Age < (isnumber(MaxAge) ? MaxAge : 10000)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Age = 8, MaxAge = "bob"} ), extensionFunctions: Transformer.CompileFunctions(null));
@@ -990,15 +1238,20 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_substring_Success()
+        [DataRow("franklin", 0, 5,     "frank")]
+        [DataRow("franklin", 5, -1000, "lin_ted")]
+        [DataRow("",         0, 3,     "_te")]
+        [DataRow("",         5, 3,     "")]
+        [DataRow("franklin", 9000, 3,  "")]
+        public void Compiler_function_substring(string? str, int index, int length, string? result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substring('franklin', 0, 5)");
+            var tokens     = parser.Parse($"substring('{str}' + '_ted', {index}, {length})");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("frank", expression.Evaluate(context));
+            Assert.AreEqual(result, expression.Evaluate(context)?.ToString());
         }
 
         [TestMethod]
@@ -1014,39 +1267,37 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_function_substringbefore_Success()
+        [DataRow("franklin", "ran",           "f")]
+        [DataRow("franklin", "lin",           "frank")]
+        [DataRow("franklin", "franklin",      "")]
+        [DataRow("franklin", "bobsyouruncle", "franklin")]
+        [DataRow("beebop",   "/",             "beebop")]
+        public void Compiler_function_substringbefore_Success(string str, string search, string result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringbefore('beebop', 'bop')");
+            var tokens     = parser.Parse($"substringbefore('{str}', '{search}')");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bee", expression.Evaluate(context));
+            Assert.AreEqual(result, expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
-        public void Compiler_function_substringbefore2_Success()
+        [DataRow("franklin", "frank",   "lin")]
+        [DataRow("franklin", "f",       "ranklin")]
+        [DataRow("franklin", "franklin", "")]
+        [DataRow("franklin", "bobsyouruncle", "")]
+        [DataRow("franklin", "", "franklin")]
+        public void Compiler_function_substringafter_Success(string str, string search, string result)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringbefore('beebop', '/')");
+            var tokens     = parser.Parse($"substringafter('{str}', '{search}')");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("beebop", expression.Evaluate(context));
-        }
-
-        [TestMethod]
-        public void Compiler_function_substringafter_Success()
-        {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("substringafter('beebop', 'bee')");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-   
-            Assert.AreEqual("bop", expression.Evaluate(context));
+            Assert.AreEqual(result, expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1058,7 +1309,44 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Foo = "Foo"} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bopFoo", expression.Evaluate(context));
+            Assert.AreEqual("bopFoo", expression.Evaluate(context).ToString());
+        }
+
+        [TestMethod]
+        [DataRow("franklin", "frank",         true)]
+        [DataRow("franklin", "f",             true)]
+        [DataRow("franklin", "franklin",      true)]
+        [DataRow("franklin", "bobsyouruncle", false)]
+        [DataRow("franklin", "",              false)]
+        [DataRow("", "",                      false)]
+        public void Compiler_function_startswith(string str, string search, bool result)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse($"startswith('{str}', '{search}')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(result, expression.Evaluate(context));
+        }
+
+
+        [TestMethod]
+        [DataRow("franklin", "lin",           true)]
+        [DataRow("franklin", "n",             true)]
+        [DataRow("franklin", "franklin",      true)]
+        [DataRow("franklin", "bobsyouruncle", false)]
+        [DataRow("franklin", "",              false)]
+        [DataRow("", "",                      false)]
+        public void Compiler_function_endswith(string str, string search, bool result)
+        {
+            var parser     = new JTranParser();
+            var compiler   = new Compiler();
+            var tokens     = parser.Parse($"endswith('{str}', '{search}')");
+            var expression = compiler.Compile(tokens);
+            var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
+   
+            Assert.AreEqual(result, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1070,7 +1358,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("elan", expression.Evaluate(context));
+            Assert.AreEqual("elan", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1082,7 +1370,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("bob jones", expression.Evaluate(context));
+            Assert.AreEqual("bob jones", expression.Evaluate(context).ToString());
         }
 
         #region Aggregate/Array Functions
@@ -1108,7 +1396,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy"}, new { Model = "Pontiac"} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual("Chevy", expression.Evaluate(context));
+            Assert.AreEqual("Chevy", expression.Evaluate(context).ToString());
         }
 
         [TestMethod]
@@ -1136,7 +1424,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1000M }, new { Model = "Pontiac", SaleAmount = 2000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(3000M, expression.Evaluate(context));
+            Assert.AreEqual(3000m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1148,7 +1436,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(2400M, expression.Evaluate(context));
+            Assert.AreEqual(2400m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1160,7 +1448,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Model = "Chevy", SaleAmount = 1200M } ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(1200M, expression.Evaluate(context));
+            Assert.AreEqual(1200m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1174,7 +1462,7 @@ namespace JTran.UnitTests
                                                                                                   new { Model = "Pontiac",  SaleAmount = 2000M},  
                                                                                                   new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(4000M, expression.Evaluate(context));
+            Assert.AreEqual(4000m, expression.Evaluate(context));
         }
 
         [TestMethod]
@@ -1186,7 +1474,7 @@ namespace JTran.UnitTests
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }} ), extensionFunctions: Transformer.CompileFunctions(null));
    
-            Assert.AreEqual(1200M, expression.Evaluate(context));
+            Assert.AreEqual(1200m, expression.Evaluate(context));
         }
 
         #endregion
@@ -1248,7 +1536,7 @@ namespace JTran.UnitTests
 
         private static object CreateTestData(object obj)
         {
-            return JObject.FromObject(obj).ToString().JsonToExpando();
+            return JObject.FromObject(obj).ToString().ToJsonObject();
         }
 
         private static bool EvaluateToBool(string sExpr)

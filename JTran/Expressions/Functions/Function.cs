@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: Function.cs					    		        
@@ -17,13 +17,12 @@
  *                                                                          
  ****************************************************************************/
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
+using JTran.Common;
 using JTran.Json;
 
 namespace JTran.Expressions
@@ -58,16 +57,21 @@ namespace JTran.Expressions
                 name = name.Substring(3);
 
             this.Name = name;
-            this.IgnoreParams = method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(IgnoreParameterCount)))?.Any() ?? false;
+
+            var customAttributes = method.CustomAttributes?.ToList();
+            var ignoreType       = typeof(IgnoreParameterCount);
+            var literalType      = typeof(LiteralParameters);
+
+            this.IgnoreParams = customAttributes == null ? false : customAttributes.Any(a=> a.AttributeType.Equals(ignoreType));
 
             if(this.IgnoreParams)
                 this.NumParams = 0;
             else
-                this.NumParams = method.GetParameters().Where( p=> !p.HasDefaultValue ).Count();
+                this.NumParams = method.GetParameters().Count( p=> !p.HasDefaultValue );
 
            _method    = method;
            _container = container;
-           _literals  = _method.CustomAttributes?.Where( a=> a.AttributeType.Equals(typeof(LiteralParameters)))?.Any() ?? false;
+           _literals  = customAttributes == null ? false : customAttributes.Any( a=> a.AttributeType.Equals(literalType));
         }
 
         private static IDictionary<String, bool> _builtInFunctions = new Dictionary<string, bool> 
@@ -221,17 +225,15 @@ namespace JTran.Expressions
                     parmType = parmType.GenericTypeArguments[0];
                 else if(parmType.IsClass || (parmType.IsValueType && !parmType.IsEnum))
                 {
-                    if(currentParam is ExpandoObject exParam)
-                    {
-                        var json = exParam.ToJson();
-                        var typedParam = JsonConvert.DeserializeObject(json, parmType);
-
-                        return typedParam;
-                    }
+                    if(currentParam is JsonObject exParam)
+                        return exParam.ToObject(parmType);
                 }
 
                 if(parmType == typeof(IEnumerable<object>) && currentParam is IList<object> list)
                     return list;
+
+                if(parmType == typeof(string) && currentParam is ICharacterSpan cspan)
+                    return cspan.ToString();
 
                 return Convert.ChangeType(currentParam, parmType);
             }
@@ -245,7 +247,23 @@ namespace JTran.Expressions
             var parameters = new List<object>();
 
             foreach(var parameter in inputParameters)
-                parameters.Add(literals ? (parameter as DataValue).Name : parameter.Evaluate(context));
+            { 
+                object? name = null;
+
+                if(literals)
+                {
+                    if(parameter is MultiPartDataValue multiPart)
+                        name = multiPart.JoinLiteral(context);
+                    else if(parameter is DataValue val)
+                        name = val.Name;
+                    else
+                        throw new Transformer.SyntaxException("Unknown value type");
+                }
+                else
+                    name = parameter.Evaluate(context);
+
+                parameters.Add(name);
+            }
 
             return parameters;
         }

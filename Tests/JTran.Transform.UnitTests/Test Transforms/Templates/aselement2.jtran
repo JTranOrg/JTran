@@ -1,0 +1,26 @@
+{
+    "#variable(Cars)": 
+    [
+        {
+            "Make":    "Chevy",
+            "Model":   "Corvette",
+            "Year":     1956
+        },   
+        {   
+            "Make":     "Pontiac",
+            "Model":    "Firebird",
+            "Year":     1969
+        }
+    ],
+
+    "#foreach($Cars, [])":
+    {
+        "#noobject": "#Automobile(Make, Model)"
+    },
+
+    "#template(Automobile, Make, Model)":
+    {
+        "Make":   "#($Make)",
+        "Model":  "#($Model)"
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "#variable(Blah)": "Blah",
+  "#variable(checkthis)": "Blah",
+
+  "Driver1":  "#(iif($checkthis == $Blah, Monday, Wednesday))",
+  "Driver2":  "#(iif($checkthis != $Blah, Monday, Wednesday))"
+}

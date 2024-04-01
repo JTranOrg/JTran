@@ -1,0 +1,11 @@
+{
+  "#foreach(@, [])":
+  {
+    "#if(Address.State == 'CA')":                               "#(Address.State + ' West')",
+    "#elseif(Address.State == 'WA' or Address.State == 'OR')":  "#(Address.State + ' PNW')",
+    "#elseif(Address.State == 'NY' or Address.State == 'NJ')":  "#(Address.State + ' East')",
+    "#elseif(Address.State == 'MO' or Address.State == 'IL')":  "#(Address.State + ' Midwest')",
+    "#elseif(Address.State == 'WY' or Address.State == 'MT')":  "#(Address.State + ' Mountain')",
+    "#else":                                                    "#(Address.State + ' South')"
+  }
+}

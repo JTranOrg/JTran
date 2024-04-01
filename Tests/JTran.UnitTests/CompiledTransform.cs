@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
+using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using Newtonsoft.Json;
-
-using JTran;
+using JTran.Common;
 using JTran.Expressions;
 
 namespace JTran.UnitTests
@@ -376,7 +374,7 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformMultipleIfElse, result);
             Assert.IsNotNull(JObject.Parse(result));
 
-            var family = JsonConvert.DeserializeObject<Family>(result);
+            var family = JsonConvert.DeserializeObject<Family>(result)!;
 
             Assert.AreEqual("Lance",   family.HusbandFirstName);
             Assert.AreEqual("Boulder", family.HusbandSurname);
@@ -385,146 +383,6 @@ namespace JTran.UnitTests
         }
 
         #region CopyOf
-
-        [TestMethod]
-        [TestCategory("CopyOf")]
-        public void CompiledTransform_Transform_CopyOf_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCopyOf1);
-            var result      = transformer.Transform(_dataCopyOf, null, null);
-
-            Assert.AreNotEqual(_transformCopyOf1, result);
-
-            var jresult = JObject.Parse(result);
-
-            Assert.IsNotNull(jresult);
-
-            Assert.IsNotNull(jresult["Invoice"]);
-            Assert.AreEqual(945, jresult["Invoice"]["Muffler"]);
-            Assert.AreEqual(123, jresult["Invoice"]["Sparkplugs"]);
-            Assert.AreEqual(77,  jresult["Invoice"]["Solenoid"]);
-        }
-
-        private static readonly string _transformCopyOf1 =
-        @"{
-            Brand:   '#(Make)',
-            Model:   '#(Model)',
-            Year:    '#(Year)',
-            Color:   '#(Color)',
-            Invoice: '#copyof(Service.Parts)'
-        }";
-
-
-
-        [TestMethod]
-        [TestCategory("CopyOf")]
-        public void CompiledTransform_Transform_CopyOf2_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCopyOf2);
-            var result      = transformer.Transform(_dataCopyOf2, null, null);
-
-            Assert.AreNotEqual(_transformCopyOf2, result);
-
-            var jresult = JObject.Parse(result);
-
-            Assert.IsNotNull(jresult);
-
-            Assert.IsNotNull(jresult["Vehicles"]);
-            Assert.AreEqual("Chevy", jresult["Vehicles"][0]["Stuff"]["Make"]);
-        }
-
-        [TestMethod]
-        [TestCategory("CopyOf")]
-        public void CompiledTransform_Transform_CopyOf3_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCopyOf3);
-            var result      = transformer.Transform(_dataCopyOf3, null, null);
-
-            Assert.AreNotEqual(_transformCopyOf3, result);
-
-            var jresult = JObject.Parse(result);
-
-            Assert.IsNotNull(jresult);
-
-            Assert.IsNotNull(jresult["output"]);
-
-            var val = jresult["output"]["modified"].Value<DateTime>();
-
-            Assert.AreEqual("2016-07-04T17:00:00.0000000-07:00", val.ToString("o"));
-        }
-
-        [TestMethod]
-        [TestCategory("CopyOf")]
-        public void CompiledTransform_Transform_CopyOf_array_noobject_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformForEachNoObjectCopy);
-            var result      = transformer.Transform(_dataCarList, null, null);
-
-            Assert.AreNotEqual(_transformForEachNoObjectCopy, result);
-                        
-            var cars = JsonConvert.DeserializeObject<CarsContainer>(result);
-
-            Assert.AreEqual(3, cars.Cars.Count);
-            Assert.AreEqual("Chevy",          cars.Cars[0].Make);
-            Assert.AreEqual("Corvette",       cars.Cars[0].Model);
-            Assert.AreEqual(1964,             cars.Cars[0].Year);
-            Assert.AreEqual("Blue",           cars.Cars[0].Color);
-            Assert.AreEqual("Fred Flintstone", cars.Cars[0].Driver);
-        }
-
-        [TestMethod]
-        [TestCategory("CopyOf")]
-        public void CompiledTransform_Transform_CopyOf_expr_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCopyOfExpr);
-            var result      = transformer.Transform(_dataCopyOfExpr, null, null);
-
-            Assert.AreNotEqual(_transformCopyOfExpr, result);
-
-            var jresult = JObject.Parse(result);
-
-            Assert.IsNotNull(jresult);
-
-           var cars = jresult["Cars"] as JArray;
-
-            Assert.IsNotNull(cars);
-            Assert.AreEqual(2, cars.Count);
-        }
-
-        private static readonly string _transformCopyOf3 =
-        @"{
-            'output': '#copyof(Input)'
-          }";
-
-        private static readonly string _transformCopyOfExpr =
-        "{ 'Cars': '#copyof(Cars[Make == \"Chevy\"])' }";
-
-        private static readonly string _dataCopyOf3 =
-        @"{
-             'Input': { 'modified': '2016-07-04T17:00:00-07:00' }
-          }";
-
-        private static readonly string _dataCopyOfExpr =
-        @"{
-             'Cars': 
-             [
-                {
-                    'Make':     'Chevy',
-                    'Model':    'Corvette',
-                    'Year':     1964
-                },
-                {
-                    'Make':     'Pontiac',
-                    'Model':    'GTO',
-                    'Year':     1967
-                },
-                {
-                    'Make':     'Chevy',
-                    'Model':    'Camaro',
-                    'Year':     1969
-                }
-             ]
-          }";
 
         [TestMethod]
         [TestCategory("CopyOf")]
@@ -540,7 +398,7 @@ namespace JTran.UnitTests
             Assert.IsNotNull(jresult);
 
             Assert.IsNotNull(jresult["output"]);
-            Assert.AreEqual("true", jresult["output"]["modified"].ToString().ToLower());
+            Assert.AreEqual("true", jresult!["output"]!["modified"]!.ToString()!.ToLower());
         }
 
         [TestMethod]
@@ -637,7 +495,7 @@ namespace JTran.UnitTests
         public void CompiledTransform_Transform_if_wbool_Success()
         {
             var transformer = CompiledTransform.Compile(_transformIfBool);
-            var result      = transformer.Transform(_dataIfBool, new TransformerContext { Arguments = new Dictionary<string, object> { {"Licensed", true }, {"YearsDriven", 10 }, {"LicenseState", 7 }} } , null);
+            var result      = transformer.Transform(_dataIfBool, new TransformerContext { Arguments = new Dictionary<string, object> { {"Licensed", true }, {"YearsDriven", 10 }, {"LicenseState", "WA" }} } , null);
 
             Assert.AreNotEqual(_transformIfBool, result);
 
@@ -647,24 +505,6 @@ namespace JTran.UnitTests
 
             Assert.IsNotNull(jresult["CanDrive"]);
             Assert.AreEqual("true", jresult["CanDrive"].ToString().ToLower());
-        }
-
-        [TestMethod]
-        public void CompiledTransform_Transform_include_Success()
-        {
-            var transformer = CompiledTransform.Compile(_tranformInclude);
-            var result      = transformer.Transform(_dataSoldiers, null, null);
-
-            Assert.AreNotEqual(_tranformInclude, result);
-            Assert.AreNotEqual(_dataSoldiers, result);
-            Assert.IsNotNull(JObject.Parse(result));
-
-            var platoon = JsonConvert.DeserializeObject<Platoon>(result);
-
-            Assert.AreEqual("Carl",             platoon.PlatoonSergeant.FirstName);
-            Assert.AreEqual("Lipton",           platoon.PlatoonSergeant.LastName);
-            Assert.AreEqual("First Sergeant",   platoon.PlatoonSergeant.Rank);
-            Assert.AreEqual("",                 platoon.PlatoonSergeant.DOB);
         }
 
         [TestMethod]
@@ -691,7 +531,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_Success()
         {
-            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(Customers, Persons)", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach(Customers, Persons"), CompiledTransform.FalseTrue);
 
             Assert.AreEqual(2,           parms.Count);
             Assert.IsTrue(parms[0] is DataValue);
@@ -701,11 +541,20 @@ namespace JTran.UnitTests
         [TestMethod]
         public void CompiledTransform_ParseElementParams_wFunction_Success()
         {
-            var parms = CompiledTransform.ParseElementParams("foreach", "#foreach(sort(Customers, Name, City), Persons)", new List<bool> {false, true} );
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach(sort(Customers, Name, City), Persons)"), CompiledTransform.FalseTrue);
 
             Assert.AreEqual(2,                       parms.Count);
             Assert.IsTrue(parms[0] is IExpression);
             Assert.AreEqual("Persons",               parms[1].Evaluate(null).ToString());
+        }   
+
+        [TestMethod]
+        public void CompiledTransform_ParseElementParams_empty()
+        {
+            var parms = CompiledTransform.ParseElementParams("#foreach", CharacterSpan.FromString("#foreach()"), CompiledTransform.FalseTrue );
+
+            Assert.IsNotNull(parms);
+            Assert.AreEqual(0, parms.Count);
         }   
 
         #endregion
@@ -990,125 +839,7 @@ namespace JTran.UnitTests
         }";
 
         #endregion
-
-        [TestMethod]
-        public void CompiledTransform_Transform_function_position_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformForEach2);
-            var result      = transformer.Transform(_dataCarList, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformForEach1, result);
-            Assert.IsNotNull(JObject.Parse(result));
-
-            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result);
-
-            Assert.AreEqual(3, driver.Driver.Vehicles.Count);
-            Assert.AreEqual("Chevy",    driver.Driver.Vehicles[0].Brand);
-            Assert.AreEqual("Corvette", driver.Driver.Vehicles[0].Model);
-            Assert.AreEqual(1964,       driver.Driver.Vehicles[0].Year);
-            Assert.AreEqual("Blue",     driver.Driver.Vehicles[0].Color);
-
-            Assert.AreEqual(0,          driver.Driver.Vehicles[0].Index);
-            Assert.AreEqual(1,          driver.Driver.Vehicles[1].Index);
-            Assert.AreEqual(2,          driver.Driver.Vehicles[2].Index);
-        }
-
-        [TestMethod]
-        public void CompiledTransform_Transform_function_empty_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformEmpty);
-            var result      = transformer.Transform(_dataEmptyTests, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformForEach1, result);
-            Assert.IsNotNull(JObject.Parse(result));
-
-            var driver = JsonConvert.DeserializeObject<DriverContainer2>(result);
-
-            Assert.AreEqual("Bob",          driver.Driver.FirstName);
-            Assert.AreEqual("Jones",        driver.Driver.LastName);
-            Assert.AreEqual("unknown",      driver.Driver.Engine);
-            Assert.AreEqual("unknown",      driver.Driver.OriginalDriver);
-            Assert.AreEqual("not assigned", driver.Driver.TrackName);
-            Assert.AreEqual("not assigned", driver.Driver.TrackNo);
-            Assert.AreEqual("none",         driver.Driver.Mechanics);
-            Assert.AreEqual("bob",          driver.Driver.Uncle);
-            Assert.AreEqual("Mae",          driver.Driver.Aunt);
-            Assert.AreEqual("Linda",        driver.Driver.Cousin);
-        }
-
-        [TestMethod]
-        public void CompiledTransform_Transform_function_sort_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformSort);
-            var result      = transformer.Transform(_dataSort, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformSort, result);
-
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-        }
-        
-        [TestMethod]
-        public void CompiledTransform_Transform_function_coalesce_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCoalesce);
-            var result      = transformer.Transform(_dataCoalesce, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformCoalesce, result);
-
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-
-            Assert.AreEqual("Frank", jobj["Driver"].ToString());
-        }   
-        
-        [TestMethod]
-        public void CompiledTransform_Transform_function_coalescenumber_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformCoalesceNumber);
-            var result      = transformer.Transform(_dataCoalesceNumber, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformCoalesceNumber, result);
-
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-
-            Assert.AreEqual(33d, double.Parse(jobj["Driver"].ToString()));
-        }
-        
-        [TestMethod]
-        public void CompiledTransform_Transform_function_iif_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformIIf);
-            var result      = transformer.Transform(_dataIIf, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformIIf, result);
-
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-
-            Assert.AreEqual("Wilma", jobj["Driver"]!.ToString());
-        }
-        
-        [TestMethod]
-        public void CompiledTransform_Transform_function_iif2_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformIIf2);
-            var result      = transformer.Transform(_dataIIf, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformIIf2, result);
-
-            var jobj = JObject.Parse(result);
-
-            Assert.IsNotNull(jobj);
-
-            Assert.AreEqual("Fred", jobj["Driver"]!.ToString());
-        }
-        
+                         
         [TestMethod]
         public void CompiledTransform_Transform_function_singleitem_Success()
         {
@@ -1124,20 +855,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("Wilma", jobj["Driver"]!.ToString());
         }
         
-        /*[TestMethod] public void CompiledTransform_Transform_function_removeany_Success()
-        {
-            var transformer = CompiledTransform.Compile(_transformRemoveAny);
-            var result      = transformer.Transform(_dataRemoveAny, null, Transformer.CompileFunctions(null));
-
-            Assert.AreNotEqual(_transformRemoveAny, result);
-
-            var obj = JObject.Parse(result);
-
-            Assert.IsNotNull(obj);
-
-            Assert.AreEqual("4255551212", obj["Phone"]);
-        }*/
-
         [TestMethod]
         public void CompiledTransform_Transform_function_removeany2_Success()
         {
@@ -1243,6 +960,11 @@ namespace JTran.UnitTests
                 return this.Documents[name];
             }
 
+            public Stream GetDocumentStream(string name)
+            {
+                return new MemoryStream(UTF8Encoding.Default.GetBytes(this.Documents[name]));
+            }
+
             public IDictionary<string, string> Documents { get; set;  } = new Dictionary<string, string>();
         }
 
@@ -1337,15 +1059,6 @@ namespace JTran.UnitTests
              }
         }";
 
-        private static readonly string _transformForEachNoObjectCopy =
-        @"{
-            '#foreach(Cars, Cars)':
-            {
-                '#noobject':   '#copyof(@)',
-                'Driver':      'Fred Flintstone'
-             }
-        }";
-
         private static readonly string _transformRemoveAny2 =
         "{\r\n" + 
         "   \"#variable(punc)\":" + 
@@ -1354,77 +1067,6 @@ namespace JTran.UnitTests
         "   ['(', ')', '-', '.', ' ']," +
         "   }," + 
         "   Phone:  \"#(removeany(Phone, $punc.punctuation))\"\r\n" + 
-        "}";
-
-        private static readonly string _transformForEach2 =
-        "{\r\n" + 
-        "    Driver:\r\n" + 
-        "    {\r\n" + 
-        "        FirstName: \"Bob\",\r\n" + 
-        "        LastName:  \"Jones\",\r\n" + 
-        "        \"#foreach(Cars, Vehicles)\":\r\n" + 
-        "        {\r\n" + 
-        "             Brand:   \"#(Make)\",\r\n" + 
-        "             Model:   \"#(Model)\",\r\n" + 
-        "             Year:    \"#(Year)\",\r\n" + 
-        "             Color:   \"#(Color)\",\r\n" + 
-        "             Index:   \"#(position())\",\r\n" + 
-        "             Engine:\r\n" + 
-        "             {\r\n" + 
-        "                 Displacement:   375\r\n" + 
-        "             }\r\n" + 
-        "        }\r\n" + 
-        "    }\r\n" + 
-        "}";
-
-
-        private static readonly string _transformEmpty =
-        "{\r\n" + 
-        "    Driver:\r\n" + 
-        "    {\r\n" + 
-        "        \"#if(empty(Cars[Make == 'Audi']))\":\r\n" + 
-        "        {\r\n" + 
-        "          FirstName: \"Bob\",\r\n" + 
-        "          LastName:  \"Jones\"\r\n" + 
-        "        },\r\n" + 
-        "        \"#else\":" + 
-        "        {\r\n" + 
-        "          FirstName: \"Frank\",\r\n" + 
-        "          LastName:  \"Smith\"\r\n" + 
-        "        },\r\n" + 
-        "        \"#if(empty(Engine))\":\r\n" + 
-        "        {\r\n" + 
-        "          Engine: \"unknown\"\r\n" + 
-        "        },\r\n" + 
-        "        \"#if(empty(Driver))\":\r\n" + 
-        "        {\r\n" + 
-        "          OriginalDriver: \"unknown\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(Mechanics))\":\r\n" + 
-        "        {\r\n" + 
-        "          Mechanics: \"none\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(TrackNo))\":\r\n" + 
-        "        {\r\n" + 
-        "          TrackNo: \"not assigned\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(TrackName))\":\r\n" + 
-        "        {\r\n" + 
-        "          TrackName: \"not assigned\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(BobsYourUncle))\":\r\n" + 
-        "        {\r\n" + 
-        "          Uncle: \"bob\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(Aunt))\":\r\n" + 
-        "        {\r\n" + 
-        "          Aunt: \"Mae\"\r\n" + 
-        "        },\r\n" +
-        "        \"#if(empty(Cousin.Father.Brother.Daughter))\":\r\n" + 
-        "        {\r\n" + 
-        "          Cousin: \"Linda\"\r\n" + 
-        "        }\r\n" +
-        "    }\r\n" + 
         "}";
 
         private static readonly string _transformIf1 =
@@ -1477,53 +1119,11 @@ namespace JTran.UnitTests
             }
         }";
 
-        private static readonly string _transformCoalesce =
-        @"{
-            Driver:  '#(coalesce(Monday, null, Tuesday, Wednesday))' 
-          }";
-
-        private static readonly string _transformCoalesceNumber =
-        @"{
-            Driver:  '#(coalescenumber(Monday, null, Tuesday, Wednesday))' 
-          }";
-
-        private static readonly string _transformIIf =
-        @"{
-            '#variable(Blah)': 'Blah',
-            '#variable(checkthis)': 'Blah',
-
-             Driver:  '#(iif($checkthis == $Blah, Monday, Wednesday))' 
-          }";
-
-        private static readonly string _transformIIf2 =
-        @"{
-            '#variable(Blah)': 'Blah',
-            '#variable(checkthis)': 'Blah',
-
-             Driver:  '#(iif($checkthis != $Blah, Monday, Wednesday))' 
-          }";
-
         private static readonly string _transformSingleItem =
         @"{
             '#variable(Wilma)': 'Wilma',
 
              Driver:  '#(Drivers[Name == $Wilma].Name)' 
-          }";
-
-        private static readonly string _transformSort =
-        @"{
-            '#variable(sortBy)': 'Name',
-            Drivers:  '#(sort(Drivers, $sortBy))' 
-          }";
-
-        private static readonly string _dataSort =
-        @"{
-            Drivers:
-            [
-                { 'Name': 'Ted' },
-                { 'Name': 'Bob' },
-                { 'Name': 'Linda' }
-            ]
           }";
 
         private static readonly string _transformVariable =
@@ -1660,14 +1260,6 @@ namespace JTran.UnitTests
             }
         }";
 
-        private static readonly string _transformCopyOf2 =
-        @"{
-            '#foreach(Cars, Vehicles)':
-            {
-                Stuff: '#copyof(@)'
-            }
-        }";
-
         private static readonly string _transformDocument1 =
         @"{
             '#variable(Locations)':   '#(document(Locations, Default))',
@@ -1690,13 +1282,6 @@ namespace JTran.UnitTests
             public string Rank      { get; set; } = "";
             public string DOB       { get; set; } = "";
         }
-
-        private static readonly string _tranformInclude =
-        @"{
-            '#variable(PlatoonSergeant)':   'Lipton',
-
-            PlatoonSergeant:  '#include(Soldiers[LastName == $PlatoonSergeant], LastName, FirstName, Rank)',
-        }";
 
         private static readonly string _tranformExclude =
         @"{
@@ -1748,24 +1333,6 @@ namespace JTran.UnitTests
                Year:   1964,
                Color:  'Blue'
             }
-        }";
-
-        private static readonly string _dataIIf =
-        @"{
-            Monday:    'Wilma',
-            Wednesday: 'Fred'
-        }";
-
-        private static readonly string _dataCoalesce =
-        @"{
-            Monday:    ' ',
-            Wednesday: 'Frank'
-        }";
-
-        private static readonly string _dataCoalesceNumber =
-        @"{
-            Monday:    0,
-            Wednesday: 33
         }";
 
         private static readonly string _data2 =
@@ -1864,96 +1431,28 @@ namespace JTran.UnitTests
             ModelField: 'Model'
         }";
 
-        private static readonly string _dataEmptyTests =
-        @"{
-            Cars:
-            [
-                {
-                   Make:   'Chevy',
-                   Model:  'Corvette',
-                   Year:   1964,
-                   Color:  'Blue'
-                }
-            ],
-            Driver:    {},
-            Mechanics: [],
-            TrackNo:   0,
-            TrackName: '',
-            Aunt:      null
-        }";
-
         private static readonly string _dataRemoveAny =
         @"{
             Phone: '((425) (555-)12-..12'
-        }";
-
-        private static readonly string _dataCopyOf =
-        @"{
-             Make:   'Chevy',
-             Model:  'Corvette',
-             Year:   1964,
-             Color:  'Blue',
-             Service:
-             {
-                Parts:
-                {
-                    Muffler:    945,
-                    Sparkplugs: 123,
-                    Solenoid:   77
-                }
-             }
-        }";
-
-        private static readonly string _dataCopyOf2 =
-        @"{
-            Cars:
-            [
-                {
-                    Make:   'Chevy',
-                    Model:  'Corvette',
-                    Year:   1964,
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                },
-                {
-                   Make:   'Pontiac',
-                   Model:  'Firebird',
-                   Year:   1969,
-                   Color:  'Green',
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                },
-                {
-                   Make:   'Audi',
-                   Model:  'S8',
-                   Year:   2020,
-                   Color:  'Black',
-                    Parts:
-                    {
-                        Muffler:    945,
-                        Sparkplugs: 123,
-                        Solenoid:   77
-                    }
-                }
-            ],
         }";
 
         #endregion
 
         public class Family
         {
-            public string HusbandFirstName { get; set; }
-            public string HusbandSurname   { get; set; }
-            public string WifeFirstName    { get; set; }
-            public string WifeSurname      { get; set; }
+            public string HusbandFirstName { get; set; } = "";
+            public string HusbandSurname   { get; set; } = "";
+            public string WifeFirstName    { get; set; } = "";
+            public string WifeSurname      { get; set; } = "";
+        }
+
+        public class Person
+        {
+            public string  FirstName        { get; set; } = "";
+            public string  LastName         { get; set; } = "";
+            public string  City             { get; set; } = "";
+            public string  Region           { get; set; } = "";
+            public string  EnvironmentName  { get; set; } = "";
         }
 
         public class DriverContainer
@@ -1968,53 +1467,44 @@ namespace JTran.UnitTests
 
         public class Driver
         {
-            public string       FieldName   { get; set; }
-            public string       FirstName   { get; set; }
-            public string       LastName    { get; set; }
+            public string       FieldName   { get; set; } = "";
+            public string       FirstName   { get; set; } = "";
+            public string       LastName    { get; set; } = "";
             public Automobile2  Car         { get; set; }
-        }
-
-        public class Person
-        {
-            public string  FirstName   { get; set; }
-            public string  LastName    { get; set; }
-            public string  City        { get; set; }
-            public string  Region      { get; set; }
-            public string  EnvironmentName  { get; set; }
         }
 
         public class Driver2
         {
-            public string             FirstName        { get; set; }
-            public string             LastName         { get; set; }
-            public string             Engine           { get; set; }
+            public string             FirstName        { get; set; } = "";
+            public string             LastName         { get; set; } = "";
+            public string             Engine           { get; set; } = "";
             public List<Automobile2>  Vehicles         { get; set; }
-            public string             OriginalDriver   { get; set; }
-            public string             Mechanics        { get; set; }
-            public string             TrackNo          { get; set; }
-            public string             TrackName        { get; set; }
-            public string             Uncle            { get; set; }
-            public string             Aunt             { get; set; }
-            public string             Cousin           { get; set; }
+            public string             OriginalDriver   { get; set; } = "";
+            public string             Mechanics        { get; set; } = "";
+            public string             TrackNo          { get; set; } = "";
+            public string             TrackName        { get; set; } = "";
+            public string             Uncle            { get; set; } = "";
+            public string             Aunt             { get; set; } = "";
+            public string             Cousin           { get; set; } = "";
         }
 
         public class Automobile
         {
-            public string        Make     { get; set; }
-            public string        Model    { get; set; }
-            public int           Year     { get; set; }
-            public string        Color    { get; set; }
+            public string        Make     { get; set; } = "";
+            public string        Model    { get; set; } = "";
+            public int           Year     { get; set; } 
+            public string        Color    { get; set; } = "";
             public Engine        Engine   { get; set; }
             public List<Service> Services { get; set; }
         }
 
         public class Automobile2
         {
-            public string        FieldName { get; set; }
-            public string        Brand     { get; set; }
-            public string        Model     { get; set; }
+            public string        FieldName { get; set; } = "";
+            public string        Brand     { get; set; } = "";
+            public string        Model     { get; set; } = "";
             public int           Year      { get; set; }
-            public string        Color     { get; set; }
+            public string        Color     { get; set; } = "";
             public Engine        Engine    { get; set; }
             public int?          Index     { get; set; }
         }
@@ -2026,22 +1516,22 @@ namespace JTran.UnitTests
 
         public class Automobile3
         {
-            public string        Make     { get; set; }
-            public string        Model    { get; set; }
+            public string        Make     { get; set; } = "";
+            public string        Model    { get; set; } = "";
             public int           Year     { get; set; }
-            public string        Color    { get; set; }
-            public string        Driver   { get; set; }
+            public string        Color    { get; set; } = "";
+            public string        Driver   { get; set; } = "";
         }
 
         public class Engine
         {
-            public string  Displacement  { get; set; }
+            public string  Displacement  { get; set; } = "";
         }
 
         public class Service
         {
-            public string  Description { get; set; }
-            public string  Schedule    { get; set; }
+            public string  Description { get; set; } = "";
+            public string  Schedule    { get; set; } = "";
             public decimal Cost        { get; set; }
         }
 

@@ -1,0 +1,20 @@
+{
+  "#foreach(result.event, [])": 
+  {
+    "#variable(doubleSingleQuotes)": "''",
+    "#variable(singleQuote)": "'",
+
+    "Description": "#(trim(replace(description, $doubleSingleQuotes, $singleQuote)))",
+    "Date":        "#iif(date < 0, string(abs(date)) + ' BC', iif(year(date) < 1000, string(year(date)) + ' AD', formatdatetime(date, 'MMM d, yyyy')))",
+
+    "#if(category1 != null)": 
+    {
+      "Category": "#(category1)"
+    },
+
+    "#if(category2 != null)": 
+    {
+      "Place":    "#(category2)"
+    }
+  }
+}

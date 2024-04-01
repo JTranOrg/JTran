@@ -2,10 +2,19 @@
   "Name":        "Fred",
   "#foreach(Automobiles, Cars)":
   {
-      "Brand":    "#(Make))",
+      "Brand":    "#(Make)",
       "Model":    "#(Model)",
       "Year":     "#(Year)",
       "Color":    "#(Color)",
-      "Sponsor":  "Jimbo"
+      "Sponsor":  "Jimbo",
+
+      "Driver":   "#GetDriver(@)"
+  },
+
+  "#template(GetDriver, car)": 
+  {
+    "FirstName":  "Bob",
+    "LastName":   "#($car.Make)",
+    "Age":        "#($car.Year - 1950)"
   }
 }

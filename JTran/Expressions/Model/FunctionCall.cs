@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: FunctionCall.cs					    		        
@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -20,11 +20,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
-
-using JTran.Json;
 using System.Reflection;
+
+using JTran.Common;
+using JTran.Json;
 
 namespace JTran.Expressions
 {
@@ -46,11 +45,17 @@ namespace JTran.Expressions
         {
             var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
 
+            // Built-in or custom functions (e.g. in .Net)
             if(func != null)
             { 
                 try
                 { 
-                    return func.Evaluate(_parameters, context);
+                    var result = func.Evaluate(_parameters, context);
+
+                    if(result != null && result is ICharacterSpan cspan)
+                        cspan.ExpressionResult = true;
+
+                    return result;
                 }
                 catch(Transformer.UserError) 
                 {
@@ -63,42 +68,48 @@ namespace JTran.Expressions
 
                     throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {tex.InnerException.Message}", tex.InnerException);
                 }
+                catch(Transformer.SyntaxException) 
+                {
+                    throw;
+                }
                 catch(Exception ex) 
                 {
                     throw new TargetInvocationException($"Extension function \"{_functionName}\" threw an exception: {ex.InnerException.Message}", ex);
                 }
             }
 
+            // JTran defined functons, e.g. #function(...)
             var tfunc = context.GetFunction(_functionName);
             
-            if(tfunc != null)
-            {
-                var output      = new JsonStringWriter();
-                var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
-                var index       = 0;
+            if(tfunc == null)
+                throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
+
+            var output      = new JsonStringWriter();
+            var funcContext = new ExpressionContext(context.Data, context, context.Templates, context.Functions);
+            var index       = 0;
                 
-                foreach(var argName in tfunc.Parameters)
-                {
-                    if(index >= _parameters.Count)
-                        break;
+            foreach(var argName in tfunc.Parameters)
+            {
+                if(index >= _parameters.Count)
+                    break;
 
-                    funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
-                }
-
-                output.StartObject();
-                tfunc.Evaluate(output, funcContext, (f)=> f());
-                output.EndObject();
-
-                var jobject = JObject.Parse(output.ToString());
-
-                if(jobject["return"] != null)
-                    return jobject["return"];
-
-                return output.ToString().JsonToExpando();
+                funcContext.SetVariable(argName, _parameters[index++].Evaluate(context));
             }
 
-            throw new Transformer.SyntaxException($"A function with that name and number of parameters was not found : {_functionName}");
+            output.StartObject();
+            tfunc.Evaluate(output, funcContext, (f)=> f());
+            output.EndObject();
+
+            var exp = output.ToString().ToJsonObject();
+            var dict = exp as IDictionary<ICharacterSpan, object>;
+
+            if(dict.ContainsKey(_return))
+                return dict[_return];
+
+            return exp;
         }
+
+        private readonly static ICharacterSpan _return = CharacterSpan.FromString("return");
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
@@ -110,6 +121,12 @@ namespace JTran.Expressions
         public void AddParameter(IExpression expr)
         {
             _parameters.Add(expr);
+        }
+
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 }

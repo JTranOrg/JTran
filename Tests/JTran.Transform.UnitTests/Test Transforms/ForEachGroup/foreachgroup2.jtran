@@ -1,0 +1,15 @@
+{
+  "#variable(Pontiac)": "Pontiac",
+  "#variable(Drivers)": "#(Drivers[Make != $Pontiac])",
+
+  "#foreachgroup($Drivers, Make, Makes)":
+  {
+    "Make": "#(Make)",
+
+    "#foreach(currentgroup(), Drivers)":
+    {
+      Name: "#(Name)",
+      Model: "#(Model)"
+    }
+  }
+}

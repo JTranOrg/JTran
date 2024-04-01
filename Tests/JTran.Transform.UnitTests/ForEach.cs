@@ -1,6 +1,7 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JTran.Transform.UnitTests
 {
@@ -64,6 +65,31 @@ namespace JTran.Transform.UnitTests
         }
 
         [TestMethod]
+        [DataRow("explicit_array", "customers4")]
+        [DataRow("explicit_array2", "customers4")]
+        public async Task ForEach_explicit_array(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, data);
+
+            var jobj = JObject.Parse(result);
+            var cars = jobj["Cars"] as JArray;
+
+            Assert.AreEqual(3, cars!.Count);
+            Assert.AreEqual("Chevy",   cars[0]!["Make"]!.ToString());
+            Assert.AreEqual("Pontiac", cars[1]!["Make"]!.ToString());
+            Assert.AreEqual("Audi",    cars[2]!["Make"]!.ToString());
+        }
+
+        [TestMethod]
+        [DataRow("foreach4", "customers")]
+        public async Task ForEach_simple_array(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, data);
+
+            var jobj = JObject.Parse(result);
+        }
+
+        [TestMethod]
         public async Task ForEach_list()
         {
            var list = new List<Automobile>
@@ -101,6 +127,99 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
             Assert.AreEqual("Corvette",  owner.Cars[0].Model);
             Assert.AreEqual(1956,        owner.Cars[0].Year);
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Driver.LastName);
+
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
+            Assert.AreEqual("Firebird",  owner.Cars[1].Model);
+            Assert.AreEqual(1969,        owner.Cars[1].Year);
+            Assert.AreEqual("Pontiac",   owner.Cars[1].Driver.LastName);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Brand);
+            Assert.AreEqual("Camaro",    owner.Cars[2].Model);
+            Assert.AreEqual(1970,        owner.Cars[2].Year);
+            Assert.AreEqual("Chevrolet", owner.Cars[2].Driver.LastName);
+        }
+
+        internal class TestEnumerable : IEnumerable
+        {
+            private readonly List<object> _list = new List<object>();
+
+            internal TestEnumerable()
+            {
+            }
+
+            internal void Add(object value) 
+            {
+                _list.Add(value);
+            }
+
+            public IEnumerator GetEnumerator()
+            {
+                return new TestEnumerator(_list.GetEnumerator());
+            }
+
+            private class TestEnumerator : IEnumerator
+            {
+                private readonly IEnumerator _enumerator;
+
+                internal TestEnumerator(IEnumerator enumerator)
+                {
+                    _enumerator = enumerator;
+                }
+
+                public object Current => _enumerator.Current;
+
+                public bool MoveNext()
+                {
+                    return _enumerator.MoveNext();
+                }
+
+                public void Reset()
+                {
+                    _enumerator.Reset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task ForEach_array()
+        {
+           var list = new TestEnumerable();
+
+           list.Add(new Automobile
+                    {
+                        Make  = "Chevrolet",
+                        Model = "Corvette",
+                        Year  = 1956,
+                        Color = "Blue"
+                    });
+
+           list.Add(new Automobile
+                {
+                    Make  = "Pontiac",
+                    Model = "Firebird",
+                    Year  = 1969,
+                    Color = "Green"
+                    });
+
+           list.Add(new Automobile
+                {
+                    Make  = "Chevrolet",
+                    Model = "Camaro",
+                    Year  = 1970,
+                    Color = "Black"
+                    });
+
+            var result = await TransformerTest.TestList("list", list, "Automobiles");
+            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+
+            Assert.IsNotNull(owner);
+            Assert.IsNotNull(owner.Cars);
+            Assert.AreEqual(3, owner.Cars.Count);
+
+            Assert.AreEqual("Chevrolet", owner.Cars[0].Brand);
+            Assert.AreEqual("Corvette",  owner.Cars[0].Model);
+            Assert.AreEqual(1956,        owner.Cars[0].Year);
 
             Assert.AreEqual("Pontiac",   owner.Cars[1].Brand);
             Assert.AreEqual("Firebird",  owner.Cars[1].Model);
@@ -120,6 +239,24 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual(1,       customers!.Customers!.Count);
             Assert.AreEqual("John",  customers!.Customers[0].FirstName);
             Assert.AreEqual("Smith", customers!.Customers[0].LastName);
+        }
+
+        [TestMethod]
+        [DataRow("nested", "nested")]
+        public async Task Functions_nested(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, "ForEach." + data);
+            
+            _ = JObject.Parse(result);
+
+            var roster = JsonConvert.DeserializeObject<Roster>(result);
+
+            Assert.AreEqual(3,               roster?.Owner?.Cars.Count);
+            Assert.AreEqual("Chevy",         roster?.Owner?.Cars[0].Make);
+            Assert.AreEqual("Camaro",        roster?.Owner?.Cars[0].Model);
+            Assert.AreEqual(3,               roster?.Owner?.Cars[0].Mechanics.Count);
+            Assert.AreEqual("Bob",           roster?.Owner?.Cars[0].Mechanics[0].FirstName);
+            Assert.AreEqual("Mendez",        roster?.Owner?.Cars[0].Mechanics[0].LastName);
         }
     }
 }

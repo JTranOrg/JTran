@@ -252,12 +252,16 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[foreach](#foreach)</strong> - Iterates over an array 
 - <strong>[foreachgroup](#foreachgroup)</strong> - Iterates over an array and creates groups of subarrays
 - <strong>[if](#if)</strong> - Conditionally evaluates it's children 
+- <strong>[iif](#iif)</strong> - Conditionally evaluates it's children 
 - <strong>[include](#include)</strong> - Loads an external file 
 - <strong>[include (as a property)](#include (as a property))</strong> - Outputs the specified properties of an object 
+- <strong>[innerjoin](#innerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the matching objects 
+- <strong>[iterate](#iterate)</strong> - Create an array by looping over the contents
 - <strong>[function](#function)</strong> - Create a function in JTran that can be called from expressions
 - <strong>[map](#map)</strong> - Maps a set of a keys or expressions to a single output value 
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
 - <strong>[message](#message)</strong> - Writes a message to the console 
+- <strong>[outerjoin](#outerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
 - <strong>[try](#trycatch)</strong> - Part of a try/catch block
@@ -507,7 +511,7 @@ Takes on object and outputs the properties of that object except for those that 
 ###### Transform
 
     {
-        "Supervisor": #exclude(Employees[Title == 'Supervisor'], Title)":
+        "Supervisor": "#exclude(Employees[Title == 'Supervisor'], Title)":
     }
 
 ###### Source Document
@@ -727,60 +731,10 @@ If no array name is specified then no new array is created and contents are outp
         ]
     }
 
-If no array name is specified then no new array is created and contents are output for each child
-
-###### Transform
-
-    {
-        "#foreach(Cars)":
-        {
-            "#(Make)":
-            {
-                Model:   "#(Model)",
-                Driver:  "#(//Driver.Name)"
-            }
-        }
-    }
-
-###### Source Document
-
-    {
-        Cars:
-        [
-            {
-               Make:  "Chevy",
-               Model: "Corvette"
-            },
-            {
-               Make:  "Pontiac",
-               Model: "Firebird"
-            }
-        ],
-        Driver:
-        {
-           Name: "Joe Smith"
-        }
-    }
-
-###### Output
-
-    {
-        Chevy:
-        {
-            Model: "Corvette",
-            Driver: "Joe Smith"
-        },
-        Pontiac:
-        {
-            Model: "Firebird",
-            Driver: "Joe Smith"
-        }
-    }
-
 
 #### #include
 
-#include provides a way to include JTran code from external files. Templates are the only things that can be in included files.
+#include provides a way to include JTran code from external files. Templates and functions are the only things that can be in included files.
 
     {
         "#include":     "mytemplates.json",  // The value cannot be an expression. It must be a hardcoded value
@@ -809,7 +763,6 @@ You must specify how the included files are loaded when instantiating the transf
 #### #include (as a property)
 
 #include takes on object and outputs only the properties of that object that are listed. If the expression is not an object than a null is returned.
-
 
 ###### Transform
 
@@ -843,6 +796,138 @@ You must specify how the included files are loaded when instantiating the transf
             FirstName: "Linda",
             LastName:  "Smith"
         }
+    }
+
+
+#### #innerjoin
+    
+    Joins the objects from two arrays based on a query and outputs the matching objects. In the query to match objects the object from the first list is referenced by "left" and the second by "right"
+
+###### Transform
+
+    {
+        "#variable(joined_drivers)": "#innerjoin(Drivers, Cars, left.CarId == right.Id)",
+
+        "#foreach($joined_drivers, [])": 
+        {
+          "Driver": "#(left.FirstName + ' ' + left.LastName)",
+          "From":   "#(left.From)",
+          "Make":   "#(right.Make)",
+          "Model":  "#(right.Model)",
+          "Year":   "#(right.Year)",
+        }
+    }
+
+###### Source Document
+
+    {
+      "Cars": 
+      [
+        {
+          "Id":     1,
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+        },
+        {
+          "Id":     2,
+          "Make":   "Pontiac",
+          "Model":  "Firebird",
+          "Year":   1970
+        }
+      ],
+
+      "Drivers": 
+      [
+        {
+          "CarId":      1,
+          "FirstName":  "Linda",
+          "LastName":   "Martinez",
+          "From":       "Seattle, WA",
+          "Age":        28
+        },
+        {
+          "CarId":      2,
+          "FirstName":  "Frank",
+          "LastName":   "Anderson",
+          "From":       "Casper, WY",
+          "Age":        34
+        }
+      ]
+    }
+
+ ###### Output
+
+    [
+        {
+          "Driver": "Linda Martinez",
+          "From":   "Seattle, WA",
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+
+        },
+        {
+          "Driver": "Frank Anderson",
+          "From":   "Casper, WY",
+          "Make":   "Pontiac",
+          "Model":  "Firebird",
+          "Year":   1970
+       }
+    ]
+
+#### #iterate
+
+#iterate will create an array with the given name and iterate the number of times (derived from the expression) over the contents
+
+###### Transform
+
+    {
+        "#iterate(count(Cars), Cars)":
+        {
+            Index: "#(position() + 1)",
+            Make:  "Cars[position()]"
+        }
+    }
+
+###### Source Document
+
+    {
+        Cars:
+        [
+            {
+               Make:  "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Make:  "Pontiac",
+               Model: "Firebird"
+            },
+            {
+               Make:  "Dodge",
+               Model: "Charger"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Cars:
+        [
+            {
+                Index: "1",
+                Make:  "Chevy"
+            },
+            {
+                Index: "2",
+                Make:  "Pontiac"
+            },
+            {
+                Index: "3",
+                Make:  "Dodge"
+            }
+        ]
     }
 
 #### #if
@@ -908,6 +993,13 @@ Would then output this:
 
 <br>
 
+#### #iif
+Evaluates the first parameter as a condition and returns the second parameter if true otherwise the third
+
+    "#iif(7 == 8, 'frank', 'bob'))"
+
+Result is "bob"<br><br>
+
 #### #elseif
 
 #elseif conditionally processes it's contents based on the evaluation of it's expression and only if the previous #if expression evaluated to false.
@@ -955,9 +1047,9 @@ Would then output this:
 ###### Transform
 
     {
-        Driver:      "#(Driver.Name)",
+        Driver:     "#(Driver.Name)",
 
-        "#if(Car.Make == 'Chevy')"v
+        "#if(Car.Make == 'Chevy')"
         {
             Car:    "#('Chevy ' + Car.Make)"
         },
@@ -992,8 +1084,6 @@ Would then output this:
         Car: "Dodge Charger"
     }
 
-Because json doesn't allow more than one property with the same name if you needed to output more than #if/#else in the same scope you can simply use #elseif with a different condition that evaluates to true. 
-
 ###### Transform
     {
         "#if(Car.Make == 'Chevy')":
@@ -1009,7 +1099,7 @@ Because json doesn't allow more than one property with the same name if you need
         {
             Car:    "#('Audi ' + Car.Make)"
         },
-        "#elseif(1==1)": // If this was simply #else and then it would clash with the #else above and it would be invalid json
+        "#else(2)": // Because json doesn't allow two elements of the same name in the same scope we can pass #else an unused parameter to differentiate
         {
             Car:    "#(Car.Model + Car.Make)"
         }
@@ -1530,6 +1620,94 @@ You can also use expressions in the #mapitem but then you'll need to use the sco
         ]   
     }
 
+#### #message
+    
+    Writes a message to the console
+
+    ###### Transform
+
+    {
+        "#foreach(Drivers, []":  
+        {
+            "Name":        "#(Name)",
+
+            "#if(position() == 1000)":
+            {
+                "#message": "#('The 1000th driver is ' + Name)"
+            }
+        }
+    }
+
+#### #outerjoin
+    
+    Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
+
+###### Transform
+
+    {
+        "#variable(joined_drivers)": "#outerjoin(Drivers, Cars, left.CarId == right.Id)",
+
+        "#foreach($joined_drivers, [])": 
+        {
+          "Driver": "#(left.FirstName + ' ' + left.LastName)",
+          "From":   "#(left.From)",
+          "Make":   "#(right.Make)",
+          "Model":  "#(right.Model)",
+          "Year":   "#(right.Year)",
+        }
+    }
+
+###### Source Document
+
+    {
+      "Cars": 
+      [
+        {
+          "Id":     1,
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+        }
+      ],
+
+      "Drivers": 
+      [
+        {
+          "CarId":      1,
+          "FirstName":  "Linda",
+          "LastName":   "Martinez",
+          "From":       "Seattle, WA",
+          "Age":        28
+        },
+        {
+          "CarId":      2,
+          "FirstName":  "Frank",
+          "LastName":   "Anderson",
+          "From":       "Casper, WY",
+          "Age":        34
+        }
+      ]
+    }
+
+ ###### Output
+
+    [
+        {
+          "Driver": "Linda Martinez",
+          "From":   "Seattle, WA",
+          "Make":   "Chevy",
+          "Model":  "Camaro",
+          "Year":   1969
+
+        },
+        {
+          "Driver": "Frank Anderson",
+          "From":   "Casper, WY",
+          "Make":   null,
+          "Model":  null,
+          "Year":   null
+       }
+    ]
 
 ### <a id="Templates">Templates</a>
 
@@ -1605,7 +1783,7 @@ You can pass parameters to a template
 ###### Transform
 
     {
-        "foreach(Cars, Vehicles)":
+        "#foreach(Cars, Vehicles)":
         {
             "#calltemplate(Automobile)":  
             {
@@ -1615,6 +1793,24 @@ You can pass parameters to a template
         }
 
         // Templates must be defined in the root object but can be defined before or after it's use
+        "#template(Automobile, Make, Model)":
+        {
+            "Make":   "#($Make)",
+            "Model":  "#($Model)",
+            "Active":  true
+        }
+    }
+
+You can use a shortcut syntax to call a template by using the template name as an element
+
+###### Transform
+
+    {
+        "#foreach(Cars, Vehicles)":
+        {
+            "#noobject": "#Automobile(Make, Model)"
+        },
+
         "#template(Automobile, Make, Model)":
         {
             "Make":   "#($Make)",

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 using JTran.Expressions;
 
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
 using JTran.Json;
 
 
@@ -92,9 +92,9 @@ namespace JTran.UnitTests
             var utcNow   = dto.UtcDateTime;
             var sDto     = utcNow.ToString("o");
             var context  = CreateContext(new {Year = 2010, Now = utcNow} );
-            var sResult  = Compile($"DateTimeUtc(Now)").Evaluate(context).ToString();
+            var sResult  = Compile($"DateTimeUtc(Now)").Evaluate(context);
    
-            Assert.AreEqual(sDto, sResult);
+            Assert.AreEqual(sDto, sResult.ToString());
         }
 
         [TestMethod]
@@ -240,7 +240,7 @@ namespace JTran.UnitTests
 
         private object CreateTestData(object obj)
         {
-            return JObject.FromObject(obj).ToString().JsonToExpando();
+            return JObject.FromObject(obj).ToString().ToJsonObject();
         }
     }
 }

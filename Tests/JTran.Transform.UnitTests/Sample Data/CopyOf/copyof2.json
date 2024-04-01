@@ -1,0 +1,40 @@
+{
+  Cars:
+  [
+    {
+      Make: "Chevy",
+      Model: "Corvette",
+      Year: 1964,
+      Parts:
+      {
+        Muffler: 945,
+        Sparkplugs: 123,
+        Solenoid: 77
+      }
+    },
+    {
+      Make: "Pontiac",
+      Model: "Firebird",
+      Year: 1969,
+      Color: "Green",
+      Parts:
+      {
+        Muffler: 945,
+        Sparkplugs: 123,
+        Solenoid: 77
+      }
+    },
+    {
+      Make: "Audi",
+      Model: "S8",
+      Year: 2020,
+      Color: "Black",
+      Parts:
+      {
+        Muffler: 945,
+        Sparkplugs: 123,
+        Solenoid: 77
+      }
+    }
+  ]
+}

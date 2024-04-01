@@ -1,0 +1,17 @@
+{
+  "Customers":
+  [
+    {
+      "LastName":   "Smith",
+      "FirstName":  "John",
+      "Age":        34,
+      "Address":    
+      {
+        "Street": "123 Elm St",
+        "City":   "Springfield",
+        "State":  "CA",
+        "Zip":    "94332"
+      }
+    }
+  ]
+}

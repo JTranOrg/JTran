@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: IExpression.cs					    		        
@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -21,8 +21,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
-
+using System.IO;
+using System.Linq;
+using System.Net.Http.Headers;
+using JTran.Collections;
+using JTran.Common;
 using JTran.Extensions;
 
 namespace JTran.Expressions
@@ -33,15 +36,46 @@ namespace JTran.Expressions
     {
         object Evaluate(ExpressionContext context);
         bool   EvaluateToBool(ExpressionContext context);
+        bool   IsConditional(ExpressionContext context);
+    }
+
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class ArrayExpression : IExpression
+    {
+        /*****************************************************************************/
+        public ArrayExpression()
+        {
+        }
+
+        /*****************************************************************************/
+        public object Evaluate(ExpressionContext context)
+        {
+            return this.SubExpressions.Select( x=> x.Evaluate(context) );
+        }
+
+        /*****************************************************************************/
+        public bool EvaluateToBool(ExpressionContext context)
+        {
+            return false;
+        }
+
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
+        }
+
+        internal IList<IExpression> SubExpressions { get; set; } = new List<IExpression>();
     }
 
     /*****************************************************************************/
     /*****************************************************************************/
     internal class Value : IExpression
     {
-        private object _value;
+        private object? _value;
 
-        public Value(object val)
+        public Value(object? val)
         {
             _value = val;
         }
@@ -61,7 +95,7 @@ namespace JTran.Expressions
             return EvaluateToBool(_value, context);
         }
 
-        internal static bool EvaluateToBool(object value, ExpressionContext context)
+        internal static bool EvaluateToBool(object? value, ExpressionContext context)
         {
             if(value is bool bval)
                 return bval;  
@@ -69,10 +103,16 @@ namespace JTran.Expressions
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  
 
-            if(decimal.TryParse(value.ToString(), out decimal dval))
-                return dval != 0M;
+            if(decimal.TryParse(value?.ToString(), out decimal dval))
+                return dval != 0m;
 
-            return !string.IsNullOrWhiteSpace(value.ToString());
+            return !string.IsNullOrWhiteSpace(value?.ToString());
+        }
+        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return _value is bool;
         }
     }
 
@@ -97,7 +137,13 @@ namespace JTran.Expressions
 
         public bool EvaluateToBool(ExpressionContext context)
         {
-            return _value > 0M;
+            return _value > 0m;
+        }
+                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -107,10 +153,10 @@ namespace JTran.Expressions
     {
         public DataValue(string name)
         {
-            this.Name = name;
+            this.Name = CharacterSpan.FromString(name);
         }
 
-        public string Name { get; }
+        public ICharacterSpan Name { get; }
 
         /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
@@ -125,6 +171,18 @@ namespace JTran.Expressions
 
             return Value.EvaluateToBool(val, context);
         }
+                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return context.Data is bool;
+        }
+
+        /*****************************************************************************/
+        public override string ToString()
+        {
+            return this.Name.ToString();
+        }
     }
 
     /*****************************************************************************/
@@ -133,9 +191,11 @@ namespace JTran.Expressions
     {
         private readonly IList<IExpression> _parts = new List<IExpression>();
 
-        public MultiPartDataValue(IExpression initial)
+        /*****************************************************************************/
+        public MultiPartDataValue(IExpression? initial)
         {
-            _parts.Add(initial);
+            if(initial != null)
+                _parts.Add(initial);
         }
 
         /*****************************************************************************/
@@ -145,52 +205,78 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public override string ToString()
+        {
+            return JoinLiteral(null).ToString();
+        }
+
+        /*****************************************************************************/
+        public ICharacterSpan JoinLiteral(ExpressionContext context)
+        {   
+            var parts      = new List<ICharacterSpan>();
+            var numParts   = _parts.Count;
+            var newContext = new ExpressionContext("", context);
+
+            foreach(var part in _parts)
+            {
+                if(part is MultiPartDataValue multiPart)
+                    parts.Add(multiPart.JoinLiteral(context));
+                else if(part is DataValue val)
+                    parts.Add(val.Name);
+                else
+                    parts.Add(part.Evaluate(newContext).AsCharacterSpan());
+            }
+
+            return CharacterSpan.Join(parts, '.');
+        }
+
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var numParts = _parts.Count;
-            var data     = context.Data;
-            var result   = new List<object>();
+            var     numParts = _parts.Count;
+            var     data     = context.Data;
+            object? result   = null;
             
+            if(data is IEnumerable<object> enm && enm.IsPocoList(out Type? t))
+                data = new PocoEnumerableWrapper(t!, enm);
+
             for(var i = 0; i < numParts; ++i)
             {
-                var expr = _parts[i].Evaluate(new ExpressionContext(data, context));
+                var expr = _parts[i].Evaluate(new ExpressionContext(data!, context));
 
                 if(expr == null)
                 {
                     return null;
                 }
 
-                result.Clear();
-
                 if(expr is IEnumerable<object> outList2)
                 { 
-                    result.AddRange(outList2);
+                    result = outList2;
                 }
-                else if(expr is string || expr is ExpandoObject)
+                else if(expr is ICharacterSpan || expr is string || expr is JsonObject)
                 {
-                    result.Add(expr);
+                    result = expr;
                 }
                 else if(expr.IsDictionary())
                 {
                     data = expr;
-                    result.Add(expr);
+                    result = expr;
                     continue;
                 }
                 else if(expr is IEnumerable outEnumerable)
                 { 
-                    foreach(var item in outEnumerable)
-                        result.Add(item);
+                    result = new EnumerableWrapper(outEnumerable); 
                 }
                 else
-                    result.Add(expr);
+                    result = expr;
 
                 data = result;
             }
 
-            if(result is IList<object> outList3)
+            if(result is IEnumerable<object> outList3)
             { 
-                if(outList3.Count == 1)
-                    return outList3[0];
+                if(outList3.IsSingle())
+                    return outList3.First();
 
                 return outList3;
             }
@@ -202,6 +288,12 @@ namespace JTran.Expressions
         public bool EvaluateToBool(ExpressionContext context)
         {
             return Convert.ToBoolean(Evaluate(context));
+        }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -223,37 +315,43 @@ namespace JTran.Expressions
             if(context.Data == null)
                 return null;
 
-            var result = new List<object>();
-
             if(context.Data.IsDictionary())
             {
-                var indexVal = _expr.Evaluate(context).ToString();
+                var indexVal = _expr.Evaluate(context).AsCharacterSpan();
                 var rtnVal   = context.Data.GetPropertyValue(indexVal);
 
                 return rtnVal;
             }
-            else if(context.Data is IList<object> list)
+
+            IEnumerable<object>? enm = null;
+            Type? type = null;
+
+            if(context.Data is IEnumerable<object> enm2)
             { 
-                // If expression result is integer then return nth value of array
-                try
-                { 
-                    if(int.TryParse(_expr.Evaluate(context).ToString(), out int index))
-                        return list[index];
-                }
-                catch
-                {
+                if(!enm2.Any())
+                    return null;
 
-                }
+                if(enm2.IsPocoList(out Type? type2))
+                    type = type2;
 
-                // Evaluate each item in list against expression
-                foreach(var child in list)
-                { 
-                    if(_expr.EvaluateToBool(new ExpressionContext(child, context)))
-                        result.Add(child);
-                }
+                enm = enm2;
             }
+            else
+                enm = new [] {context.Data};
 
-            return result;
+            // If expression result is integer then return nth value of array
+            if(!_expr.IsConditional(context))
+            { 
+                var result = _expr.Evaluate(context);
+
+                if(!(result is bool) && result.TryParseInt(out int index))
+                    return enm.GetNthItem(index);
+            }   
+            
+            if(type != null) 
+                return new PocoWhereClause(type, enm, _expr, new ExpressionContext(enm, context));
+
+            return new WhereClause<object>(enm, _expr, new ExpressionContext(enm, context));
         }
 
         /*****************************************************************************/
@@ -261,31 +359,50 @@ namespace JTran.Expressions
         {
             return Convert.ToBoolean(Evaluate(context));
         }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
+        }
     }
 
      /*****************************************************************************/
      /*****************************************************************************/
      internal class VariableValue : IExpression
      {
-        private string _name;
+        private ICharacterSpan _name;
 
-        public VariableValue(string name)
+        /*****************************************************************************/
+        public VariableValue(ICharacterSpan name)
         {
             _name = name;
         }
 
         /*****************************************************************************/
+        public VariableValue(string name)
+        {
+            _name = CharacterSpan.FromString(name);
+        }
+
+        /*****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            return context.GetVariable(_name);
+            return context.GetVariable(_name, context);
         }
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext context)
         {
-            object val = context.GetVariable(_name);
+            object val = context.GetVariable(_name, context);
 
             return Value.EvaluateToBool(val, context);
+        }
+                        
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
         }
     }
 
@@ -323,5 +440,12 @@ namespace JTran.Expressions
 
             return this.Operator.EvaluateToBool(this.Left, this.Right, context);
         }
+                                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return this.Operator is ComparisonOperator;
+        }
+
     }
 }

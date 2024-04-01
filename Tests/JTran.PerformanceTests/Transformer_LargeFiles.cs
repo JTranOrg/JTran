@@ -1,110 +1,250 @@
-using JTran.Common;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text;
+
+using Newtonsoft.Json;
+
+using JTran.Common;
+using JTran.Json;
 
 namespace JTran.PerformanceTests
 {
     public class TransformerTests
     {
+        private static Transformer? _transformer;
+
+        static TransformerTests()
+        { 
+            _transformer = CreateTransformer(_transformForEach1);
+        }
+
         [Theory]
         [InlineData(10)]
         [InlineData(100)]
         [InlineData(1000)]
         [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public async Task Transform_create_test_list_files(int numItems)
+        {
+            var dataSource = CreateLargeDataSource(numItems);
+
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_list_{numItems}.json", dataSource);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public async Task Transform_create_test_files(int numItems)
+        {
+            var dataSource = CreateLargeDataSource(numItems, false);
+
+            await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource);
+        }
+        
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Transform_Transform_large_array_file(int numItems)
+        {
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
+
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_list_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
+
+            transformer.Transform(input, output);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
         [InlineData(200000)]
         [InlineData(2000000)]
         public void Transform_Transform_large_file(int numItems)
         {
-            var transformer = CreateTransformer(_transformForEach1);
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
+
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", FileMode.Create);
+
+            transformer.Transform(input, output);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Transform_Transform_large_list(int numItems)
+        {
+            var transformer = TransformerTests.CreateTransformer(_transformForEach1);
             TimeSpan duration = TimeSpan.Zero;
 
-            using var dataSource = CreateLargeDataSource(numItems);
+            var list = CreateLargeList(numItems);
 
-            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource.ReadString());
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
 
-            dataSource.Seek(0, SeekOrigin.Begin);
+            transformer.Transform(list, output);
+        }
 
-            var dtStart = DateTime.Now;
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Parser_parse(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var parser  = new Json.Parser(new JsonModelBuilder());
+            
+            parser.Parse(input, true);
+        }
 
-            using var output = new MemoryStream();
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Parser_parse_and_transform_using_deferred(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
+            var transformer  = new JTran.Transformer(_transform);
+           
+            transformer.Transform(input!, output);
+        }
 
-            transformer.Transform(dataSource, output);
+        private const string _transform = "{ '#foreach(@, [])': { '#noobject': '#copyof(@)' } }";
 
-            var dtEnd = DateTime.Now;
-
-            duration = dtEnd - dtStart;
-                 
-            var sOutput = output.ReadString();
-
-            File.WriteAllText($"c:\\Documents\\Testing\\JTran\\largefile_output_{numItems}.json", sOutput);
-
-            var jresult = JObject.Parse(sOutput);
-
-            Assert.NotNull(jresult);
+        [Theory]
+        [InlineData(10)]
+        [InlineData(100)]
+        [InlineData(1000)]
+        [InlineData(5000)]
+        [InlineData(20000)]
+        [InlineData(100000)]
+        [InlineData(200000)]
+        [InlineData(2000000)]
+        public void Parser_parse_and_transform_no_deferred(int numItems)
+        {
+            using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
+            var transformer  = new JTran.Transformer(_transform);
+           
+            transformer.Transform(input!, output, new TransformerContext() { AllowDeferredLoading = false } );
         }
 
         #region Private
 
-        private Stream CreateLargeDataSource(int numItems = 100000)
+        private string CreateLargeDataSource(int numItems = 100000, bool list = true)
         {
-            var customers = new CustomerContainer
-            {
-                Customers = new()
-            };
+            var customers = CreateLargeList(numItems);
+
+            if(!list)
+            { 
+                var org = new Organization { Name = "Acme Widgets", Customers = customers};
+
+                return JsonConvert.SerializeObject(org, Formatting.Indented);
+            }
+
+            return JsonConvert.SerializeObject(customers, Formatting.Indented);
+        }
+
+        private List<Customer> CreateLargeList(int numItems = 100000)
+        {
+            var org = new List<Customer>();
 
             for(int i = 0; i < numItems; ++i)
             { 
                 var person = CreateRandomPerson();
 
-                customers.Customers.Add(new Customer
+                org.Add(new Customer
                 { 
                     Id           = Guid.NewGuid().ToString(),
                     FirstName    = person.FirstName,
                     MiddleName   = person.MiddleName,
-                    LastName     = person.Surname.StartsWith("A") ? ("\\\\" + person.Surname + "\\\\") : person.Surname,
+                    LastName     = "\\" + person.Surname + "\\",
                     Birthdate    = person.Birthdate,
                     Address      = person.StreetNumber + " " + person.StreetName,
                     City         = person.City,
                     State        = person.State,
-                    ZipCode      = person.ZipCode
+                    ZipCode      = person.ZipCode,
+                    Age          = (int)(DateTime.Now.Ticks & 31) + 20
                 });
             }
 
-           return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(customers)));
+
+            return org;
         }
 
-        internal class CustomerContainer
+        public class Organization
         {
-            internal List<Customer>? Customers   { get; set; } 
+            public string?        Name        { get; set; }
+            public List<Customer> Customers   { get; set; } = new List<Customer>();
         }        
         
-        internal class Customer
+        public class Customer
         {
-            internal string Id          { get; set; } = "";
-            internal string FirstName   { get; set; } = "";
-            internal string MiddleName  { get; set; } = "";
-            internal string LastName    { get; set; } = "";
-            internal string Birthdate   { get; set; } = "";
-            internal string Address     { get; set; } = "";
-            internal string City        { get; set; } = "";
-            internal string State       { get; set; } = "";
-            internal string ZipCode     { get; set; } = "";
+            public string Id          { get; set; } = "";
+            public string FirstName   { get; set; } = "";
+            public string MiddleName  { get; set; } = "";
+            public string LastName    { get; set; } = "";
+            public string Birthdate   { get; set; } = "";
+            public string Address     { get; set; } = "";
+            public string City        { get; set; } = "";
+            public string State       { get; set; } = "";
+            public string ZipCode     { get; set; } = "";
+            public int    Age         { get; set; } = 0;
         }
 
-        private JTran.Transformer CreateTransformer(string transform)
+        private static JTran.Transformer CreateTransformer(string transform)
         {
             return new JTran.Transformer(transform, null);
         }
 
         private static readonly string _transformForEach1 =
         @"{
-            '#foreach(Customers, Customers)':
+            '#variable(var1)':      20,
+            '#variable(var2)':      '#((2 + 3) * (9 / 3))',
+            '#variable(var3)':      5,
+            '#variable(surname)':   'bobyoursuncle',
+            '#variable(org)':       'blah',
+
+            '#foreach(@[Surname != $surname], Customers)':
             {
                 'Name':       '#(FirstName + MiddleName + LastName)',
                 'Birthdate':  '#(Birthdate)',
                 'Address1':   '#(Address)',
-                'Address2':   '#(City + State + ZipCode)'
+                'Address2':   '#(City + State + ZipCode)',
+                'Age':        '#(Age + $var2 + $var3 - $var1)'
             }
         }";
 
@@ -119,6 +259,15 @@ namespace JTran.PerformanceTests
         private Random _randomStreetNumber = new Random();
         private Random _randomBirthdate    = new Random();
         private Random _randomZip          = new Random();
+        private Random _randomOrg          = new Random();
+
+        private Organization CreateRandomOrg()
+        {
+            return new Organization
+            { 
+                Name = GetRandomValue(_randomOrg, _orgs),
+            };
+        }
 
         private Person CreateRandomPerson()
         {
@@ -155,6 +304,20 @@ namespace JTran.PerformanceTests
             public string ZipCode       { get;set; } = "";
             public string Birthdate     { get;set; } = "";
         }
+
+        private static string[] _orgs = new string[]
+        {
+            "Smith Airlines",
+            "City of Springfield",
+            "Acme Widgets",
+            "General Consulting",
+            "Helios Systems",
+            "Rota Logistics Cooperative",
+            "Rigel ",
+            "State of Washington",
+            "Oregon Fish and Wildlife",
+            "Zero Point Technologies",
+        };
 
         #region Surnames
 
@@ -234,7 +397,7 @@ namespace JTran.PerformanceTests
             "Luna",          "Isabella",    "Esme",          "Evelyn",
             "Hazel",         "Lucy",        "Mia",           "Rose",
             "Chloe",         "Ophelia",     "Daisy",         "Harper",
-            "Aria/Arya",     "Eloise",      "Ruby",          "Josephine",
+            "Arya",          "Eloise",      "Ruby",          "Josephine",
             "Scarlett",      "Vivian",      "Margot",        "Felicity",
             "Isla",          "Lorelei",     "Layla",         "Delilah",
             "Abigail",       "Wren",        "Anastasia",     "Amaya",
@@ -301,7 +464,7 @@ namespace JTran.PerformanceTests
             "Glendale",         "Rancho Cucamonga",     "Macon",            "Mesquite",
             "Huntington Beach", "Santa Rosa",           "Kansas City",      "Olathe",
             "McKinney",         "Peoria",               "Sunnyvale",        "Dayton",
-            "Montgomery",       "Oceanside",            "Pomona",           "Carrollton",
+            "Montgomery",       "Ocean\"si\\de",          "Pomona",           "Carrollton",
             "Augusta",          "Elk Grove",            "Killeen",          "Waco",
             "Aurora",           "Salem",                "Escondido",        "Orange",
             "Akron",            "Pembroke Pines",       "Pasadena",         "Fullerton",
@@ -318,7 +481,7 @@ namespace JTran.PerformanceTests
             "Kent",             "Arvada",               "Manchester",       "Waterbury",
             "Columbia",         "Ann Arbor",            "Pueblo",           "League City",
             "Santa Clara",      "Rochester",            "Lakeland",         "Santa Maria",
-            "New Haven",        "Cambridge",            "Pompano Beach",    "Tyler	",
+            "New Haven",        "Cambridge",            "Pompano Beach",    "Tyler",
             "Stamford",         "Sugar Land",           "W Palm Beach",     "Davie",
             "Concord",          "Lansing",              "Antioch",          "Lakewood",
             "Elizabeth",        "Evansville",           "Everett",          "Daly City",

@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran.Extensions						            
  *             File: StringExtensions.cs					    		        
@@ -8,9 +8,9 @@
  *          Purpose: Extension methods for string                 
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
- *    Creation Date: 25 Apr 2020                                             
+ *    Creation Date: 19 Mar 2024                                             
  *                                                                          
- *   Copyright (c) 2020-2023 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -18,11 +18,8 @@
  ****************************************************************************/
 
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
+using System.IO;
 using System.Runtime.CompilerServices;
-
-using Newtonsoft.Json;
 
 using JTran.Json;
 
@@ -35,15 +32,33 @@ namespace JTran.Extensions
     public static class StringExtensions
     {
         /****************************************************************************/
-        public static string FormatForJsonOutput(this string str)
-        {            
-            return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t").Replace("\f", "\\f").Replace("\b", "\\b");
+        public static bool Find(this string str, string find, out int index)
+        {
+            index = str.IndexOf(find);
+
+            return index != -1;
         }
 
         /****************************************************************************/
-        public static T ExpandoToObject<T>(this object obj)
+        public static string SubstringBefore(this string str, string part)
         {            
-            return JsonConvert.DeserializeObject<T>((obj as ExpandoObject).ToJson());
+            var index = str.IndexOf(part);
+
+            if(index == -1)
+                return str;
+
+            return str.Substring(0, index);
+        }
+
+        /****************************************************************************/
+        public static string SubstringAfter(this string str, string part)
+        {            
+            var index = str.IndexOf(part);
+
+            if(index == -1)
+                return str;
+
+            return str.Substring(index + part.Length);
         }
 
         /****************************************************************************/
@@ -64,6 +79,42 @@ namespace JTran.Extensions
             }
 
             return DateTime.TryParse(sdate, out dtValue);
+        }
+
+        /****************************************************************************/
+        internal static bool IsSingleQuoted(this string s)
+        {
+            return(s.StartsWith("'") && s.EndsWith("'"));
+        }
+
+        /****************************************************************************/
+        internal static bool IsDoubleQuoted(this string s)
+        {
+            return(s.StartsWith("\"") && s.EndsWith("\""));
+        }
+
+        /****************************************************************************/
+        internal static bool IsQuoted(this string s)
+        {
+            return(s.IsSingleQuoted() || s.IsDoubleQuoted());
+        }
+
+        /****************************************************************************/
+        public static string ReplaceEnding(this string s, string ending, string? replace)
+        {
+            if(!s.EndsWith(ending))
+                return s;
+            
+            return s.Substring(0, s.Length - ending.Length) + (replace ?? "");
+        }
+
+        /****************************************************************************/
+        public static string EnsureDoesNotStartWith(this string s, string start)
+        {
+            if(!s.StartsWith(start))
+                return s;
+            
+            return s.Substring(start.Length);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: EqualOperator.cs					    		        
@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -24,11 +24,30 @@ using JTran.Extensions;
 
 namespace JTran.Expressions
 {
+    internal static class OperatorPrecendence
+    {
+        internal const int OrOperator                   = 3;
+        internal const int AndOperator                  = 4;
+        internal const int NotEqualOperator             = 8;
+        internal const int EqualOperator                = 9;
+
+        internal const int GreaterThanOperator          = 11;
+        internal const int GreaterThanEqualOperator     = 11;
+        internal const int LessThanOperator             = 11;
+        internal const int LessThanEqualOperator        = 11;
+
+        internal const int SubtractionOperator          = 13;
+        internal const int AdditionOperator             = 13;
+        internal const int ModulusOperator              = 13;
+        internal const int DivisionOperator             = 14;
+        internal const int MultiplyOperator             = 15;
+    }
+
     /*****************************************************************************/
     /*****************************************************************************/
     internal class EqualOperator : ComparisonOperator
     {
-        public override int Precedence => 9;
+        public override int Precedence => OperatorPrecendence.EqualOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
@@ -41,7 +60,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class NotEqualOperator : ComparisonOperator
     {
-        public override int Precedence => 8;
+        public override int Precedence => OperatorPrecendence.NotEqualOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
@@ -52,18 +71,12 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class AndOperator : IOperator
+    internal class AndOperator : ComparisonOperator
     {
-        public int Precedence => 4;
+        public override int Precedence => OperatorPrecendence.AndOperator;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
-        {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
             return left.EvaluateToBool(context) && right.EvaluateToBool(context);
         }
@@ -71,41 +84,14 @@ namespace JTran.Expressions
 
     /*****************************************************************************/
     /*****************************************************************************/
-    internal class OrOperator : IOperator
+    internal class OrOperator : ComparisonOperator
     {
-        public int Precedence => 3;
+        public override int Precedence => OperatorPrecendence.OrOperator;
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
-        {
-            return EvaluateToBool(left, right, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
         {
             return left.EvaluateToBool(context) || right.EvaluateToBool(context);
-        }
-    }
-
-    /*****************************************************************************/
-    /*****************************************************************************/
-    internal class DataPart : IOperator
-    {
-        public int Precedence => int.MaxValue;
-
-        /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
-        {
-            var val = left.Evaluate(context);
-
-            return val.GetValue((right as DataValue).Name, context);
-        }
-
-        /*****************************************************************************/
-        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
-        {
-            return Convert.ToBoolean(Evaluate(left, right, context));
         }
     }
 }

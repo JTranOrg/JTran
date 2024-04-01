@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: Compiler.cs					    		        
@@ -10,19 +10,23 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Runtime.CompilerServices;
+using JTran.Common;
 using JTran.Extensions;
 using JTran.Parser;
-using JTranParser = JTran.Parser.Parser;
+using JTranParser = JTran.Parser.ExpressionParser;
+
+[assembly: InternalsVisibleTo("JTran.UnitTests")]
 
 namespace JTran.Expressions
 {
@@ -33,15 +37,13 @@ namespace JTran.Expressions
     /// </summary>
     internal class Compiler
     {
-        private readonly Stack<ComplexExpression> _stack = new Stack<ComplexExpression>();
-
         /*****************************************************************************/
-        public Compiler()
+        internal Compiler()
         {
         }
 
         /*****************************************************************************/
-        internal static IExpression Compile(string expr)
+        internal static IExpression Compile(ICharacterSpan expr)
         {
             var parser   = new JTranParser();
             var compiler = new Compiler();
@@ -52,7 +54,9 @@ namespace JTran.Expressions
         /*****************************************************************************/
         internal IExpression Compile(IReadOnlyList<Token> tokens)
         {
-            return InnerCompile(Precompiler.Precompile(tokens));
+            var precompiled = Precompiler.Precompile(tokens);
+
+            return InnerCompile(new [] { precompiled } );
         }
         
         /*****************************************************************************/
@@ -63,115 +67,99 @@ namespace JTran.Expressions
             return CreateExpression(stokens, out string lastChar);
         }
         
-        private const string _beginBoundary = @"[(";
-        private const string _endBoundary   = @"]),:";
+        /*****************************************************************************/
+        public IExpression CreateArrayExpression(Token token)
+        {
+            var array  = new ArrayExpression();
+            var tokens = new List<Token>();
+
+            foreach(var item in token)
+            {
+                tokens.Add(item);
+
+                var expr = InnerCompile(tokens);
+
+                array.SubExpressions.Add(expr);
+
+                tokens.Clear();
+            }
+
+            return array;
+        }
 
         /*****************************************************************************/
         public IExpression CreateExpression(Stack<Token> tokens, out string lastToken)
         {
-            IExpression left  = null;
-            IExpression right = null;
-            object      last  = null;
-            IOperator   op    = null;
+            IExpression? leftExpr  = null;
+            IExpression? rightExpr = null;
+            object?      last      = null;
+            IOperator?   op        = null;
 
             lastToken = null;
 
             while(tokens.Count > 0)
             {
                 var token = tokens.Pop();
-                IExpression expr = null;
+                IExpression? expr = null;
 
                 lastToken = token.Value;
 
                 switch(token.Type)
                 {
-                    case Token.TokenType.Expression:
-                    {
-                        var expressionToken = token as ExpressionToken;
-
-                        expr = InnerCompile(expressionToken.Children);
-
-                        break;
-                    }
-
-                    case Token.TokenType.Text:
-                    {
-                        if(tokens.Count > 0 && tokens.Peek().Value == "(")
-                            expr = CreateFunction(tokens, token.Value.EnsureDoesNotStartWith("."));
-                        else
-                            expr = CreateValue(token);
-
-                        var current = right ?? left;
-
-                        if(!(last is IOperator) && current is MultiPartDataValue multiPart)
-                        { 
-                            multiPart.AddPart(expr);
-                            continue;
-                        }
-
-                        break;
-                    }
-
-                    case Token.TokenType.Number:
-                        expr = new NumberValue(decimal.Parse(token.Value));
-                        break;
-
                     case Token.TokenType.Literal:
                         expr = new Value(token.Value);
                         break;
 
+                    case Token.TokenType.Text:
+                        expr = CreateValue(token);
+                        break;
+
+                    case Token.TokenType.Number:
+                        expr = new NumberValue(decimal.Parse(token.Value));
+                        break;                    
+                        
+                    case Token.TokenType.Array:
+                        expr = CreateIndexedArray(token);
+                        break;
+
+                    case Token.TokenType.ArrayIndexer:
+                        expr = InnerCompile(token);
+                        break;
+
+                    case Token.TokenType.Multipart:
+                        expr = CreateMultipartValue(token);
+                        break;
+
+                    case Token.TokenType.Expression:
+                        expr = InnerCompile(token);
+                        break;
+
+                    case Token.TokenType.Function:
+                        expr = CreateFunction(token);
+                        break;
+
+                    case Token.TokenType.Tertiary:
+                    { 
+                        var tertiary  = new TertiaryExpression();
+                        var exprToken = token;
+
+                        tertiary.Conditional = InnerCompile(new [] { exprToken[0] });
+                        tertiary.IfTrue      = InnerCompile(new [] { exprToken[1] });
+                        tertiary.IfFalse     = InnerCompile(new [] { exprToken[2] });
+                        
+                        leftExpr = tertiary;
+                        rightExpr = null;
+                        op = null;
+
+                        continue;
+                    }
+
+                    case Token.TokenType.ExplicitArray:
+                        expr = CreateArrayExpression(token);
+                        break;
+
                     case Token.TokenType.Operator:
                     {
-                        if(_beginBoundary.Contains(token.Value))
-                        {
-                            expr = CreateExpression(tokens, out lastToken);
-
-                            if(token.Value == "[")
-                            {
-                                var current = right ?? left;
-
-                                if(!(current is MultiPartDataValue))
-                                {
-                                    if(right != null)
-                                        current = right = new MultiPartDataValue(right);
-                                    else
-                                        current = left = new MultiPartDataValue(left);
-                                }
-
-                                if(current is MultiPartDataValue mcurrent)
-                                    mcurrent.AddPart(new Indexer(expr));
-
-                                continue;
-                            }
-
-                            break;
-                        }
-
-                        if(_endBoundary.Contains(token.Value))
-                        { 
-                            lastToken = token.Value;
-                            goto BreakOut;
-                        }
-
-                        if(token.Value == "?")
-                        {
-                            var tertiary = new TertiaryExpression();
-
-                            tertiary.Conditional = CreateExpression(left, op, right);
-                            tertiary.IfTrue      = CreateExpression(tokens, out string lastToken2);
-
-                            if(lastToken2 != ":")
-                                throw new Transformer.SyntaxException("Missing ':' in tertiary expression");
-
-                            tertiary.IfFalse = CreateExpression(tokens, out string lastToken3);
-
-                            left = tertiary;
-                            right = null;
-                            op = null;
-
-                            continue;
-                        }
-
                         var newOp = CreateOperator(token.Value);
 
                         if(op == null)
@@ -181,71 +169,81 @@ namespace JTran.Expressions
                             continue;
                         }
 
-                        if(op.Precedence >= newOp.Precedence)
-                        {
-                           left  = new ComplexExpression { Left = left, Operator = op, Right = right };
-                           op    = newOp;
-                           right = CreateExpression(tokens, out lastToken);
+                        leftExpr  = new ComplexExpression { Left = leftExpr, Operator = op, Right = rightExpr };
+                        op        = newOp;
+                        rightExpr = CreateExpression(tokens, out lastToken);
 
-                           continue;
-                        }
-                        else
-                        {
-                           var newExpr = CreateExpression(tokens, out lastToken);
-                           right = new ComplexExpression { Left = right, Operator = newOp, Right = newExpr };
- 
-                           continue;
-                        }
-                   }
+                        continue;
+                    }
+
+                    default:
+                        throw new Transformer.SyntaxException("Unknown token type");
                 }
 
-                if(left == null)
-                    left = expr;
-                else if(right == null)
-                    right = expr;
+                if(leftExpr == null)
+                    leftExpr = expr;
+                else if(rightExpr == null)
+                    rightExpr = expr;
 
                 last = expr;
             }
 
-          BreakOut:
-
-            return CreateExpression(left, op, right);
+            return CreateExpression(leftExpr, op, rightExpr);
         }
 
         #region Private
        
         /*****************************************************************************/
+        private IExpression CreateIndexedArray(Token token)
+        {
+            var result = new MultiPartDataValue(CreateValue(token));
+
+            foreach(var part in token)
+            {
+                result.AddPart(new Indexer(InnerCompile(new [] { part })));
+            }
+
+            return result;
+        }
+
+        /*****************************************************************************/
+        private IExpression CreateMultipartValue(Token token)
+        {
+            var result = new MultiPartDataValue(null);
+
+            foreach(var part in token)
+            {
+                result.AddPart(InnerCompile(new [] { part }));
+            }
+
+            return result;
+        }
+
+        /*****************************************************************************/
         private IExpression CreateExpression(IExpression left, IOperator op, IExpression right)
         {            
             if(left != null && right != null)
             {
-                if(op != null)
-                    return new ComplexExpression { Left = left, Operator = op, Right = right };
-
-                if(right is DataValue)
-                    return new ComplexExpression { Left = left, Operator = new DataPart(), Right = right };
+                return new ComplexExpression { Left = left, Operator = op, Right = right };
             }
 
             return left;
         }
 
         /*****************************************************************************/
-        private IExpression CreateFunction(Stack<Token> tokens, string name)
+        private IExpression CreateFunction(Token token)
         {        
-            var func = new FunctionCall(name);
+            var func = new FunctionCall(token.Value.EnsureDoesNotStartWith("."));
 
-            // Pop off the begin paren
-            tokens.Pop();
+            if(token.Count > 0)
+            { 
+                foreach(var child in token)
+                {
+                    var param = InnerCompile(new [] { child });
 
-            while(true)
-            {
-                var param = CreateExpression(tokens, out string lastChar);
-
-                if(param != null)
-                    func.AddParameter(param);
-
-                if(lastChar == ")")
-                    break;
+                    if(param != null)
+                        func.AddParameter(param);
+                }
             }
 
             return func;
@@ -262,6 +260,7 @@ namespace JTran.Expressions
                 case Token.TokenType.Number:
                     return new NumberValue(decimal.Parse(token.Value));
 
+                case Token.TokenType.Array:
                 case Token.TokenType.Text:
                 { 
                     var lval = token.Value.ToLower();
@@ -272,7 +271,7 @@ namespace JTran.Expressions
                     if(lval == "false")
                         return new Value(false);
 
-                    if(token.Value.StartsWith("$"))
+                    if(token.Value.Length > 0 && token.Value[0] == '$')
                     { 
                         if(token.Value.Contains("."))
                         {
@@ -296,30 +295,46 @@ namespace JTran.Expressions
             }
         }
 
+        private static IOperator _equalOperator            = new EqualOperator();
+        private static IOperator _notEqualOperator         = new NotEqualOperator();
+        private static IOperator _greaterThanOperator      = new GreaterThanOperator();
+        private static IOperator _greaterThanEqualOperator = new GreaterThanEqualOperator();
+        private static IOperator _lessThanOperator         = new LessThanOperator();
+        private static IOperator _lessThanEqualOperator    = new LessThanEqualOperator();
+        private static IOperator _additionOperator         = new AdditionOperator();
+        private static IOperator _subtractionOperator      = new SubtractionOperator();
+        private static IOperator _multiplyOperator         = new MultiplyOperator();
+        private static IOperator _divisionOperator         = new DivisionOperator();
+        private static IOperator _moduloOperator           = new ModuloOperator();
+        private static IOperator _andOperator              = new AndOperator();
+        private static IOperator _orOperator               = new OrOperator();
+
+        private static Dictionary<string, IOperator> _operators = new Dictionary<string, IOperator>
+        {          
+            { "==",  _equalOperator            },
+            { "!=",  _notEqualOperator         },
+            { ">" ,  _greaterThanOperator      },
+            { ">=",  _greaterThanEqualOperator },
+            { "<" ,  _lessThanOperator         },
+            { "<=",  _lessThanEqualOperator    },
+            { "+" ,  _additionOperator         },
+            { "-" ,  _subtractionOperator      },
+            { "*" ,  _multiplyOperator         },
+            { "/" ,  _divisionOperator         },
+            { "%" ,  _moduloOperator           },
+            { "&&",  _andOperator              },
+            { "and", _andOperator              },
+            { "||",  _orOperator               },
+            { "or",  _orOperator               }
+        };
+
         /*****************************************************************************/
         private static IOperator CreateOperator(string op)
         {
-            switch(op)
-            {
-                case "==":  return new EqualOperator();
-                case "!=":  return new NotEqualOperator();
-                case ">":   return new GreaterThanOperator();
-                case ">=":  return new GreaterThanEqualOperator();
-                case "<":   return new LessThanOperator();
-                case "<=":  return new LessThanEqualOperator();
-                case "+":   return new AdditionOperator();
-                case "-":   return new SubtractionOperator();
-                case "*":   return new MultiplyOperator();
-                case "/":   return new DivisionOperator();
-                case "%":   return new ModulusOperator();
-                case "&&":  return new AndOperator();
-                case "and": return new AndOperator();
-                case "||":  return new OrOperator();
-                case "or":  return new OrOperator();
-
-                default:
-                    throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
-            }
+            if(!_operators.ContainsKey(op))
+                throw new Transformer.SyntaxException($"'{op}' is an invalid operator");
+            
+            return _operators[op];
         }
 
         #endregion

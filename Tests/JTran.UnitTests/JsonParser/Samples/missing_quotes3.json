@@ -1,0 +1,12 @@
+{
+  "LastName":   "Smith",
+  "FirstName":  "John",
+  "Age":        34,
+  "Address":    
+  {
+    "Street": "123 E\\lm's St",
+    "City":   "Spri\"ngfield",
+    "State":  "CA",
+    "Zip":    '94332
+  }
+}

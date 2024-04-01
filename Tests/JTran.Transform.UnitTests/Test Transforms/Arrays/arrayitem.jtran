@@ -1,0 +1,23 @@
+{
+  "#array(Persons)":
+  {
+    "#foreach(Customers, {})":
+    {
+      "Name": "#(Name + Surname)"
+    },
+    "#if(any(Customers[Name == $Fred]))":
+    {
+      "#arrayitem":
+      {
+        "Name": "King Jalusa"
+      }
+    },
+    "#if(any(Customers[Name == $Dude]))":
+    {
+      "#arrayitem":
+      {
+        "Name": "King Krakatoa"
+      }
+    }
+  }
+}

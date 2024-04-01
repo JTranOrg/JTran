@@ -1,0 +1,17 @@
+{
+  "Owner":
+  {
+    "Name": "#(Owner)",
+    "#foreach(Automobiles, Cars)":
+    {
+      Make: "#(Make)",
+      Model: "#(Model)",
+      Color: "#(Color)",
+      "#foreach(Drivers, Mechanics)":
+      {
+        FirstName: "#(FirstName)",
+        LastName: "#(LastName)"
+      }
+    }
+  }
+}

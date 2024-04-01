@@ -1,0 +1,66 @@
+{
+  Owner: "Bob Smith",
+  Automobiles:
+  [
+    {
+      Make: "Chevy",
+      Model: "Camaro",
+      Color: "Green",
+      Drivers:
+      [
+        {
+          FirstName: "Bob",
+          LastName: "Mendez"
+        },
+        {
+          FirstName: "Shirley",
+          LastName: "Jones"
+        },
+        {
+          FirstName: "Jackie",
+          LastName: "Chan"
+        }
+      ]
+    },
+    {
+      Make: "Pontiac",
+      Model: "Firebird",
+      Color: "Blue",
+      Drivers:
+      [
+        {
+          FirstName: "Jackie",
+          LastName: "Mendez"
+        },
+        {
+          FirstName: "Bob",
+          LastName: "Jones"
+        },
+        {
+          FirstName: "Bob",
+          LastName: "Chan"
+        }
+      ]
+    },
+    {
+      Make: "Dodge",
+      Model: "Charger",
+      Color: "Black",
+      Drivers:
+      [
+        {
+          FirstName: "Robert",
+          LastName: "Kawasaki"
+        },
+        {
+          FirstName: "Muriel",
+          LastName: "Hernandez"
+        },
+        {
+          FirstName: "Sergei",
+          LastName: "Korpoff"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: Transformer.cs					    		        
@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2023 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -21,8 +21,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-
+using JTran.Collections;
+using JTran.Common;
 using JTran.Expressions;
+using JTran.Extensions;
 
 namespace JTran
 {
@@ -31,41 +33,78 @@ namespace JTran
     public class Transformer
     {
         private readonly CompiledTransform _transform;
-        private readonly ExtensionFunctions _extensionFunctions;
+        private readonly ExtensionFunctions? _extensionFunctions;
 
         /****************************************************************************/
         /// <summary>
         /// Construct a new Transformer
         /// </summary>
         /// <param name="transform">The JSON that defines the transform</param>
-        public Transformer(string transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
+        public Transformer(string transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
+        {
+            _transform = CompiledTransform.Compile(transform, includeSource);
+            _extensionFunctions = CompileFunctions(extensionFunctions);
+        }       
+        
+        /****************************************************************************/
+        /// <summary>
+        /// Construct a new Transformer
+        /// </summary>
+        /// <param name="transform">A stream containing the JTran source</param>
+        /// <param name="extensionFunctions">Extension functions</param>
+        /// <param name="includeSource">Source for include files</param>
+        public Transformer(Stream transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
         {
             _transform = CompiledTransform.Compile(transform, includeSource);
             _extensionFunctions = CompileFunctions(extensionFunctions);
         }
 
         /****************************************************************************/
-        public string Transform(string data, TransformerContext context = null)
+        public string Transform(string data, TransformerContext? context = null)
         {
             return _transform.Transform(data, context, _extensionFunctions);
         }
 
         /****************************************************************************/
-        public void Transform(Stream input, Stream output, TransformerContext context = null)
+        /// <summary>
+        /// Transforms the input json and writes to the output stream
+        /// </summary>
+        /// <param name="input">Contains the source json data</param>
+        /// <param name="output">A stream to write the results to</param>
+        /// <param name="context">A transformer context</param>
+        public void Transform(Stream input, Stream output, TransformerContext? context = null)
         {
              _transform.Transform(input, output, context, _extensionFunctions);
         }
 
         /****************************************************************************/
-        public void Transform(IEnumerable list, string listName, Stream output, TransformerContext context = null)
+        public void Transform(IEnumerable list, string? listName, Stream output, TransformerContext? context = null)
         {
              _transform.Transform(list, listName, output, context, _extensionFunctions);
         }
 
         /****************************************************************************/
-        public class SyntaxException : Exception
+        public void Transform(IEnumerable list, Stream output, TransformerContext? context = null)
         {
-            public SyntaxException(string error) : base(error)
+            if(list is IEnumerable<object> enm)
+                Transform(enm, output, context);
+            else
+                _transform.Transform(list, output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public void Transform(IEnumerable<object> list, Stream output, TransformerContext? context = null)
+        {
+            if(list.IsPocoList(out Type? type))
+                list = new PocoEnumerableWrapper(type!, list);
+                
+             _transform.Transform(list, output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        public class SyntaxException : JsonParseException
+        {
+            public SyntaxException(string error) : base(error, 0)
             {
             }
 
@@ -96,7 +135,7 @@ namespace JTran
         #region Private
 
         /****************************************************************************/
-        internal static ExtensionFunctions CompileFunctions(IEnumerable extensionFunctions)
+        internal static ExtensionFunctions CompileFunctions(IEnumerable? extensionFunctions)
         {
             var result = new Dictionary<string, Function>();
             var containers = new List<object>();

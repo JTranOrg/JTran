@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using JTran.Expressions;
 using System.Linq;
+using JTran.Common;
 
 namespace JTran.UnitTests
 {
@@ -16,11 +17,11 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "floor");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7M) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7m) };
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual(12M, result);
+            Assert.AreEqual(12m, result);
         }
 
         [TestMethod]
@@ -28,11 +29,11 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "substring");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.Value("frank"), new JTran.Expressions.NumberValue(1M), new JTran.Expressions.NumberValue(3M) };
+            var parameters = new List<IExpression> { new JTran.Expressions.Value("frank"), new JTran.Expressions.NumberValue(1m), new JTran.Expressions.NumberValue(3m) };
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual("ran", result);
+            Assert.AreEqual("ran", result.ToString());
         }
 
         [TestMethod]
@@ -44,7 +45,19 @@ namespace JTran.UnitTests
 
             var result = func.Evaluate(parameters, context);
 
-            Assert.AreEqual("frank", result);
+            Assert.AreEqual("frank", result.ToString());
+        }
+
+        [TestMethod]
+        public void Function_coalesce_Success2()
+        {
+            var func       = new Function(new BuiltinFunctions(), "coalesce");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.Value(null), new JTran.Expressions.Value(CharacterSpan.Empty), new JTran.Expressions.Value(CharacterSpan.FromString("frank")) };
+
+            var result = func.Evaluate(parameters, context);
+
+            Assert.AreEqual("frank", result.ToString());
         }
 
         [TestMethod]
@@ -52,25 +65,42 @@ namespace JTran.UnitTests
         {
             var func       = new Function(new BuiltinFunctions(), "precision");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7345M), new JTran.Expressions.NumberValue(2) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(12.7345m), new JTran.Expressions.NumberValue(2m) };
 
             var result = (decimal)func.Evaluate(parameters, context);
 
-            Assert.AreEqual(12.73M, result);
+            Assert.AreEqual(12.73m, result);
         }
 
         [TestMethod]
-        [DataRow("0", true)]
-        [DataRow("1", false)]
-        [DataRow("-123232", false)]
-        [DataRow("0.000005", false)]
-        public void Function_empty_number_Success(string input, bool result)
+        [DataRow(0, true)]
+        [DataRow(1, false)]
+        [DataRow(-123232, false)]
+        [DataRow(0.000005, false)]
+        public void Function_empty_number_Success(double input, bool result)
         {
             var func       = new Function(new BuiltinFunctions(), "empty");
             var context    = new ExpressionContext("bob");
-            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue(decimal.Parse(input)) };
+            var parameters = new List<IExpression> { new JTran.Expressions.NumberValue((decimal)input) };
 
             Assert.AreEqual(result, Convert.ToBoolean(func.Evaluate(parameters, context)));
+        }
+        [TestMethod]
+        public void Function_guid_success()
+        {
+            var func       = new Function(new BuiltinFunctions(), "guid");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression>();
+
+            var result1 = func.Evaluate(parameters, context).ToString();
+            var result2 = func.Evaluate(parameters, context).ToString();
+
+            Assert.IsTrue(Guid.TryParse(result1, out Guid val1));
+            Assert.IsTrue(Guid.TryParse(result2, out Guid val2));
+
+            Assert.AreNotEqual(Guid.Empty, val1);
+            Assert.AreNotEqual(Guid.Empty, val2);
+            Assert.AreNotEqual(val1, val2);
         }
 
         [TestMethod]
@@ -127,9 +157,10 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext("bob");
             var parameters = new List<IExpression> { new JTran.Expressions.Value("bob"), new JTran.Expressions.Value(",") };
 
-            var result = func.Evaluate(parameters, context) as IEnumerable<string>;
+            var result = func.Evaluate(parameters, context) as IEnumerable<object>;
 
             Assert.AreEqual(1, result.Count());
+            Assert.AreEqual("bob", result.First().ToString());
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(""), new JTran.Expressions.Value(",") };
 
@@ -139,12 +170,12 @@ namespace JTran.UnitTests
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(" bob;fred ; george  "), new JTran.Expressions.Value(";") };
 
-           var result2 = (func.Evaluate(parameters, context) as IEnumerable<string>).ToList();
+           var result2 = (func.Evaluate(parameters, context) as IEnumerable<object>).ToList();
 
             Assert.AreEqual(3, result2.Count);
-            Assert.AreEqual("bob",    result2[0]);
-            Assert.AreEqual("fred",   result2[1]);
-            Assert.AreEqual("george", result2[2]);
+            Assert.AreEqual("bob",    result2[0].ToString());
+            Assert.AreEqual("fred",   result2[1].ToString());
+            Assert.AreEqual("george", result2[2].ToString());
         }
     }
 }

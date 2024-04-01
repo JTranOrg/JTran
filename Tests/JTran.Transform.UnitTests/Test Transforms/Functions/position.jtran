@@ -1,0 +1,13 @@
+{
+  Driver:
+  {
+    "#foreach(Cars, Vehicles)":
+    {
+      Brand: "#(Make)",
+      Model: "#(Model)",
+      Year:  "#(Year)",
+      Color: "#(Color)",
+      Index: "#(position())"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+    "#foreach(@[FirstName == $firstName], [])":
+    {
+        "#noobject":  "#copyof(@)"
+    }
+}

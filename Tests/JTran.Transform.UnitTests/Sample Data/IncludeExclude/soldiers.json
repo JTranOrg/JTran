@@ -1,0 +1,14 @@
+[
+  {
+    "FirstName": "Carl",
+    "LastName": "Lipton",
+    "Rank":     "First Sergeant",
+    "DOB":      "1921-08-23"
+  },
+  {
+    "FirstName": "Frank",
+    "LastName":  "Smith",
+    "Rank":      "Sergeant",
+    "DOB":       "1923-03-12"
+  }
+]

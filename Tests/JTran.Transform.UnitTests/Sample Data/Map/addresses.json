@@ -1,0 +1,37 @@
+[
+  {
+    "Owner": "Bob Smith",
+    "Address":
+    {
+      "State": "WA"
+    }
+  },
+  {
+    "Owner": "Linda Ramirez",
+    "Address":
+    {
+      "State": "CA"
+    }
+  },
+  {
+    "Owner": "Greg House",
+    "Address":
+    {
+      "State": "NJ"
+    }
+  },
+  {
+    "Owner": "Fred Flintstone",
+    "Address":
+    {
+      "State": "WY"
+    }
+  },
+  {
+    "Owner": "Linda Carter",
+    "Address":
+    {
+      "State": "IL"
+    }
+  }
+]

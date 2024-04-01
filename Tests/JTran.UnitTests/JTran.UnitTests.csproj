@@ -13,6 +13,56 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="JsonParser\Samples\array_not_supported.json" />
+    <None Remove="JsonParser\Samples\array_of_arrays.json" />
+    <None Remove="JsonParser\Samples\array_unquoted_prop_names.json" />
+    <None Remove="JsonParser\Samples\booleanarray.json" />
+    <None Remove="JsonParser\Samples\customers.json" />
+    <None Remove="JsonParser\Samples\customers2.json" />
+    <None Remove="JsonParser\Samples\empties.json" />
+    <None Remove="JsonParser\Samples\empties.jtran" />
+    <None Remove="JsonParser\Samples\missing_brace.json" />
+    <None Remove="JsonParser\Samples\missing_comma.json" />
+    <None Remove="JsonParser\Samples\missing_quotes.json" />
+    <None Remove="JsonParser\Samples\missing_quotes2.json" />
+    <None Remove="JsonParser\Samples\missing_quotes3.json" />
+    <None Remove="JsonParser\Samples\missing_quotes4.json" />
+    <None Remove="JsonParser\Samples\not_json_at_all.json" />
+    <None Remove="JsonParser\Samples\numberarray.json" />
+    <None Remove="JsonParser\Samples\simplesinglecustomer.json" />
+    <None Remove="JsonParser\Samples\singlecustomer.json" />
+    <None Remove="JsonParser\Samples\singlecustomerarray.json" />
+    <None Remove="JsonParser\Samples\singlecustomer_invalidescape.json" />
+    <None Remove="JsonParser\Samples\singlecustomer_unquoted_property_names.json" />
+    <None Remove="JsonParser\Samples\stringarray.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="JsonParser\Samples\missing_comma.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_brace.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_quotes4.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_quotes3.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_quotes2.json" />
+    <EmbeddedResource Include="JsonParser\Samples\not_json_at_all.json" />
+    <EmbeddedResource Include="JsonParser\Samples\empties.json" />
+    <EmbeddedResource Include="JsonParser\Samples\customers2.json" />
+    <EmbeddedResource Include="JsonParser\Samples\empties.jtran" />
+    <EmbeddedResource Include="JsonParser\Samples\array_not_supported.json" />
+    <EmbeddedResource Include="JsonParser\Samples\booleanarray.json" />
+    <EmbeddedResource Include="JsonParser\Samples\numberarray.json" />
+    <EmbeddedResource Include="JsonParser\Samples\array_of_arrays.json" />
+    <EmbeddedResource Include="JsonParser\Samples\missing_quotes.json" />
+    <EmbeddedResource Include="JsonParser\Samples\stringarray.json" />
+    <EmbeddedResource Include="JsonParser\Samples\simplesinglecustomer.json" />
+    <EmbeddedResource Include="JsonParser\Samples\array_unquoted_prop_names.json" />
+    <EmbeddedResource Include="JsonParser\Samples\singlecustomer_unquoted_property_names.json" />
+    <EmbeddedResource Include="JsonParser\Samples\singlecustomer_invalidescape.json" />
+    <EmbeddedResource Include="JsonParser\Samples\singlecustomerarray.json" />
+    <EmbeddedResource Include="JsonParser\Samples\customers.json" />
+    <EmbeddedResource Include="JsonParser\Samples\singlecustomer.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="Moq" Version="4.16.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
@@ -25,13 +75,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
-    <ProjectReference Include="..\..\JTran.Parser\JTran.Parser.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Include\" />
     <Folder Include="Sources\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Development\Projects\JTranOrg\JTran\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Development\Projects\JTranOrg\JTran\.editorconfig" />
   </ItemGroup>
 
 </Project>

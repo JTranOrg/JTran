@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Title>JTran.Random</Title>
+    <Authors>JTranOrg</Authors>
+    <Version>1.0.0</Version>
+    <Description>A set of extension functions for JTran that return random data. Useful for generating test data.</Description>
+    <Copyright>© 2024 - Jim Lightfoot, All Rights Reserved</Copyright>
+  </PropertyGroup>
+
+</Project>

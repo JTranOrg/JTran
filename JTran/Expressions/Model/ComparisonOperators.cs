@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: ComparisonOperarator.cs					    		        
@@ -46,7 +46,7 @@ namespace JTran.Expressions
             var leftVal  = left.Evaluate(context);
             var rightVal = right.Evaluate(context);
 
-            return leftVal.CompareTo(rightVal, out Type type);
+            return leftVal.CompareTo(rightVal);
         }
     }
 
@@ -54,7 +54,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class GreaterThanOperator : ComparisonOperator
     {
-        public override int Precedence => 11;
+        public override int Precedence => OperatorPrecendence.GreaterThanOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
@@ -67,7 +67,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class GreaterThanEqualOperator : ComparisonOperator
     {
-        public override int Precedence => 11;
+        public override int Precedence => OperatorPrecendence.GreaterThanEqualOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
@@ -80,7 +80,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class LessThanOperator : ComparisonOperator
     {
-        public override int Precedence => 11;
+        public override int Precedence => OperatorPrecendence.LessThanOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
@@ -93,7 +93,7 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class LessThanEqualOperator : ComparisonOperator
     {
-        public override int Precedence => 11;
+        public override int Precedence => OperatorPrecendence.LessThanEqualOperator;
 
         /*****************************************************************************/
         public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)

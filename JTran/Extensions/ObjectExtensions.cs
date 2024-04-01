@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: ObjectExtensions.cs					    		        
@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -20,131 +20,92 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
+using System.Linq;
+using JTran.Collections;
+using JTran.Common;
+using JTran.Expressions;
 
 namespace JTran.Extensions
 {
     /****************************************************************************/
     /****************************************************************************/
+    internal class GroupKey : Dictionary<ICharacterSpan, object>
+    {
+        public override string ToString()
+        {
+            return string.Join(";;", this.Select(v=> v.Key.ToString() + ",," + v.Value?.ToString() ?? ""));
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
     internal static class ObjectExtensions
     {
         /****************************************************************************/
-        internal static object GetSingleValue(this object obj, string expression, ExpressionContext context)
+        internal static IEnumerable EnsureEnumerable(this object obj)
         {
-            var results = obj.GetValue(expression, context);
+            // These things will cast as IEnumerable but are actually single objects
+            if(obj is ICharacterSpan || obj is string || obj is IObject)
+                return new [] { obj };
 
-            if(results is IList list)
-                return list[0];
+            if(obj is IEnumerable list)
+                return list;
 
-            return results;
+            return new [] { obj };
         }
 
         /****************************************************************************/
-        internal static object GetValue(this object obj, string expression, ExpressionContext context)
+        internal static IEnumerable<object> EnsureObjectEnumerable(this object obj)
         {
-            if(expression.StartsWith("@"))
-            {
-                obj = context.Data;
-                 
-                if(expression.StartsWith("@."))
-                { 
-                    expression = expression.Substring(2);
-                }
-                else
-                    expression = "";
+            // These things will cast as IEnumerable but are actually single objects
+            if(obj is ICharacterSpan || obj is string || obj is IObject)
+                return [obj];
 
-                if(expression == "")
-                    return obj;
-           }
-            else
-            {
-                // Resolve ancestors
-                obj = obj.EvaluateAncestors(ref expression);
-            }
+            if(obj is IEnumerable<object> list)
+                return list;
 
-            if(expression.StartsWith("$"))
-            {
-                var varName = expression.Substring(1);
-                var index   = expression.IndexOf(".");
+            if(obj is IEnumerable enm)
+                return new EnumerableWrapper(enm);
 
-                if(index != -1)
-                { 
-                    varName = varName.Substring(0, index-1);
-                    expression = expression.Substring(1 + index);
-                }
-                else
-                    expression = "";
-
-                obj = context.GetVariable(varName);
-
-                if(expression == "")
-                    return obj;
-            }
-
-            var results = new List<object>();
-            var isList  = false;
-
-            obj.GetValue(results, expression, context, ref isList);
-
-            if(isList)
-                return results;
-
-            if(results.Count == 0)
-                return null;
-                
-            return results[0];
+            return [obj];
         }
 
+        /****************************************************************************/
+        internal static GroupKey GetGroupByKey(this object obj, IExpression groupExpr, ExpressionContext context, IList<ICharacterSpan> fields)
+        {
+            context.Data = obj;
+
+            var groupValues = groupExpr.Evaluate(context);
+
+            var result = new GroupKey();
+
+            if(groupValues is IEnumerable<object> list)
+            {
+                var numFields = fields.Count;
+                var i = 0;
+
+                foreach(var item in list)
+                { 
+                    result.TryAdd(fields[i++], item); 
+                }
+            }
+            else
+                result.TryAdd(fields[0], groupValues);
+
+            return result;
+        }
+        
         /****************************************************************************/
         internal static bool IsDictionary(this object obj)
         {
             return obj is IEnumerable && obj.GetType().Name.Contains("Dictionary");
         }
 
-        /****************************************************************************/
-        internal static bool TryParseDateTime(this object data, out DateTime? dtValue)
-        {
-            dtValue = null;
-
-            if(data == null)
-                return false;
-
-            if(data is DateTime dtValue2)
-            {
-                dtValue = dtValue2;
-                return true;
-            }
-
-            if(data is DateTimeOffset dtValue3)
-            {
-                dtValue = dtValue3.DateTime;
-                return true;
-            }
-
-            var sdate = data.ToString();
-
-            if(sdate.EndsWith("Z"))
-            {
-                if(!DateTimeOffset.TryParse(sdate, out DateTimeOffset dtoValue)) 
-                    return false;
-
-                dtValue = dtoValue.UtcDateTime;
-                return true;
-            }
-
-            if(DateTime.TryParse(sdate, out DateTime dtValue4))
-            {
-                dtValue = dtValue4;
-                return true;
-            }
-
-            return false;
-        }
-
         /*****************************************************************************/
-        internal static int CompareTo(this object leftVal, object rightVal, out Type type)
+        internal static int Compare(object? leftVal, object? rightVal, out object? lVal, out object? rVal)
         {
-            type = typeof(object);
+            lVal = leftVal;
+            rVal = rightVal;
 
             if(leftVal == null && rightVal == null)
                 return 0;
@@ -155,182 +116,133 @@ namespace JTran.Extensions
             if(leftVal == null)
                 return -1;
 
-            var leftValStr  = leftVal?.ToString(); 
-            var rightValStr = rightVal?.ToString(); 
+            if(leftVal is bool b1 && rightVal is bool b2)
+                return b1.CompareTo(b2);
 
-            if(long.TryParse(leftValStr, out long leftLong))
+            if(leftVal is DateTime dt1 && rightVal is DateTime dt2)
+                return dt1.CompareTo(dt2);
+
+            if(leftVal is DateTimeOffset dto1 && rightVal is DateTimeOffset dto2)
+                return dto1.CompareTo(dto2);
+
+            if(leftVal.TryParseDecimal(out decimal d1) && rightVal.TryParseDecimal(out decimal d2))
             { 
-                if(long.TryParse(rightValStr, out long rightLong))
-                { 
-                    type = typeof(long);
-                    return leftLong.CompareTo(rightLong);
-                }
+                lVal = d1;
+                rVal = d2;
+
+                return d1.CompareTo(d2);
             }
 
-            if(decimal.TryParse(leftValStr, out decimal leftDecimal))
-            { 
-                if(decimal.TryParse(rightValStr, out decimal rightDecimal))
-                { 
-                    type = typeof(decimal);
-                    return leftDecimal.CompareTo(rightDecimal);
-                }
-            }
+            var leftValStr  = leftVal.ToString(); 
+            var rightValStr = rightVal.ToString(); 
 
-            if(bool.TryParse(leftValStr, out bool leftBool))
+            if(DateTimeOffset.TryParse(leftValStr, out DateTimeOffset dtoLeft) && DateTimeOffset.TryParse(rightValStr, out DateTimeOffset dtoRight))
             { 
-                if(bool.TryParse(rightValStr, out bool rightBool))
-                { 
-                    type = typeof(bool);
-                    return leftBool.CompareTo(rightBool);
-                }
-            }
+                lVal = dtoLeft.ToString("s");
+                rVal = dtoRight.ToString("s");
 
-            if(leftVal.TryParseDateTime(out DateTime? dtLeft))
-            { 
-                if(rightVal.TryParseDateTime(out DateTime? dtRight))
-                { 
-                    type = typeof(DateTime);
-                    return DateTime.Compare(dtLeft.Value, dtRight.Value);
-                }
+                return DateTimeOffset.Compare(dtoLeft, dtoRight);
             }
-                    
-            type = typeof(string);
+                   
+            if(DateTime.TryParse(leftValStr, out DateTime dtLeft) && DateTime.TryParse(rightValStr, out DateTime dtRight))
+            { 
+                lVal = dtLeft.ToString("s");
+                rVal = dtRight.ToString("s");
+
+                return DateTime.Compare(dtLeft, dtRight);
+            }
+                   
             return leftValStr.CompareTo(rightValStr);
         }
 
         /*****************************************************************************/
-        internal static string FormatForOutput(this object value, bool forceString = false, bool finalOutput = false)
+        internal static int CompareTo(this object? leftVal, object? rightVal)
         {
-            if(value == null)
-                return "null";
-
-            if(!forceString)
-            { 
-                if(value is bool)
-                    return value.ToString().ToLower();
-
-                if(!(value is StringValue))
-                { 
-                    if(bool.TryParse(value.ToString(), out bool bval))
-                        return bval.ToString().ToLower();
-
-                    if(long.TryParse(value.ToString(), out long lval))
-                        return lval.ToString();
-
-                    if(decimal.TryParse(value.ToString(), out decimal dval))
-                        return dval.ToString().ReplaceEnding(".0", "");
-                }
-
-                if(value is DateTime dtVal)
-                    return "\"" + dtVal.ToString("o") + "\"";
-            }
-
-            return "\"" + (finalOutput ? value.ToString().FormatForJsonOutput() : value.ToString()) + "\"";
+            return Compare(leftVal, rightVal, out object? _, out object? _);
         }
 
         #region Private
 
         /****************************************************************************/
-        private static void GetValue(this object obj, List<object> results, string expression, ExpressionContext context, ref bool isList)
-        {
-            var parts  = expression.Split(new char[] {'.'} ); 
-            var nParts = parts.Length;
-
-            for(var i = 0; i < (nParts - 1); ++i)
+        public static bool GetParent(this object obj, ref object? parent)
+        {        
+            if(obj is IJsonToken jobj)
             { 
-                var part = parts[i].Trim();
-                var partObj = obj.GetPropertyValue(part);
-
-                // Array object without brackets
-                if(partObj is IList array)
-                {
-                    isList = true;
-
-                    foreach(var child in array)
-                        child.GetValue(results, string.Join(".", parts, i+1, parts.Length - i - 1), context, ref isList);
-
-                    return;
-                }
-                    
-                obj = partObj;
-
-                if(obj == null)
-                    return;
+                parent = jobj.Parent;
+                return true;
             }
 
-            var partName = parts[nParts-1];
-            var val      = obj.GetPropertyValue(partName);
-
-            if(val == null)
-                return;
-
-            if(!val.IsDictionary() && val is IList list)
-            { 
-                isList = true;
-
-                foreach(var child in list)
-                    results.Add(child);
-            }
-            else
-                results.Add(val);
+            return false;
         }
 
         /****************************************************************************/
-        private static object EvaluateAncestors(this object obj, ref string expression)
+        private static object EvaluateAncestors(this object obj, ref ICharacterSpan expression)
         {
+            if(expression.Length == 0)
+                return obj;
+
             var result = obj;
+            var index = 0;
 
             // Resolve ancestors
-            while(expression.StartsWith("/"))
+            while(expression[index] == '/')
             {
-                if(expression.StartsWith("//"))
-                {
-                    try
-                    { 
-                        result = (result as dynamic)._jtran_gparent;
-                        expression = expression.Substring(2);
-                        continue;
-                    }
-                    catch
-                    {
-                        // Fall thru
-                    }
-                }
-
-                try
-                { 
-                    result = (result as dynamic)._jtran_parent;
-                    expression = expression.Substring(1);
-                }
-                catch
-                {
+                if(result?.GetParent(ref result) ?? false)
+                    ++index;
+                else
                     return null;
-                }
             }
+
+            if(index != 0)
+                expression = new CharacterSpan(expression, index, expression.Length - index);
 
             return result;
         }
 
         /****************************************************************************/
-        internal static object GetPropertyValue(this object obj, string name)       
+        internal static bool IsPocoList(this IEnumerable<object> list, out Type? type)
+        {
+            var first = list.FirstOrDefault();
+
+            if(first is null || first is IObject || first is IEnumerable)
+            { 
+                type = null;
+                return false;
+            }
+
+            type = first.GetType();
+
+            if(type == null)
+                return false;
+
+            if(!type.IsClass || type.Name == "String" || type.Name == "Object")
+            {
+                type = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        /****************************************************************************/
+        internal static object GetPropertyValue(this object obj, ICharacterSpan nameSpan)       
         {
             if(obj == null)
                 return null;
 
-            if(obj is ExpandoObject)
-            {
-                var props = obj as IDictionary<string, object>;
+            // Resolve ancestors
+            obj = obj.EvaluateAncestors(ref nameSpan);
 
-                if(props.ContainsKey(name))
-                    return props[name];
-
+            if(obj == null)
                 return null;
-            }
 
-            var otype = obj.GetType();
+            if(obj is IObject iobj)
+                return iobj.GetPropertyValue(nameSpan);
 
             if(obj is ICollection<KeyValuePair<string, object>> dict1)
             { 
+                var name = nameSpan.ToString();
+
                 foreach(var kv in dict1)
                 {
                     if(kv.Key == name)
@@ -342,6 +254,8 @@ namespace JTran.Extensions
 
             if(obj is IDictionary dict)
             { 
+                var name = nameSpan.ToString();
+
                 foreach(var key in dict.Keys)
                 {
                     if(key.ToString() == name)
@@ -351,28 +265,7 @@ namespace JTran.Extensions
                 return null;
             }
 
-            var prop  = otype.GetProperty(name);
-            
-            return prop.GetValue(obj);
-       }
-
-        /****************************************************************************/
-        private static object GetArrayPart(IEnumerable array, string[] parts, int index, ExpressionContext context)
-        {        
-            var nextParts = string.Join(".", parts, index+1, parts.Length - index - 1);
-
-            foreach(var child in array)
-            {
-                if(child != null)
-                { 
-                    var val = child.GetValue(nextParts, context);
-
-                    if(val != null)
-                        return val;
-                }
-            }
-
-            return null;       
+            return Poco.FromObject(obj).GetValue(obj, nameSpan);
         }
 
         #endregion

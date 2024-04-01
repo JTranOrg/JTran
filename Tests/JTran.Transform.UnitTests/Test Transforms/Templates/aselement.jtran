@@ -1,0 +1,9 @@
+{
+    "#template(DisplayName, name, year)": 
+    {
+        "FirstName":  "#($name)",
+        "Year":       "#($year)"
+    },
+    
+    "customer":  "#DisplayName('bob', 1965)"
+}

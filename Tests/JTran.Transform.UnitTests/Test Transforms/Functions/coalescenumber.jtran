@@ -1,0 +1,3 @@
+{
+  "Driver":  "#(coalescenumber(Monday, null, Tuesday, Wednesday))"
+}

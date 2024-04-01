@@ -1,0 +1,33 @@
+{
+  "#variable(driver)":  "bob",
+  "#variable(drivers)":  "bob,test",
+  
+  "#if(empty(Company))":
+  {
+    "Make":             "#(string('Pierce'))"
+  },
+  "#elseif(contains(Company, ','))":
+  {
+    "Make":             "#(substringafter(Company, ','))"
+  },
+  "#elseif(not(empty(Company)))":
+  {
+    "Make":              "#(Company)"
+  },
+
+  
+  "#if(empty(Company2))":
+  {
+    "Make2":             "#(string('Pierce'))"
+  },
+  "#elseif(contains(Company2, ','))":
+  {
+    "Make2":             "#(substringafter(Company2, ','))"
+  },
+  "#elseif(not(empty(Company2)))":
+  {
+    "Make2":              "#(Company2)"
+  },
+
+  "Model": "Coupe"
+}

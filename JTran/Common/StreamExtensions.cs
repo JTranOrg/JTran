@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: StreamExtensions.cs					    		        
@@ -10,22 +10,28 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 2 Dec Apr 2023                                             
  *                                                                          
- *   Copyright (c) 2023 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2023-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
+using JTran.Json;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JTran.Common.Extensions
+[assembly: InternalsVisibleTo("JTran.Transform.UnitTests")]
+[assembly: InternalsVisibleTo("JTran.Project.UnitTests")]
+[assembly: InternalsVisibleTo("Rota.Transform.Test")]
+
+namespace JTran.Common
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal static class StreamExtensions
+    public static class StreamExtensions
     {
         /****************************************************************************/
         /// <summary>
@@ -98,6 +104,15 @@ namespace JTran.Common.Extensions
                 if(stream.CanSeek)
                     stream.Seek(0, SeekOrigin.Begin);
             }
-        }    
+        }  
+        
+        /****************************************************************************/
+        public static T ToObject<T>(this Stream input) where T : new()
+        {          
+            using var parser = new Json.Parser(new JsonModelBuilder());
+            var jobj   = parser.Parse(input) as JsonObject;
+
+            return jobj!.ToObject<T>();
+        }
     }
 }

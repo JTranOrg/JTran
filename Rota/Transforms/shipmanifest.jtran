@@ -1,0 +1,51 @@
+{
+  "#variable(origins)":   "#(document(docs, origins))",
+  "#variable(ships)":     "#(document(docs, ships))",
+
+  "#variable(nature_of_goods)": 
+  [
+    "Drones",
+    "Medical Supplies",
+    "Machinery",
+    "Machinery Parts",
+    "Metal Stock",
+    "Lumber",
+    "Plastic Stock",
+    "Foodstuffs",
+    "Chemicals (non-volatile)",
+    "Chemicals (volatile)"
+  ],
+
+  "#variable(ship)":    "#(pickrandomunique($ships, 'ships'))",
+
+  "oldest_ship":        "#(min($ships.year_built))",
+  "youngest_ship":      "#(max($ships.year_built))",
+  "ship":               "#copyof($ship)",
+
+  "#iterate($ship.maxpods, pods)": 
+  {
+    "id":               "#(guid())",
+    "index":            "#(position() + 1)",
+    "origin":           "#(pickrandom($origins))",
+    "destination":      "#(pickrandom($origins))",
+
+    "#iterate(randominteger(2, 8), containers)": 
+    {
+      "id":             "#(guid())",
+      "index":          "#(position() + 1)",
+      "size":           "full",
+
+      "#iterate(randominteger(8, 128), shipments)": 
+      {
+        "id":           "#(guid())",
+        "index":        "#(position() + 1)",
+        "description":  "#(pickrandom($nature_of_goods))",
+        "quantity":     "#(randominteger(1, 100))",
+        "width":        "#(precision(randomnumber(4, 128), 2))",
+        "height":       "#(precision(randomnumber(4, 128), 2))",
+        "volume":       "#(precision(randomnumber(4, 128), 2))",
+        "weight":       "#(precision(randomnumber(4, 128), 2))"
+      }
+    }
+  }
+}

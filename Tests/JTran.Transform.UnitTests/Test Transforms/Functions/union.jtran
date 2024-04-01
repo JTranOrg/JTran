@@ -1,0 +1,6 @@
+{
+  "#foreach(union(Chevy, Pontiac), Cars)": 
+  {
+    "#noobject": "#copyof(@)"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "#foreach(Cars, Cars)":
+  {
+    "#noobject": "#copyof(@)",
+    "Driver": "Fred Flintstone"
+  }
+}

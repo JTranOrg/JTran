@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Threading.Tasks;
-
-using Newtonsoft.Json;
-
-using JTran;
-using JTranProject = JTran.Project.Project;
 using System.Reflection;
+
+using JTranProject = JTran.Project.Project;
+
+using JTran.Common;
 using JTran.Project;
 
 namespace JTran.Console
@@ -68,13 +64,13 @@ namespace JTran.Console
                         return;
                     }
 
-                    var json = File.ReadAllText(projectPath);
+                    using Stream file = File.OpenRead(projectPath);
 
                     try
                     { 
-                        project = JsonConvert.DeserializeObject<JTranProject>(json);
+                        project = file.ToObject<JTranProject>();
                     }
-                    catch(Newtonsoft.Json.JsonSerializationException)
+                    catch(JsonParseException)
                     {
                         WriteError("Project file is not a valid json file");
                         return;

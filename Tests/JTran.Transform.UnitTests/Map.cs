@@ -38,7 +38,7 @@ namespace JTran.Transform.UnitTests
         [DataRow("AR", "South", "map4")]
         public  async Task Map_success(string state, string region, string transform)
         {
-            var result = await TransformerTest.Test($"map.{transform}", "map.address", dataTransform: (s)=> s.Replace("{0}", state));
+            var result = await TransformerTest.Test($"Map.{transform}", "Map.address", dataTransform: (s)=> s.Replace("{0}", state));
             var json   = JObject.Parse(result);
    
             Assert.AreEqual(region, json!["Region"]!.ToString());
@@ -62,7 +62,7 @@ namespace JTran.Transform.UnitTests
         [DataRow("WA", "Puget Sound", "map_property")]
         public async Task Map_wExpressions(string state, string region, string transform)
         {
-            var result = await TransformerTest.Test($"map.{transform}", "map.address", dataTransform: (s)=> s.Replace("{0}", state));
+            var result = await TransformerTest.Test($"Map.{transform}", "Map.address", dataTransform: (s)=> s.Replace("{0}", state));
             var json   = JObject.Parse(result);
    
             Assert.AreEqual(region, json!["Region"]!.ToString());
@@ -74,11 +74,23 @@ namespace JTran.Transform.UnitTests
         [DataRow("CA", "West", "map3")]
         public  async Task Map_empty(string state, string region, string transform)
         {
-            var result = await TransformerTest.Test($"map.{transform}", "map.emptydata", dataTransform: (s)=> s.Replace("{0}", state));
+            var result = await TransformerTest.Test($"Map.{transform}", "Map.emptydata", dataTransform: (s)=> s.Replace("{0}", state));
             var json   = JObject.Parse(result);
    
             Assert.AreEqual("South", json!["Region"]!.ToString());
         }
 
+        [TestMethod]
+        public  async Task Map_array()
+        {
+            var result = await TransformerTest.Test($"Map.map5", "Map.addresses");
+            var array   = JArray.Parse(result);
+   
+            Assert.AreEqual("WA PNW",      array![0]!.ToString());
+            Assert.AreEqual("CA West",     array![1]!.ToString());
+            Assert.AreEqual("NJ East",     array![2]!.ToString());
+            Assert.AreEqual("WY Mountain", array![3]!.ToString());
+            Assert.AreEqual("IL Midwest",  array![4]!.ToString());
+        }
     }
 }

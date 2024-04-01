@@ -1,30 +1,24 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: TransformerContext.cs					    		        
  *        Class(es): TransformerContext				         		            
- *          Purpose: Does a tranformation in context (not stateless)                   
+ *          Purpose: Context for transforms                
  *                                                                          
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
  *                                                                          
  ****************************************************************************/
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using JTran.Extensions;
 
 namespace JTran
 {
@@ -34,6 +28,7 @@ namespace JTran
     {
         public IDictionary<string, object>              Arguments             { get; set; }
         public IDictionary<string, IDocumentRepository> DocumentRepositories  { get; set; } = new Dictionary<string, IDocumentRepository>();
+        public bool AllowDeferredLoading { get; set; } = true;
     }
 
     /****************************************************************************/
@@ -41,5 +36,12 @@ namespace JTran
     public interface IDocumentRepository
     {
         string GetDocument(string name);
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    public interface IDocumentRepository2 : IDocumentRepository
+    {
+        Stream GetDocumentStream(string name);
     }
 }

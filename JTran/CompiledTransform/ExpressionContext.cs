@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *                                                                          
- *    JTran - A JSON to JSON transformer using an XSLT like language  							                    
+ *    JTran - A JSON to JSON transformer  							                    
  *                                                                          
  *        Namespace: JTran							            
  *             File: ExpressionContext.cs					    		        
@@ -17,12 +17,15 @@
  * 
  ****************************************************************************/
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using JTran.Collections;
+using JTran.Common;
 using JTran.Extensions;
 using JTran.Json;
 
@@ -34,21 +37,21 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly object                                   _data;
-        private readonly IDictionary<string, object>              _variables;
-        private readonly IDictionary<string, IDocumentRepository> _docRepositories;
-        private readonly ExpressionContext                        _parent;
+        private readonly IDictionary<ICharacterSpan, object>        _variables;
+        private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
+        private readonly ExpressionContext?                        _parent;
 
         /*****************************************************************************/
-        internal ExpressionContext(object                         data, 
-                                   string                         name = "", 
-                                   TransformerContext             transformerContext = null, 
-                                   ExtensionFunctions             extensionFunctions = null,
-                                   IDictionary<string, TTemplate> templates          = null,
-                                   IDictionary<string, TFunction> functions          = null)
+        internal ExpressionContext(object?                         data, 
+                                   string                          name = "", 
+                                   TransformerContext?             transformerContext = null, 
+                                   ExtensionFunctions?             extensionFunctions = null,
+                                   IDictionary<string, TTemplate>? templates          = null,
+                                   IDictionary<string, TFunction>? functions          = null)
         {
-            _data            = data;
-            _variables       = transformerContext?.Arguments ?? new Dictionary<string, object>();
+            this.Data = data;
+
+            _variables       = new Dictionary<ICharacterSpan, object>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -57,6 +60,10 @@ namespace JTran
             this.Functions   = functions;
 
             this.ExtensionFunctions = extensionFunctions;
+
+            if(transformerContext?.Arguments != null)
+                foreach(var arg in transformerContext.Arguments)
+                    _variables.Add(CharacterSpan.FromString(arg.Key), arg.Value);
         }
 
         /*****************************************************************************/
@@ -65,8 +72,9 @@ namespace JTran
                                    IDictionary<string, TTemplate> templates = null,
                                    IDictionary<string, TFunction> functions = null)
         {
-            _data             = data;
-            _variables        = new Dictionary<string, object>();
+            this.Data = data;
+
+            _variables        = new Dictionary<ICharacterSpan, object>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;
@@ -78,26 +86,43 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object                         Data               => _data;
-        internal string                         Name               { get; }
-        internal bool                           PreviousCondition  { get; set; }
-        internal ExtensionFunctions             ExtensionFunctions { get; }
-        internal IDictionary<string, TTemplate> Templates          { get; }
-        internal IDictionary<string, TFunction> Functions          { get; }
-        internal IList<object>                  CurrentGroup       { get; set; }
-        internal Transformer.UserError          UserError          { get; set; }
+        internal object?                          Data               { get; set; }
+        internal string                           Name               { get; }
+        internal bool                             PreviousCondition  { get; set; }
+        internal ExtensionFunctions?              ExtensionFunctions { get; }
+        internal IDictionary<string, TTemplate>?  Templates          { get; }
+        internal IDictionary<string, TFunction>?  Functions          { get; }
+        internal IList<object>?                   CurrentGroup       { get; set; }
+        internal Transformer.UserError?           UserError          { get; set; }
+        internal long                             Index              { get; set; } 
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
         {
             if(_docRepositories?.ContainsKey(repoName) ?? false)
             { 
-                var doc = _docRepositories[repoName].GetDocument(docName);
-                    
-                return doc.JsonToExpando();
+                try
+                { 
+                    var repo = _docRepositories[repoName];
+
+                    if(repo is IDocumentRepository2 repo2)
+                    { 
+                        using var doc2 = repo2.GetDocumentStream(docName);
+
+                        return doc2.ToJsonObject();
+                    }
+
+                    var doc = repo.GetDocument(docName);
+
+                    return doc.ToJsonObject();
+
+                }
+                catch(Exception ex)
+                {
+                }
             }
 
-            return null;
+            throw new FileNotFoundException($"Document not found {repoName}/{docName}");  
         }
 
         /*****************************************************************************/
@@ -107,15 +132,26 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal object GetVariable(string name)
+        internal object GetVariable(ICharacterSpan name, ExpressionContext context)
         {
             if(_variables.ContainsKey(name))
-                return _variables[name];
+            { 
+                var val = _variables[name];
+
+                if(val is IVariable variable)
+                {
+                    val = variable.GetActualValue(context);
+
+                    _variables[name] = val;
+                }
+
+                return val;
+            }
 
             if(_parent == null)
                 throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
 
-            return _parent.GetVariable(name);
+            return _parent.GetVariable(name, context);
         }
 
         /*****************************************************************************/
@@ -141,7 +177,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal void SetVariable(string name, object val)
+        internal void SetVariable(ICharacterSpan name, object val)
         {
             if(_variables.ContainsKey(name))
                 throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");
@@ -149,27 +185,27 @@ namespace JTran
             _variables.Add(name, val);
         }
 
+        private static readonly ICharacterSpan _scopeSymbol = CharacterSpan.FromString("@");
+
         /*****************************************************************************/
-        internal object GetDataValue(string name)
+        internal object GetDataValue(ICharacterSpan name)
         { 
-            if(_data == null)
+            if(this.Data == null)
                 return null;
 
-            if(name == "@")
-                return _data;
+            if(name.Equals(_scopeSymbol))
+                return this.Data;
 
-            var otype = _data.GetType();
+            if(this.Data is IObject)
+                return this.Data.GetPropertyValue(name);
 
-            if(_data is ExpandoObject)
-                return GetDataValue(_data, name);
-
-            if(_data is ICollection<object> dict1)
+            if(this.Data is ICollection<object> dict1)
             { 
                 if(dict1.Count > 0 && dict1.First() is KeyValuePair<string, object>)
                 { 
                     foreach(KeyValuePair<string, object> kv in dict1)
                     {
-                        if(kv.Key == name)
+                        if(name.Equals(kv.Key))
                             return kv.Value;
                     }
 
@@ -177,58 +213,48 @@ namespace JTran
                 }
             }
 
-            if(_data is ICollection<KeyValuePair<string, object>> dict2)
+            if(this.Data is ICollection<KeyValuePair<string, object>> dict2)
             { 
                 foreach(var kv in dict2)
                 {
-                    if(kv.Key == name)
+                    if(name.Equals(kv.Key))
                         return kv.Value;
                 }
 
                 return null;
             }
 
-            if(_data is IDictionary dict)
+            if(this.Data is IDictionary dict)
             { 
                 foreach(var key in dict.Keys)
                 {
-                    if(key.ToString() == name)
+                    if(name.Equals(key.ToString()))
                         return dict[name];
                 }
 
                 return null;
             }
 
-            if(_data is IEnumerable<object> list)
+            if(this.Data is IEnumerable<object> list)
             {
-                var result = new List<object>();
+                var result = new ChildEnumerable<object, object>(list, name); 
 
-                foreach(var child in list)
-                { 
-                    var childResult = GetDataValue(child, name);
-
-                    if(childResult is IEnumerable<object> childList)
-                        result.AddRange(childList);
-                    else
-                        result.Add(childResult);
-                }
-
-                if(result.Count == 0)
+                if(!result.Any())
                     return null;
 
-                if(result.Count == 1)
-                    return result[0];
+                if(result.IsSingle())
+                    return result.First();
 
                 return result;
             }
 
-            return GetDataValue(_data, name);
+            return GetDataValue(this.Data, name);
         }
 
         /*****************************************************************************/
-        private object GetDataValue(object data, string name)
+        private object GetDataValue(object data, ICharacterSpan name)
         { 
-            var val = data.GetValue(name, this);
+            var val = data.GetPropertyValue(name);
 
             if(val == null)
                 return null;
@@ -236,7 +262,7 @@ namespace JTran
             if(!val.GetType().IsClass)
             { 
                 // If it's any kind of number return it as a decimal
-                if(decimal.TryParse(val.ToString(), out decimal dVal))
+                if(val.TryParseDecimal(out decimal dVal)) 
                     return dVal;
             }
 

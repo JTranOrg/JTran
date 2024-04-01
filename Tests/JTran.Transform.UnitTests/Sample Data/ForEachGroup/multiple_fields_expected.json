@@ -1,0 +1,92 @@
+{
+  Makes:
+  [
+    {
+      Make: "Chevy",
+      Model: "Corvette",
+      Drivers:
+      [
+        {
+          Name: "John Smith",
+          Year: 1964,
+          Color: "Blue"
+        }
+      ]
+    },
+    {
+      Make: "Pontiac",
+      Model: "Firebird",
+      Drivers:
+      [
+        {
+          Name: "Fred Jones",
+          Year: 1964,
+          Color: "Blue"
+        },
+        {
+          Name: "Suki Omada",
+          Year: 1964,
+          Color: "Black"
+        },
+        {
+          Name: "Violet Ngyuen",
+          Year: 1969,
+          Color: "Black"
+        }
+      ]
+    },
+    {
+      Make: "Pontiac",
+      Model: "GTO",
+      Drivers:
+      [
+        {
+          Name: "Jorge Eldorado",
+          Year: 1973,
+          Color: "Blue"
+
+        },
+        {
+          Name: "Amanda Ramirez",
+          Year: 1971,
+          Color: "Black"
+
+        }
+      ]
+    },
+    {
+      Make: "Chevy",
+      Model: "Camaro",
+      Drivers:
+      [
+        {
+          Name: "Mary Anderson",
+          Year: 1969,
+          Color: "Green"
+        },
+        {
+          Name: "John Li",
+          Year: 1970,
+          Color: "Red"
+        }
+      ]
+    },
+    {
+      Make: "Audi",
+      Model: "RS5",
+      Drivers:
+      [
+        {
+          Name: "William Lee",
+          Year: 2023,
+          Color: "Red"
+        },
+        {
+          Name: "Orada Omiyashi",
+          Year: 2023,
+          Color: "Blue"
+        }
+      ]
+    }
+  ]
+}

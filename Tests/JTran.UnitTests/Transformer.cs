@@ -45,30 +45,11 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("Charger", json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
+            Assert.AreEqual("Camaro",   json.PathValue<string>("Owner.Cars.Chevy.Model"));
+            Assert.AreEqual("Firebird", json.PathValue<string>("Owner.Cars.Pontiac.Model"));
+            Assert.AreEqual("Charger",  json.PathValue<string>("Owner.Cars.Dodge.Model"));
         }
-
-        [TestMethod]
-        [TestCategory("ForEach")]
-        public void Transformer_Transform_ForEach_nested__Success()
-        {
-            var transformer = new JTran.Transformer(_transformNestedForEach, null);
-            var result      = transformer.Transform(_dataNested, null);
-   
-            Assert.AreNotEqual(_transformNestedForEach, _dataNested);
-
-            var roster = JsonConvert.DeserializeObject<Roster>(result);
-
-            Assert.AreEqual(3,               roster.Owner.Cars.Count);
-            Assert.AreEqual("Chevy",         roster.Owner.Cars[0].Make);
-            Assert.AreEqual("Camaro",        roster.Owner.Cars[0].Model);
-            Assert.AreEqual(3,               roster.Owner.Cars[0].Mechanics.Count);
-            Assert.AreEqual("Bob",           roster.Owner.Cars[0].Mechanics[0].FirstName);
-            Assert.AreEqual("Mendez",        roster.Owner.Cars[0].Mechanics[0].LastName);
-        }
-        
+       
         [TestMethod]
         [TestCategory("ForEach")]
         public void Transformer_Transform_ForEach_nested_single_innner__Success()
@@ -99,10 +80,10 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
+            Assert.AreEqual("Camaro",   json.PathValue<string>("Owner.Cars.Chevy.Model"));
+            Assert.AreEqual("Firebird", json.PathValue<string>("Owner.Cars.Pontiac.Model"));
 
-            var dodgeModel = json["Owner"]["Cars"]["Dodge"]["Model"];
+            var dodgeModel = json.PathValue("Owner.Cars.Dodge.Model");
 
             Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
         }
@@ -136,21 +117,17 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("ForEach")]
-        public async Task Transformer_Transform_ForEach_yielded_list_Success()
+        public void Transformer_Transform_ForEach_yielded_list_Success()
         {
             var list = GetList();
 
             var transformer = new JTran.Transformer(_transformList, null);
-            var result = "";
+            var source = JsonConvert.SerializeObject(list);
+            var result = transformer.Transform("{ 'Automobiles': " + source + " } ");
 
-            using(var output = new MemoryStream())
-            { 
-                transformer.Transform(list, "Automobiles", output);
+            var jobj = JObject.Parse(result);
 
-                result = await output.ReadStringAsync();
-            }
-
-            var owner = JsonConvert.DeserializeObject<Owner2>(result);
+            var owner = JsonConvert.DeserializeObject<Owner2>(result.Trim());
 
             Assert.IsNotNull(owner);
             Assert.IsNotNull(owner.Cars);
@@ -168,31 +145,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("Camaro",    owner.Cars[2].Model);
             Assert.AreEqual(1970,        owner.Cars[2].Year);
         }
-
-        private static readonly string _transformForEachBreak =
-        "{" + 
-         "    '#foreach(Customers, Customers)':" + 
-         "    {" + 
-         "        LastName:    '#(Surname)'," + 
-         "        FirstName:   '#(Name)'," + 
-         "        Age:         '#(Age)'," + 
-         "        Address:     '#(Address)'," + 
-         "        '#break':     ''" + 
-         "    }" + 
-         "}";        
-         
-         private static readonly string _transformForEachContinue =
-        "{" + 
-        "      '#variable(John)': 'John'," + 
-         "    '#foreach(Customers, Customers)':" + 
-         "    {" + 
-         "        '#if(Name == $John)': '#continue'," + 
-         "        LastName:    '#(Surname)'," + 
-         "        FirstName:   '#(Name)'," + 
-         "        Age:         '#(Age)'," + 
-         "        Address:     '#(Address)'" + 
-         "    }" + 
-         "}";
 
         #endregion
 
@@ -220,15 +172,15 @@ namespace JTran.UnitTests
    
             Assert.AreNotEqual(_transformExtFunction, _data5);
 
-            var json = JObject.Parse(result);
+            var json = JObject.Parse(result)!;
 
-            Assert.AreEqual("xCamaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("xFirebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("xCharger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
-            Assert.AreEqual("yGreen",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
-            Assert.AreEqual("yBlue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
-            Assert.AreEqual("yBlack",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
-        }
+            Assert.AreEqual("xCamaro",   json["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
+            Assert.AreEqual("xFirebird", json["Owner"]!["Cars"]!["Pontiac"]!["Model"]!.ToString());
+            Assert.AreEqual("xCharger",  json["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
+            Assert.AreEqual("yGreen",    json["Owner"]!["Cars"]!["Chevy"]!["Color"]!.ToString());
+            Assert.AreEqual("yBlue",     json["Owner"]!["Cars"]!["Pontiac"]!["Color"]!.ToString());
+            Assert.AreEqual("yBlack",    json["Owner"]!["Cars"]!["Dodge"]!["Color"]!.ToString());
+        }                                             
 
         [TestMethod]
         public void Transformer_Transform_ExtensionFunction_ClassParam_Succeeds()
@@ -240,12 +192,12 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro",   json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
-            Assert.AreEqual("Firebird", json["Owner"]["Cars"]["Pontiac"]["Model"].ToString());
-            Assert.AreEqual("Charger",  json["Owner"]["Cars"]["Dodge"]["Model"].ToString());
-            Assert.AreEqual("Green",    json["Owner"]["Cars"]["Chevy"]["Color"].ToString());
-            Assert.AreEqual("Blue",     json["Owner"]["Cars"]["Pontiac"]["Color"].ToString());
-            Assert.AreEqual("Black",    json["Owner"]["Cars"]["Dodge"]["Color"].ToString());
+            Assert.AreEqual("Camaro",   json!["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
+            Assert.AreEqual("Firebird", json!["Owner"]!["Cars"]!["Pontiac"]!["Model"]!.ToString());
+            Assert.AreEqual("Charger",  json!["Owner"]!["Cars"]!["Dodge"]!["Model"]!.ToString());
+            Assert.AreEqual("Green",    json!["Owner"]!["Cars"]!["Chevy"]!["Color"]!.ToString());
+            Assert.AreEqual("Blue",     json!["Owner"]!["Cars"]!["Pontiac"]!["Color"]!.ToString());
+            Assert.AreEqual("Black",    json!["Owner"]!["Cars"]!["Dodge"]!["Color"]!.ToString());
         }
 
         #endregion
@@ -260,7 +212,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("1:48:52.0000", json["Time"].ToString());
+            Assert.AreEqual("1:48:52.0000", json!["Time"]!.ToString());
         }
 
         /*[TestMethod]
@@ -376,38 +328,6 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("abc", json["MyProp"].ToString());
         }
-        
-        #region ForEachGroup
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEachGroup1, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.AreNotEqual(_transformForEachGroup1, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup1), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_variables_Success()
-        {
-            var transformer = new JTran.Transformer(_transformForEachGroup2, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup2), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        public void Transformer_Transform_ForEachGroup_variable2s_Success()
-        {
-            var transformer = new JTran.Transformer(LoadSample("only1_group.jtran"), null);
-            var result      = transformer.Transform(LoadSample("only1_group.json"));
-   
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(_resultForEachGroup3), JObject.Parse(result)));
-        }
-
-        #endregion
 
         #region Template
 
@@ -594,17 +514,6 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("Function")]
-        public void Transformer_Transform_Function_after__Success()
-        {
-            var transformer = new JTran.Transformer(_transformFunctionAfter, null);
-            var result      = transformer.Transform(_dataForEachGroup1);
-   
-            Assert.AreNotEqual(_transformFunctionAfter, _dataForEachGroup1);
-            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1964 }"), JObject.Parse(result)));
-        }
-
-        [TestMethod]
-        [TestCategory("Function")]
         public void Transformer_Transform_Function2_Success()
         {
             var transformer = new JTran.Transformer(_transformFunction2, null);
@@ -625,35 +534,6 @@ namespace JTran.UnitTests
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ Year: 1967 }"), JObject.Parse(result)));
         }
 
-        [TestMethod]
-        [TestCategory("Function")]
-        public void Transformer_Transform_Function_nested_Success()
-        {
-            var transformSource = LoadTransform("nestedfunction");
-            var transformer     = new JTran.Transformer(transformSource, null);
-            var result          = transformer.Transform(_dataProducts);
-            var json            = JObject.Parse(result);
-   
-            Assert.AreNotEqual(transformSource, _dataProducts);
-            Assert.AreEqual("Topsoil", json["Products"][0]["Name"].ToString());
-            Assert.AreEqual("Paint",   json["Products"][1]["Name"].ToString());
-        }
-
-        private static readonly string _dataProducts =
-        @"{
-	        'Products':
-	        [
-   		        {
-       		        'Name':   'Topsoil (yards)',
-       		        'UOM':    'yard'
-     	        },
-   		        {
-       		        'Name':   'Paint (gallons)',
-       		        'UOM':    'gallon'
-     	        }
-            ]
-        }";
-
         private static readonly string _transformFunction =
         @"{
              '#function(BestYear)': 
@@ -662,16 +542,6 @@ namespace JTran.UnitTests
              },
 
              Year: '#(BestYear(3))'
-        }";
-
-        private static readonly string _transformFunctionAfter =
-        @"{
-             Year: '#(BestYear(3))',
-
-             '#function(BestYear)': 
-             {
-                return:       1964
-             }
         }";
 
         private static readonly string _transformFunctionParams =
@@ -974,24 +844,6 @@ namespace JTran.UnitTests
 
         [TestMethod]
         [TestCategory("Array")]
-        public void Transformer_Transform_Array_foreach_Succeeds()
-        {
-            var transformer = new JTran.Transformer(_transformArrayForEach, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
-            var result      = transformer.Transform(_data4, context);
-   
-            Assert.AreNotEqual(_transformArrayForEach, _data4);
-
-            var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
-
-            Assert.AreEqual(5,              array.Count());
-            Assert.AreEqual("JohnSmith",    array[0]["Name"]);
-            Assert.AreEqual("King Jalusa",  array[4]["Name"]);
-        }
-
-        [TestMethod]
-        [TestCategory("Array")]
         public void Transformer_Transform_Array_foreach_emptyarray_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayForEachEmptyArray, null);
@@ -1106,31 +958,6 @@ namespace JTran.UnitTests
             }
         }";
 
-        private static readonly string _transformArrayForEach =
-        @"{
-            '#array(Persons)':
-            {
-                '#foreach(Customers, {})':
-                {
-                   'Name': '#(Name + Surname)'
-                },
-                '#if(any(Customers[Name == $Fred]))':
-                {
-                    '#arrayitem':
-                    {
-                        'Name': 'King Jalusa'
-                    }
-                },
-                '#if(any(Customers[Name == $Dude]))':
-                {
-                    '#arrayitem':
-                    {
-                        'Name': 'King Krakatoa'
-                    }
-                }
-            }
-        }";
-
         private static readonly string _transformArrayForEachEmptyArray =
         @"{
             '#variable(Find)': 'Fred',
@@ -1221,9 +1048,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSort, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[0]["Name"]);
             Assert.AreEqual("JohnSmith",        array[1]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[2]["Name"]);
@@ -1240,9 +1067,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSortDesc, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[3]["Name"]);
             Assert.AreEqual("JohnSmith",        array[2]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
@@ -1259,9 +1086,9 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformSort2fields, _data4);
 
             var json  = JObject.Parse(result);
-            var array = json["Persons"]  as JArray;
+            var array = json["Persons"] as JArray;
 
-            Assert.AreEqual(4,                  array.Count());
+            Assert.AreEqual(4,                  array!.Count);
             Assert.AreEqual("FredAnderson",     array[0]["Name"]);
             Assert.AreEqual("LindaAnderson",    array[1]["Name"]);
             Assert.AreEqual("JohnSmith",        array[2]["Name"]);
@@ -1280,7 +1107,7 @@ namespace JTran.UnitTests
             var json  = JObject.Parse(result);
             var array = json["Persons"]  as JArray;
 
-            Assert.AreEqual(5,                  array.Count());
+            Assert.AreEqual(5,                    array!.Count);
             Assert.AreEqual("FredAnderson41",     array[0]["Name"]);
             Assert.AreEqual("LindaAnderson39",    array[1]["Name"]);
             Assert.AreEqual("JohnSmith34",        array[2]["Name"]);
@@ -1387,7 +1214,7 @@ namespace JTran.UnitTests
             'Name':        'Fred',
             '#foreach(Automobiles, Cars)':
             {
-                Brand:    '#(Make))',
+                Brand:    '#(Make)',
                 Model:    '#(Model)',
                 Year:     '#(Year)',
                 Color:    '#(Color)',
@@ -1536,7 +1363,6 @@ namespace JTran.UnitTests
                 }
             }
         }";
-
         
         private static readonly string _mapError = 
         @"{
@@ -1587,132 +1413,7 @@ namespace JTran.UnitTests
                 }
              }
         }";
-     
-        private static readonly string _transformForEachGroup1 =
-        @"{
-            '#foreachgroup(Drivers, Make, Makes)':
-            {
-                Make:             '#(Make)',
-                '#foreach(currentgroup(), Drivers)':
-                {
-                    Name:  '#(Name)',
-                    Model: '#(Model)'
-                }
-             }
-        }";
-     
-        private static readonly string _transformForEachGroup2 =
-        @"{
-            '#variable(Pontiac)':    'Pontiac',
-            '#variable(Drivers)':    '#(Drivers[Make != $Pontiac])',
-
-            '#foreachgroup($Drivers, Make, Makes)':
-            {
-                'Make': '#(Make)',
-
-                '#foreach(currentgroup(), Drivers)':
-                {
-                    Name:  '#(Name)',
-                    Model: '#(Model)'
-                }
-             }
-        }";
-
-        private static readonly string _resultForEachGroup1 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'John Smith',
-                            Model:     'Corvette',
-                        },
-                        {
-                            Name:      'Mary Anderson',
-                            Model:     'Camaro',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Pontiac',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'Fred Jones',
-                            Model:     'Firebird',
-                        },
-                        {
-                            Name:      'Amanda Ramirez',
-                            Model:     'GTO',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Audi',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'William Lee',
-                            Model:     'RS5',
-                        }
-                    ]
-                }
-            ]
-        }";
-
-        private static readonly string _resultForEachGroup2 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'John Smith',
-                            Model:     'Corvette',
-                        },
-                        {
-                            Name:      'Mary Anderson',
-                            Model:     'Camaro',
-                        }
-                    ]
-                },
-                {
-                    Make:      'Audi',
-                    Drivers:   
-                    [
-                        {
-                            Name:      'William Lee',
-                            Model:     'RS5',
-                        }
-                    ]
-                }
-            ]
-        }";
-
-        private static readonly string _resultForEachGroup3 = 
-        @"{
-            Makes:
-            [
-                {
-                    Make:      'Chevy',
-                    Drivers:   
-                    [
-                        {
-                            'Name':  'Joan Baez',
-                            'Make':  'Chevy',
-                            'Model': 'Corvette',
-                            'Year':  1956
-                        }
-                    ]
-                }
-            ]
-        }";
-
+         
         private static readonly string _transformBool = 
         @"{
             '#variable(isValidState)':  '#(Address.State != null)',
@@ -1756,68 +1457,31 @@ namespace JTran.UnitTests
             ArrayName: 'bob'
         }";
 
-        private static readonly string _data2 =
+        private static readonly string _dataNoEmployees =
         @"{
-              Customers:
-              [
-                  {
-                      Surname:     'Smith',
-                      Address:     '123 Elm St',   
-                      Residents:
-                     [
-                        {
-                             Name:   'John',
-                             Age:     34
-                        },
-                        {
-                             Name:   'Mary',
-                             Age:     32
-                        }
-                     ]
-                 },
-                  {
-                      Surname:     'Anderson',
-                      Address:     '375 Maple Ave',   
-                      Residents:
-                     [
-                        {
-                             Name:   'Fred',
-                             Age:     41
-                        },
-                        {
-                             Name:   'Linda',
-                             Age:     39
-                        }
-                     ]
-                 }
-              ]
-            }";
-
-            private static readonly string _dataNoEmployees =
-            @"{
-                Customers:
-                [
-                    {
-                        Surname: 'Smith',
-                        Name:    'John'
-                    },
-                    {
-                        Surname: 'Jones',
-                        Name:    'Bob'
-                    }
-               ],
-               Employees:
-               [
-                 {
-                     Surname: 'Anderson',
-                     Name:    'Linda'
-                 },
-                 {
-                     Surname:   'Gonzales',
-                     Name:      'Pedro'
-                 }
-               ]
-            }";
+            Customers:
+            [
+                {
+                    Surname: 'Smith',
+                    Name:    'John'
+                },
+                {
+                    Surname: 'Jones',
+                    Name:    'Bob'
+                }
+            ],
+            Employees:
+            [
+                {
+                    Surname: 'Anderson',
+                    Name:    'Linda'
+                },
+                {
+                    Surname:   'Gonzales',
+                    Name:      'Pedro'
+                }
+            ]
+        }";
 
         private static readonly string _data4 =
         @"{
@@ -2208,62 +1872,62 @@ namespace JTran.UnitTests
 
         public class Customer
         {
-            public string FirstName   { get; set; }
-            public string LastName    { get; set; }
+            public string FirstName   { get; set; } = "";
+            public string LastName    { get; set; } = "";
             public int    Age         { get; set; }
-            public string Address     { get; set; }
+            public string Address     { get; set; } = "";
         }        
         
         public class Automobile
         {
-            public string        Make     { get; set; }
-            public string        Model    { get; set; }
+            public string        Make     { get; set; } = "";
+            public string        Model    { get; set; } = "";
             public int           Year     { get; set; }
-            public string        Color    { get; set; }
+            public string        Color    { get; set; } = "";
         }
 
         public class CustomerContainer
         {
-            public string SpecialCustomer     { get; set; }
+            public string SpecialCustomer     { get; set; } = "";
             public List<Customer> Customers   { get; set; }
         }     
         
         public class Driver
         {
-            public string       FieldName   { get; set; }
-            public string       FirstName   { get; set; }
-            public string       LastName    { get; set; }
+            public string       FieldName   { get; set; } = "";
+            public string       FirstName   { get; set; } = "";
+            public string       LastName    { get; set; } = "";
             public Automobile2  Car         { get; set; }
         }
         
         public class Automobile2
         {
-            public string        FieldName { get; set; }
-            public string        Brand     { get; set; }
-            public string        Model     { get; set; }
-            public int           Year      { get; set; }
-            public string        Color     { get; set; }
+            public string        FieldName { get; set; } = "";
+            public string        Brand     { get; set; } = "";
+            public string        Model     { get; set; } = "";
+            public int           Year      { get; set; } 
+            public string        Color     { get; set; } = "";
         }
         
         public class Automobile3
         {
-            public string        Make       { get; set; }
-            public string        Model      { get; set; }
+            public string        Make       { get; set; } = "";
+            public string        Model      { get; set; } = "";
             public int           Year       { get; set; }
-            public string        Color      { get; set; }
+            public string        Color      { get; set; } = "";
             public IList<Driver> Mechanics  { get; set; }
         }
 
-        public class Owner
-        {
-            public string            Name   { get; set; }
-            public List<Automobile3> Cars   { get; set; }
-        }     
-
         public class Owner2
         {
-            public string            Name   { get; set; }
+            public string            Name   { get; set; } = "";
             public List<Automobile2> Cars   { get; set; }
+        }     
+
+        public class Owner
+        {
+            public string            Name   { get; set; } = "";
+            public List<Automobile3> Cars   { get; set; }
         }     
 
         public class Roster
