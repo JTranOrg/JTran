@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using JTran.Extensions;
 using JTran.Expressions;
@@ -83,7 +84,7 @@ namespace JTran
             }
             catch(AggregateException ex)
             {
-                throw ex.InnerException;
+                throw ex.InnerException!;
             }
         }
 

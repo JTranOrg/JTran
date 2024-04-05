@@ -1,37 +1,26 @@
-using MondoCore.Data;
-using MondoCore.MongoDB;
-using System.Collections;
-using System.Text.Json.Serialization;
-
-using Newtonsoft.Json.Linq;
 using MondoCore.Common;
+using MondoCore.Data;
+using System.Text.Json.Serialization;
 
 namespace JTran.MongoDBTests
 {
     [TestClass]
     public class MongoDBTests
     {
+        private const string ConnectionString = "mongodb://localhost:27017/";
+        private const string DatabaseName     = "functionaltests";
+
         [TestMethod]
         [DataRow("Violet")]
         public void MongoDB_transform(string firstName)
         {
-            { 
-                using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
-                var transformer  = CreateTransformer(_transformForEach1);
-                var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
-                var input        = db.GetRepositoryReader<Guid, Person>("persons");
-                var enm          = input.AsEnumerable<Person>();
+            using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
+            var transformer  = CreateTransformer(_transformForEach1);
+            var db           = new MondoCore.MongoDB.MongoDB(DatabaseName, ConnectionString); 
+            var input        = db.GetRepositoryReader<Guid, Person>("persons");
+            var enm          = input.AsEnumerable<Person>();
             
-                transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
-            }
-
-            { 
-                //using var strm = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Open);
-                //var result     = strm.ReadString();
-                //var jobj       = JArray.Parse(result);
-                //
-                //Assert.IsNotNull(jobj);
-            }
+            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
         }
 
         [TestMethod]
@@ -40,18 +29,31 @@ namespace JTran.MongoDBTests
         {
             using var output = File.Open($"c:\\Documents\\Testing\\JTran\\MongoDB\\{firstName}.json", FileMode.Create);
             var transformer  = CreateTransformer(_transformForEach2);
-            var db           = new MondoCore.MongoDB.MongoDB("functionaltests", "mongodb://localhost:27017/"); 
+            var db           = new MondoCore.MongoDB.MongoDB(DatabaseName, ConnectionString); 
             var input        = db.GetRepositoryReader<Guid, Person>("persons");
             var enm          = input.AsEnumerable<Person>();
 
             var list = enm.Where( i=> i.FirstName == firstName );
 
-            transformer.Transform(list, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
+            transformer.Transform(list, output);
+        }
+
+        [TestMethod]
+        [DataRow("Violet", "Ezra")]
+        public async Task MongoDB_transform_back_2_mongo(string firstName1, string firstName2)
+        {
+            await using var output = new MongoStreamFactory<Person>(DatabaseName, "violets", ConnectionString);
+            var transformer  = CreateTransformer(_transformForEach1);
+            var db           = new MondoCore.MongoDB.MongoDB(DatabaseName, ConnectionString); 
+            var input        = db.GetRepositoryReader<Guid, Person>("persons");
+            var enm          = input.AsEnumerable<Person>();
+
+            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name1 = firstName1, Name2 = firstName2 }).ToDictionary() } );
         }
 
         private static readonly string _transformForEach1 =
         @"{
-            '#foreach(@[FirstName == $Name], [])':
+            '#foreach(@[FirstName == $Name1 or FirstName == $Name2], [])':
             {
                 'Index':                '#(position())',
                 'FirstName':            '#(FirstName)',
@@ -82,8 +84,21 @@ namespace JTran.MongoDBTests
         public class Person : IPartitionable<Guid>
         {
             [JsonPropertyName("id")]
-            public Guid     Id    {get; set;}
+            public Guid     Id    
+            {
+                get 
+                {
+                    return _id;
+                } 
+
+                set
+                {
+                    _id = value == Guid.Empty ? Guid.NewGuid() : value;
+                }
+            }
             public Guid     id    => Id;
+
+            private Guid _id = Guid.NewGuid();
 
             public string? Surname              { get; set; }
             public string? FirstName            { get; set; }

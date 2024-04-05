@@ -17,10 +17,9 @@
  *                                                                          
  ****************************************************************************/
 
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-using System.IO;
 using JTran.Common;
 using JTran.Extensions;
 using JTran.Json;

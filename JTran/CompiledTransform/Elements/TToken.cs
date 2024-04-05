@@ -17,12 +17,11 @@
  * 
  ****************************************************************************/
 
-using JTran;
 using JTran.Common;
-using JTran.Extensions;
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace JTran
 {
@@ -97,7 +96,7 @@ namespace JTran
                 catch(JsonParseException ex)
                 {
                     ex.LineNumber = lineNumber;
-                    throw ex;
+                    throw;
                 }
             }
 

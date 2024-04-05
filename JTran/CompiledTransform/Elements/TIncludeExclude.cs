@@ -1,6 +1,7 @@
 ﻿
 using JTran.Common;
 using System;
+using System.Threading.Tasks;
 
 namespace JTran
 {

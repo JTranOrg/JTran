@@ -117,8 +117,9 @@ namespace JTran
                     return doc.ToJsonObject();
 
                 }
-                catch(Exception ex)
+                catch
                 {
+                    // Eat the exception
                 }
             }
 

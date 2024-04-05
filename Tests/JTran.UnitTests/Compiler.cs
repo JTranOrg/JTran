@@ -392,7 +392,7 @@ namespace JTran.UnitTests
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Husband.Birthdate > Wife.Birthdate"));
             var context    = new ExpressionContext(CreateTestData(new { Husband = new { Birthdate = "1980-04-05T10:00:00" },
-                                                                        Wife    = new { Birthdate = (String)null }} ));
+                                                                        Wife    = new { Birthdate = (String?)null }} ));
 
             Assert.IsNotNull(expression);
             Assert.IsTrue(expression.EvaluateToBool(context));

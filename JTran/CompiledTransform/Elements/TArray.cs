@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Threading.Tasks;
+
 using JTran.Common;
 using JTran.Expressions;
-using JTran.Extensions;
 using JTran.Parser;
 
 namespace JTran

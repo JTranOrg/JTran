@@ -24,14 +24,15 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 using JTran.Expressions;
 using JTran.Json;
 using JTran.Common;
 using JTran.Parser;
+using JTran.Streams;
 
 using JTranParser = JTran.Parser.ExpressionParser;
-using System.Diagnostics;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -44,11 +45,11 @@ namespace JTran
         private readonly Dictionary<string, CompiledTransform> _loadedIncludes = new();
         private readonly IDictionary<string, string>? _includeSource;
 
-        internal static IReadOnlyList<bool> SingleFalse     { get; } = new List<bool>() { false };
-        internal static IReadOnlyList<bool> SingleTrue      { get; } = new List<bool>() { true };
-        internal static IReadOnlyList<bool> FalseTrue       { get; } = new List<bool>() { false, true };
-        internal static IReadOnlyList<bool> FalseFalseTrue  { get; } = new List<bool>() { false, false, true };
-        internal static IReadOnlyList<bool> TrueFalse       { get; } = new List<bool>() { true, false};
+        internal static IReadOnlyList<bool> SingleFalse     => new List<bool>() { false };
+        internal static IReadOnlyList<bool> SingleTrue      => new List<bool>() { true };
+        internal static IReadOnlyList<bool> FalseTrue       => new List<bool>() { false, true };
+        internal static IReadOnlyList<bool> FalseFalseTrue  => new List<bool>() { false, false, true };
+        internal static IReadOnlyList<bool> TrueFalse       => new List<bool>() { true, false};
 
         private bool _outputArray = false;
 
@@ -133,17 +134,6 @@ namespace JTran
         #region Transform 
 
         /****************************************************************************/
-        internal void Transform(Stream input, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
-        {           
-            using(var writer = new JsonStreamWriter(output))
-            { 
-                Transform(input, writer, context, extensionFunctions);
-            }
-
-            return;
-        }            
-        
-        /****************************************************************************/
         internal string Transform(string data, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             using var input = new MemoryStream(UTF8Encoding.UTF8.GetBytes(data));
@@ -178,11 +168,23 @@ namespace JTran
         }
 
         /****************************************************************************/
-        internal void Transform(IEnumerable list, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        internal void Transform(object input, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            Transform(list, null, output, context, extensionFunctions);
-        }
+            if(input is Stream stream)
+                TransformStream(stream, output, context, extensionFunctions);
+            else
+                TransformObject(input, output, context, extensionFunctions);
+        }                      
 
+        /****************************************************************************/
+        internal void Transform(object input, IStreamFactory output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {
+            if(input is Stream stream)
+                TransformStream(stream, output, context, extensionFunctions);
+            else
+                TransformObject(input, output, context, extensionFunctions);
+        }                      
+        
         #endregion
         
         /****************************************************************************/
@@ -232,6 +234,44 @@ namespace JTran
         }
 
         /****************************************************************************/
+        private void TransformObject(object input, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {
+            using(var writer = new JsonStreamWriter(output))
+            { 
+                TransformObject(input, writer, context, extensionFunctions);
+            }
+        }
+
+        /****************************************************************************/
+        private void TransformStream(Stream input, Stream output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {           
+            using(var writer = new JsonStreamWriter(output))
+            { 
+                Transform(input, writer, context, extensionFunctions);
+            }
+
+            return;
+        }   
+
+        /****************************************************************************/
+        private void TransformObject(object input, IStreamFactory output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {
+            using(var writer = new JsonMultiStreamWriter(output))
+            { 
+                TransformObject(input, writer, context, extensionFunctions);
+            }
+        }
+
+        /****************************************************************************/
+        private void TransformStream(Stream input, IStreamFactory output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
+        {           
+            using(var writer = new JsonMultiStreamWriter(output))
+            { 
+                Transform(input, writer, context, extensionFunctions);
+            }
+        }              
+
+        /****************************************************************************/
         private void Transform(Stream data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
             using var parser = new Json.Parser(new JsonModelBuilder());
@@ -250,7 +290,7 @@ namespace JTran
             if(!_outputArray)
                 output.StartObject();
 
-                var t = data.GetType().FullName;
+            var t = data.GetType().FullName;
 
             this.Evaluate(output, newContext, f=> f());
 
@@ -258,7 +298,7 @@ namespace JTran
                 output.EndObject();
     
             return;
-        }        
+        }            
 
         /****************************************************************************/
         private static bool IsExplicitParam(IReadOnlyList<bool> isExplicitParam, int index)

@@ -215,19 +215,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("1:48:52.0000", json!["Time"]!.ToString());
         }
 
-        /*[TestMethod]
-        public void Transformer_Transform_removeany_Succeeds()
-        {
-            var transformer = new JTran.Transformer(_removeany, null);
-            var result      = transformer.Transform(_removeanyData);
-   
-            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
-
-            var json = JObject.Parse(result);
-
-            Assert.AreEqual("5554561234", json["Phone"].ToString());
-        }*/
-
         private static readonly string _datetimeformat =
         "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";
 
@@ -246,7 +233,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -259,7 +246,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -272,7 +259,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -285,7 +272,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+            Assert.AreEqual("Camaro", json["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
         }
 
         #region Scope Symbol
@@ -326,7 +313,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("abc", json["MyProp"].ToString());
+            Assert.AreEqual("abc", json["MyProp"]!.ToString());
         }
 
         #region Template
@@ -641,7 +628,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)![0]!.ToString());
         }
 
         [TestMethod]
@@ -655,7 +642,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0]["Name"].ToString());
+            Assert.AreEqual("JohnSmith", (json!["Customers"] as JArray)![0]!["Name"]!.ToString());
         }
 
         [TestMethod]
@@ -669,7 +656,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
+            Assert.AreEqual("John", (json!["Customers"] as JArray)![0]!["Names"]![0]!.ToString());
         }
 
         [TestMethod]
@@ -683,7 +670,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+            Assert.AreEqual("JohnSmith", (json!["Customers"] as JArray)![0]!.ToString());
         }
 
         [TestMethod]
@@ -695,10 +682,11 @@ namespace JTran.UnitTests
    
             Assert.AreNotEqual(_transformArray2, _data1);
 
-            var json = JObject.Parse(result);
+            var json  = JObject.Parse(result);
+            var array = json["Customers"] as JArray;
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
-            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["Names"][1].ToString());
+            Assert.AreEqual("John",  array![0]!["Names"]![0]!.ToString());
+            Assert.AreEqual("Smith", array![0]!["Names"]![1]!.ToString());
         }
 
         [TestMethod]
@@ -711,9 +699,10 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformNamedArray, _data1);
 
             var json = JObject.Parse(result);
+            var array = json["Customers"] as JArray;
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["bob"][0].ToString());
-            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["bob"][1].ToString());
+            Assert.AreEqual("John",  array![0]!["bob"]![0]!.ToString());
+            Assert.AreEqual("Smith", array![0]!["bob"]![1]!.ToString());
         }
 
         private static readonly string _transformArrayRaw =
@@ -1000,6 +989,14 @@ namespace JTran.UnitTests
             'Cars': []
           }";
 
+       private static readonly string _transformPOCO =
+        @"{
+            'Make': '#(Make)',
+            'Model': '#(Model)',
+            'Year': '#(Year + 10)',
+            'Color': '#(Color)',
+          }";
+
        private static readonly string _transformArray2dim2 =
         @"{
             '#array(Cells)':
@@ -1166,7 +1163,33 @@ namespace JTran.UnitTests
         }
 
         #endregion
+
+        #region Transformer POCO
+
+        [TestMethod]
+        public void Transformer_Transform_POCO()
+        {
+            var transformer = new JTran.Transformer(_transformPOCO, new object[] { new ExtFunctions2() } );
+
+            using var output = new MemoryStream();
+            var input  = new Automobile { Make = "Chevy", Model = "Corvette", Year = 1956, Color = "Black"};
+            
+            transformer.Transform(input, output);
+
+            var result = output.ReadString();
+
+            Assert.AreNotEqual(_transformPOCO, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+            Assert.AreEqual("Chevy",    jobj["Make"]);
+            Assert.AreEqual("Corvette", jobj["Model"]);
+            Assert.AreEqual(1966,       jobj["Year"]);
+        }
         
+        #endregion
+
         #region Private 
 
         private class ExtFunctions
@@ -1570,74 +1593,6 @@ namespace JTran.UnitTests
                     Make:     'Dodge',
                     Model:    'Charger',  
                     Color:    'Black'
-                }
-            ]
-        }";
-
-        private static readonly string _dataNested = 
-        @"{
-            Owner:           'Bob Smith',   
-            Automobiles:
-            [
-                {
-                    Make:     'Chevy',
-                    Model:    'Camaro',  
-                    Color:    'Green',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Mendez'
-                        },
-                        {   
-                            FirstName:  'Shirley',
-                            LastName:   'Jones'
-                        },
-                        {   
-                            FirstName:  'Jackie',
-                            LastName:   'Chan'
-                        }
-                    ]
-                },
-                {
-                    Make:     'Pontiac',
-                    Model:    'Firebird',  
-                    Color:    'Blue',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Jackie',
-                            LastName:   'Mendez'
-                        },
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Jones'
-                        },
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Chan'
-                        }
-                    ]
-                },
-                {
-                    Make:     'Dodge',
-                    Model:    'Charger',  
-                    Color:    'Black',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Robert',
-                            LastName:   'Kawasaki'
-                        },
-                        {   
-                            FirstName:  'Muriel',
-                            LastName:   'Hernandez'
-                        },
-                        {   
-                            FirstName:  'Sergei',
-                            LastName:   'Korpoff'
-                        }
-                    ]
                 }
             ]
         }";

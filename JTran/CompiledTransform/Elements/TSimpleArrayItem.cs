@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 using JTran.Common;
 
@@ -19,7 +19,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        public override void Evaluate(IJsonWriter writer, ExpressionContext context, Action<Action> wrap)
         {
             var value = _val.Evaluate(context);
 
@@ -27,14 +27,14 @@ namespace JTran
             {
                 if(list.Any())
                 { 
-                    output.StartChild(); 
+                    writer.StartChild(); 
 
-                    wrap( ()=> output.WriteList(list));
-                    output.EndChild();
+                    wrap( ()=> writer.WriteList(list));
+                    writer.EndChild();
                 }
             }
             else
-                wrap( ()=> output.WriteSimpleArrayItem(value));
+                wrap( ()=> writer.WriteSimpleArrayItem(value));
         }
     } 
 }
