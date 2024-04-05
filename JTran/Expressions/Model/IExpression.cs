@@ -34,8 +34,8 @@ namespace JTran.Expressions
     /*****************************************************************************/
     public interface IExpression
     {
-        object Evaluate(ExpressionContext context);
-        bool   EvaluateToBool(ExpressionContext context);
+        object Evaluate(ExpressionContext? context);
+        bool   EvaluateToBool(ExpressionContext? context);
         bool   IsConditional(ExpressionContext context);
     }
 
@@ -410,8 +410,8 @@ namespace JTran.Expressions
     /*****************************************************************************/
     public interface IOperator
     {
-        object Evaluate(IExpression left, IExpression right, ExpressionContext context);
-        bool   EvaluateToBool(IExpression left, IExpression right, ExpressionContext context);
+        object Evaluate(IExpression left, IExpression right, ExpressionContext? context);
+        bool   EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context);
         int    Precedence { get; }
     }
 
@@ -419,26 +419,26 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class ComplexExpression : IExpression
     {
-        public IExpression Left         { get; set; }
-        public IOperator   Operator     { get; set; }
-        public IExpression Right        { get; set; }
+        public IExpression? Left         { get; set; }
+        public IOperator?   Operator     { get; set; }
+        public IExpression? Right        { get; set; }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(this.Operator == null)
-                return this.Left.Evaluate(context);
+                return this.Left!.Evaluate(context);
 
-            return this.Operator.Evaluate(this.Left, this.Right, context);
+            return this.Operator.Evaluate(this.Left!, this.Right!, context);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             if(this.Operator == null)
                 return this.Left.EvaluateToBool(context);
 
-            return this.Operator.EvaluateToBool(this.Left, this.Right, context);
+            return this.Operator.EvaluateToBool(this.Left!, this.Right!, context);
         }
                                 
         /*****************************************************************************/

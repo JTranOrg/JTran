@@ -47,7 +47,7 @@ namespace JTran
         /****************************************************************************/
         internal TCallTemplate(ICharacterSpan name) 
         {
-            _templateName = name.Substring("#calltemplate(".Length).ToString().ReplaceEnding(")", "");
+            _templateName = name.Substring("#calltemplate(".Length).ToString()!.ReplaceEnding(")", "");
         }
 
         /****************************************************************************/

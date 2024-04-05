@@ -188,7 +188,7 @@ namespace JTran.Expressions
                 last = expr;
             }
 
-            return CreateExpression(leftExpr, op, rightExpr);
+            return CreateExpression(leftExpr!, op!, rightExpr!);
         }
 
         #region Private

@@ -116,7 +116,7 @@ namespace JTran
                     
                 var templateName = sval.SubstringBefore('(', 1);
                 var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString(), true); 
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName!.ToString()!.ToLower() + "," + theRest.ToString(), true); 
 
                 // Will do exception on evaluation if no template found
                 return new TCallTemplateProperty(parm, lineNumber);

@@ -692,9 +692,9 @@ namespace JTran.UnitTests
 
             var list = ((IEnumerable<object>)result).ToList();
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual(1, int.Parse(list?[0]?.ToString()));
-            Assert.AreEqual(2, int.Parse(list?[1]?.ToString()));
-            Assert.AreEqual(3, int.Parse(list?[2]?.ToString()));
+            Assert.AreEqual(1, int.Parse(list?[0]?.ToString() ?? "0"));
+            Assert.AreEqual(2, int.Parse(list?[1]?.ToString() ?? "0"));
+            Assert.AreEqual(3, int.Parse(list?[2]?.ToString() ?? "0"));
         }
 
         [TestMethod]
@@ -759,7 +759,7 @@ namespace JTran.UnitTests
 
             var result = expression.Evaluate(context);
 
-            Assert.AreEqual(21m, decimal.Parse(result.ToString()));
+            Assert.AreEqual(21m, decimal.Parse(result!.ToString()!));
         }
 
         [TestMethod]
@@ -1010,7 +1010,7 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(1, 5)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>)!.Select( i=> decimal.Parse(i?.ToString() ?? "0")));
    
             Assert.AreEqual(1m, list[0]);
             Assert.AreEqual(2m, list[1]);
@@ -1027,7 +1027,7 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(2, 10, 2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>)!.Select( i=> decimal.Parse(i?.ToString() ?? "0")));
    
             Assert.AreEqual(5,  list.Count);
             Assert.AreEqual(2m, list[0]);
@@ -1045,7 +1045,7 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence(10, 2, -2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>)!.Select( i=> decimal.Parse(i?.ToString() ?? "0")));
    
             Assert.AreEqual(5,  list.Count);
             Assert.AreEqual(10m, list[0]);
@@ -1063,7 +1063,7 @@ namespace JTran.UnitTests
             var tokens     = parser.Parse("sequence('bob', 2, -2)");
             var expression = compiler.Compile(tokens);
             var context    = new ExpressionContext(CreateTestData(new {Year = 2010} ), extensionFunctions: Transformer.CompileFunctions(null));
-            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>).Select( i=> decimal.Parse(i.ToString())));
+            var list       = new List<decimal>((expression.Evaluate(context) as IList<object>)!.Select( i=> decimal.Parse(i?.ToString() ?? "0")));
    
             Assert.AreEqual(0,  list.Count);
         }
@@ -1523,14 +1523,14 @@ namespace JTran.UnitTests
 
         private class Automobile
         {
-            public string       Make    { get; set; }
-            public string       Model   { get; set; }
+            public string       Make    { get; set; } = "";
+            public string       Model   { get; set; } = "";
             public List<Ticket> Tickets { get; set; } = new List<Ticket>();
         }
 
         private class Ticket
         {
-            public string  Location  { get; set; }
+            public string  Location  { get; set; } = "";
             public decimal Amount    { get; set; }
         }
 

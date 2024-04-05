@@ -58,7 +58,7 @@ namespace JTran.Expressions
             if(data == null)
                 return "";
 
-            var sdate = data.ToString();
+            var sdate = data.ToString()!;
 
             if(!sdate.TryParseDateTime(out DateTime dtValue))
                 return sdate;
@@ -209,7 +209,7 @@ namespace JTran.Expressions
             if(data == null)
                 return "";
 
-            var sdate = data.ToString();
+            var sdate = data.ToString()!;
 
             if(!sdate.TryParseDateTime(out DateTime dtValue))
                 return sdate;
@@ -223,7 +223,7 @@ namespace JTran.Expressions
             if(data == null)
                 return 0;
 
-            if(!data.ToString().TryParseDateTime(out DateTime dtValue))
+            if(!data.ToString()!.TryParseDateTime(out DateTime dtValue))
                 return 0;
 
             if(zeroIfMin && dtValue == DateTime.MinValue)

@@ -41,7 +41,7 @@ namespace JTran.Expressions
         public abstract bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context);
 
         /*****************************************************************************/
-        protected int CompareTo(IExpression left, IExpression right, ExpressionContext context)
+        protected int CompareTo(IExpression left, IExpression right, ExpressionContext? context)
         {
             var leftVal  = left.Evaluate(context);
             var rightVal = right.Evaluate(context);
@@ -57,7 +57,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.GreaterThanOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) > 0;
         }    
@@ -70,7 +70,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.GreaterThanEqualOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) >= 0;
         }    
@@ -83,7 +83,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.LessThanOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) < 0;
         }    
@@ -96,7 +96,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.LessThanEqualOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) <= 0;
         }    

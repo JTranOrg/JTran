@@ -32,7 +32,7 @@ namespace JTran.UnitTests
         {
             var expression = Compile("reverse(Cars)");
             var context    = CreateContext(new { Cars = new List<object> { new { Model = "Chevy", SaleAmount = 1200M }, new { Model = "Pontiac", SaleAmount = 2000M},  new { Model = "Cadillac", SaleAmount = 4000M} }}  );
-            var result     = (expression.Evaluate(context) as IEnumerable<object>).ToList();
+            var result     = (expression.Evaluate(context) as IEnumerable<object>)!.ToList();
    
             Assert.AreEqual("Cadillac", (result[0] as JsonObject)!["Model"].ToString());
             Assert.AreEqual("Pontiac",  (result[1] as JsonObject)!["Model"].ToString());

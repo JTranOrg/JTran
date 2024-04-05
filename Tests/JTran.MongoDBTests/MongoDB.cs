@@ -20,7 +20,7 @@ namespace JTran.MongoDBTests
             var input        = db.GetRepositoryReader<Guid, Person>("persons");
             var enm          = input.AsEnumerable<Person>();
             
-            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name = firstName }).ToDictionary() } );
+            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name1 = firstName, Name2 = "" }).ToDictionary() } );
         }
 
         [TestMethod]

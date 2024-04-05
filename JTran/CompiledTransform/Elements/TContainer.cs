@@ -208,7 +208,7 @@ namespace JTran
                 
                 if(_include.Equals(searchStr))
                 { 
-                    this.CompiledTransform.LoadInclude(child.ToString(), this, lineNumber);
+                    this.CompiledTransform!.LoadInclude(child!.ToString()!, this, lineNumber);
 
                     return null;
                 }
@@ -220,7 +220,7 @@ namespace JTran
                     return new TVariable(name, child, lineNumber);
 
                 if(_message.Equals(searchStr))
-                    return new TMessage(child as ICharacterSpan, lineNumber);
+                    return new TMessage((child as ICharacterSpan)!, lineNumber);
 
                 if(_throw.Equals(searchStr))
                     return new TThrow(name, child, lineNumber);

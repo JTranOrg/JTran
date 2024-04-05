@@ -10,7 +10,7 @@ namespace JTran
     /****************************************************************************/
     internal class TThrow: TToken
     {
-        private IExpression _code;
+        private IExpression? _code;
         private IValue _message;
 
         /****************************************************************************/
@@ -29,7 +29,7 @@ namespace JTran
             var msg = _message.Evaluate(context)?.ToString() ?? "";
 
             if(_code != null)
-                throw new Transformer.UserError(_code.Evaluate(context)!.ToString(), msg);
+                throw new Transformer.UserError(_code!.Evaluate(context)!.ToString()!, msg);
 
             throw new Transformer.UserError(msg);
         }
@@ -91,7 +91,7 @@ namespace JTran
     /****************************************************************************/
     internal class TCatch : TContainer
     {
-        private readonly IExpression _expression;
+        private readonly IExpression? _expression;
 
         /****************************************************************************/
         internal TCatch(ICharacterSpan name) 

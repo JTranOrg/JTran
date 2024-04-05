@@ -42,7 +42,7 @@ namespace JTran
         void WriteSimpleArrayItem(object item);
         void WriteItem(object item, bool newContainer = true);
         void WriteProperties(object item);
-        void WriteProperty(ICharacterSpan name, object val, bool forceString = false);
+        void WriteProperty(ICharacterSpan? name, object val, bool forceString = false);
         void WriteList(IEnumerable<object> list);
 
         bool InObject { get; }
@@ -226,7 +226,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void WriteProperty(ICharacterSpan name, object val, bool forceString = false)
+        public void WriteProperty(ICharacterSpan? name, object val, bool forceString = false)
         {
             StartChild();
 

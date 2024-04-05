@@ -30,7 +30,7 @@ namespace JTran
             if(this.Name != null)
                 arrayName = this.Name.Evaluate(context);
 
-            var cspan = arrayName.AsCharacterSpan();
+            var cspan = arrayName?.AsCharacterSpan();
 
             if(!(cspan?.IsNullOrWhiteSpace() ?? true))
                 return cspan;

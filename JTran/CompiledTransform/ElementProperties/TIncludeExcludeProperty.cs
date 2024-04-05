@@ -34,10 +34,10 @@ namespace JTran
                                .Select( p=> {
                                                 var t = p.Evaluate(null) as Token; 
 
-                                                return CharacterSpan.FromString(t.Value, true);
+                                                return CharacterSpan.FromString(t!.Value, true);
                                             }
                                       )
-                               .ToDictionary( k=> k!, v=> v);
+                               .ToDictionary( k=> k!, v=> (ICharacterSpan?)v);
         }
 
         /****************************************************************************/

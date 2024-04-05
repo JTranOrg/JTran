@@ -349,7 +349,7 @@ namespace JTran.Common
             {
                 var buffer = new char[source.Length];
 
-                Array.Copy(cspan._source, cspan._offset, buffer, 0, source.Length);
+                Array.Copy(cspan._source!, cspan._offset, buffer, 0, source.Length);
 
                 return new CharacterSpan(buffer, 0, source.Length, source.HasEscapeCharacters);
             }
@@ -563,12 +563,12 @@ namespace JTran.Common
                     buffer[i] = padChar;
               
                 if(_length > 0)
-                    Array.Copy(_source, _offset, buffer, length - this.Length, _length);
+                    Array.Copy(_source!, _offset, buffer, length - this.Length, _length);
             }
             else
             {
                 if(_length > 0)
-                    Array.Copy(_source, _offset, buffer, 0, _length);
+                    Array.Copy(_source!, _offset, buffer, 0, _length);
 
                 for(var i = _length; i < length; ++i)
                     buffer[i] = padChar;
@@ -711,7 +711,7 @@ namespace JTran.Common
                 var dst = _offset + index;
                 var len = _length - index - removeLen;
 
-                Array.Copy(_source, src, _source, dst, len);
+                Array.Copy(_source!, src, _source!, dst, len);
 
                 start += (index - start);
                 _length -= removeLen;
@@ -807,7 +807,7 @@ namespace JTran.Common
         public virtual void CopyTo(char[] buffer, int offset, int length = -1)
         {
             if(_length != 0)
-                Array.Copy(_source, _offset, buffer, offset, length == -1 ? _length : length);
+                Array.Copy(_source!, _offset, buffer, offset, length == -1 ? _length : length);
         }
 
         /****************************************************************************/
@@ -1091,7 +1091,7 @@ namespace JTran.Common
             buffer = new char[(int)((this.Length) / 16) * 16 + 16];
 
             if(index > 0)
-                Array.Copy(_source, _offset, buffer, 0, index);
+                Array.Copy(_source!, _offset, buffer, 0, index);
 
             bufferIndex = index == -1 ? 0 : index;
 

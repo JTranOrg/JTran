@@ -127,7 +127,7 @@ namespace JTran
             }
 
             /****************************************************************************/
-            public string ErrorCode { get; }
+            public string ErrorCode { get; } = "";
         }
 
         #endregion

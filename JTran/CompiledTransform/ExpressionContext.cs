@@ -37,7 +37,7 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly IDictionary<ICharacterSpan, object>        _variables;
+        private readonly IDictionary<ICharacterSpan, object?>      _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
 
@@ -67,7 +67,7 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal ExpressionContext(object data, 
+        internal ExpressionContext(object? data, 
                                    ExpressionContext              parentContext,
                                    IDictionary<string, TTemplate> templates = null,
                                    IDictionary<string, TFunction> functions = null)

@@ -44,7 +44,7 @@ namespace JTran.Transform.UnitTests
             var json  = await Test(transform, data, new { Fred = "Fred", Dude = "Jabberwocky" } );
             var array = json["Persons"]  as JArray;
 
-            Assert.AreEqual(5,              array.Count());
+            Assert.AreEqual(5,              array!.Count());
             Assert.AreEqual("JohnSmith",    array[0]["Name"]);
             Assert.AreEqual("King Jalusa",  array[4]["Name"]);
         }

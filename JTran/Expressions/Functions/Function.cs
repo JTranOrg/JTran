@@ -83,7 +83,7 @@ namespace JTran.Expressions
         };
 
         /*****************************************************************************/
-        internal static IList<Function> Extract(object container)
+        internal static IList<Function> Extract(object? container)
         {
             if(container == null)
                 return null;
@@ -124,7 +124,7 @@ namespace JTran.Expressions
             {
                 if(Attribute.IsDefined(parm, typeof(ParamArrayAttribute)))
                 {
-                    var type = parm.ParameterType.GetElementType();
+                    var type = parm.ParameterType.GetElementType()!;
 
                     paramsType = type;
                     indexOfParams = soFar;
