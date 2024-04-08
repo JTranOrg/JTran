@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Includes\include1.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Includes\include1.jtran" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
@@ -15,6 +23,11 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
     <PackageReference Include="coverlet.collector" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JTran.Common\JTran.Common.csproj" />
+    <ProjectReference Include="..\..\JTran.Console\JTran.Console.csproj" />
   </ItemGroup>
 
 </Project>

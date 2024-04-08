@@ -107,15 +107,18 @@ namespace JTran
 
                     if(repo is IDocumentRepository2 repo2)
                     { 
-                        using var doc2 = repo2.GetDocumentStream(docName);
+                        using var doc = repo2.GetDocumentStream(docName);
+                        var result = doc.ToJsonObject();
 
-                        return doc2.ToJsonObject();
+                        return result;
                     }
+                    else
+                    { 
+                        var doc    = repo.GetDocument(docName);
+                        var result = doc.ToJsonObject();
 
-                    var doc = repo.GetDocument(docName);
-
-                    return doc.ToJsonObject();
-
+                        return result;
+                    }
                 }
                 catch
                 {

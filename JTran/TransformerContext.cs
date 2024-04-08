@@ -26,9 +26,9 @@ namespace JTran
     /****************************************************************************/
     public class TransformerContext
     {
-        public IDictionary<string, object>              Arguments             { get; set; }
-        public IDictionary<string, IDocumentRepository> DocumentRepositories  { get; set; } = new Dictionary<string, IDocumentRepository>();
-        public bool AllowDeferredLoading { get; set; } = true;
+        public IDictionary<string, object>?              Arguments             { get; set; }
+        public IDictionary<string, IDocumentRepository>? DocumentRepositories  { get; set; } = new Dictionary<string, IDocumentRepository>();
+        public bool                                      AllowDeferredLoading  { get; set; } = true;
     }
 
     /****************************************************************************/

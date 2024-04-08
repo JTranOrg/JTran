@@ -7,6 +7,9 @@ using JTranProject = JTran.Project.Project;
 
 using JTran.Common;
 using JTran.Project;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("JTran.Console.UnitTests")]
 
 namespace JTran.Console
 {
@@ -15,7 +18,7 @@ namespace JTran.Console
     public class Program
     {
         /****************************************************************************/
-        static void Main(string[] args)
+        internal static void Main(string[] args)
         {
             if(args.Length == 0 || args[0] == "/help" || args[0] == "-help")
                 ShowHelp();
@@ -27,11 +30,11 @@ namespace JTran.Console
                 var output        = "";
                 var includes      = "";
                 var documents     = "";
-                JTranProject project   = null;
+                JTranProject? project   = null;
                 var projectPath   = "";
 
                 // Set up all the paths
-                while((index+1) < args.Length)
+                while(index < args.Length-1)
                 {
                     var arg = args[index];
 

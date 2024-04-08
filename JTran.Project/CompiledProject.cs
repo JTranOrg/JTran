@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -27,8 +28,8 @@ namespace JTran.Project
             compiled.Transform  = File.ReadAllText(project.TransformPath);
             compiled.SourcePath = project.SourcePath;
 
-            compiled.Documents  = LoadFiles(project.DocumentPaths, onError);
-            compiled.Includes   = LoadFiles(project.IncludePaths, onError);
+            compiled.Documents  = project.DocumentPaths;
+            compiled.Includes   = LoadFiles(project.IncludePaths, onError, true);
 
             if(project.ExtensionPaths != null)
             { 
@@ -59,7 +60,19 @@ namespace JTran.Project
         public void Run(Stream output)
         {
              var transformer = new Transformer(this.Transform, this.Extensions, this.Includes);
-             var context = new TransformerContext();
+             IDictionary<string, IDocumentRepository>? docRepositories = null;
+
+             if(this.Documents != null && this.Documents.Any())
+             {
+                docRepositories = new Dictionary<string, IDocumentRepository>();
+
+                foreach(var kv in this.Documents) 
+                {
+                    docRepositories.Add(kv.Key, new FileDocumentRepository(kv.Value));
+                }
+             }
+
+             var context = new TransformerContext { DocumentRepositories = docRepositories };
 
              using var source = File.OpenRead(this.SourcePath);
 
@@ -81,7 +94,7 @@ namespace JTran.Project
         #region Private
 
         /****************************************************************************/
-        private static Dictionary<string, string> LoadFiles(Dictionary<string, string> paths, Action<Exception> onError)
+        private static Dictionary<string, string> LoadFiles(Dictionary<string, string> paths, Action<Exception> onError, bool loadWithExtension = false)
         {
             if(paths == null)
                 return null;
@@ -96,9 +109,19 @@ namespace JTran.Project
 
                     foreach(var file in files)
                     { 
-                        var data = File.ReadAllText(file);
+                        var data     = File.ReadAllText(file);
+                        var fileName = Path.GetFileNameWithoutExtension(file);
+                        var key      = string.IsNullOrWhiteSpace(kv.Key) ? fileName : $"{kv.Key}.{fileName}";
 
-                        result.Add(kv.Key + "." + Path.GetFileNameWithoutExtension(file), data);
+                        result.Add(key, data);
+
+                        if(loadWithExtension)
+                        { 
+                            fileName = Path.GetFileName(file);
+                            key      = string.IsNullOrWhiteSpace(kv.Key) ? fileName : $"{kv.Key}.{fileName}";
+
+                            result.Add(key, data);
+                        }
                     }
                 }
                 catch(Exception ex)

@@ -27,6 +27,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using JTran.Common;
+using JTran.Expressions;
+using JTran.Extensions;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
 
@@ -171,8 +173,42 @@ namespace JTran.Json
             return result;
         }
 
+        /****************************************************************************/
+        internal static object ToDictionary(this JsonObject obj, Type t)
+        {
+            if(t.Name == "IDictionary")
+                t = typeof(Dictionary<string, object>);
+
+            var dict = Activator.CreateInstance(t);
+            var valType = typeof(object);
+            var keyType = typeof(object);
+            MethodInfo? add;
+
+            if(t.IsGenericType)
+                add = t.GetMethod("Add", new[] { keyType = t.GenericTypeArguments[0], valType = t.GenericTypeArguments[1] });
+            else
+                add = t.GetMethod("Add", new[] { typeof(object), typeof(object) });
+
+            foreach(var kv in obj) 
+            {
+                try
+                {
+                    var val = ToValue(kv.Value, valType);
+
+                    add.Invoke(dict, new object[] { Convert.ChangeType(kv.Key.ToString(), keyType), val });
+                }
+                catch(Exception ex)
+                {
+                    var ex2 = ex;
+                }
+            }
+
+            return dict;
+        }
+
         #region Private 
       
+        
         /****************************************************************************/
         private static object ToValue(object val, Type type)
         {
@@ -182,8 +218,16 @@ namespace JTran.Json
             if(val.GetType() == type)
                 return val;
 
+            if(val is ICharacterSpan cspan && (type == typeof(string) || type == typeof(object)))
+                return cspan.ToString();
+
             if(val is JsonObject exp)
+            { 
+                if(type.FullName.Contains("Dictionary"))
+                    return exp.ToDictionary(type);
+
                 return exp.ToObject(type);
+            }
 
             if(val is IEnumerable<object> array)
             { 
@@ -208,7 +252,7 @@ namespace JTran.Json
                 return list;
             }
 
-            if(type.Name == "String")
+            if(type.Name.ToLower() == "string")
                 return val.ToString();
 
             return Convert.ChangeType(val, type);
