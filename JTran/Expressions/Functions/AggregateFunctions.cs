@@ -292,7 +292,7 @@ namespace JTran.Expressions
             if(val is null)
                 return 0m;
 
-            if(!(val is ICharacterSpan) && !(val is string))
+            if(!(val is ICharacterSpan) && val is not string)
             {
                 if(val is IEnumerable<object> list)
                 { 

@@ -1843,8 +1843,8 @@ namespace JTran.UnitTests
 
         public class CustomerContainer
         {
-            public string SpecialCustomer     { get; set; } = "";
-            public List<Customer> Customers   { get; set; }
+            public string          SpecialCustomer     { get; set; } = "";
+            public List<Customer>? Customers          { get; set; }
         }     
         
         public class Driver
@@ -1852,7 +1852,7 @@ namespace JTran.UnitTests
             public string       FieldName   { get; set; } = "";
             public string       FirstName   { get; set; } = "";
             public string       LastName    { get; set; } = "";
-            public Automobile2  Car         { get; set; }
+            public Automobile2?  Car         { get; set; }
         }
         
         public class Automobile2

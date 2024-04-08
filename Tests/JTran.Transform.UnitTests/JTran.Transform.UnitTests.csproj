@@ -12,6 +12,14 @@
 
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS8602;CS8604</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS8602;CS8604</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Sample Data\Arrays\arrayitem.json" />
     <None Remove="Sample Data\Arrays\array_source.json" />

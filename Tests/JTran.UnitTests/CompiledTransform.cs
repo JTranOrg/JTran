@@ -1272,7 +1272,7 @@ namespace JTran.UnitTests
 
         private class Platoon
         {
-            public Soldier PlatoonSergeant { get; set; }
+            public Soldier? PlatoonSergeant { get; set; }
         }
 
         private class Soldier
@@ -1457,12 +1457,12 @@ namespace JTran.UnitTests
 
         public class DriverContainer
         {
-            public Driver  Driver         { get; set; }
+            public Driver?  Driver         { get; set; }
         }
 
         public class DriverContainer2
         {
-            public Driver2  Driver         { get; set; }
+            public Driver2?  Driver         { get; set; }
         }
 
         public class Driver
@@ -1470,7 +1470,7 @@ namespace JTran.UnitTests
             public string       FieldName   { get; set; } = "";
             public string       FirstName   { get; set; } = "";
             public string       LastName    { get; set; } = "";
-            public Automobile2  Car         { get; set; }
+            public Automobile2? Car         { get; set; }
         }
 
         public class Driver2
@@ -1478,7 +1478,7 @@ namespace JTran.UnitTests
             public string             FirstName        { get; set; } = "";
             public string             LastName         { get; set; } = "";
             public string             Engine           { get; set; } = "";
-            public List<Automobile2>  Vehicles         { get; set; }
+            public List<Automobile2>? Vehicles         { get; set; }
             public string             OriginalDriver   { get; set; } = "";
             public string             Mechanics        { get; set; } = "";
             public string             TrackNo          { get; set; } = "";
@@ -1490,12 +1490,12 @@ namespace JTran.UnitTests
 
         public class Automobile
         {
-            public string        Make     { get; set; } = "";
-            public string        Model    { get; set; } = "";
-            public int           Year     { get; set; } 
-            public string        Color    { get; set; } = "";
-            public Engine        Engine   { get; set; }
-            public List<Service> Services { get; set; }
+            public string           Make     { get; set; } = "";
+            public string           Model    { get; set; } = "";
+            public int              Year     { get; set; } 
+            public string           Color    { get; set; } = "";
+            public Engine?          Engine   { get; set; }
+            public List<Service>?   Services { get; set; }
         }
 
         public class Automobile2
@@ -1505,13 +1505,13 @@ namespace JTran.UnitTests
             public string        Model     { get; set; } = "";
             public int           Year      { get; set; }
             public string        Color     { get; set; } = "";
-            public Engine        Engine    { get; set; }
+            public Engine?       Engine    { get; set; }
             public int?          Index     { get; set; }
         }
 
         public class CarsContainer
         {
-           public List<Automobile3> Cars  { get; set; }
+           public List<Automobile3>? Cars  { get; set; }
         }
 
         public class Automobile3

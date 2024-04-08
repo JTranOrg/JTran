@@ -52,7 +52,7 @@ namespace JTran.UnitTests
         [TestMethod]
         public void AggregateFunctions_required2_Success()
         {
-            List<object> data = null;
+            List<object>? data = null;
             var expression = Compile("required(Cars, 'Cars is required')");
             var context    = CreateContext(new { Cars = data}  );
             var ex         = Assert.ThrowsException<Transformer.UserError>( ()=> expression.Evaluate(context));

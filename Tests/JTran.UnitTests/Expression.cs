@@ -20,7 +20,7 @@ namespace JTran.UnitTests
         [TestInitialize]
         public void Init()
         {
-            _context = new ExpressionContext(null, (ExpressionContext)null);
+            _context = new ExpressionContext(null, (ExpressionContext?)null);
         }
 
         [TestMethod]

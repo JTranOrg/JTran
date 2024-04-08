@@ -11,8 +11,8 @@ namespace JTran.UnitTests
     {
         public class Automobile
         {
-            public string Make  { get; set; }
-            public string Model { get; set; }
+            public string Make  { get; set; } = "";
+            public string Model { get; set; } = "";
         }
 
         [TestMethod]

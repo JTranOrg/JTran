@@ -51,7 +51,7 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables       = new Dictionary<ICharacterSpan, object>();
+            _variables       = new Dictionary<ICharacterSpan, object?>();
             _docRepositories = transformerContext?.DocumentRepositories;
             _parent          = null;
 
@@ -67,14 +67,14 @@ namespace JTran
         }
 
         /*****************************************************************************/
-        internal ExpressionContext(object? data, 
-                                   ExpressionContext              parentContext,
-                                   IDictionary<string, TTemplate> templates = null,
-                                   IDictionary<string, TFunction> functions = null)
+        internal ExpressionContext(object?                         data, 
+                                   ExpressionContext?              parentContext,
+                                   IDictionary<string, TTemplate>? templates = null,
+                                   IDictionary<string, TFunction>? functions = null)
         {
             this.Data = data;
 
-            _variables        = new Dictionary<ICharacterSpan, object>();
+            _variables        = new Dictionary<ICharacterSpan, object?>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;

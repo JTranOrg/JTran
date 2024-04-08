@@ -12,6 +12,14 @@
     <RootNamespace>JTran.UnitTests</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CS8602;CS8604</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS8602;CS8604</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="JsonParser\Samples\array_not_supported.json" />
     <None Remove="JsonParser\Samples\array_of_arrays.json" />

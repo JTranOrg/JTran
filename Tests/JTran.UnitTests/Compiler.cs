@@ -2,12 +2,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json.Linq;
 
-using JTran.Extensions;
 using JTran.Expressions;
 using JTran.Json;
 using JTranParser = JTran.Parser.ExpressionParser;
 using JTran.Common;
-using JTran.Parser;
 
 namespace JTran.UnitTests
 {
@@ -556,7 +554,7 @@ namespace JTran.UnitTests
             var parser     = new JTranParser();
             var compiler   = new Compiler();
             var expression = compiler.Compile(parser.Parse("Car.Engine.Cylinders"));
-            var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = (Automobile)null, Tires = new { Tread = .5 } }  } ));
+            var context    = new ExpressionContext(CreateTestData(new { Car = new { Engine = (Automobile?)null, Tires = new { Tread = .5 } }  } ));
    
             Assert.IsNotNull(expression);
             Assert.AreEqual(null, expression.Evaluate(context));
