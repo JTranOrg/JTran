@@ -134,6 +134,7 @@
     <None Remove="Test Transforms\Templates\after2.jtran" />
     <None Remove="Test Transforms\Templates\aselement.jtran" />
     <None Remove="Test Transforms\Templates\aselement2.jtran" />
+    <None Remove="Test Transforms\Variables\outputvariable.jtran" />
     <None Remove="Test Transforms\Variables\variable.jtran" />
     <None Remove="Test Transforms\Map\map.jtran" />
     <None Remove="Test Transforms\Map\map2.jtran" />
@@ -265,6 +266,7 @@
     <EmbeddedResource Include="Test Transforms\Templates\aselement2.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\aselement.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Variables\outputvariable.jtran" />
     <EmbeddedResource Include="Test Transforms\Variables\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map3.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map2.jtran" />

@@ -9,7 +9,6 @@
         "LastName":    "#(Surname)",
         "Age":         "#(Age)",
         "Address":     "#(Address)",
-        "City":        "#($cities[0])",
-        "Country":      "#($country)"
+        "City":        "#($cities[0])"
     }
 }

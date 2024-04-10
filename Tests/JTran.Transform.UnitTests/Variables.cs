@@ -20,5 +20,32 @@ namespace JTran.Transform.UnitTests
              Assert.AreEqual("Smith",         customers[0]["Surname"]!.ToString());
         }
 
+        [TestMethod]
+        [DataRow("outputvariable", "customers")]
+        public async Task OutputVariable_property(string transform, string data)
+        {
+            var context = new TransformerContext();
+            
+            await TransformerTest.Test("Variables." + transform, data, context: context);
+
+            Assert.AreEqual("Acme Widgets", context.OutputArguments["Company"]);
+        }
+
+        [TestMethod]
+        [DataRow("outputvariable", "customers")]
+        public async Task OutputVariable_property_wEvent(string transform, string data)
+        {
+            var company = "";
+            var context = new TransformerContext { OnOutputArgument = (k, v)=>
+            {
+                if(k == "Company")
+                    company = v.ToString();
+            }};
+            
+            await TransformerTest.Test("Variables." + transform, data, context: context);
+
+            Assert.AreEqual("Acme Widgets", context.OutputArguments["Company"]);
+            Assert.AreEqual("Acme Widgets", company);
+        }
     }
 }

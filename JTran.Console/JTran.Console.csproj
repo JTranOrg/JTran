@@ -7,6 +7,11 @@
     <Authors>jtranorg</Authors>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>jtrancmd</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

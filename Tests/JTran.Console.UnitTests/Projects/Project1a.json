@@ -1,8 +1,8 @@
 {
    "Name":              "Project1",            
-   "TransformPath":     "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Transforms\\Project1.jtran",    
+   "TransformPath":     "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Transforms\\Project1a.jtran",    
    "SourcePath":        "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Sources\\Project1.json",       
-   "DestinationPath":   "C:\\Development\\Testing\\JTran\\Console Tests\\Project.json",
+   "DestinationPath":   "C:\\Development\\Testing\\JTran\\Console Tests\\",
    "IncludePaths":    
    {
       "":                "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Includes" 

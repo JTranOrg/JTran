@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 using JTranProject = JTran.Project.Project;
 
 using JTran.Common;
 using JTran.Project;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Diagnostics;
 
 [assembly: InternalsVisibleTo("JTran.Console.UnitTests")]
 
@@ -18,7 +21,7 @@ namespace JTran.Console
     public class Program
     {
         /****************************************************************************/
-        internal static void Main(string[] args)
+        internal static async Task Main(string[] args)
         {
             if(args.Length == 0 || args[0] == "/help" || args[0] == "-help")
                 ShowHelp();
@@ -32,29 +35,36 @@ namespace JTran.Console
                 var documents     = "";
                 JTranProject? project   = null;
                 var projectPath   = "";
+                bool split        = false;
 
                 // Set up all the paths
-                while(index < args.Length-1)
+                while(index < args.Length)
                 {
                     var arg = args[index];
 
-                    if(arg == "/p" || arg == "-p")
-                        projectPath = args[++index];
+                    if(index < args.Length)
+                    { 
+                        if(arg == "/p" || arg == "-p")
+                            projectPath = args[++index];
 
-                    if(arg == "/t" || arg == "-t")
-                        transform = args[++index];
+                        if(arg == "/t" || arg == "-t")
+                            transform = args[++index];
 
-                    if(arg == "/s" || arg == "-s")
-                        source = args[++index];
+                        if(arg == "/s" || arg == "-s")
+                            source = args[++index];
 
-                    if(arg == "/o" || arg == "-o")
-                        output = args[++index];
+                        if(arg == "/o" || arg == "-o")
+                            output = args[++index];
 
-                    if(arg == "/i" || arg == "-i" || arg == "/include" || arg == "-include")
-                        includes = args[++index];
+                        if(arg == "/i" || arg == "-i" || arg == "/include" || arg == "-include")
+                            includes = args[++index];
 
-                    if(arg == "/d" || arg == "-d")
-                        documents = args[++index];
+                        if(arg == "/d" || arg == "-d")
+                            documents = args[++index];
+                    }
+
+                    if(arg == "/m" || arg == "-m")
+                        split = true;
 
                     ++index;
                 }
@@ -106,6 +116,9 @@ namespace JTran.Console
                 if(!string.IsNullOrWhiteSpace(includes))
                     project.IncludePaths.Add("", includes);
 
+                if(split)
+                    project.SplitOutput = true;
+
                 if(string.IsNullOrWhiteSpace(project.TransformPath))
                 { 
                     WriteError("No transform file specified.");
@@ -124,12 +137,13 @@ namespace JTran.Console
                     return;
                 }
 
-                TransformFiles(project);
+                await TransformFiles(project);
              }
         }
 
         #region Private 
 
+        /****************************************************************************/
         private static string NormalizePath(string path)
         {
             if(string.IsNullOrWhiteSpace(path))
@@ -144,6 +158,7 @@ namespace JTran.Console
             return Path.Combine(location, path);
         }
 
+        /****************************************************************************/
         private static Dictionary<string, string> NormalizePaths(Dictionary<string, string> paths)
         {
             foreach(var kv in paths)
@@ -153,7 +168,7 @@ namespace JTran.Console
         }
 
         /****************************************************************************/
-        private static void TransformFiles(JTranProject project)
+        private static async Task TransformFiles(JTranProject project)
         {        
             project.DestinationPath = NormalizePath(project.DestinationPath);
             project.SourcePath      = NormalizePath(project.SourcePath);
@@ -163,38 +178,38 @@ namespace JTran.Console
 
             try
             {
-                var compiledProj = CompiledProject.Load(project, (ex)=> System.Console.Write(ex.Message));
+                var compiledProj = await CompiledProject.Load(project, (ex)=> WriteError(ex.Message));
 
-                // Single file
-                if(!string.IsNullOrWhiteSpace(Path.GetExtension(project.SourcePath)))
+                // Single file (no wildcards)
+                if(!project.SourcePath.Contains("*") && !project.SourcePath.Contains("?"))
                 {
-                    using var output = File.OpenWrite(project.DestinationPath);
+                    System.Console.WriteLine($"Transforming file {project.SourcePath} to {project.DestinationPath}");
 
-                    compiledProj.Run(output);
+                    await compiledProj.Run();
 
                     return;
                 }
 
-                var sourceFiles = Directory.GetFiles(project.SourcePath);
+                // Get all the files that match the wildcard specification
+                var sourceFiles = Directory.GetFiles(Path.GetDirectoryName(project.SourcePath)!, Path.GetFileName(project.SourcePath));
 
                 System.Console.WriteLine($"{sourceFiles.Length} source files found");
 
                 if(sourceFiles.Length == 0)
                     return;
 
-                foreach(var sourceFile in sourceFiles)
+                await compiledProj.TransformFiles(sourceFiles, sourceFiles.Select( sourceFile=>
                 {
-                    var dest = project.DestinationPath;
+                    return project.DestinationPath;
 
-                    if(string.IsNullOrWhiteSpace(Path.GetExtension(dest)))
-                        dest = Path.Combine(dest, Path.GetFileName(sourceFile));
-
-                    compiledProj.TransformFile(sourceFile, dest);
-                }
+                }).ToArray(),
+                null,
+                (msg)=> System.Console.WriteLine(msg),
+                (msg)=> WriteError(msg));
             }
             catch(Exception ex2)
             {
-                System.Console.WriteLine(ex2.Message);
+                WriteError(ex2.Message);
                 return;
             }
         }
@@ -202,22 +217,25 @@ namespace JTran.Console
         /****************************************************************************/
         private static void ShowHelp()
         {
-            System.Console.WriteLine("/help -- Show this help screen");
+            System.Console.WriteLine("-help -- Show this help screen");
             System.Console.WriteLine("");
-            System.Console.WriteLine("/c -- Specify a config file");
-            System.Console.WriteLine("/t -- Specify a transform. Must point to a single file.");
-            System.Console.WriteLine("/s -- Specify a source document. Can include wildcards. Each source file will be transformed using the transform specified above.");
-            System.Console.WriteLine("/o -- Specify an output document.");
-            System.Console.WriteLine("/i -- Specify an include folder.");
-            System.Console.WriteLine("/include -- Specify an include folder.");
-            System.Console.WriteLine("/d -- Specify a documents folder.");
+            System.Console.WriteLine("-p -- Specify a project file");
+            System.Console.WriteLine("-t -- Specify a transform. Must point to a single file.");
+            System.Console.WriteLine("-s -- Specify a source document. Can include wildcards. Each source file will be transformed using the transform specified above.");
+            System.Console.WriteLine("-o -- Specify an output document or folder.");
+            System.Console.WriteLine("-i -- Specify an include folder.");
+            System.Console.WriteLine("-include -- Specify an include folder.");
+            System.Console.WriteLine("-d -- Specify a documents folder.");
+            System.Console.WriteLine("-m -- Specify multiple (split) output.");
         }
 
+        /****************************************************************************/
         private static void WriteError(string text)
         {
-            System.Console.WriteLine(text, ConsoleColor.Red);
+            WriteLine(text, ConsoleColor.Red);
         }
 
+        /****************************************************************************/
         private static void WriteLine(string text, ConsoleColor clr)
         {
             var defaultColor = System.Console.ForegroundColor;

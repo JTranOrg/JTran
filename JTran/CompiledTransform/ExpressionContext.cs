@@ -40,6 +40,7 @@ namespace JTran
         private readonly IDictionary<ICharacterSpan, object?>      _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
+        private readonly TransformerContext?                       _transformerContext;
 
         /*****************************************************************************/
         internal ExpressionContext(object?                         data, 
@@ -51,13 +52,14 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables       = new Dictionary<ICharacterSpan, object?>();
-            _docRepositories = transformerContext?.DocumentRepositories;
-            _parent          = null;
+            _variables          = new Dictionary<ICharacterSpan, object?>();
+            _docRepositories    = transformerContext?.DocumentRepositories;
+            _parent             = null;
+            _transformerContext = transformerContext;
 
-            this.Name        = name;
-            this.Templates   = templates;
-            this.Functions   = functions;
+            this.Name           = name;
+            this.Templates      = templates;
+            this.Functions      = functions;
 
             this.ExtensionFunctions = extensionFunctions;
 
@@ -187,6 +189,15 @@ namespace JTran
                 throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");
 
             _variables.Add(name, val);
+        }
+
+        /*****************************************************************************/
+        internal void SetOutputVariable(ICharacterSpan name, object val)
+        {
+            if(_parent != null)
+                _parent.SetOutputVariable(name, val);
+            else if(_transformerContext != null)
+                _transformerContext.SetOutputArgument(name.ToString(), val);
         }
 
         private static readonly ICharacterSpan _scopeSymbol = CharacterSpan.FromString("@");

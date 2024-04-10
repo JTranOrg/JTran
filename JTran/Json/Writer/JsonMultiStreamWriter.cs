@@ -64,7 +64,8 @@ namespace JTran
                 _current = new JsonStreamWriter(_currentStream);
             }
 
-            _current!.StartObject();        }
+            _current!.StartObject();       
+        }
 
         /****************************************************************************/
         public void EndObject()

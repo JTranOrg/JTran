@@ -55,7 +55,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return false;
         }
@@ -80,7 +80,7 @@ namespace JTran.Expressions
             _value = val;
         }
 
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return _value;
         }
@@ -90,12 +90,12 @@ namespace JTran.Expressions
             return _value?.ToString();
         }
 
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return EvaluateToBool(_value, context);
         }
 
-        internal static bool EvaluateToBool(object? value, ExpressionContext context)
+        internal static bool EvaluateToBool(object? value, ExpressionContext? context)
         {
             if(value is bool bval)
                 return bval;  
@@ -127,7 +127,7 @@ namespace JTran.Expressions
             _value = val;
         }
 
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(Math.Floor(_value) == _value)
                 return Convert.ToInt64(_value);
@@ -159,13 +159,13 @@ namespace JTran.Expressions
         public ICharacterSpan Name { get; }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return context.GetDataValue(this.Name);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             object val = this.Evaluate(context);
 
@@ -231,7 +231,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             var     numParts = _parts.Count;
             var     data     = context.Data;
@@ -285,7 +285,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }
@@ -310,7 +310,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(context.Data == null)
                 return null;
@@ -355,7 +355,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }
@@ -386,13 +386,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return context.GetVariable(_name, context);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             object val = context.GetVariable(_name, context);
 

@@ -1,6 +1,7 @@
 {
-    "#include":           "include1.jtran",
-    "#variable(cities)":  "#(document(docs, doc1).cities)",
+    "#include":                  "include1.jtran",
+    "#variable(cities)":         "#(document(docs, doc1).cities)",
+    "#outputvariable(FileName)": "#($DestinationPath + 'oldcustomer.json')",
 
     "#foreach(@, [])":
     {

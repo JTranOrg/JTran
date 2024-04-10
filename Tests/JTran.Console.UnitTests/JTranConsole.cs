@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,29 +14,36 @@ namespace JTran.Console.UnitTests
     {
         [TestMethod]
         [DataRow("Project1")]
-        public void JTranConsole(string projectName)
+        [DataRow("Project1a")]
+        public async Task JTranConsole_singlefile(string projectName)
         {
             var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
             
-            JTran.Console.Program.Main(new string[] {"-p", projectPath});
+            await JTran.Console.Program.Main(new string[] {"-p", projectPath});
 
             Assert.IsTrue(true);
         } 
-        
+
         [TestMethod]
-        public void JTranConsole_test_something()
+        [DataRow("Project2")]
+        public async Task JTranConsole_wildcards(string projectName)
         {
-            var project = new JTran.Project.Project
-            {
-                DocumentPaths = new System.Collections.Generic.Dictionary<string, string>
-                {
-                    { "docs", "doc1" }
-                }
-            };
+            var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
+            
+            await JTran.Console.Program.Main(new string[] {"-p", projectPath});
 
-            var json = JsonConvert.SerializeObject(project);
+            Assert.IsTrue(true);
+        } 
 
-            Assert.IsNotNull(json);
-        }
+        [TestMethod]
+        [DataRow("Project3")]
+        public async Task JTranConsole_wildcards_nofilename(string projectName)
+        {
+            var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
+            
+            await JTran.Console.Program.Main(new string[] {"-p", projectPath});
+
+            Assert.IsTrue(true);
+        } 
     }
 }

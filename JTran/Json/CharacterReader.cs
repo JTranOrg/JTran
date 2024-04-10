@@ -72,7 +72,7 @@ namespace JTran.Json
 
             streamBufferSize = (int)(_bufferSize);
 
-            _reader = new StreamReader(stream, Encoding.UTF8, true, streamBufferSize);
+            _reader = new StreamReader(stream, Encoding.UTF8, true, streamBufferSize, leaveOpen: true);
             _buffer = new char[_bufferSize];
         }
 
