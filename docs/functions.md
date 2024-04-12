@@ -19,6 +19,7 @@
 
 - [contains](#contains)
 - [endswith](#endswith)
+- [ensureendswith](#ensureendswith)
 - [empty](#empty)
 - [indexof](#indexof)
 - [lowercase](#lowercase)
@@ -58,6 +59,18 @@ Returns true if the given string ends with the given substring.
     #(endswith('abc123', '123'))
 
 Result is true<br><br>
+
+##### <a id="ensureendswith">ensureendswith</a>(expr, ending)
+
+Returns a string that endswith the given substring only appending it if it does not currently end with that value.
+
+    #(ensureendswith('abc', '123'))
+
+Result is "abc123"<br>
+
+    #(ensureendswith('abc123', '123'))
+
+Result is "abc123"<br><br>
 
 
 ##### <a id="indexof">indexof</a>(expr, substr)

@@ -180,6 +180,15 @@ namespace JTran.Common
         }
 
         /****************************************************************************/
+        public ICharacterSpan EnsureEndsWith(ICharacterSpan ending)
+        {
+            if(this.EndsWith(ending)) 
+                return this;
+
+            return this.Concat(ending);
+        }
+
+        /****************************************************************************/
         public int IndexOf(char ch, int start = 0)
         {
             for(var i = start; i < this.Length; ++i)

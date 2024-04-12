@@ -134,7 +134,7 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public void WriteProperty(ICharacterSpan name, object val, bool forceString = false)
+        public void WriteProperty(ICharacterSpan? name, object val, bool forceString = false)
         {
             _current!.WriteProperty(name, val, forceString);
         }

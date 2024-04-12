@@ -1,4 +1,23 @@
-﻿using System;
+﻿/***************************************************************************
+ *                                                                          
+ *    JTran.Project - Consolidates all of the attributes necessary to do a transform  							                    
+ *                                                                          
+ *        Namespace: JTran.Project							            
+ *             File: CompiledProject.cs					    		        
+ *        Class(es): CompiledProject			         		            
+ *          Purpose: A compiled project                 
+ *                                                                          
+ *  Original Author: Jim Lightfoot                                          
+ *    Creation Date: 11 Apr 2024                                             
+ *                                                                          
+ *   Copyright (c) 2024 - Jim Lightfoot, All rights reserved           
+ *                                                                          
+ *  Licensed under the MIT license:                                         
+ *    http://www.opensource.org/licenses/mit-license.php                    
+ *                                                                          
+ ****************************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -80,7 +99,7 @@ namespace JTran.Project
         }
 
         /****************************************************************************/
-        public async Task Run(IDictionary<string, object>? args = null)
+        public Task Run(IDictionary<string, object>? args = null)
         {
             var transformer = new Transformer(this.Transform, this.Extensions, this.Includes);
             var context     = CreateContext(args);
@@ -97,14 +116,14 @@ namespace JTran.Project
 
             if(this.SplitOutput)
             { 
-                await using var output = new FileStreamFactory((index)=> $"Project{index}.json"); // ???
+                var output = new DeferredFileStreamFactory(this.Destinations); 
 
                 context.OnOutputArgument = (key, value)=>
                 {
-                    if(key == "FileName")
+                    if(key == "FileName" && value != null)
                     { 
-                       var i = 0;
-                   }
+                       output.CurrentStream!.FileName = value.ToString();
+                    }
                 };
     
                 transformer.Transform(source, output, context);
@@ -123,6 +142,8 @@ namespace JTran.Project
 
                 transformer.Transform(source, output, context);
             }
+
+            return Task.CompletedTask;
         }
 
         /****************************************************************************/

@@ -315,7 +315,7 @@ namespace JTran.Expressions
             if(context.Data == null)
                 return null;
 
-            if(context.Data.IsDictionary())
+            if(context.Data is not JsonObject && context.Data.IsDictionary())
             {
                 var indexVal = _expr.Evaluate(context).AsCharacterSpan();
                 var rtnVal   = context.Data.GetPropertyValue(indexVal);

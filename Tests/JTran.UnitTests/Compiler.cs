@@ -761,95 +761,68 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Expression_Number_Success()
+        [DataRow("Cars[$WhichCar", false)]
+        [DataRow("Cars[$WhichCar", true)]
+        public void Compiler_Array_Indexer_Expression_Number_Success(string expression, bool raw)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[$WhichCar]");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), "", new TransformerContext { Arguments = new Dictionary<string, object> { {"WhichCar", 2}}});
+            var result = TestCompiler<Automobile>(expression, new {Cars = _cars, WhichCar = 2}, new TransformerContext { Arguments = new Dictionary<string, object> { {"WhichCar", 2}}}, raw: raw);
    
-            Assert.IsNotNull(expression);
-
-            var result = expression.Evaluate(context) as JsonObject;
-
-            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
+            Assert.AreEqual("Dodge", result.Make);
         }
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Expression_Number_multilevel_var_Success()
+        [DataRow("Cars[$Which.Car", false)]
+        [DataRow("Cars[$Which.Car", true)]
+        public void Compiler_Array_Indexer_Expression_Number_multilevel_var_Success(string expression, bool raw)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[$Which.Car]");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars, WhichCar = 2} ), "", new TransformerContext { Arguments = new Dictionary<string, object> { {"Which", new Dictionary<string, object> { {"Car", 2}}}}});
+            var result = TestCompiler<Automobile>(expression, new {Cars = _cars, WhichCar = 2}, new TransformerContext { Arguments = new Dictionary<string, object> { {"Which", new Dictionary<string, object> { {"Car", 2}}}}}, raw: raw);
    
-            Assert.IsNotNull(expression);
-
-            var result = expression.Evaluate(context) as JsonObject;
-
-            Assert.AreEqual("Dodge", result![CharacterSpan.FromString("Make")].ToString());
+            Assert.AreEqual("Dodge", result.Make);
         }
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Expression_Where_Success()
+        [DataRow("Cars[Make == 'Chevy']", false)]
+        [DataRow("Cars[Make == 'Chevy']", true)]
+        public void Compiler_Array_Indexer_Expression_Where_Success(string expression, bool raw)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[Make == 'Chevy']");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars2} ));
-   
-            Assert.IsNotNull(expression);
-
-            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
-
-            Assert.AreEqual(3, result!.Count);
+            var result = TestCompiler<List<Ticket>>(expression, new {Cars = _cars2}, raw: raw);
+           
+            Assert.AreEqual(3, result.Count);
         }
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Multi_Success()
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", false)]
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", true)]
+        public void Compiler_Array_Indexer_Multi_Success(string expression, bool raw)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[Make == 'Chevy'].Tickets[Location == 'WA']");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars3} ));
-   
-            Assert.IsNotNull(expression);
+            var result = TestCompiler<Ticket>(expression, new {Cars = _cars3}, raw: raw);
 
-            var result = expression.Evaluate(context) as JsonObject;
-            decimal amount = decimal.Parse(result[_amount].ToString());
-
-            Assert.AreEqual(120M, amount);
+            Assert.AreEqual(120M, result.Amount);
         }
 
         private static readonly ICharacterSpan _amount = CharacterSpan.FromString("Amount");
 
         [TestMethod]
-        public void Compiler_Array_Indexer_Multi2_Success()
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", false)]
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", true)]
+        public void Compiler_Array_Indexer_Multi2_Success(string expression, bool raw)
         {
-            var parser     = new JTranParser();
-            var compiler   = new Compiler();
-            var tokens     = parser.Parse("Cars[Make == 'Chevy'].Tickets[Location == 'WA']");
-            var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Cars = _cars4} ));
-   
-            Assert.IsNotNull(expression);
+            var result = TestCompiler<List<Ticket>>(expression, new {Cars = _cars4}, raw: raw);
 
-            var result = (expression.Evaluate(context)! as IEnumerable<object>)!.ToList();
+            Assert.AreEqual(2, result.Count);
 
-            Assert.IsNotNull(result);
-            var firstTicket     = result[0] as JsonObject;
-            var firstAmount     = firstTicket![_amount]!;
-            var dFirstAmount    = decimal.Parse(firstAmount!.ToString());
-            var secondTicket    = result[1] as JsonObject;
-            var secondAmount    = secondTicket![_amount]!;
-            var dSecondAmount   = decimal.Parse(secondAmount!.ToString());
+            Assert.AreEqual(180m, result[0].Amount);
+            Assert.AreEqual(400m, result[1].Amount);
+        }
 
-            Assert.AreEqual(180m, dFirstAmount);
-            Assert.AreEqual(400m, dSecondAmount);
+        [TestMethod]
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", false)]
+        [DataRow("Cars[Make == 'Chevy'].Tickets[Location == 'WA']", true)]
+        public void Compiler_Array_Indexer_Multi3_Success(string expression, bool raw)
+        {
+            var result = TestCompiler<Ticket>(expression, new {Cars = _cars5}, raw: raw);
+
+            Assert.AreEqual(120M, result.Amount);
         }
 
         #endregion
@@ -1481,6 +1454,42 @@ namespace JTran.UnitTests
 
         #region Private
 
+        private class DataWrapper<T>
+        {
+            public T? Data { get; set; }
+            
+        }
+        private T TestCompiler<T>(string expressionStr, object data, TransformerContext? tContext = null, bool raw = false) where T : class, new()
+        {
+            var parser      = new JTranParser();
+            var compiler    = new Compiler();
+            var tokens      = parser.Parse(expressionStr);
+            var expression  = compiler.Compile(tokens);
+
+            Assert.IsNotNull(expression);
+
+            var context = new ExpressionContext(raw ? data : CreateTestData(data), transformerContext: tContext);
+
+            var result = expression.Evaluate(context);
+
+            Assert.IsNotNull(result);
+
+            var transformer = new Transformer("{ 'Data': '#copyof(@)' }");
+            
+            using var output = new MemoryStream();
+
+            transformer.Transform(result, output);
+
+            var str = output.ReadString();
+   
+            var rtnVal = output.ToObject<DataWrapper<T>>();
+
+            Assert.IsNotNull(rtnVal);
+            Assert.IsNotNull(rtnVal.Data);
+
+            return rtnVal.Data;
+        }
+
         private static List<Automobile> _cars = new List<Automobile>
         {
             new Automobile { Make = "Chevy",   Model = "Camaro" },
@@ -1502,7 +1511,7 @@ namespace JTran.UnitTests
         private static List<Automobile> _cars3 = new List<Automobile>
         {
             new Automobile { Make = "Chevy",   Model = "Camaro", Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 120M }} },
-            new Automobile { Make = "Pontiac", Model = "Firebird" },
+            new Automobile { Make = "Pontiac", Model = "Firebird", Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 180M }, new Ticket { Location = "CA", Amount = 100M }} },
             new Automobile { Make = "Dodge",   Model = "Charger" },
             new Automobile { Make = "Chevy",   Model = "Corvette" },
             new Automobile { Make = "Ford",    Model = "Cobra" },
@@ -1517,6 +1526,16 @@ namespace JTran.UnitTests
             new Automobile { Make = "Chevy",   Model = "Corvette", Tickets = new List<Ticket> {new Ticket { Location = "CA", Amount = 300M }, new Ticket { Location = "WA", Amount = 400M }} },
             new Automobile { Make = "Ford",    Model = "Cobra" },
             new Automobile { Make = "Chevy",   Model = "Malibu" },
+        };
+
+        private static List<Automobile> _cars5 = new List<Automobile>
+        {
+            new Automobile { Make = "Chevy",   Model = "Camaro",   Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 120M }} },
+            new Automobile { Make = "Pontiac", Model = "Firebird", Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 180M }, new Ticket { Location = "CA", Amount = 100M }} },
+            new Automobile { Make = "Dodge",   Model = "Charger",  Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 180M }, new Ticket { Location = "CA", Amount = 100M }} },
+            new Automobile { Make = "Chevy",   Model = "Corvette", Tickets = new List<Ticket> {new Ticket { Location = "CA", Amount = 300M }, new Ticket { Location = "OR", Amount = 400M }} },
+            new Automobile { Make = "Ford",    Model = "Cobra",    Tickets = new List<Ticket> {new Ticket { Location = "WA", Amount = 180M }, new Ticket { Location = "CA", Amount = 100M }} },
+            new Automobile { Make = "Chevy",   Model = "Malibu",   Tickets = new List<Ticket> {new Ticket { Location = "CO", Amount = 180M }, new Ticket { Location = "MA", Amount = 100M }} },
         };
 
         private class Automobile
@@ -1534,7 +1553,9 @@ namespace JTran.UnitTests
 
         private static object CreateTestData(object obj)
         {
-            return JObject.FromObject(obj).ToString().ToJsonObject();
+            var json = JObject.FromObject(obj).ToString();
+            
+            return json.ToJsonObject();
         }
 
         private static bool EvaluateToBool(string sExpr)

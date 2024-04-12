@@ -116,5 +116,14 @@ namespace JTran.Extensions
             
             return s.Substring(start.Length);
         }
+
+        /****************************************************************************/
+        public static string EnsureEndsWith(this string s, string ending)
+        {
+            if(s.EndsWith(ending))
+                return s;
+            
+            return s + ending;
+        }
     }
 }
