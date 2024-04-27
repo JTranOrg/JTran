@@ -62,10 +62,6 @@ namespace JTran
             this.Functions      = functions;
 
             this.ExtensionFunctions = extensionFunctions;
-
-            if(transformerContext?.Arguments != null)
-                foreach(var arg in transformerContext.Arguments)
-                    _variables.Add(CharacterSpan.FromString(arg.Key), arg.Value);
         }
 
         /*****************************************************************************/
@@ -154,10 +150,22 @@ namespace JTran
                 return val;
             }
 
-            if(_parent == null)
-                throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
+            if(_parent != null)
+                return _parent.GetVariable(name, context);
 
-            return _parent.GetVariable(name, context);
+            if(_transformerContext?.Arguments != null)
+            { 
+                try
+                {
+                    return _transformerContext.Arguments[name.ToString()];
+                }
+                catch(Exception ex)
+                {
+                    throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}", ex);
+                }
+            }
+
+            throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
         }
 
         /*****************************************************************************/

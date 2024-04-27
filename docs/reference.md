@@ -262,6 +262,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
 - <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[outerjoin](#outerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
+- <strong>[outputvariable](#outputvariable)</strong> - Output variables allows the creation of values that can be picked up by the transform caller.
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
 - <strong>[try](#trycatch)</strong> - Part of a try/catch block
@@ -1876,6 +1877,12 @@ You can also use expressions in the #mapitem but then you'll need to use the sco
           "Year":   null
        }
     ]
+
+    
+#### #outputvariable
+    
+    Output variables allows the creation of values that can be picked up by the transform caller.
+
 
 ### <a id="Templates">Templates</a>
 

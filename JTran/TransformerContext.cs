@@ -32,7 +32,7 @@ namespace JTran
         public IDictionary<string, IDocumentRepository>? DocumentRepositories    { get; set; } = new Dictionary<string, IDocumentRepository>();
         public bool                                      AllowDeferredLoading    { get; set; } = true;
         public IReadOnlyDictionary<string, object>       OutputArguments         => _internalOutputArguments;
-        public Action<string, object>?                   OnOutputArgument;
+        public Action<string, object>?                   OnOutputArgument        { get; set; }
 
         #region Internal
 
