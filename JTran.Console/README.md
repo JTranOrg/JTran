@@ -18,11 +18,13 @@ Sample call
     /d -- Specify a documents folder. When this is used the document source name is "all"
     /m -- Specify multiple (split) output
 
+    A project file allows you to specify all of the other items in a single file. 
+
 <br><br>
 
 ### Project File Schema
 
-A config file can be specified to configure the include and document paths. Note if both a config file and a command line parameter is specified the command line parameter takes precedence.
+A project file can be specified to spcify all of the input and outputs. All of the items are optional (the transform, source and destination paths are mandatory and must be specified here or on the command line). Note if both a project file and a command line parameter is specified the command line parameter takes precedence.
 
     {
       "Name":              "Project1",            
