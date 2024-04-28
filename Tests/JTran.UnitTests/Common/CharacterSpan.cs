@@ -622,5 +622,12 @@ namespace JTran.UnitTests
 
             Assert.AreEqual("abc.def.123", CharacterSpan.Join(new List<ICharacterSpan> { c1, c3, c2}, '.').ToString());
         }
+
+        [TestMethod]
+        public void CharacterSpan_EnsureEndsWith()
+        {
+            Assert.AreEqual("abcdef", CharacterSpan.FromString("abc").EnsureEndsWith(CharacterSpan.FromString("def")).ToString());
+            Assert.AreEqual("abcdef", CharacterSpan.FromString("abcdef").EnsureEndsWith(CharacterSpan.FromString("def")).ToString());
+        }
     }
 }

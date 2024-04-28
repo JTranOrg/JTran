@@ -1,0 +1,15 @@
+{
+    "#include":           "include1.jtran",
+    "#variable(cities)":  "#(document(docs, doc1).cities)",
+
+    "#foreach(@, [])":
+    {
+        "FullName":    "#(DisplayName(@))",
+        "#noobject":   "#DisplayName(Name)",
+        "LastName":    "#(Surname)",
+        "Age":         "#(Age)",
+        "Address":     "#(Address)",
+        "City":        "#($cities[0])",
+        "Country":      "#($country)"
+    }
+}

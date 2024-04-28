@@ -83,7 +83,7 @@ namespace JTran.Expressions
         };
 
         /*****************************************************************************/
-        internal static IList<Function> Extract(object container)
+        internal static IList<Function> Extract(object? container)
         {
             if(container == null)
                 return null;
@@ -124,7 +124,7 @@ namespace JTran.Expressions
             {
                 if(Attribute.IsDefined(parm, typeof(ParamArrayAttribute)))
                 {
-                    var type = parm.ParameterType.GetElementType();
+                    var type = parm.ParameterType.GetElementType()!;
 
                     paramsType = type;
                     indexOfParams = soFar;
@@ -168,7 +168,7 @@ namespace JTran.Expressions
                     }
                     // If no value provided but the parameter has a default value then use that
                     else if(parm.HasDefaultValue)
-                        parameters.Add(parm.DefaultValue);
+                        parameters.Add(parm.DefaultValue!);
 
                     // else let the invoke throw it's own exception
                 }
@@ -200,7 +200,11 @@ namespace JTran.Expressions
         private object CreateTypedArray(Type elementType, IList<object> values)
         {
             if(elementType.Name == "String")
-                return (new List<string>(values.Select( v=> v?.ToString()))).ToArray();
+            { 
+                var strings = values.Select( v=> v?.ToString() );
+
+                return strings.ToArray();
+            }
 
             if(elementType.Name == "Decimal")
                 return (new List<decimal>(values.Select( v=> decimal.Parse(v?.ToString() ?? "0")))).ToArray();

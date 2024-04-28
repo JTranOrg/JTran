@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
 
 using JTran.Common;
 using JTran.Expressions;
@@ -10,7 +10,7 @@ namespace JTran
     /****************************************************************************/
     internal class TThrow: TToken
     {
-        private IExpression _code;
+        private IExpression? _code;
         private IValue _message;
 
         /****************************************************************************/
@@ -26,12 +26,12 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var msg = _message.Evaluate(context);
+            var msg = _message.Evaluate(context)?.ToString() ?? "";
 
             if(_code != null)
-                throw new Transformer.UserError(_code.Evaluate(context).ToString(), msg.ToString());
+                throw new Transformer.UserError(_code!.Evaluate(context)!.ToString()!, msg);
 
-            throw new Transformer.UserError(msg.ToString());
+            throw new Transformer.UserError(msg);
         }
     }
 
@@ -91,7 +91,7 @@ namespace JTran
     /****************************************************************************/
     internal class TCatch : TContainer
     {
-        private readonly IExpression _expression;
+        private readonly IExpression? _expression;
 
         /****************************************************************************/
         internal TCatch(ICharacterSpan name) 

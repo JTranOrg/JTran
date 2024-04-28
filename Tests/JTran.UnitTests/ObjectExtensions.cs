@@ -11,8 +11,8 @@ namespace JTran.UnitTests
     {
         public class Automobile
         {
-            public string Make  { get; set; }
-            public string Model { get; set; }
+            public string Make  { get; set; } = "";
+            public string Model { get; set; } = "";
         }
 
         [TestMethod]
@@ -37,79 +37,5 @@ namespace JTran.UnitTests
             Assert.IsTrue(list2.IsSingle());
             Assert.IsFalse(list3.IsSingle());
         }
-
-        #region Data
-        
-        private static readonly string _data1 =
-        @"{
-            FirstName: 'John',
-            LastName:  'Smith',
-            Car:   
-            {
-               Make:   'Chevy',
-               Model:  'Corvette',
-               Year:   1964,
-               Color:  'Blue',
-               Engine:
-               {
-                 Displacement:   375
-               },
-               ServiceCalls:
-               [
-                 {
-                   Description: 'Change sparkplugs',
-                   Scheduled:   '2020-01-01T08:00:00',
-                   Estimate:    100.0
-                 },
-                 {
-                   Description: 'Tune up',
-                   Scheduled:   '2020-03-01T08:00:00',
-                   Estimate:    200.0,
-                   Invoice:     210.79
-                 }
-               ]
-            }
-        }";
-
-        private static readonly string _datagg1 =
-        @"{
-            Name: 'January Events',
-            parent:
-            {
-                Name: 'Talahooga Race Night',
-                Driver: 
-                {
-                    FirstName: 'John',
-                    LastName:  'Smith',
-                    Car:   
-                    {
-                       Make:   'Chevy',
-                       Model:  'Corvette',
-                       Year:   1964,
-                       Color:  'Blue',
-                       Engine:
-                       {
-                         Displacement:   375
-                       },
-                       ServiceCalls:
-                       [
-                         {
-                           Description: 'Change sparkplugs',
-                           Scheduled:   '2020-01-01T08:00:00',
-                           Estimate:    100.0
-                         },
-                         {
-                           Description: 'Tune up',
-                           Scheduled:   '2020-03-01T08:00:00',
-                           Estimate:    200.0,
-                           Invoice:     210.79
-                         }
-                       ]
-                    }
-                }
-            }
-        }";
-
-        #endregion
     }
 }

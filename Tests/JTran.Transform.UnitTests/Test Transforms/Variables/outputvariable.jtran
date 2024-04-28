@@ -1,0 +1,10 @@
+{
+  "#variable(Company)":       "#(Company)",
+  "#outputvariable(Company)": "#(Company)",
+ 
+  "#foreach(Customers, Customers)":
+  {
+    "Company":    "#($Company)",
+    "#noobject":  "#copyof(@)"
+  }
+}

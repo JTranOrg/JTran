@@ -34,13 +34,13 @@ namespace JTran.Parser
             switch(Type)
             {
                 case TokenType.Literal:        return "'" + this.Value + "'";
-                case TokenType.Function:       return this.Value + "(" + string.Join(", ", _children.Select(c=> c.ToString())) + ")";
+                case TokenType.Function:       return this.Value + "(" + string.Join(", ", _children!.Select(c=> c.ToString())) + ")";
                 case TokenType.Expression:     return this[0].ToString() + " " + this[1].ToString() + " " + this[2].ToString();
                 case TokenType.Tertiary:       return this[0].ToString() + " ? " + this[1].ToString() + " : " + this[2].ToString();
                 case TokenType.ArrayIndexer: 
-                case TokenType.ExplicitArray:  return "[" + string.Join(", ", _children.Select(c=> c.ToString())) + "]";
-                case TokenType.Multipart:      return string.Join(".", _children.Select(c=> c.ToString()));
-                case TokenType.Array:          return this.Value + string.Join("", _children.Select(c=> c.ToString()));
+                case TokenType.ExplicitArray:  return "[" + string.Join(", ", _children!.Select(c=> c.ToString())) + "]";
+                case TokenType.Multipart:      return string.Join(".", _children!.Select(c=> c.ToString()));
+                case TokenType.Array:          return this.Value + string.Join("", _children!.Select(c=> c.ToString()));
 
                 default:                       return this.Value.ToString();
             }

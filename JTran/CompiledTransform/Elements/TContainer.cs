@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using JTran.Common;
-using JTran.Expressions;
-using JTran.Extensions;
 
 namespace JTran
 {
@@ -174,31 +173,32 @@ namespace JTran
             return result;
         }
 
-        private static readonly ICharacterSpan _bind         = CharacterSpan.FromString("#bind");
-        private static readonly ICharacterSpan _break        = CharacterSpan.FromString("#break");
-        private static readonly ICharacterSpan _function     = CharacterSpan.FromString("#function");
-        private static readonly ICharacterSpan _foreach      = CharacterSpan.FromString("#foreach");
-        private static readonly ICharacterSpan _foreachgroup = CharacterSpan.FromString("#foreachgroup");
-        private static readonly ICharacterSpan _include      = CharacterSpan.FromString("#include");
-        private static readonly ICharacterSpan _iterate      = CharacterSpan.FromString("#iterate");
-        private static readonly ICharacterSpan _message      = CharacterSpan.FromString("#message");
-        private static readonly ICharacterSpan _throw        = CharacterSpan.FromString("#throw");
-        private static readonly ICharacterSpan _map          = CharacterSpan.FromString("#map");
-        private static readonly ICharacterSpan _mapitem      = CharacterSpan.FromString("#mapitem");
-        private static readonly ICharacterSpan _array        = CharacterSpan.FromString("#array");
-        private static readonly ICharacterSpan _arrayitem    = CharacterSpan.FromString("#arrayitem");
-        private static readonly ICharacterSpan _if           = CharacterSpan.FromString("#if");
-        private static readonly ICharacterSpan _elseif       = CharacterSpan.FromString("#elseif");
-        private static readonly ICharacterSpan _else         = CharacterSpan.FromString("#else");
-        private static readonly ICharacterSpan _try          = CharacterSpan.FromString("#try");
-        private static readonly ICharacterSpan _catch        = CharacterSpan.FromString("#catch");
-        private static readonly ICharacterSpan _variable     = CharacterSpan.FromString("#variable");
-        private static readonly ICharacterSpan _template     = CharacterSpan.FromString("#template");
-        private static readonly ICharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
-                                                            
-        private static readonly ICharacterSpan _copyof       = CharacterSpan.FromString("#copyof");
-        private static readonly ICharacterSpan _exclude      = CharacterSpan.FromString("#exclude");
-        private static readonly ICharacterSpan _iif          = CharacterSpan.FromString("#iif");
+        private static readonly ICharacterSpan _bind            = CharacterSpan.FromString("#bind");
+        private static readonly ICharacterSpan _break           = CharacterSpan.FromString("#break");
+        private static readonly ICharacterSpan _function        = CharacterSpan.FromString("#function");
+        private static readonly ICharacterSpan _foreach         = CharacterSpan.FromString("#foreach");
+        private static readonly ICharacterSpan _foreachgroup    = CharacterSpan.FromString("#foreachgroup");
+        private static readonly ICharacterSpan _include         = CharacterSpan.FromString("#include");
+        private static readonly ICharacterSpan _iterate         = CharacterSpan.FromString("#iterate");
+        private static readonly ICharacterSpan _message         = CharacterSpan.FromString("#message");
+        private static readonly ICharacterSpan _throw           = CharacterSpan.FromString("#throw");
+        private static readonly ICharacterSpan _map             = CharacterSpan.FromString("#map");
+        private static readonly ICharacterSpan _mapitem         = CharacterSpan.FromString("#mapitem");
+        private static readonly ICharacterSpan _array           = CharacterSpan.FromString("#array");
+        private static readonly ICharacterSpan _arrayitem       = CharacterSpan.FromString("#arrayitem");
+        private static readonly ICharacterSpan _if              = CharacterSpan.FromString("#if");
+        private static readonly ICharacterSpan _elseif          = CharacterSpan.FromString("#elseif");
+        private static readonly ICharacterSpan _else            = CharacterSpan.FromString("#else");
+        private static readonly ICharacterSpan _try             = CharacterSpan.FromString("#try");
+        private static readonly ICharacterSpan _catch           = CharacterSpan.FromString("#catch");
+        private static readonly ICharacterSpan _variable        = CharacterSpan.FromString("#variable");
+        private static readonly ICharacterSpan _outputVariable  = CharacterSpan.FromString("#outputvariable");
+        private static readonly ICharacterSpan _template        = CharacterSpan.FromString("#template");
+        private static readonly ICharacterSpan _calltemplate    = CharacterSpan.FromString("#calltemplate");
+                                                                
+        private static readonly ICharacterSpan _copyof          = CharacterSpan.FromString("#copyof");
+        private static readonly ICharacterSpan _exclude         = CharacterSpan.FromString("#exclude");
+        private static readonly ICharacterSpan _iif             = CharacterSpan.FromString("#iif");
 
         /****************************************************************************/
         protected virtual TToken CreatePropertyToken(ICharacterSpan name, object child, object? previous, long lineNumber)
@@ -209,7 +209,7 @@ namespace JTran
                 
                 if(_include.Equals(searchStr))
                 { 
-                    this.CompiledTransform.LoadInclude(child.ToString(), this, lineNumber);
+                    this.CompiledTransform!.LoadInclude(child!.ToString()!, this, lineNumber);
 
                     return null;
                 }
@@ -220,8 +220,11 @@ namespace JTran
                 if(_variable.Equals(searchStr))
                     return new TVariable(name, child, lineNumber);
 
+                if(_outputVariable.Equals(searchStr))
+                    return new TOutputVariable(name, child, lineNumber);
+
                 if(_message.Equals(searchStr))
-                    return new TMessage(child as ICharacterSpan, lineNumber);
+                    return new TMessage((child as ICharacterSpan)!, lineNumber);
 
                 if(_throw.Equals(searchStr))
                     return new TThrow(name, child, lineNumber);

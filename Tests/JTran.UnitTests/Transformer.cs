@@ -85,7 +85,7 @@ namespace JTran.UnitTests
 
             var dodgeModel = json.PathValue("Owner.Cars.Dodge.Model");
 
-            Assert.AreEqual(null, dodgeModel.Values().FirstOrDefault());
+            Assert.AreEqual(null, dodgeModel!.Values().FirstOrDefault());
         }
 
         private IEnumerable<Automobile> GetList()
@@ -215,19 +215,6 @@ namespace JTran.UnitTests
             Assert.AreEqual("1:48:52.0000", json!["Time"]!.ToString());
         }
 
-        /*[TestMethod]
-        public void Transformer_Transform_removeany_Succeeds()
-        {
-            var transformer = new JTran.Transformer(_removeany, null);
-            var result      = transformer.Transform(_removeanyData);
-   
-            Assert.AreNotEqual(_transformNullReference, _dataNullReference);
-
-            var json = JObject.Parse(result);
-
-            Assert.AreEqual("5554561234", json["Phone"].ToString());
-        }*/
-
         private static readonly string _datetimeformat =
         "{ Time: \"#(formatdatetime(Time, 'h:mm:ss.ffff'))\" }";
 
@@ -246,7 +233,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -259,7 +246,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -272,7 +259,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(null, json["Owner"]["Cars"]["Chevy"]);
+            Assert.AreEqual(null, json["Owner"]!["Cars"]!["Chevy"]!);
         }
 
         [TestMethod]
@@ -285,7 +272,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("Camaro", json["Owner"]["Cars"]["Chevy"]["Model"].ToString());
+            Assert.AreEqual("Camaro", json["Owner"]!["Cars"]!["Chevy"]!["Model"]!.ToString());
         }
 
         #region Scope Symbol
@@ -326,7 +313,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("abc", json["MyProp"].ToString());
+            Assert.AreEqual("abc", json["MyProp"]!.ToString());
         }
 
         #region Template
@@ -641,7 +628,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)![0]!.ToString());
         }
 
         [TestMethod]
@@ -655,7 +642,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0]["Name"].ToString());
+            Assert.AreEqual("JohnSmith", (json!["Customers"] as JArray)![0]!["Name"]!.ToString());
         }
 
         [TestMethod]
@@ -669,7 +656,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
+            Assert.AreEqual("John", (json!["Customers"] as JArray)![0]!["Names"]![0]!.ToString());
         }
 
         [TestMethod]
@@ -683,7 +670,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual("JohnSmith", (json["Customers"] as JArray)[0].ToString());
+            Assert.AreEqual("JohnSmith", (json!["Customers"] as JArray)![0]!.ToString());
         }
 
         [TestMethod]
@@ -695,10 +682,11 @@ namespace JTran.UnitTests
    
             Assert.AreNotEqual(_transformArray2, _data1);
 
-            var json = JObject.Parse(result);
+            var json  = JObject.Parse(result);
+            var array = json["Customers"] as JArray;
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["Names"][0].ToString());
-            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["Names"][1].ToString());
+            Assert.AreEqual("John",  array![0]!["Names"]![0]!.ToString());
+            Assert.AreEqual("Smith", array![0]!["Names"]![1]!.ToString());
         }
 
         [TestMethod]
@@ -711,9 +699,10 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformNamedArray, _data1);
 
             var json = JObject.Parse(result);
+            var array = json["Customers"] as JArray;
 
-            Assert.AreEqual("John", (json["Customers"] as JArray)[0]["bob"][0].ToString());
-            Assert.AreEqual("Smith", (json["Customers"] as JArray)[0]["bob"][1].ToString());
+            Assert.AreEqual("John",  array![0]!["bob"]![0]!.ToString());
+            Assert.AreEqual("Smith", array![0]!["bob"]![1]!.ToString());
         }
 
         private static readonly string _transformArrayRaw =
@@ -799,7 +788,7 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(0, (json["Customers"] as JArray).Count());
+            Assert.AreEqual(0, (json["Customers"] as JArray)!.Count());
         }
 
         private static readonly string _transformEmptyArray =
@@ -820,9 +809,9 @@ namespace JTran.UnitTests
 
             var json = JObject.Parse(result);
 
-            Assert.AreEqual(2,     (json["Customers"]  as JArray).Count());
-            Assert.AreEqual("bob", (json["Customers"]  as JArray)[0]["Name"]);
-            Assert.AreEqual("fred", (json["Customers"] as JArray)[1]["Name"]);
+            Assert.AreEqual(2,      (json["Customers"]  as JArray)!.Count());
+            Assert.AreEqual("bob",  (json["Customers"]  as JArray)![0]["Name"]);
+            Assert.AreEqual("fred", (json["Customers"] as JArray)![1]["Name"]);
         }
 
         [TestMethod]
@@ -837,9 +826,9 @@ namespace JTran.UnitTests
             var json = JObject.Parse(result);
             var array = json["Customers"] as JArray;
 
-            Assert.AreEqual(2,      array.Count());
-            Assert.AreEqual("Fred", array[0]);
-            Assert.AreEqual("John",array[1]);
+            Assert.AreEqual(2,      array!.Count());
+            Assert.AreEqual("Fred", array![0]);
+            Assert.AreEqual("John", array[1]);
         }
 
         [TestMethod]
@@ -854,7 +843,7 @@ namespace JTran.UnitTests
             var json  = JObject.Parse(result);
             var array = json["Persons"]  as JArray;
 
-            Assert.AreEqual(2,              array.Count());
+            Assert.AreEqual(2,              array!.Count());
             Assert.AreEqual("JohnSmith",    array[0]["Name"]);
             Assert.AreEqual("BobJones",     array[1]["Name"]);
         }
@@ -926,8 +915,8 @@ namespace JTran.UnitTests
             var json  = JObject.Parse(result);
             var array = json["Items"]  as JArray;
 
-            Assert.AreEqual(5,        array.Count());
-            Assert.AreEqual("item1",  array[0]);
+            Assert.AreEqual(5,        array!.Count());
+            Assert.AreEqual("item1",  array![0]);
             Assert.AreEqual("item2",  array[1]);
             Assert.AreEqual("item3",  array[2]);
             Assert.AreEqual("item4",  array[3]);
@@ -998,6 +987,14 @@ namespace JTran.UnitTests
         @"{
             'Drivers': {},
             'Cars': []
+          }";
+
+       private static readonly string _transformPOCO =
+        @"{
+            'Make': '#(Make)',
+            'Model': '#(Model)',
+            'Year': '#(Year + 10)',
+            'Color': '#(Color)',
           }";
 
        private static readonly string _transformArray2dim2 =
@@ -1166,7 +1163,33 @@ namespace JTran.UnitTests
         }
 
         #endregion
+
+        #region Transformer POCO
+
+        [TestMethod]
+        public void Transformer_Transform_POCO()
+        {
+            var transformer = new JTran.Transformer(_transformPOCO, new object[] { new ExtFunctions2() } );
+
+            using var output = new MemoryStream();
+            var input  = new Automobile { Make = "Chevy", Model = "Corvette", Year = 1956, Color = "Black"};
+            
+            transformer.Transform(input, output);
+
+            var result = output.ReadString();
+
+            Assert.AreNotEqual(_transformPOCO, result);
+
+            var jobj = JObject.Parse(result);
+
+            Assert.IsNotNull(jobj);
+            Assert.AreEqual("Chevy",    jobj["Make"]);
+            Assert.AreEqual("Corvette", jobj["Model"]);
+            Assert.AreEqual(1966,       jobj["Year"]);
+        }
         
+        #endregion
+
         #region Private 
 
         private class ExtFunctions
@@ -1574,74 +1597,6 @@ namespace JTran.UnitTests
             ]
         }";
 
-        private static readonly string _dataNested = 
-        @"{
-            Owner:           'Bob Smith',   
-            Automobiles:
-            [
-                {
-                    Make:     'Chevy',
-                    Model:    'Camaro',  
-                    Color:    'Green',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Mendez'
-                        },
-                        {   
-                            FirstName:  'Shirley',
-                            LastName:   'Jones'
-                        },
-                        {   
-                            FirstName:  'Jackie',
-                            LastName:   'Chan'
-                        }
-                    ]
-                },
-                {
-                    Make:     'Pontiac',
-                    Model:    'Firebird',  
-                    Color:    'Blue',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Jackie',
-                            LastName:   'Mendez'
-                        },
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Jones'
-                        },
-                        {   
-                            FirstName:  'Bob',
-                            LastName:   'Chan'
-                        }
-                    ]
-                },
-                {
-                    Make:     'Dodge',
-                    Model:    'Charger',  
-                    Color:    'Black',
-                    Drivers:
-                    [
-                        {   
-                            FirstName:  'Robert',
-                            LastName:   'Kawasaki'
-                        },
-                        {   
-                            FirstName:  'Muriel',
-                            LastName:   'Hernandez'
-                        },
-                        {   
-                            FirstName:  'Sergei',
-                            LastName:   'Korpoff'
-                        }
-                    ]
-                }
-            ]
-        }";
-
         private static readonly string _dataNested2 = 
         @"{
             Owner:           'Bob Smith',   
@@ -1888,8 +1843,8 @@ namespace JTran.UnitTests
 
         public class CustomerContainer
         {
-            public string SpecialCustomer     { get; set; } = "";
-            public List<Customer> Customers   { get; set; }
+            public string          SpecialCustomer     { get; set; } = "";
+            public List<Customer>? Customers          { get; set; }
         }     
         
         public class Driver
@@ -1897,7 +1852,7 @@ namespace JTran.UnitTests
             public string       FieldName   { get; set; } = "";
             public string       FirstName   { get; set; } = "";
             public string       LastName    { get; set; } = "";
-            public Automobile2  Car         { get; set; }
+            public Automobile2?  Car         { get; set; }
         }
         
         public class Automobile2
@@ -1911,28 +1866,28 @@ namespace JTran.UnitTests
         
         public class Automobile3
         {
-            public string        Make       { get; set; } = "";
-            public string        Model      { get; set; } = "";
-            public int           Year       { get; set; }
-            public string        Color      { get; set; } = "";
-            public IList<Driver> Mechanics  { get; set; }
+            public string         Make       { get; set; } = "";
+            public string         Model      { get; set; } = "";
+            public int            Year       { get; set; }
+            public string         Color      { get; set; } = "";
+            public IList<Driver>? Mechanics  { get; set; }
         }
 
         public class Owner2
         {
-            public string            Name   { get; set; } = "";
-            public List<Automobile2> Cars   { get; set; }
+            public string             Name   { get; set; } = "";
+            public List<Automobile2>? Cars   { get; set; }
         }     
 
         public class Owner
         {
-            public string            Name   { get; set; } = "";
-            public List<Automobile3> Cars   { get; set; }
+            public string             Name   { get; set; } = "";
+            public List<Automobile3>? Cars   { get; set; }
         }     
 
         public class Roster
         {
-            public Owner Owner  { get; set; }
+            public Owner? Owner  { get; set; }
         }
 
         #endregion
@@ -1941,7 +1896,7 @@ namespace JTran.UnitTests
 
         public static string LoadTransform(string name)
         {
-            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests)).Location).SubstringBefore("\\bin");
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests))!.Location)!.SubstringBefore("\\bin");
             var path = Path.Combine(assemblyPath, "Transforms", name + ".jtran");
 
             return File.ReadAllText(path);
@@ -1949,7 +1904,7 @@ namespace JTran.UnitTests
 
         public static string LoadSample(string name)
         {
-            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests)).Location).SubstringBefore("\\bin");
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TransformerTests))!.Location)!.SubstringBefore("\\bin");
             var path = Path.Combine(assemblyPath, "Samples", name);
 
             return File.ReadAllText(path);

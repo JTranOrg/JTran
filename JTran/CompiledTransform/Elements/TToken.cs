@@ -17,12 +17,11 @@
  * 
  ****************************************************************************/
 
-using JTran;
 using JTran.Common;
-using JTran.Extensions;
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace JTran
 {
@@ -97,7 +96,7 @@ namespace JTran
                 catch(JsonParseException ex)
                 {
                     ex.LineNumber = lineNumber;
-                    throw ex;
+                    throw;
                 }
             }
 
@@ -117,7 +116,7 @@ namespace JTran
                     
                 var templateName = sval.SubstringBefore('(', 1);
                 var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName.ToString().ToLower() + "," + theRest.ToString(), true); 
+                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName!.ToString()!.ToLower() + "," + theRest.ToString(), true); 
 
                 // Will do exception on evaluation if no template found
                 return new TCallTemplateProperty(parm, lineNumber);

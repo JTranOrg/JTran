@@ -1,26 +1,18 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System.Collections.Generic;
-using System.Linq;
-
-using Newtonsoft.Json;
-
-using JTran;
 using JTran.Expressions;
-
-using Moq;
 
 namespace JTran.UnitTests
 {
     [TestClass]
     public class ExpressionTests
     {
-        private ExpressionContext _context;
+        private ExpressionContext? _context;
 
         [TestInitialize]
         public void Init()
         {
-            _context = new ExpressionContext(null, (ExpressionContext)null);
+            _context = new ExpressionContext(null, (ExpressionContext?)null);
         }
 
         [TestMethod]

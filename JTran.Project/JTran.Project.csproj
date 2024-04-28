@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JTran" Version="3.3.2" />
+    <ProjectReference Include="..\JTran\JTran.csproj" />
   </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@ namespace JTran.UnitTests
                 Height = 140M,
                 Length = 10000L,
                 Active = true,
-                Captain = (string)null
+                Captain = (string?)null
             };
             
 

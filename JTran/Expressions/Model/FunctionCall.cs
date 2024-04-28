@@ -41,7 +41,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
 
@@ -112,7 +112,7 @@ namespace JTran.Expressions
         private readonly static ICharacterSpan _return = CharacterSpan.FromString("return");
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }

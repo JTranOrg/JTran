@@ -1,0 +1,19 @@
+{
+   "Name":              "ProjectSplit",            
+   "TransformPath":     "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Transforms\\Project_Split.jtran",    
+   "SourcePath":        "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Sources\\Project1.json",       
+   "DestinationPath":   "C:\\Development\\Testing\\JTran\\Console Tests\\",
+   "SplitOutput":       true,
+   "IncludePaths":    
+   {
+      "":                "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Includes" 
+   },
+   "DocumentPaths":    
+   {
+      "docs":           "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Documents" 
+   },
+   "Arguments": 
+   {
+      "country":       "US"
+   }
+}

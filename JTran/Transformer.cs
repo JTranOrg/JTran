@@ -21,10 +21,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+
 using JTran.Collections;
-using JTran.Common;
 using JTran.Expressions;
 using JTran.Extensions;
+using JTran.Streams;
 
 namespace JTran
 {
@@ -53,7 +55,7 @@ namespace JTran
         /// <param name="transform">A stream containing the JTran source</param>
         /// <param name="extensionFunctions">Extension functions</param>
         /// <param name="includeSource">Source for include files</param>
-        public Transformer(Stream transform, IEnumerable extensionFunctions = null, IDictionary<string, string> includeSource = null)
+        public Transformer(Stream transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
         {
             _transform = CompiledTransform.Compile(transform, includeSource);
             _extensionFunctions = CompileFunctions(extensionFunctions);
@@ -69,37 +71,33 @@ namespace JTran
         /// <summary>
         /// Transforms the input json and writes to the output stream
         /// </summary>
-        /// <param name="input">Contains the source json data</param>
+        /// <param name="input">Contains the source data (stream, list or POCO) </param>
         /// <param name="output">A stream to write the results to</param>
         /// <param name="context">A transformer context</param>
-        public void Transform(Stream input, Stream output, TransformerContext? context = null)
+        public void Transform(object input, Stream output, TransformerContext? context = null)
         {
-             _transform.Transform(input, output, context, _extensionFunctions);
+            _transform.Transform(CheckPocoList(input), output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        /// <summary>
+        /// Transforms the input json and writes to the output stream
+        /// </summary>
+        /// <param name="input">Contains the source data (stream, list or POCO) </param>
+        /// <param name="output">A stream factory to write the results to</param>
+        /// <param name="context">A transformer context</param>
+        public void Transform(object input, IStreamFactory output, TransformerContext? context = null)
+        {
+            _transform.Transform(CheckPocoList(input), output, context, _extensionFunctions);
         }
 
         /****************************************************************************/
         public void Transform(IEnumerable list, string? listName, Stream output, TransformerContext? context = null)
         {
-             _transform.Transform(list, listName, output, context, _extensionFunctions);
+            _transform.Transform(CheckPocoList(list) as IEnumerable, listName, output, context, _extensionFunctions);
         }
 
-        /****************************************************************************/
-        public void Transform(IEnumerable list, Stream output, TransformerContext? context = null)
-        {
-            if(list is IEnumerable<object> enm)
-                Transform(enm, output, context);
-            else
-                _transform.Transform(list, output, context, _extensionFunctions);
-        }
-
-        /****************************************************************************/
-        public void Transform(IEnumerable<object> list, Stream output, TransformerContext? context = null)
-        {
-            if(list.IsPocoList(out Type? type))
-                list = new PocoEnumerableWrapper(type!, list);
-                
-             _transform.Transform(list, output, context, _extensionFunctions);
-        }
+        #region Child Classes
 
         /****************************************************************************/
         public class SyntaxException : JsonParseException
@@ -129,10 +127,24 @@ namespace JTran
             }
 
             /****************************************************************************/
-            public string ErrorCode { get; }
+            public string ErrorCode { get; } = "";
         }
 
+        #endregion
+
         #region Private
+
+        /****************************************************************************/
+        private object CheckPocoList(object input)
+        {
+            if(input is IEnumerable<object> enm)
+            { 
+                if(enm.IsPocoList(out Type? type))
+                    return new PocoEnumerableWrapper(type!, enm);
+            }
+
+            return input;
+        }
 
         /****************************************************************************/
         internal static ExtensionFunctions CompileFunctions(IEnumerable? extensionFunctions)

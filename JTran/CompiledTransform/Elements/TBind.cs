@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 using System;
+using System.Threading.Tasks;
 
 using JTran.Common;
 using JTran.Expressions;
@@ -41,10 +42,15 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var newScope   = _expression.Evaluate(context);
-            var newContext = new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
+            base.Evaluate(output, CreateNewContext(context), wrap);
+        }
 
-            base.Evaluate(output, newContext, wrap);
+        /****************************************************************************/
+        private ExpressionContext CreateNewContext(ExpressionContext context)
+        {
+            var newScope = _expression.Evaluate(context);
+            
+            return new ExpressionContext(data: newScope, parentContext: context, templates: this.Templates, functions: this.Functions);
         }
     }
 }

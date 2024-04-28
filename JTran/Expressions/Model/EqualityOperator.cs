@@ -50,7 +50,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.EqualOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) == 0;
         }    
@@ -63,7 +63,7 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.NotEqualOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return CompareTo(left, right, context) != 0;
         }

@@ -106,5 +106,10 @@ namespace JTran.Transform.UnitTests
 
             return stream!.ReadStringAsync();
         }
+
+        internal static Stream LoadSampleStream(string name)
+        {
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.Transform.UnitTests.Sample_Data.{name}.json");
+        }
     }
 }

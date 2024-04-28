@@ -34,8 +34,8 @@ namespace JTran.Expressions
     /*****************************************************************************/
     public interface IExpression
     {
-        object Evaluate(ExpressionContext context);
-        bool   EvaluateToBool(ExpressionContext context);
+        object Evaluate(ExpressionContext? context);
+        bool   EvaluateToBool(ExpressionContext? context);
         bool   IsConditional(ExpressionContext context);
     }
 
@@ -55,7 +55,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return false;
         }
@@ -80,7 +80,7 @@ namespace JTran.Expressions
             _value = val;
         }
 
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return _value;
         }
@@ -90,12 +90,12 @@ namespace JTran.Expressions
             return _value?.ToString();
         }
 
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return EvaluateToBool(_value, context);
         }
 
-        internal static bool EvaluateToBool(object? value, ExpressionContext context)
+        internal static bool EvaluateToBool(object? value, ExpressionContext? context)
         {
             if(value is bool bval)
                 return bval;  
@@ -127,7 +127,7 @@ namespace JTran.Expressions
             _value = val;
         }
 
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(Math.Floor(_value) == _value)
                 return Convert.ToInt64(_value);
@@ -159,13 +159,13 @@ namespace JTran.Expressions
         public ICharacterSpan Name { get; }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return context.GetDataValue(this.Name);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             object val = this.Evaluate(context);
 
@@ -231,7 +231,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             var     numParts = _parts.Count;
             var     data     = context.Data;
@@ -285,7 +285,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }
@@ -310,12 +310,12 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(context.Data == null)
                 return null;
 
-            if(context.Data.IsDictionary())
+            if(context.Data is not JsonObject && context.Data.IsDictionary())
             {
                 var indexVal = _expr.Evaluate(context).AsCharacterSpan();
                 var rtnVal   = context.Data.GetPropertyValue(indexVal);
@@ -355,7 +355,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }
@@ -386,13 +386,13 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return context.GetVariable(_name, context);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             object val = context.GetVariable(_name, context);
 
@@ -410,8 +410,8 @@ namespace JTran.Expressions
     /*****************************************************************************/
     public interface IOperator
     {
-        object Evaluate(IExpression left, IExpression right, ExpressionContext context);
-        bool   EvaluateToBool(IExpression left, IExpression right, ExpressionContext context);
+        object Evaluate(IExpression left, IExpression right, ExpressionContext? context);
+        bool   EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context);
         int    Precedence { get; }
     }
 
@@ -419,26 +419,26 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class ComplexExpression : IExpression
     {
-        public IExpression Left         { get; set; }
-        public IOperator   Operator     { get; set; }
-        public IExpression Right        { get; set; }
+        public IExpression? Left         { get; set; }
+        public IOperator?   Operator     { get; set; }
+        public IExpression? Right        { get; set; }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(this.Operator == null)
-                return this.Left.Evaluate(context);
+                return this.Left!.Evaluate(context);
 
-            return this.Operator.Evaluate(this.Left, this.Right, context);
+            return this.Operator.Evaluate(this.Left!, this.Right!, context);
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             if(this.Operator == null)
                 return this.Left.EvaluateToBool(context);
 
-            return this.Operator.EvaluateToBool(this.Left, this.Right, context);
+            return this.Operator.EvaluateToBool(this.Left!, this.Right!, context);
         }
                                 
         /*****************************************************************************/

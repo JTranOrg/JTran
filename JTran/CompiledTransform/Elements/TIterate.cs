@@ -61,12 +61,12 @@ namespace JTran
                 { 
                     try
                     { 
-                        if(EvaluateChild(output, arrayName, context.Data, context, ref index))
+                        if(EvaluateChild(output, arrayName!, context.Data!, context, ref index))
                             break;
                     }
                     catch(AggregateException ex)
                     {
-                        throw ex.InnerException;
+                        throw ex.InnerException!;
                     }
                 }
 

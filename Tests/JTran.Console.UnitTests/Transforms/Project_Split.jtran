@@ -1,0 +1,17 @@
+{
+    "#include":           "include1.jtran",
+    "#variable(cities)":  "#(document(docs, doc1).cities)",
+
+    "#foreach(@, [])":
+    {
+        "#outputvariable(FileName)": "#($DestinationPath + 'splitcustomer' + (position()+1) + '.json')",
+
+        "FullName":    "#(DisplayName(@))",
+        "#noobject":   "#DisplayName(Name)",
+        "LastName":    "#(Surname)",
+        "Age":         "#(Age)",
+        "Address":     "#(Address)",
+        "City":        "#($cities[0])",
+        "Country":      "#($country)"
+    }
+}

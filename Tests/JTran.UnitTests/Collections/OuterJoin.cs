@@ -37,7 +37,7 @@ namespace JTran.UnitTests
             AssertDriver(result[3], "Tim",   null);
         }
 
-        private void AssertDriver(object result, string name, string model)
+        private void AssertDriver(object result, string name, string? model)
         {       
             var jobj  = result as JsonObject;
             var left  = jobj![CharacterSpan.FromString("left")] as Driver;

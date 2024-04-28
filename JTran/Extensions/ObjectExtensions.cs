@@ -98,7 +98,7 @@ namespace JTran.Extensions
         /****************************************************************************/
         internal static bool IsDictionary(this object obj)
         {
-            return obj is IEnumerable && obj.GetType().Name.Contains("Dictionary");
+            return obj is IDictionary;
         }
 
         /*****************************************************************************/

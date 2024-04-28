@@ -308,6 +308,18 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public object? ensureendswith(object? val, object? ending)
+        {
+            if(val == null || ending == null)
+                return val;
+
+            if(val is ICharacterSpan cspan)
+                return cspan.EnsureEndsWith(ending.AsCharacterSpan());
+
+            return val!.ToString()!.EnsureEndsWith(ending.ToString());
+        }
+
+        /*****************************************************************************/
         public bool contains(object? val, object? searchFor)
         {
             if(val == null || searchFor == null)

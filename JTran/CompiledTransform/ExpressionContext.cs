@@ -37,9 +37,10 @@ namespace JTran
     /*****************************************************************************/
     public class ExpressionContext
     {
-        private readonly IDictionary<ICharacterSpan, object>        _variables;
+        private readonly IDictionary<ICharacterSpan, object?>      _variables;
         private readonly IDictionary<string, IDocumentRepository>? _docRepositories;
         private readonly ExpressionContext?                        _parent;
+        private readonly TransformerContext?                       _transformerContext;
 
         /*****************************************************************************/
         internal ExpressionContext(object?                         data, 
@@ -51,30 +52,27 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables       = new Dictionary<ICharacterSpan, object>();
-            _docRepositories = transformerContext?.DocumentRepositories;
-            _parent          = null;
+            _variables          = new Dictionary<ICharacterSpan, object?>();
+            _docRepositories    = transformerContext?.DocumentRepositories;
+            _parent             = null;
+            _transformerContext = transformerContext;
 
-            this.Name        = name;
-            this.Templates   = templates;
-            this.Functions   = functions;
+            this.Name           = name;
+            this.Templates      = templates;
+            this.Functions      = functions;
 
             this.ExtensionFunctions = extensionFunctions;
-
-            if(transformerContext?.Arguments != null)
-                foreach(var arg in transformerContext.Arguments)
-                    _variables.Add(CharacterSpan.FromString(arg.Key), arg.Value);
         }
 
         /*****************************************************************************/
-        internal ExpressionContext(object data, 
-                                   ExpressionContext              parentContext,
-                                   IDictionary<string, TTemplate> templates = null,
-                                   IDictionary<string, TFunction> functions = null)
+        internal ExpressionContext(object?                         data, 
+                                   ExpressionContext?              parentContext,
+                                   IDictionary<string, TTemplate>? templates = null,
+                                   IDictionary<string, TFunction>? functions = null)
         {
             this.Data = data;
 
-            _variables        = new Dictionary<ICharacterSpan, object>();
+            _variables        = new Dictionary<ICharacterSpan, object?>();
             _docRepositories  = parentContext?._docRepositories;
             _parent           = parentContext;
             this.CurrentGroup = parentContext?.CurrentGroup;
@@ -107,18 +105,22 @@ namespace JTran
 
                     if(repo is IDocumentRepository2 repo2)
                     { 
-                        using var doc2 = repo2.GetDocumentStream(docName);
+                        using var doc = repo2.GetDocumentStream(docName);
+                        var result = doc.ToJsonObject();
 
-                        return doc2.ToJsonObject();
+                        return result;
                     }
+                    else
+                    { 
+                        var doc    = repo.GetDocument(docName);
+                        var result = doc.ToJsonObject();
 
-                    var doc = repo.GetDocument(docName);
-
-                    return doc.ToJsonObject();
-
+                        return result;
+                    }
                 }
-                catch(Exception ex)
+                catch
                 {
+                    // Eat the exception
                 }
             }
 
@@ -148,10 +150,22 @@ namespace JTran
                 return val;
             }
 
-            if(_parent == null)
-                throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
+            if(_parent != null)
+                return _parent.GetVariable(name, context);
 
-            return _parent.GetVariable(name, context);
+            if(_transformerContext?.Arguments != null)
+            { 
+                try
+                {
+                    return _transformerContext.Arguments[name.ToString()];
+                }
+                catch(Exception ex)
+                {
+                    throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}", ex);
+                }
+            }
+
+            throw new Transformer.SyntaxException($"A variable with that name does not exist: {name}");
         }
 
         /*****************************************************************************/
@@ -183,6 +197,15 @@ namespace JTran
                 throw new Transformer.SyntaxException($"A variable with that name already exists in the same scope: {name}");
 
             _variables.Add(name, val);
+        }
+
+        /*****************************************************************************/
+        internal void SetOutputVariable(ICharacterSpan name, object val)
+        {
+            if(_parent != null)
+                _parent.SetOutputVariable(name, val);
+            else if(_transformerContext != null)
+                _transformerContext.SetOutputArgument(name.ToString(), val);
         }
 
         private static readonly ICharacterSpan _scopeSymbol = CharacterSpan.FromString("@");

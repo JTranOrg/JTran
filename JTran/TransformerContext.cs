@@ -17,8 +17,10 @@
  *                                                                          
  ****************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using JTran.Collections;
 
 namespace JTran
 {
@@ -26,9 +28,34 @@ namespace JTran
     /****************************************************************************/
     public class TransformerContext
     {
-        public IDictionary<string, object>              Arguments             { get; set; }
-        public IDictionary<string, IDocumentRepository> DocumentRepositories  { get; set; } = new Dictionary<string, IDocumentRepository>();
-        public bool AllowDeferredLoading { get; set; } = true;
+        public IDictionary<string, object>?              Arguments               { get; set; }
+        public IDictionary<string, IDocumentRepository>? DocumentRepositories    { get; set; } = new Dictionary<string, IDocumentRepository>();
+        public bool                                      AllowDeferredLoading    { get; set; } = true;
+        public IReadOnlyDictionary<string, object>       OutputArguments         => _internalOutputArguments;
+        public Action<string, object>?                   OnOutputArgument        { get; set; }
+
+        #region Internal
+
+        private readonly RestrictedAccessDictionary     _internalOutputArguments = new();
+
+        /****************************************************************************/
+        internal void SetOutputArgument(string key, object value)   
+        {
+            _internalOutputArguments.SetValue(key, value);
+
+            if(OnOutputArgument != null)
+            {
+                try
+                {
+                    OnOutputArgument(key, value);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        #endregion
     }
 
     /****************************************************************************/

@@ -43,12 +43,29 @@ namespace JTran
             if(result != null && result is ICharacterSpan cspan)
                 cspan.ExpressionResult = false; // Suppress inline string transforms
 
-            var name = this.Name.Evaluate(context) as ICharacterSpan;
-
-            if(name.StartsWith("Tempor"))
-                return result;
-
             return result;
+        }
+    }    
+    
+    /****************************************************************************/
+    internal class TOutputVariable : TProperty
+    {
+        /****************************************************************************/
+        internal TOutputVariable(ICharacterSpan name, object val, long lineNumber) 
+                    : base(name.Substring("#outputvariable(".Length, name.Length - "#outputvariable(".Length - 1), val, lineNumber)
+        {
+        }
+
+        /****************************************************************************/
+        public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            var name  = this.Name.Evaluate(context) as ICharacterSpan;
+            var value = this.Value.Evaluate(context);
+
+            if(value is ICharacterSpan cspan)
+                value = cspan.ToString();
+
+            context.SetOutputVariable(name!, value);
         }
     }
 

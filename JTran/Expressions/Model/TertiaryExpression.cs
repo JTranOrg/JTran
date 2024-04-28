@@ -25,12 +25,12 @@ namespace JTran.Expressions
     /*****************************************************************************/
     internal class TertiaryExpression : IExpression
     {
-        public IExpression Conditional    { get; set; }
-        public IExpression IfTrue         { get; set; }
-        public IExpression IfFalse        { get; set; }
+        public IExpression? Conditional    { get; set; }
+        public IExpression? IfTrue         { get; set; }
+        public IExpression? IfFalse        { get; set; }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             if(Conditional.EvaluateToBool(context))
                 return IfTrue.Evaluate(context);
@@ -39,7 +39,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public bool EvaluateToBool(ExpressionContext context)
+        public bool EvaluateToBool(ExpressionContext? context)
         {
             return Convert.ToBoolean(Evaluate(context));
         }

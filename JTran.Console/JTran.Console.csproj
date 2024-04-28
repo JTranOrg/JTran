@@ -5,6 +5,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>jtrancmd</AssemblyName>
     <Authors>jtranorg</Authors>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>jtrancmd</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

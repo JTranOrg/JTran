@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Threading.Tasks;
+
 using JTran.Common;
 using JTran.Expressions;
-using JTran.Extensions;
 using JTran.Parser;
 
 namespace JTran
@@ -29,7 +30,7 @@ namespace JTran
             if(this.Name != null)
                 arrayName = this.Name.Evaluate(context);
 
-            var cspan = arrayName.AsCharacterSpan();
+            var cspan = arrayName?.AsCharacterSpan();
 
             if(!(cspan?.IsNullOrWhiteSpace() ?? true))
                 return cspan;

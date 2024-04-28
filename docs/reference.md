@@ -262,6 +262,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[mapitem](#map)</strong> - Maps a key or expression to a single output value 
 - <strong>[message](#message)</strong> - Writes a message to the console 
 - <strong>[outerjoin](#outerjoin)</strong> - Joins the objects from two arrays based on a query and outputs the right list plus data from matching objects from the left list
+- <strong>[outputvariable](#outputvariable)</strong> - Output variables allows the creation of values that can be picked up by the transform caller.
 - <strong>[template](#Templates)</strong> - A reusable snippet of JTran code
 - <strong>[throw](#throw)</strong> - Throws an exception
 - <strong>[try](#trycatch)</strong> - Part of a try/catch block
@@ -570,7 +571,7 @@ Takes on object and outputs the properties of that object except for those that 
                Make:  "Pontiac",
                Model: "Firebird"
             }
-        },
+        ],
         Driver:
         {
            Name: "Joe Smith"
@@ -645,6 +646,85 @@ If no array name is specified then no new array is created and contents are outp
         }
     }
 
+If the input json document is an array (starts with "[") then you can reference that array with the scope operator 
+
+    {
+        "#foreach(@, Vehicles)":
+        {
+            Brand:    "#(Make)",
+            Model:   "#(Model)"
+        }
+    }
+
+###### Source
+
+    [
+        {
+            Make:  Chevy",
+            Model: "Corvette"
+        },
+        {
+            Make:  "Pontiac",
+            Model: "Firebird"
+        }
+    ]
+
+###### Output
+
+    {
+        Vehicles:
+        [
+            {
+               Brand: "Chevy",
+               Model: "Corvette"
+            },
+            {
+               Brand: "Pontiac",
+               Model: "Firebird"
+            }
+        }
+    }
+
+If you want to output an array (starts with "[") then you can use "[]" as the output name. Note that this can only be done if the output element ("#foreach, #foreachgroup, #array) is at the root and is the only output element
+
+    {
+        "#variable(Driver)": "Bob Jones",
+
+        "#foreach(@, [])":
+        {
+            Brand:    "#(Make)",
+            Model:    "#(Model)"
+            Driver:   "#($Driver)"
+        }
+    }
+
+###### Source
+
+    [
+        {
+            Make:   "Chevy",
+            Model:  "Corvette"
+        },
+        {
+            Make:   "Pontiac",
+            Model:  "Firebird"
+        }
+    ]
+
+###### Output
+
+    [
+        {
+            Brand: "Chevy",
+            Model: "Corvette",
+            Driver: "Bob Jones"
+        },
+        {
+            Brand: "Pontiac",
+            Model: "Firebird",
+            Driver: "Bob Jones"
+        }
+    }
 
 #### #foreachgroup
 
@@ -659,7 +739,7 @@ If no array name is specified then no new array is created and contents are outp
             Make: '#(Make)', // Make here is the grouped by value from the foreachgroup parameter
 
             // currentgroup() returns the list of Cars that belong to the current group (Make)
-            '#foreach(currentgroup(), Drivers)':
+            "#foreach(currentgroup(), Drivers)":
             {
                 Name:  '#(Name)',
                 Model: '#(Model)'
@@ -730,6 +810,95 @@ If no array name is specified then no new array is created and contents are outp
             }
         ]
     }
+    
+  You can group on more one field
+    {
+        // Groups cars into subarrays by Make. This will create an array called 'Makes'
+        "#foreachgroup(Drivers, [Make, Model], Makes)":
+        {
+            Make:  "#(Make)",  // Make here is the grouped by value from the foreachgroup parameter
+            Model: "#(Model)", // Model here is the grouped by value from the foreachgroup parameter
+
+            // currentgroup() returns the list of Cars that belong to the current group (Make)
+            "#foreach(currentgroup(), [])": // Output to an array
+            {
+                Name:  '#(Name)',
+            }
+        }
+    }
+
+###### Source
+
+    {
+        Drivers:
+        [
+            {
+                Name:      "John Smith",
+                Make:      "Chevy",
+                Model:     "Corvette",
+            },
+            {
+                Name:      "Fred Jones",
+                Make:      "Pontiac",
+                Model:     "Firebird",
+            },
+            {
+                Name:      "Mary Anderson",
+                Make:      "Chevy",
+                Model:     "Camaro",
+            },
+            {
+                Name:      "Amanda Ramirez",
+                Make:      "Pontiac",
+                Model:     "GTO",
+            },
+        ]
+    }
+
+###### Output
+
+    [
+        {
+            Make:  "Chevy",
+            Model: "Corvette",
+            Drivers:   
+            [
+                {
+                    Name: "John Smith"
+                }
+            ]
+        },
+        {
+            Make:      "Chevy",
+            Model:     "Camaro",
+            Drivers:   
+            [
+                {
+                    Name: "Mary Anderson"
+                }
+            ]
+        },
+        {
+            Make:      "Pontiac",
+            Model:     "Firebird",
+            Drivers:   
+            [
+                {
+                    Name: "Fred Jones",
+                }
+            ]
+        },
+        {
+            Make:      "Pontiac",
+            Model:     "GTO",
+            Drivers:   
+            [ 
+                {
+                    Name: "Amanda Ramirez"
+                }
+            ]
+        }
+    ]
 
 
 #### #include
@@ -1708,6 +1877,12 @@ You can also use expressions in the #mapitem but then you'll need to use the sco
           "Year":   null
        }
     ]
+
+    
+#### #outputvariable
+    
+    Output variables allows the creation of values that can be picked up by the transform caller.
+
 
 ### <a id="Templates">Templates</a>
 

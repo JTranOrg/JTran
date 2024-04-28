@@ -159,18 +159,18 @@ namespace JTran.UnitTests
 
             var result = func.Evaluate(parameters, context) as IEnumerable<object>;
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("bob", result.First().ToString());
+            Assert.AreEqual(1, result!.Count());
+            Assert.AreEqual("bob", result!.First().ToString());
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(""), new JTran.Expressions.Value(",") };
 
             result = func.Evaluate(parameters, context) as IEnumerable<string>;
 
-            Assert.AreEqual(0, result.Count());
+            Assert.AreEqual(0, result!.Count());
 
             parameters = new List<IExpression> { new JTran.Expressions.Value(" bob;fred ; george  "), new JTran.Expressions.Value(";") };
 
-           var result2 = (func.Evaluate(parameters, context) as IEnumerable<object>).ToList();
+           var result2 = (func!.Evaluate(parameters, context) as IEnumerable<object>)!.ToList();
 
             Assert.AreEqual(3, result2.Count);
             Assert.AreEqual("bob",    result2[0].ToString());
