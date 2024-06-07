@@ -58,8 +58,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JTran.Common", "JTran.Commo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release Notes", "Release Notes", "{76005B8D-A3F0-4EE0-A957-D64DBAB04767}"
 	ProjectSection(SolutionItems) = preProject
-		v4_0_0.md = v4_0_0.md
-		v4_1_0.md = v4_1_0.md
+		docs\Release Notes\v4_0_0.md = docs\Release Notes\v4_0_0.md
+		docs\Release Notes\v4_1_0.md = docs\Release Notes\v4_1_0.md
+		docs\Release Notes\v4_1_1.md = docs\Release Notes\v4_1_1.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Apis", "Tests\Test.Apis\Test.Apis.csproj", "{EBEDEB1D-9A3E-4426-8845-DAE251F61069}"
