@@ -18,7 +18,9 @@
  ****************************************************************************/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -32,16 +34,17 @@ namespace JTran.Project
     /****************************************************************************/
     public class CompiledProject
     { 
-        public string                       Name            { get; set; } = "";
-        public string                       Transform       { get; set; } = "";
-        public string                       SourcePath      { get; set; } = "";
-        public string                       Destinations    { get; set; } = "";
-        public bool                         SplitOutput     { get; set; } = false;
-        public Dictionary<string, string>?  Includes        { get; set; }
-        public Dictionary<string, string>?  Documents       { get; set; }
-        public List<object>                 Extensions      { get; set; } = new List<object>();
-
-        private Dictionary<string, object>? Arguments       { get; set; }
+        public string                              Name               { get; set; } = "";
+        public string                              Transform          { get; set; } = "";
+        public string                              SourcePath         { get; set; } = "";
+        public string                              Destinations       { get; set; } = "";
+        public bool                                SplitOutput        { get; set; } = false;
+        public Dictionary<string, string>?         Includes           { get; set; }
+        public Dictionary<string, string>?         Documents          { get; set; }
+        public List<object>                        Extensions         { get; set; } = new();
+                                                   
+        private Dictionary<string, object>?        Arguments          { get; set; }
+        private List<IDictionary<string, object>>  ArgumentProviders  { get; set; } = [];
 
         /****************************************************************************/
         public static async Task<CompiledProject> Load(Project project, Action<Exception> onError)
@@ -49,14 +52,15 @@ namespace JTran.Project
             var compiled = new CompiledProject();
             var task     = File.ReadAllTextAsync(project.TransformPath);
 
-            compiled.Name         = project.Name;
-            compiled.SourcePath   = project.SourcePath;
-            compiled.Destinations = project.DestinationPath;
-                                  
-            compiled.Documents    = project.DocumentPaths;
-            compiled.Includes     = LoadFiles(project.IncludePaths, onError, true);
-            compiled.Arguments    = project.Arguments;
-            compiled.SplitOutput  = project.SplitOutput;
+            compiled.Name               = project.Name;
+            compiled.SourcePath         = project.SourcePath;
+            compiled.Destinations       = project.DestinationPath;
+                                        
+            compiled.Documents          = project.DocumentPaths;
+            compiled.Includes           = LoadFiles(project.IncludePaths, onError, true);
+            compiled.Arguments          = project.Arguments;
+            compiled.ArgumentProviders  = project.ArgumentProviders;
+            compiled.SplitOutput        = project.SplitOutput;
 
             if(project.ExtensionPaths != null)
             { 
@@ -102,15 +106,11 @@ namespace JTran.Project
         public Task Run(IDictionary<string, object>? args = null)
         {
             var transformer = new Transformer(this.Transform, this.Extensions, this.Includes);
-            var context     = CreateContext(args);
             var args2       = new Dictionary<string, object>();
-
-            args2.Merge(args);
-            args2.Merge(this.Arguments);
 
             args2.Add("DestinationPath", this.Destinations);
 
-            context.Arguments = args2;
+            var context = CreateContext(args, args2);
 
             using var source = File.OpenRead(this.SourcePath);
 
@@ -162,12 +162,10 @@ namespace JTran.Project
              { 
                 var args2 = new Dictionary<string, object>();
 
-                args2.Merge(args);
-
                 args2.Add("SourceIndex", i+1);
                 args2.Add("DestinationPath", destinationPaths[i]);
 
-                tasks.Add(TransformFile(transformer, sourcePaths[i], destinationPaths[i], args2, onSuccess, onError));
+                tasks.Add(TransformFile(transformer, sourcePaths[i], destinationPaths[i], args, args2, onSuccess, onError));
              }
 
              return Task.WhenAll(tasks);
@@ -176,7 +174,7 @@ namespace JTran.Project
         #region Private
 
         /****************************************************************************/
-        private Task TransformFile(Transformer transformer, string sourcePath, string destinationPath, IDictionary<string, object>? args, Action<string> onSuccess, Action<string> onError)
+        private Task TransformFile(Transformer transformer, string sourcePath, string destinationPath, IDictionary<string, object>? args, IDictionary<string, object>? args2, Action<string> onSuccess, Action<string> onError)
         { 
             return Task.Run( ()=> 
             { 
@@ -184,7 +182,7 @@ namespace JTran.Project
                 { 
                     using var output = new DeferredFileStream(destinationPath);
                     using var source = File.OpenRead(sourcePath);
-                    var context      = CreateContext(args, (name, value)=> 
+                    var context      = CreateContext(args, args2, (name, value)=> 
                     {
                         if(name == "FileName")
                             output.FileName = value.ToString();
@@ -202,7 +200,7 @@ namespace JTran.Project
         }
 
         /****************************************************************************/
-        private TransformerContext CreateContext(IDictionary<string, object>? args, Action<string, object>? onOutputVariable = null)
+        private TransformerContext CreateContext(IDictionary<string, object>? args, IDictionary<string, object>? args2 = null, Action<string, object>? onOutputVariable = null)
         { 
             IDictionary<string, IDocumentRepository>? docRepositories = null;
 
@@ -216,7 +214,25 @@ namespace JTran.Project
                 }
             }
 
-            var newArgs = args.Merge(this.Arguments);
+            var providers = new List<IDictionary<string, object>>();
+
+            // These will be evaluated first
+            if(args != null && args.Count > 0) 
+                providers.Add(args);
+
+            if(args2 != null && args2.Count > 0) 
+                providers.Add(args2);
+
+            // These will be evaluated second
+            if(this.Arguments != null && this.Arguments.Count > 0) 
+                providers.Add(this.Arguments);
+
+            // These will be evaluated last
+            if(this.ArgumentProviders != null && this.ArgumentProviders.Count > 0) 
+                providers.AddRange(this.ArgumentProviders);
+
+            // Any other argument providers will be evaluated after those two
+            var newArgs = new ArgumentsProvider(providers);
 
             return new TransformerContext { DocumentRepositories = docRepositories, Arguments = newArgs, OnOutputArgument = onOutputVariable };
         }
@@ -259,6 +275,101 @@ namespace JTran.Project
             }
           
             return result;
+        }
+
+        /****************************************************************************/
+        private class ArgumentsProvider : IDictionary<string, object>
+        {
+            private List<IDictionary<string, object>> _providers  { get; set; }
+
+            public ArgumentsProvider(List<IDictionary<string, object>> providers)
+            {
+                _providers = providers;
+            }
+
+            public bool IsReadOnly => true;
+
+            public object this[string key] 
+            { 
+                get
+                {
+                    foreach(var provider in _providers)
+                        if(provider.ContainsKey(key))
+                            return provider[key];
+
+                    throw new KeyNotFoundException();
+                }
+
+                set => throw new NotSupportedException(); 
+            }
+
+            public bool ContainsKey(string key)
+            {
+                foreach(var provider in _providers)
+                    if(provider.ContainsKey(key))
+                        return true;
+
+                return false;
+            }
+
+            #region Not Supported
+
+            public ICollection<string> Keys => throw new NotSupportedException();
+            public ICollection<object> Values => throw new NotSupportedException();
+
+            public int Count => throw new NotSupportedException();
+
+            public void Add(string key, object value)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Remove(string key)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Add(KeyValuePair<string, object> item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Clear()
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Contains(KeyValuePair<string, object> item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Remove(KeyValuePair<string, object> item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                throw new NotSupportedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotSupportedException();
+            }
+
+            #endregion
         }
 
         #endregion

@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
 using JTran.Project;
+using System.Collections.Generic;
 
 namespace JTran.Console.UnitTests
 {
@@ -56,5 +57,27 @@ namespace JTran.Console.UnitTests
 
             Assert.IsTrue(true);
         } 
+
+        [TestMethod]
+        [DataRow("Project1")]
+        public async Task JTranConsole_arguments_provider(string projectName)
+        {
+            var transformPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Transforms\\{projectName}b.jtran";
+            var sourcePath    = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Sources\\{projectName}.json";
+            var destination   = "C:\\Development\\Testing\\JTran\\Console Tests\\Project1b.json";
+            var thisAssembly  = "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\TestArgumentsProvider\\bin\\Debug\\net8.0\\TestArgumentsProvider.dll";
+            
+            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
+
+            Assert.IsTrue(true);
+        } 
+    }
+
+    public class MyArgs : Dictionary<string, object>
+    {
+        public MyArgs() 
+        {
+            this.Add("Phrase", "bobs your uncle");
+        }
     }
 }

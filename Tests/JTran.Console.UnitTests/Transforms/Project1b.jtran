@@ -1,0 +1,11 @@
+{
+    "#foreach(@, Persons)":
+    {
+        "LastName":    "#(Surname)",
+        "Age":         "#(Age)",
+        "Address":     "#(Address)",
+        "City":        "San Francisco",
+        "Country":     "USA",
+        "Phrase":      "#($Phrase)"
+    }
+}

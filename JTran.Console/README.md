@@ -17,6 +17,7 @@ Sample call
     /i -- Specify an include folder.
     /d -- Specify a documents folder. When this is used the document source name is "all"
     /m -- Specify multiple (split) output
+    /a -- Specifies an argument provider. Must be in the format <dll_path::class_name>. Class must be derived from IDictionary<string, object> and constructor must have no parameters.
 
     A project file allows you to specify all of the other items in a single file. 
 

@@ -2,7 +2,7 @@
   "profiles": {
     "JTran.Console": {
       "commandName": "Project",
-      "commandLineArgs": "/p C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Projects\\Project1.json"
+      "commandLineArgs": "-p C:\\Development\\Projects\\JTran.CICD\\Deployment\\CustomTasks\\JTranAzureAppConfig\\AzureDevops\\Test\\project2.json"
     }
   }
 }
