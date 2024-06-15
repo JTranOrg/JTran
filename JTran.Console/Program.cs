@@ -11,6 +11,7 @@ using JTran.Project;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
 [assembly: InternalsVisibleTo("JTran.Console.UnitTests")]
 
@@ -27,15 +28,18 @@ namespace JTran.Console
                 ShowHelp();
             else
             { 
-                var index         = 0;
-                var transform     = "";
-                var source        = "";
-                var output        = "";
-                var includes      = "";
-                var documents     = "";
-                JTranProject? project   = null;
-                var projectPath   = "";
-                bool split        = false;
+                var index             = 0;
+                var transform         = "";
+                var source            = "";
+                var output            = "";
+                var includes          = "";
+                var documents         = "";
+                var extensionPath     = "";
+                var transformParams   = "";
+                var argumentProvider  = "";
+                JTranProject? project = null;
+                var projectPath       = "";
+                bool split            = false;
 
                 // Set up all the paths
                 while(index < args.Length)
@@ -61,6 +65,15 @@ namespace JTran.Console
 
                         if(arg == "/d" || arg == "-d")
                             documents = args[++index];
+
+                        if(arg == "/tp" || arg == "-tp")
+                            transformParams = args[++index];
+
+                        if(arg == "/e" || arg == "-e")
+                            extensionPath = args[++index];
+
+                        if(arg == "/a" || arg == "-a")
+                            argumentProvider = args[++index];
                     }
 
                     if(arg == "/m" || arg == "-m")
@@ -115,6 +128,15 @@ namespace JTran.Console
 
                 if(!string.IsNullOrWhiteSpace(includes))
                     project.IncludePaths.Add("", includes);
+
+                if(!string.IsNullOrWhiteSpace(transformParams))
+                    project.AddArguments(transformParams);
+
+                if(!string.IsNullOrWhiteSpace(extensionPath))
+                    project.ExtensionPaths.Add(extensionPath);
+
+                if(!string.IsNullOrWhiteSpace(argumentProvider))
+                    AddArgumentProvider(project, argumentProvider);
 
                 if(split)
                     project.SplitOutput = true;
@@ -245,6 +267,33 @@ namespace JTran.Console
             System.Console.ForegroundColor = defaultColor;
         }
 
+        /****************************************************************************/
+        private static void AddArgumentProvider(JTran.Project.Project project, string providerStr)
+        {
+            var parts = providerStr.Split("::");
+            
+            if(parts.Length < 2) 
+            { 
+                WriteError("Arguments provider string must be in the format: <dll_path::class_name>");
+                return;
+            }
+
+            try
+            {
+                var assembly  = Assembly.LoadFile(parts[0]);
+                var classType = assembly.GetType(parts[1])!;
+                var obj       = Activator.CreateInstance(classType);
+
+                if(obj is IDictionary<string, object> dict)
+                    project.ArgumentProviders.Add(dict);
+
+            }
+            catch(Exception ex) 
+            {
+                WriteError(ex.Message);
+                return;
+            }
+        }
         #endregion
     }
 

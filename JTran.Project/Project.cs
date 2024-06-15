@@ -7,14 +7,15 @@ namespace JTran.Project
     /****************************************************************************/
     public class Project
     {
-        public string                      Name            { get; set; } = "";
-        public string                      TransformPath   { get; set; } = "";
-        public string                      SourcePath      { get; set; } = "";
-        public string                      DestinationPath { get; set; } = "";
-        public bool                        SplitOutput     { get; set; } = false;
-        public Dictionary<string, string>  IncludePaths    { get; set; } = new Dictionary<string, string>();
-        public Dictionary<string, string>  DocumentPaths   { get; set; } = new Dictionary<string, string>();
-        public List<string>                ExtensionPaths  { get; set; } = new List<string>();
-        public Dictionary<string, object>? Arguments       { get; set; }
+        public string                             Name              { get; set; } = "";
+        public string                             TransformPath     { get; set; } = "";
+        public string                             SourcePath        { get; set; } = "";
+        public string                             DestinationPath   { get; set; } = "";
+        public bool                               SplitOutput       { get; set; } = false;
+        public Dictionary<string, string>         IncludePaths      { get; set; } = new();
+        public Dictionary<string, string>         DocumentPaths     { get; set; } = new();
+        public List<string>                       ExtensionPaths    { get; set; } = [];
+        public Dictionary<string, object>?        Arguments         { get; set; }
+        public List<IDictionary<string, object>>  ArgumentProviders { get; set; } = [];
     }    
 }

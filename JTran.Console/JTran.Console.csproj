@@ -12,6 +12,12 @@
     <ToolCommandName>jtrancmd</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>2.2.0</Version>
+    <Company>JTranOrg</Company>
+    <Description>A JSON to JSON transformer command line tool</Description>
+    <Copyright>© 2020-2024 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +25,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE" Link="LICENSE">
+      <PackagePath>\</PackagePath>
+      <Pack>True</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\JTran.Project\JTran.Project.csproj" />
     <ProjectReference Include="..\JTran\JTran.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

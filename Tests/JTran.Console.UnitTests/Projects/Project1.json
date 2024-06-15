@@ -11,10 +11,6 @@
    {
       "docs":           "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Documents" 
    },
-   "ExtensionPaths":    
-   [
-      "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Extensions\\Extensions.json" 
-   ],
    "Arguments": 
    {
       "country":       "US"

@@ -15,7 +15,11 @@ namespace JTran.Project
             this.FileName = initialFileName;
         }
 
-        internal string FileName { get; set; }
+        internal string FileName 
+        { 
+            get; 
+            set;
+        }
 
         private Stream Stream => _stream == null ? _stream = File.Create(FileName) : _stream;
 
