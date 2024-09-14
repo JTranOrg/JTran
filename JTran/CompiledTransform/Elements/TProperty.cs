@@ -48,8 +48,10 @@ namespace JTran
             }
             catch(JsonParseException ex)
             {
-              ex.LineNumber = this.LineNumber+1;
-              throw;
+                if(ex.LineNumber == -1)
+                    ex.LineNumber = this.LineNumber+1;
+
+                throw;
             }
 
             wrap( ()=> output.WriteProperty(name, val));
