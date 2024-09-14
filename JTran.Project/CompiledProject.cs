@@ -153,7 +153,7 @@ namespace JTran.Project
         }
 
         /****************************************************************************/
-        public Task TransformFiles(string[] sourcePaths, string[] destinationPaths, IDictionary<string, object>? args, Action<string> onSuccess, Action<string> onError)
+        public async Task TransformFiles(string[] sourcePaths, string[] destinationPaths, IDictionary<string, object>? args, Action<string> onSuccess, Action<string> onError, bool serially = false)
         {
              var transformer = new Transformer(this.Transform, this.Extensions, this.Includes);
              var tasks       = new List<Task>();
@@ -165,16 +165,20 @@ namespace JTran.Project
                 args2.Add("SourceIndex", i+1);
                 args2.Add("DestinationPath", destinationPaths[i]);
 
-                tasks.Add(TransformFile(transformer, sourcePaths[i], destinationPaths[i], args, args2, onSuccess, onError));
+                if(serially)
+                    TransformFile(transformer, sourcePaths[i], destinationPaths[i], args, args2, onSuccess, onError);
+                else
+                    tasks.Add(TransformFileAsync(transformer, sourcePaths[i], destinationPaths[i], args, args2, onSuccess, onError));
              }
 
-             return Task.WhenAll(tasks);
+             if(!serially)
+                await Task.WhenAll(tasks);
         }
 
         #region Private
 
         /****************************************************************************/
-        private Task TransformFile(Transformer transformer, string sourcePath, string destinationPath, IDictionary<string, object>? args, IDictionary<string, object>? args2, Action<string> onSuccess, Action<string> onError)
+        private Task TransformFileAsync(Transformer transformer, string sourcePath, string destinationPath, IDictionary<string, object>? args, IDictionary<string, object>? args2, Action<string> onSuccess, Action<string> onError)
         { 
             return Task.Run( ()=> 
             { 
@@ -197,6 +201,29 @@ namespace JTran.Project
                     onError(ex.Message);
                 }
             });
+        }
+
+        /****************************************************************************/
+        private void TransformFile(Transformer transformer, string sourcePath, string destinationPath, IDictionary<string, object>? args, IDictionary<string, object>? args2, Action<string> onSuccess, Action<string> onError)
+        { 
+            try
+            { 
+                using var output = new DeferredFileStream(destinationPath);
+                using var source = File.OpenRead(sourcePath);
+                var context      = CreateContext(args, args2, (name, value)=> 
+                {
+                    if(name == "FileName")
+                        output.FileName = value.ToString();
+                });
+
+                transformer.Transform(source, output, context);
+
+                onSuccess($"Transforming file {sourcePath} to {output.FileName}");
+            }
+            catch (Exception ex) 
+            { 
+                onError(ex.Message);
+            }
         }
 
         /****************************************************************************/

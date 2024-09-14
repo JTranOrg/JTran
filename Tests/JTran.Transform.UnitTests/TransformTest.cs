@@ -13,7 +13,14 @@ namespace JTran.Transform.UnitTests
         {
             var data = await LoadSample(sampleName);
 
-            return await TestData(transformName, data, extFunctions, dataTransform, includeSource, context);
+            try
+            { 
+                return await TestData(transformName, data, extFunctions, dataTransform, includeSource, context);
+            }
+            catch(Exception ex) 
+            {
+                throw;
+            }
         }
 
         public static async Task TestData(string transformName, Stream input, Stream output, IEnumerable extFunctions = null, IDictionary<string, string>? includeSource = null, TransformerContext? context = null)

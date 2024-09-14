@@ -1,0 +1,18 @@
+{
+   "Name":              "Project1",            
+   "TransformPath":     "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Transforms\\Project_error.jtran",    
+   "SourcePath":        "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Sources\\Project1.json",       
+   "DestinationPath":   "C:\\Development\\Testing\\JTran\\Console Tests\\",
+   "IncludePaths":    
+   {
+      "":                "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Includes" 
+   },
+   "DocumentPaths":    
+   {
+      "docs":           "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Documents" 
+   },
+   "Arguments": 
+   {
+      "country":       "US"
+   }
+}

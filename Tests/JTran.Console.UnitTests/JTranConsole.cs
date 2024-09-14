@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 using JTran.Project;
 using System.Collections.Generic;
+using System;
 
 namespace JTran.Console.UnitTests
 {
@@ -23,6 +24,17 @@ namespace JTran.Console.UnitTests
             await JTran.Console.Program.Main(new string[] {"-p", projectPath});
 
             Assert.IsTrue(true);
+        } 
+
+        [TestMethod]
+        [DataRow("Project_error")]
+        public async Task JTranConsole_singlefile_error(string projectName)
+        {
+            var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
+            
+            var ex = await Assert.ThrowsExceptionAsync<Transformer.SyntaxException>( async ()=> await JTran.Console.Program.Main(new string[] {"-p", projectPath, "-se"}));
+
+            Assert.IsTrue(ex.Message.Contains("at line 10"));
         } 
 
         [TestMethod]
@@ -67,7 +79,7 @@ namespace JTran.Console.UnitTests
             var destination   = "C:\\Development\\Testing\\JTran\\Console Tests\\Project1b.json";
             var thisAssembly  = "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\TestArgumentsProvider\\bin\\Debug\\net8.0\\TestArgumentsProvider.dll";
             
-            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
+            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-tp", "-environment 'prod'", "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
 
             Assert.IsTrue(true);
         } 
