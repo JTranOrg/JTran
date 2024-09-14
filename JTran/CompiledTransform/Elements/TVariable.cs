@@ -10,6 +10,7 @@ namespace JTran
     internal interface IVariable
     {
         object? GetActualValue(ExpressionContext context);
+        long LineNumber { get; }
     }
 
     /****************************************************************************/
@@ -22,7 +23,10 @@ namespace JTran
         internal TVariable(ICharacterSpan name, object val, long lineNumber) 
                     : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
         {
+            this.LineNumber = lineNumber;
         }
+
+        public long LineNumber { get;}
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
@@ -74,12 +78,15 @@ namespace JTran
     internal abstract class TVariableContainer : TContainer, IVariable
     {    
         /****************************************************************************/
-        internal TVariableContainer(ICharacterSpan name) 
+        internal TVariableContainer(ICharacterSpan name, long lineNumber) 
         {
             this.Name = name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1);
+            this.LineNumber = lineNumber;
         }
 
         internal ICharacterSpan Name { get; }
+
+        public long LineNumber { get; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
@@ -128,7 +135,7 @@ namespace JTran
     internal class TVariableObject : TVariableContainer
     {    
         /****************************************************************************/
-        internal TVariableObject(ICharacterSpan name) : base(name)
+        internal TVariableObject(ICharacterSpan name, long lineNumber) : base(name, lineNumber)
         {
         }
 
@@ -150,7 +157,7 @@ namespace JTran
     internal class TVariableArray : TVariableContainer
     {    
         /****************************************************************************/
-        internal TVariableArray(ICharacterSpan name)  : base(name)
+        internal TVariableArray(ICharacterSpan name, long lineNumber) : base(name, lineNumber)
         {
         }
 

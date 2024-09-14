@@ -6,6 +6,7 @@
         "Address":     "#(Address)",
         "City":        "San Francisco",
         "Country":     "USA",
-        "Phrase":      "#($Phrase)"
+        "Phrase":      "#($Phrase)",
+        "Environment": "#($environment)"
     }
 }

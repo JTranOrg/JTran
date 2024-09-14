@@ -18,6 +18,7 @@ namespace JTran
             if(name.Length == 0)
                 throw new ArgumentException();
 
+            this.LineNumber = lineNumber;
             this.Name = _noobject.Equals(name) ? null : CreateValue(name, true, lineNumber);
 
             try
@@ -33,12 +34,23 @@ namespace JTran
 
         internal IValue? Name  { get; set; }
         internal IValue Value  { get; set; }
+        internal long LineNumber  { get; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name?.Evaluate(context) as ICharacterSpan;
-            var val  = this.Value.Evaluate(context);
+            object? val = null;
+
+            try
+            { 
+                val  = this.Value.Evaluate(context);
+            }
+            catch(JsonParseException ex)
+            {
+              ex.LineNumber = this.LineNumber+1;
+              throw;
+            }
 
             wrap( ()=> output.WriteProperty(name, val));
         }

@@ -122,7 +122,7 @@ namespace JTran
                 return new TCallTemplateProperty(parm, lineNumber);
             }
 
-            throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber };    
+            throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber+1 };    
         }   
     }
 }

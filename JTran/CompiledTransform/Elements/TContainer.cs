@@ -73,7 +73,7 @@ namespace JTran
                 return AddFunction(new TFunction(name));
 
             if(elementName.Equals(_variable))
-                result = new TVariableObject(name);
+                result = new TVariableObject(name, lineNumber);
 
             else if(elementName.Equals(_map))
                 result = new TMap(name);
@@ -150,7 +150,7 @@ namespace JTran
             TToken? result;
 
             if(name?.StartsWith("#variable") ?? false)
-                result = new TVariableArray(name);
+                result = new TVariableArray(name, lineNumber);
             else 
                 result = new TExplicitArray(name, lineNumber);
 

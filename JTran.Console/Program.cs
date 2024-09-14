@@ -40,6 +40,7 @@ namespace JTran.Console
                 JTranProject? project = null;
                 var projectPath       = "";
                 bool split            = false;
+                bool serially         = false;
 
                 // Set up all the paths
                 while(index < args.Length)
@@ -74,6 +75,9 @@ namespace JTran.Console
 
                         if(arg == "/a" || arg == "-a")
                             argumentProvider = args[++index];
+
+                        if(arg == "/se" || arg == "-se")
+                           serially = true;
                     }
 
                     if(arg == "/m" || arg == "-m")
@@ -159,7 +163,7 @@ namespace JTran.Console
                     return;
                 }
 
-                await TransformFiles(project);
+                await TransformFiles(project, serially);
              }
         }
 
@@ -190,7 +194,7 @@ namespace JTran.Console
         }
 
         /****************************************************************************/
-        private static async Task TransformFiles(JTranProject project)
+        private static async Task TransformFiles(JTranProject project, bool serially)
         {        
             project.DestinationPath = NormalizePath(project.DestinationPath);
             project.SourcePath      = NormalizePath(project.SourcePath);
@@ -227,12 +231,13 @@ namespace JTran.Console
                 }).ToArray(),
                 null,
                 (msg)=> System.Console.WriteLine(msg),
-                (msg)=> WriteError(msg));
+                (msg)=> WriteError(msg),
+                serially);
             }
             catch(Exception ex2)
             {
                 WriteError(ex2.Message);
-                return;
+                throw;
             }
         }
 
@@ -249,6 +254,7 @@ namespace JTran.Console
             System.Console.WriteLine("-include -- Specify an include folder.");
             System.Console.WriteLine("-d -- Specify a documents folder.");
             System.Console.WriteLine("-m -- Specify multiple (split) output.");
+            System.Console.WriteLine("-a -- Specify an arguments provider.");
         }
 
         /****************************************************************************/
@@ -263,7 +269,9 @@ namespace JTran.Console
             var defaultColor = System.Console.ForegroundColor;
 
             System.Console.ForegroundColor = clr;
-            System.Console.WriteLine(text);
+            System.Diagnostics.Debug.WriteLine("...");
+            System.Diagnostics.Debug.WriteLine(text);
+            System.Diagnostics.Debug.WriteLine("...");
             System.Console.ForegroundColor = defaultColor;
         }
 
