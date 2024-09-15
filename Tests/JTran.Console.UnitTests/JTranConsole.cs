@@ -32,9 +32,9 @@ namespace JTran.Console.UnitTests
         {
             var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
             
-            var ex = await Assert.ThrowsExceptionAsync<Transformer.SyntaxException>( async ()=> await JTran.Console.Program.Main(new string[] {"-p", projectPath, "-se"}));
+            var rtnCode = await JTran.Console.Program.Main(new string[] {"-p", projectPath, "-se"});
 
-            Assert.IsTrue(ex.Message.Contains("at line 10"));
+            Assert.AreEqual(1, rtnCode);
         } 
 
         [TestMethod]

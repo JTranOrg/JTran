@@ -22,152 +22,161 @@ namespace JTran.Console
     public class Program
     {
         /****************************************************************************/
-        internal static async Task Main(string[] args)
+        internal static async Task<int> Main(string[] args)
         {
-            if(args.Length == 0 || args[0] == "/help" || args[0] == "-help")
-                ShowHelp();
-            else
-            { 
-                var index             = 0;
-                var transform         = "";
-                var source            = "";
-                var output            = "";
-                var includes          = "";
-                var documents         = "";
-                var extensionPath     = "";
-                var transformParams   = "";
-                var argumentProvider  = "";
-                JTranProject? project = null;
-                var projectPath       = "";
-                bool split            = false;
-                bool serially         = false;
+            var rtnCode = await InternalMain(args);
 
-                // Set up all the paths
-                while(index < args.Length)
-                {
-                    var arg = args[index];
-
-                    if(index < args.Length)
-                    { 
-                        if(arg == "/p" || arg == "-p")
-                            projectPath = args[++index];
-
-                        if(arg == "/t" || arg == "-t")
-                            transform = args[++index];
-
-                        if(arg == "/s" || arg == "-s")
-                            source = args[++index];
-
-                        if(arg == "/o" || arg == "-o")
-                            output = args[++index];
-
-                        if(arg == "/i" || arg == "-i" || arg == "/include" || arg == "-include")
-                            includes = args[++index];
-
-                        if(arg == "/d" || arg == "-d")
-                            documents = args[++index];
-
-                        if(arg == "/tp" || arg == "-tp")
-                            transformParams = args[++index];
-
-                        if(arg == "/e" || arg == "-e")
-                            extensionPath = args[++index];
-
-                        if(arg == "/a" || arg == "-a")
-                            argumentProvider = args[++index];
-
-                        if(arg == "/se" || arg == "-se")
-                           serially = true;
-                    }
-
-                    if(arg == "/m" || arg == "-m")
-                        split = true;
-
-                    ++index;
-                }
-
-                if(!string.IsNullOrWhiteSpace(projectPath))
-                { 
-                    if(!File.Exists(projectPath))
-                    { 
-                        WriteError("No transform file specified.");
-                        return;
-                    }
-
-                    using Stream file = File.OpenRead(projectPath);
-
-                    try
-                    { 
-                        project = file.ToObject<JTranProject>();
-                    }
-                    catch(JsonParseException)
-                    {
-                        WriteError("Project file is not a valid json file");
-                        return;
-                    }
-
-                    if(string.IsNullOrWhiteSpace(transform))
-                        transform = project.TransformPath;
-
-                    if(string.IsNullOrWhiteSpace(source))
-                        source = project.SourcePath;
-
-                    if(string.IsNullOrWhiteSpace(output))
-                        output = project.DestinationPath;
-                }
-                else
-                    project = new JTranProject();
-
-                if(!string.IsNullOrWhiteSpace(transform))
-                    project.TransformPath = transform;
-
-                if(!string.IsNullOrWhiteSpace(source))
-                    project.SourcePath = source;
-
-                if(!string.IsNullOrWhiteSpace(output))
-                    project.DestinationPath = output;
-
-                if(!string.IsNullOrWhiteSpace(documents))
-                    project.DocumentPaths.Add("", documents);
-
-                if(!string.IsNullOrWhiteSpace(includes))
-                    project.IncludePaths.Add("", includes);
-
-                if(!string.IsNullOrWhiteSpace(transformParams))
-                    project.AddArguments(transformParams);
-
-                if(!string.IsNullOrWhiteSpace(extensionPath))
-                    project.ExtensionPaths.Add(extensionPath);
-
-                if(!string.IsNullOrWhiteSpace(argumentProvider))
-                    AddArgumentProvider(project, argumentProvider);
-
-                if(split)
-                    project.SplitOutput = true;
-
-                if(string.IsNullOrWhiteSpace(project.TransformPath))
-                { 
-                    WriteError("No transform file specified.");
-                    return;
-                }
-
-                if(string.IsNullOrWhiteSpace(project.SourcePath))
-                { 
-                    WriteError("No source file(s) specified.");
-                    return;
-                }
-
-                if(string.IsNullOrWhiteSpace(project.DestinationPath))
-                { 
-                    WriteError("No output path specified.");
-                    return;
-                }
-
-                await TransformFiles(project, serially);
-             }
+            return rtnCode;
         }
 
         #region Private 
+
+        /****************************************************************************/
+        private static async Task<int> InternalMain(string[] args)
+        {
+            if(args.Length == 0 || args[0] == "/help" || args[0] == "-help")
+            { 
+                ShowHelp();
+                return 0;
+            }
+
+            var index             = 0;
+            var transform         = "";
+            var source            = "";
+            var output            = "";
+            var includes          = "";
+            var documents         = "";
+            var extensionPath     = "";
+            var transformParams   = "";
+            var argumentProvider  = "";
+            JTranProject? project = null;
+            var projectPath       = "";
+            bool split            = false;
+            bool serially         = false;
+
+            // Set up all the paths
+            while(index < args.Length)
+            {
+                var arg = args[index];
+
+                if(index < args.Length)
+                { 
+                    if(arg == "/p" || arg == "-p")
+                        projectPath = args[++index];
+
+                    if(arg == "/t" || arg == "-t")
+                        transform = args[++index];
+
+                    if(arg == "/s" || arg == "-s")
+                        source = args[++index];
+
+                    if(arg == "/o" || arg == "-o")
+                        output = args[++index];
+
+                    if(arg == "/i" || arg == "-i" || arg == "/include" || arg == "-include")
+                        includes = args[++index];
+
+                    if(arg == "/d" || arg == "-d")
+                        documents = args[++index];
+
+                    if(arg == "/tp" || arg == "-tp")
+                        transformParams = args[++index];
+
+                    if(arg == "/e" || arg == "-e")
+                        extensionPath = args[++index];
+
+                    if(arg == "/a" || arg == "-a")
+                        argumentProvider = args[++index];
+
+                    if(arg == "/se" || arg == "-se")
+                       serially = true;
+                }
+
+                if(arg == "/m" || arg == "-m")
+                    split = true;
+
+                ++index;
+            }
+
+            if(!string.IsNullOrWhiteSpace(projectPath))
+            { 
+                if(!File.Exists(projectPath))
+                { 
+                    WriteError("No transform file specified.");
+                    return 1;
+                }
+
+                using Stream file = File.OpenRead(projectPath);
+
+                try
+                { 
+                    project = file.ToObject<JTranProject>();
+                }
+                catch(JsonParseException)
+                {
+                    WriteError("Project file is not a valid json file");
+                    return 1;
+                }
+
+                if(string.IsNullOrWhiteSpace(transform))
+                    transform = project.TransformPath;
+
+                if(string.IsNullOrWhiteSpace(source))
+                    source = project.SourcePath;
+
+                if(string.IsNullOrWhiteSpace(output))
+                    output = project.DestinationPath;
+            }
+            else
+                project = new JTranProject();
+
+            if(!string.IsNullOrWhiteSpace(transform))
+                project.TransformPath = transform;
+
+            if(!string.IsNullOrWhiteSpace(source))
+                project.SourcePath = source;
+
+            if(!string.IsNullOrWhiteSpace(output))
+                project.DestinationPath = output;
+
+            if(!string.IsNullOrWhiteSpace(documents))
+                project.DocumentPaths.Add("", documents);
+
+            if(!string.IsNullOrWhiteSpace(includes))
+                project.IncludePaths.Add("", includes);
+
+            if(!string.IsNullOrWhiteSpace(transformParams))
+                project.AddArguments(transformParams);
+
+            if(!string.IsNullOrWhiteSpace(extensionPath))
+                project.ExtensionPaths.Add(extensionPath);
+
+            if(!string.IsNullOrWhiteSpace(argumentProvider))
+                AddArgumentProvider(project, argumentProvider);
+
+            if(split)
+                project.SplitOutput = true;
+
+            if(string.IsNullOrWhiteSpace(project.TransformPath))
+            { 
+                WriteError("No transform file specified.");
+                return 1;
+            }
+
+            if(string.IsNullOrWhiteSpace(project.SourcePath))
+            { 
+                WriteError("No source file(s) specified.");
+                return 1;
+            }
+
+            if(string.IsNullOrWhiteSpace(project.DestinationPath))
+            { 
+                WriteError("No output path specified.");
+                return 1;
+            }
+
+            return await TransformFiles(project, serially);
+        }
 
         /****************************************************************************/
         private static string NormalizePath(string path)
@@ -194,7 +203,7 @@ namespace JTran.Console
         }
 
         /****************************************************************************/
-        private static async Task TransformFiles(JTranProject project, bool serially)
+        private static async Task<int> TransformFiles(JTranProject project, bool serially)
         {        
             project.DestinationPath = NormalizePath(project.DestinationPath);
             project.SourcePath      = NormalizePath(project.SourcePath);
@@ -213,7 +222,7 @@ namespace JTran.Console
 
                     await compiledProj.Run();
 
-                    return;
+                    return 0;
                 }
 
                 // Get all the files that match the wildcard specification
@@ -222,7 +231,7 @@ namespace JTran.Console
                 System.Console.WriteLine($"{sourceFiles.Length} source files found");
 
                 if(sourceFiles.Length == 0)
-                    return;
+                    return 0;
 
                 await compiledProj.TransformFiles(sourceFiles, sourceFiles.Select( sourceFile=>
                 {
@@ -233,11 +242,13 @@ namespace JTran.Console
                 (msg)=> System.Console.WriteLine(msg),
                 (msg)=> WriteError(msg),
                 serially);
+
+                return 0;
             }
             catch(Exception ex2)
             {
                 WriteError(ex2.Message);
-                throw;
+                return 1;
             }
         }
 
@@ -269,9 +280,15 @@ namespace JTran.Console
             var defaultColor = System.Console.ForegroundColor;
 
             System.Console.ForegroundColor = clr;
+
+          #if DEBUG
             System.Diagnostics.Debug.WriteLine("...");
             System.Diagnostics.Debug.WriteLine(text);
             System.Diagnostics.Debug.WriteLine("...");
+          #else
+             System.Console.WriteLine(text);
+          #endif
+
             System.Console.ForegroundColor = defaultColor;
         }
 
