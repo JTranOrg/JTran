@@ -79,7 +79,7 @@ namespace JTran.Console.UnitTests
             var destination   = "C:\\Development\\Testing\\JTran\\Console Tests\\Project1b.json";
             var thisAssembly  = "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\TestArgumentsProvider\\bin\\Debug\\net8.0\\TestArgumentsProvider.dll";
             
-            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-tp", "-environment 'prod'", "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
+            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-tp", "-environment 'prod' -arg2 \"bob\"", "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
 
             Assert.IsTrue(true);
         } 

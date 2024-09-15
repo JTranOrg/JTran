@@ -277,19 +277,7 @@ namespace JTran.Console
         /****************************************************************************/
         private static void WriteLine(string text, ConsoleColor clr)
         {
-            var defaultColor = System.Console.ForegroundColor;
-
-            System.Console.ForegroundColor = clr;
-
-          #if DEBUG
-            System.Diagnostics.Debug.WriteLine("...");
-            System.Diagnostics.Debug.WriteLine(text);
-            System.Diagnostics.Debug.WriteLine("...");
-          #else
-             System.Console.WriteLine(text);
-          #endif
-
-            System.Console.ForegroundColor = defaultColor;
+            System.Console.Error.WriteLine("##[error]" + text);
         }
 
         /****************************************************************************/
