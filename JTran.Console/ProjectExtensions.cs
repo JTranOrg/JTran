@@ -15,6 +15,7 @@ namespace JTran.Console
 
             var sb        = new StringBuilder();
             var inQuotes  = false;
+            var inDoubleQuotes  = false;
             var start     = true;
             var inName    = false;
             var inValue   = false;
@@ -51,6 +52,10 @@ namespace JTran.Console
                     {
                         inQuotes = true;
                     }
+                    else if(inValue && !inDoubleQuotes && ch == '"') 
+                    {
+                        inDoubleQuotes = true;
+                    }
                     else if(inValue && inQuotes && ch == '\'') 
                     {
                         arguments[paramName] = sb.ToString();
@@ -59,7 +64,15 @@ namespace JTran.Console
                         inValue = false;
                         sb.Clear();
                     }
-                    else if(ch == ' ' && !inQuotes) 
+                    else if(inValue && inDoubleQuotes && ch == '"') 
+                    {
+                        arguments[paramName] = sb.ToString();
+
+                        start = true;
+                        inValue = false;
+                        sb.Clear();
+                    }
+                    else if(ch == ' ' && !inQuotes && !inDoubleQuotes) 
                     {
                         arguments[paramName] = sb.ToString();
 

@@ -17,9 +17,11 @@ namespace JTran.Console.UnitTests
             
             project.AddArguments("-environment prod");
             project.AddArguments("-environment2 'prod baby'");
+            project.AddArguments("-arg3 \"george\"");
 
-            Assert.AreEqual("prod", project.ArgumentProviders[1]["environment"]);
-            Assert.AreEqual("prod baby", project.ArgumentProviders[0]["environment2"]);
+            Assert.AreEqual("george", project.ArgumentProviders[0]["arg3"]);
+            Assert.AreEqual("prod", project.ArgumentProviders[2]["environment"]);
+            Assert.AreEqual("prod baby", project.ArgumentProviders[1]["environment2"]);
         } 
     }
 }
