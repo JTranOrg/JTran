@@ -12,7 +12,8 @@
     Install-Package JTran
 
 
-Note: These samples use the old way of creating a transformer directly (which is still allowed). Use the new [TransformerBuilder](#TransformerBuilder) class below instead
+<small>Note: These samples use the old way of creating a transformer directly (which is still allowed). Use the new [TransformerBuilder](#TransformerBuilder) class below instead.</small><br/>
+
 A transform is a JSON file that contains JTran processing instructions. To transform a source JSON document you provide the source JSON and the transform:
 
 
