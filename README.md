@@ -130,7 +130,7 @@ Allows a lambda expression to passed in that will be called immediately as soon 
 
 <a id="TransformerBuilder" />
 
-#### TransformerBuilder
+### TransformerBuilder
 
 The TransformerBuilder allows you to create a JTran Transformer object in a simplified manner. 
 
@@ -178,6 +178,18 @@ Creating a transformer in dependency injection (.Net Core+)
       ...
     }
   
+  #### TransformerBuilder Function Reference
 
+---
+<small>ITransformerBuilder</small> <b>FromString</b>(string transformerSource)<br />
+>Creates a TransformerBuilder object from a string source.
+
+---
+<small>ITransformerBuilder</small> <b>FromStream</b>(Stream transformerSource)<br />
+>Creates a TransformerBuilder object from a stream source.
+
+---
+<small>ITransformerBuilder</small> <b>FromStream</b>(Stream transformerSource)<br />
+>Creates a TransformerBuilder object from a string source.
 
 
