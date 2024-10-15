@@ -21,6 +21,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 using JTran.Collections;
 using JTran.Streams;
@@ -122,9 +123,17 @@ namespace JTran
         }
 
         /****************************************************************************/
-        public TransformerBuilder AddInclude(string name, Action<string> includeSource)
+        public TransformerBuilder AddInclude(string name, Func<string> includeSource)
         {
-           // _includes.Add(name, includeSource);
+            _includes.Add(name, includeSource());
+
+            return this;
+        }
+
+        /****************************************************************************/
+        public async Task<TransformerBuilder> AddIncludeAsync(string name, Func<Task<string>> includeSource)
+        {
+            _includes.Add(name, await includeSource());
 
             return this;
         }
