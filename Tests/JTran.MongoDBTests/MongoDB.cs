@@ -20,7 +20,7 @@ namespace JTran.MongoDBTests
             var input        = db.GetRepositoryReader<Guid, Person>("persons");
             var enm          = input.AsEnumerable<Person>();
             
-            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name1 = firstName, Name2 = "" }).ToDictionary() } );
+            transformer.Transform(enm, output, new TransformerContext { Arguments = new Dictionary<string, object> { { "Name1", firstName}, {"Name2", "" } } } );
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace JTran.MongoDBTests
             var input        = db.GetRepositoryReader<Guid, Person>("persons");
             var enm          = input.AsEnumerable<Person>();
 
-            transformer.Transform(enm, output, new TransformerContext { Arguments = (new { Name1 = firstName1, Name2 = firstName2 }).ToDictionary() } );
+            transformer.Transform(enm, output, new TransformerContext { Arguments = new Dictionary<string, object> { { "Name1", firstName1}, {"Name2", firstName2 }}} );
         }
 
         private static readonly string _transformForEach1 =

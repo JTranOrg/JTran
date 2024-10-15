@@ -41,7 +41,7 @@ namespace JTran.Transform.UnitTests
         [DataRow("arrayitem", "arrayitem")]
         public async Task Arrays_arrayitem(string transform, string data)
         {
-            var json  = await Test(transform, data, new { Fred = "Fred", Dude = "Jabberwocky" } );
+            var json  = await Test(transform, data, new Dictionary<string, object> { {"Fred", "Fred" }, {"Dude", "Jabberwocky" }} );
             var array = json["Persons"]  as JArray;
 
             Assert.AreEqual(5,              array!.Count());
@@ -51,9 +51,9 @@ namespace JTran.Transform.UnitTests
 
         #region Private
 
-        public async Task<JObject> Test(string transform, string data, object? parms = null)
+        public async Task<JObject> Test(string transform, string data, Dictionary<string, object>? parms = null)
         {
-            var result = await TransformerTest.Test("Arrays." + transform, "Arrays." + data, context: parms == null ? null : new TransformerContext { Arguments = parms!.ToDictionary() });           
+            var result = await TransformerTest.Test("Arrays." + transform, "Arrays." + data, context: parms == null ? null : new TransformerContext { Arguments = parms! });           
             var jobj   = JObject.Parse(result)!;
 
             Assert.IsNotNull(jobj);

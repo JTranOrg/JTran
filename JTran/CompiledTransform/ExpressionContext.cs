@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *  Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                                                                                                 
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -48,7 +48,8 @@ namespace JTran
                                    TransformerContext?             transformerContext = null, 
                                    ExtensionFunctions?             extensionFunctions = null,
                                    IDictionary<string, TTemplate>? templates          = null,
-                                   IDictionary<string, TFunction>? functions          = null)
+                                   IDictionary<string, TFunction>? functions          = null,
+                                   IDictionary<string, TElement>?  elements           = null)
         {
             this.Data = data;
 
@@ -60,6 +61,7 @@ namespace JTran
             this.Name           = name;
             this.Templates      = templates;
             this.Functions      = functions;
+            this.Elements       = elements;
 
             this.ExtensionFunctions = extensionFunctions;
         }
@@ -68,7 +70,8 @@ namespace JTran
         internal ExpressionContext(object?                         data, 
                                    ExpressionContext?              parentContext,
                                    IDictionary<string, TTemplate>? templates = null,
-                                   IDictionary<string, TFunction>? functions = null)
+                                   IDictionary<string, TFunction>? functions = null,
+                                   IDictionary<string, TElement>?  elements = null)
         {
             this.Data = data;
 
@@ -79,6 +82,7 @@ namespace JTran
             this.Name         = parentContext?.Name ?? "";
             this.Templates    = templates ?? parentContext?.Templates;
             this.Functions    = functions ?? parentContext?.Functions;
+            this.Elements     = elements ?? parentContext?.Elements;
 
             this.ExtensionFunctions = parentContext?.ExtensionFunctions;
         }
@@ -88,6 +92,7 @@ namespace JTran
         internal string                           Name               { get; }
         internal bool                             PreviousCondition  { get; set; }
         internal ExtensionFunctions?              ExtensionFunctions { get; }
+        internal IDictionary<string, TElement>?   Elements           { get; }
         internal IDictionary<string, TTemplate>?  Templates          { get; }
         internal IDictionary<string, TFunction>?  Functions          { get; }
         internal IList<object>?                   CurrentGroup       { get; set; }
@@ -177,6 +182,34 @@ namespace JTran
                 return this.Templates[name];
 
             return _parent?.GetTemplate(name);
+        }
+
+        /*****************************************************************************/
+        internal TElement GetElement(string name)
+        {
+            name = name.ToLower();
+
+            if(this.Elements != null && this.Elements.ContainsKey(name))
+                return this.Elements[name];
+
+            return _parent?.GetElement(name);
+        }
+
+        /*****************************************************************************/
+        internal TTemplate GetTemplateOrElement(string name, bool allowElements, long lineNumber)
+        {
+            TTemplate? template = null;
+
+            if(allowElements)
+                template = this.GetElement(name);
+
+            if(template == null)
+                template = this.GetTemplate(name);
+
+            if(template == null)
+                throw new Transformer.SyntaxException($"An element or template with that name was not found: {name}") { LineNumber = lineNumber};
+
+            return  template!;
         }
 
         /*****************************************************************************/

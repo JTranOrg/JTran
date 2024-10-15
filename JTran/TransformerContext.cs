@@ -28,15 +28,34 @@ namespace JTran
     /****************************************************************************/
     public class TransformerContext
     {
-        public IDictionary<string, object>?              Arguments               { get; set; }
+        public IReadOnlyDictionary<string, object>?      Arguments               { get; set; }
         public IDictionary<string, IDocumentRepository>? DocumentRepositories    { get; set; } = new Dictionary<string, IDocumentRepository>();
         public bool                                      AllowDeferredLoading    { get; set; } = true;
         public IReadOnlyDictionary<string, object>       OutputArguments         => _internalOutputArguments;
         public Action<string, object>?                   OnOutputArgument        { get; set; }
 
+        // Copy constructor
+        public TransformerContext(TransformerContext copy)
+        {
+            Arguments               = copy.Arguments;
+            DocumentRepositories    = copy.DocumentRepositories;
+            AllowDeferredLoading    = copy.AllowDeferredLoading;
+            OnOutputArgument        = copy.OnOutputArgument;
+        }
+
+        public TransformerContext()
+        {
+        }
+
         #region Internal
 
-        private readonly RestrictedAccessDictionary     _internalOutputArguments = new();
+        private RestrictedAccessDictionary _internalOutputArguments = new();
+
+        /****************************************************************************/
+        internal void SetOutputArguments(TransformerContext otherContext)
+        {
+            _internalOutputArguments = otherContext._internalOutputArguments;
+        }
 
         /****************************************************************************/
         internal void SetOutputArgument(string key, object value)   

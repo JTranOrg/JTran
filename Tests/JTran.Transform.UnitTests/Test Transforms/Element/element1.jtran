@@ -1,0 +1,9 @@
+{  
+  "#element(assertint, value)":
+  {
+    "#assert(isnumber($value) and ($value) == $value)": "#($__value)"
+  },
+
+  "AlmaMater":        "Harvard",
+  "#assertint(Year)": "Year is not an integer"            
+}

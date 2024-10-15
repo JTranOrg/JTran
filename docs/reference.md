@@ -246,6 +246,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[calltemplate](#Templates)</strong> - Calls a template
 - <strong>[catch](#trycatch)</strong> - Part of a try/catch block
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
+- <strong>[element](#element)</strong> - Define a custom element
 - <strong>[else](#else)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[elseif](#elseif)</strong> - Outputs it's children when previous #if and #elseif do not process
 - <strong>[exclude](#exclude)</strong> - Outputs the specified expression and excludes the listed properties
@@ -1169,44 +1170,105 @@ Evaluates the first parameter as a condition and returns the second parameter if
 
 Result is "bob"<br><br>
 
-#### #elseif
 
-#elseif conditionally processes it's contents based on the evaluation of it's expression and only if the previous #if expression evaluated to false.
+### <a id="element">Custom Elements</a>
+
+You can define a custom element that calls other JTran code.
 
 ###### Transform
 
     {
-        Driver:      "#(Driver.Name)",
+        "#foreach(Staff, Employees)":
+        {
+            "Name":   "#displayname(FirstName, LastName)" 
+        }
 
-        "#if(Car.Make == 'Chevy')":
+        // Element must be defined in the root object but can be defined before or after it's use
+        "#element(displayname, first, last)":
         {
-            Car:    "#('Chevy ' + Car.Make)"
-        },
-        "#elseif(Car.Make == 'Pontiac')":
-        {
-            Car:    "#('Pontiac ' + Car.Make)"
+            // To return a simple value define a property named "return". It must be the only property.
+            "return": "#($first + ' ' + $last)"
         }
     }
 
-###### Source
+###### Source Document
 
     {
-        Driver:
+        Staff:
+        [
+            {
+               FirstName:  "Fred",
+               LastName:   "Flintstone"
+            },
+            {
+               FirstName:  "Barney",
+               LastName:   "Rubble"
+            }
+        ]
+    }
+
+###### Output
+
+    {
+        Employees:
+        [
+            {
+               Name: "Fred Flintstone",
+            },
+            {
+               Name:  "Barney Rubble"
+           }
+        ]
+    }
+
+
+Elements can be included from external files (see #include):
+
+###### Transform
+
+    {
+        "#include":  "mytemplate.json",
+
+        "#foreach(Cars, Vehicles)":
         {
-           Name: "Joe Smith"
+            "#noobject": "#Automobile"  
+        }
+    }
+
+
+You can pass parameters to a custom element. When the element is called as an object name that object is the scope for the element:
+
+###### Transform
+
+    {
+        "#element(formatauto, Driver)":
+        {
+            "Name":      "#(Make + ' ' + Model)",
+            "Year":      "#(Year)",
+            "Driver":    "#($Driver)"
         },
-        Car:
+        
+        "automobile": 
         {
-            Car: "Pontiac",
-            Model: "Firebird"
+            // The properties are rendered "flat" with no enclosing object
+            "#formatauto('Davey Carson')":
+            {
+                "Make":    "Chevy",
+                "Model":   "#('Silver' + 'ado')",
+                "Year":    1964
+            }
         }
     }
 
 ###### Output
 
     {
-        Driver: "Joe Smith",
-        Car: "Pontiac Firebird"
+        "automobile":
+        {
+            "Name":      "Chevy Silverado",
+            "Year":      "1964",
+            "Driver":    "Davey Carson"
+        }
     }
 
 #### #else
@@ -1274,6 +1336,47 @@ Result is "bob"<br><br>
         }
     }
 <br>
+
+#### #elseif
+
+#elseif conditionally processes it's contents based on the evaluation of it's expression and only if the previous #if expression evaluated to false.
+
+###### Transform
+
+    {
+        Driver:      "#(Driver.Name)",
+
+        "#if(Car.Make == 'Chevy')":
+        {
+            Car:    "#('Chevy ' + Car.Make)"
+        },
+        "#elseif(Car.Make == 'Pontiac')":
+        {
+            Car:    "#('Pontiac ' + Car.Make)"
+        }
+    }
+
+###### Source
+
+    {
+        Driver:
+        {
+           Name: "Joe Smith"
+        },
+        Car:
+        {
+            Car: "Pontiac",
+            Model: "Firebird"
+        }
+    }
+
+###### Output
+
+    {
+        Driver: "Joe Smith",
+        Car: "Pontiac Firebird"
+    }
+
 
 #### #copyof
 
@@ -1390,9 +1493,9 @@ If no "return" property is created then the whole object is returned
         {
             Make: "Chevy",
               
-            "throw":                "This is an error message"                // No Error code
-            "throw(123)":           "This is an error message"                // 123 is an error code.
-            "throw(ErrorCodes[0])": "#(ErrorMessage[code == ErrorCodes[0]])"  // Use expressions for the message and/or the error code.
+            "#throw":                "This is an error message"                // No Error code
+            "#throw(123)":           "This is an error message"                // 123 is an error code.
+            "#throw(ErrorCodes[0])": "#(ErrorMessage[code == ErrorCodes[0]])"  // Use expressions for the message and/or the error code.
         },
         "#catch":
         {
@@ -1402,7 +1505,7 @@ If no "return" property is created then the whole object is returned
 
 #### <a id="trycatch">#try and #catch</a>
 
-A try/catch is a way to test for exception. If while processing a try block and an exception is thrown then the entire output of the try is throw away and the catch is processed instead. You can have more than one cath and you specifiy conditions on the cacth.
+A try/catch is a way to test for exception. If while processing a try block and an exception is thrown then the entire output of the try is throw away and the catch is processed instead. You can have more than one catch and you can specify conditions on the catch.
 
 ###### Transform
 
@@ -1411,7 +1514,7 @@ A try/catch is a way to test for exception. If while processing a try block and 
         {
             Make: "Chevy",
               
-            "throw(123)": "This is an error message"  // The parameter to the throw is an error code. It is optional.
+            "#throw(123)": "This is an error message"  // The parameter to the throw is an error code. It is optional.
         },
         "#catch":
         {

@@ -1,0 +1,9 @@
+{
+  "#template(assert, condition, value)":
+  {
+    "#if($condition == false)": 
+    {
+      "dummy":  "#(onassert($value))"
+    }
+  }
+}

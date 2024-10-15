@@ -25,7 +25,7 @@ namespace Test.Apis.Classes
             JTran.TransformerContext? context = null;
 
             if(args != null) 
-                context = new JTran.TransformerContext() { Arguments = args.ToDictionary() };
+                context = new JTran.TransformerContext() { Arguments = args.ToReadOnlyDictionary() };
 
             return _transformer.Transform(data, context);
         }

@@ -106,7 +106,9 @@ namespace JTran.Transform.UnitTests
 
         internal static Task<string> LoadSample(string name)
         {
-            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.Transform.UnitTests.Sample_Data.{name}.json");
+            var files = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            var filePath = $"JTran.Transform.UnitTests.Sample_Data.{name}.json";
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath);
                        
             if(stream == null)
                 throw new FileNotFoundException(name);

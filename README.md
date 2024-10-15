@@ -3,6 +3,8 @@
 
    JTran is heavily influenced by XSLT but whereas XSLT does XML to XML transformations, JTran does JSON to JSON transformations.
 
+   <strong>[Language Reference](docs/reference.md)</strong>
+
 ### Getting started
 
 #### Installing via NuGet
@@ -10,6 +12,7 @@
     Install-Package JTran
 
 
+Note: These samples use the old way of creating a transformer directly (which is still allowed). Use the new [TransformerBuilder](#TransformerBuilder) class below instead
 A transform is a JSON file that contains JTran processing instructions. To transform a source JSON document you provide the source JSON and the transform:
 
 
@@ -124,4 +127,56 @@ Allows a lambda expression to passed in that will be called immediately as soon 
     
 <br>
 
-<strong>[Language Reference](docs/reference.md)</strong>
+<a id="TransformerBuilder" />
+
+#### TransformerBuilder
+
+The TransformerBuilder allows you to create a JTran Transformer object in a simplified manner. 
+
+    var result = TransformerBuilder
+                   .FromString(transformerSource)
+                   .AddInclude("default", str)
+                   .AddArguments(new MyArgumentsProvider())
+                   .AddDocumentRepository(new MyDocumentsRepository())
+                   .AddExtension(new MyFunctionLib())
+                   .Build<string>()
+                   .Transform(data);
+
+Creating a transformer in dependency injection (.Net Core+)
+
+    public static class ServiceCollectionExtensions
+    {
+        public static void AddTransformer<T>(this IServiceCollection collection, string transformerPath)
+        {
+            collection.AddSingleton<ITransformer<T>>((p) =>
+            {
+                var blobStore = p.GetRequiredService<IBlobStore<T>>(); // This interface is for example only, it is not included in JTran
+
+                return TransformerBuilder
+                   .FromString(blobStore.Get("transforms/" + transformerPath + ".jtran"))
+                   .AddInclude("default", blobStore.Get("includes/defaultInclude.json"))
+                   .AddArguments(p.GetRequiredService<IMyArgumentsProvider>())
+                   .AddDocumentRepository(p.GetRequiredService<IDocumentRepository>())
+                   .AddExtension(new MyFunctionLib())
+                   .Build<T>();
+            }); 
+        }
+
+        public static void SetUpMyApp<T>(this IServiceCollection collection)
+        {
+            // Create different transforms and differentiate by a class
+            collection.AddTransformer<Customer>("customer")
+                      .AddTransformer<Employee>("employee")
+                      .AddTransformer<Order>("order")           
+        }
+    }
+
+    // Inject the employee transformer
+    public class EmployeeService(ITransformer<Employee> transformer)
+    {
+      ...
+    }
+  
+
+
+

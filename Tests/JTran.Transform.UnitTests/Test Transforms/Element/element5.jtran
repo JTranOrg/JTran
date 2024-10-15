@@ -1,0 +1,16 @@
+{
+    "#array(Employees)": 
+    {
+      "#foreach(Staff)":
+      {
+          "#arrayitem":   "#displayname(FirstName, LastName)" 
+      }
+    },
+
+    // Element must be defined in the root object but can be defined before or after it's use
+    "#element(displayname, first, last)":
+    {
+        // To return a simple value define a property named "return". It must be the only property.
+        "return": "#($first + ' ' + $last)"
+    }
+}

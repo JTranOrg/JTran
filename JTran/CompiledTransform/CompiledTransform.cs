@@ -285,7 +285,7 @@ namespace JTran
         /****************************************************************************/
         private void TransformObject(object data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions);
+            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions, elements: this.Elements);
 
             if(!_outputArray)
                 output.StartObject();

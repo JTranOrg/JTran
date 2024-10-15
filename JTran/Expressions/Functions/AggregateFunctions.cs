@@ -37,6 +37,12 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public int count(object val)
         {
+            return count_internal(val);
+        }
+
+        /*****************************************************************************/
+        internal static int count_internal(object val)
+        {
             if(val is null)
                 return 0;
 
@@ -51,6 +57,19 @@ namespace JTran.Expressions
 
             if(val is IEnumerable<object> enm)
                 return enm.Count();
+
+            if(val is IEnumerable<string> enm2)
+                return enm2.Count();
+
+            if(val is IEnumerable list2)
+            {
+                var count = 0;
+
+                foreach(var item in list2)
+                    ++count;
+
+                return count;
+            }
 
             return 1;
         }

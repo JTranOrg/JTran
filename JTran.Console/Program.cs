@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 using JTranProject = JTran.Project.Project;
 
 using JTran.Common;
 using JTran.Project;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using System.Diagnostics;
-using System.Linq.Expressions;
+using JTran.Console.Collections;
 
 [assembly: InternalsVisibleTo("JTran.Console.UnitTests")]
 
@@ -297,9 +296,12 @@ namespace JTran.Console
                 var classType = assembly.GetType(parts[1])!;
                 var obj       = Activator.CreateInstance(classType);
 
-                if(obj is IDictionary<string, object> dict)
+                if(obj is IReadOnlyDictionary<string, object> dict)
                     project.ArgumentProviders.Add(dict);
-
+                else if(obj is IDictionary<string, object> dict2)
+                    project.ArgumentProviders.Add(new ReadOnlyDictionaryWrapper(dict2));
+                else
+                    throw new Exception("Unsupported dictionary type");
             }
             catch(Exception ex) 
             {

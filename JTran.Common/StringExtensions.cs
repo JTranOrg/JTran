@@ -21,7 +21,7 @@ namespace JTran.Common
 {
     public static class StringExtensions
     {
-        public static string SubstringBefore(this string val, string before)
+        public static string xxSubstringBefore(this string val, string before)
         {
             var index = val.IndexOf(before);
 

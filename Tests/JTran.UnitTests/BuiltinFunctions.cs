@@ -192,6 +192,42 @@ namespace JTran.UnitTests
             TestFunctionFalse(null,       (s)=> _fn.endswith(s, ""));
         }
 
+        [TestMethod]
+        [DataRow("red,blue,green", "green,red,blue",        true)]
+        [DataRow("red,blue,green", "green,brown,blue",      false)]
+        [DataRow("red,blue,green", "green,red,blue,orange", false)]
+        [DataRow("red,blue,green", "",                      false)]
+        [DataRow("",               "",                      true)]
+        public void BuiltinFunctions_containsall(string list1, string list2, bool result)
+        {
+            Assert.AreEqual(result, _fn.containsall(list1.Split(",").Select(i=> i as object), list2.Split(",").Select(i=> i as object)));
+            Assert.AreEqual(result, _fn.containsall(list2.Split(",").Select(i=> i as object), list1.Split(",").Select(i=> i as object)));
+        }
+
+        [TestMethod]
+        [DataRow("red,blue,green", "green,red,blue",        true)]
+        [DataRow("red,blue,green", "green,brown,blue",      false)]
+        [DataRow("red,blue,green", "green,red,blue,orange", false)]
+        [DataRow("red,blue,green", "",                      false)]
+        [DataRow("",               "",                      true)]
+        public void BuiltinFunctions_containsall_characterspan(string list1, string list2, bool result)
+        {
+            Assert.AreEqual(result, _fn.containsall(list1.Split(",").Select(i=> CharacterSpan.FromString(i)), list2.Split(",").Select(i=> CharacterSpan.FromString(i))));
+            Assert.AreEqual(result, _fn.containsall(list2.Split(",").Select(i=> CharacterSpan.FromString(i)), list1.Split(",").Select(i=> CharacterSpan.FromString(i))));
+        }
+
+        [TestMethod]
+        [DataRow("1,2,3", "3,2,1", true)]
+        [DataRow("1,2,3", "3,2,1,4", false)]
+        [DataRow("1,2,3", "2,1,55", false)]
+        public void BuiltinFunctions_containsall_ints(string list1, string list2, bool result)
+        {
+            Assert.AreEqual(result, _fn.containsall(list1.Split(",").Select( i=> int.Parse(i) as object), list2.Split(",").Select( i=> int.Parse(i) as object)));
+            Assert.AreEqual(result, _fn.containsall(list2.Split(",").Select( i=> int.Parse(i) as object), list1.Split(",").Select( i=> int.Parse(i) as object)));
+            Assert.AreEqual(result, _fn.containsall(list1.Split(",").Select( i=> int.Parse(i)), list2.Split(",").Select( i=> int.Parse(i))));
+            Assert.AreEqual(result, _fn.containsall(list2.Split(",").Select( i=> int.Parse(i)), list1.Split(",").Select( i=> int.Parse(i))));
+        }
+
         private void TestFunction(string? val, string? expected, Func<object?, object?> fn)
         {
             Assert.AreEqual(expected, fn(val)?.ToString());

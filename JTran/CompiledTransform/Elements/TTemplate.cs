@@ -6,6 +6,7 @@ using JTran.Expressions;
 using JTran.Extensions;
 using JTran.Json;
 using JTran.Common;
+using System.Diagnostics;
 
 namespace JTran
 {
@@ -27,7 +28,12 @@ namespace JTran
             this.Parameters.AddRange(parms.Skip(1));
         }
 
-        internal string Name      { get; }
+        /****************************************************************************/
+        internal protected TTemplate() 
+        {
+        }
+
+        internal string Name { get; set; } = "";
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
@@ -42,36 +48,87 @@ namespace JTran
     /****************************************************************************/
     internal class TCallTemplate : TContainer
     {
-        private readonly string _templateName;
+        private readonly string  _templateName;
+        private readonly bool    _allowElements;
+        private readonly IValue? _valueExpression;
+        private readonly long    _lineNumber;
+        private readonly IList<IExpression> _parms;
 
         /****************************************************************************/
-        internal TCallTemplate(ICharacterSpan name) 
+        internal TCallTemplate(ICharacterSpan name, long lineNumber = -1L, ICharacterSpan? value = null, bool allowElements = false) 
         {
-            _templateName = name.Substring("#calltemplate(".Length).ToString()!.ReplaceEnding(")", "");
+            _templateName   = name.Substring("#calltemplate(".Length).ToString()!.ReplaceEnding(")", "").SubstringBefore(",");
+            _allowElements = allowElements;
+            _lineNumber    = lineNumber;
+
+            if(value != null)
+                _valueExpression = CreateValue(value, true, lineNumber);
+
+            var parms = CompiledTransform.ParseElementParams("#calltemplate", name, CompiledTransform.TrueFalse);
+
+            _parms = parms.Skip(1).ToList();
+        }
+
+        private static ICharacterSpan kValue = CharacterSpan.FromString("__value");
+
+        /****************************************************************************/
+        public static ICharacterSpan SubstituteCustomName(ICharacterSpan val) 
+        {
+            var templateName = val.SubstringBefore('(', 1);
+            var theRest      = val.SubstringAfter('(');
+
+            return CharacterSpan.FromString("#calltemplate(" + templateName!.ToString()!.ToLower() + "," + theRest.ToString(), true); 
         }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var template = context.GetTemplate(_templateName);
-
-            if(template == null)
-                throw new Transformer.SyntaxException($"A template with that name was not found: {_templateName}");
-
-            var newContext = new ExpressionContext(context.Data, context);
+            var template     = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+            var newContext   = new ExpressionContext(context.Data, context);
             var paramsOutput = new JsonStringWriter();
 
             paramsOutput.StartObject();
             base.Evaluate(paramsOutput, newContext, (fnc)=> fnc()); 
             paramsOutput.EndObject();
 
-            var jsonParams = paramsOutput.ToString().JTranToJsonObject(); 
+            if(_valueExpression != null)
+            {
+                var val = _valueExpression.Evaluate(context);
 
-            foreach(var paramName in template.Parameters)
+                newContext.SetVariable(kValue, val);
+            }
+
+            var numParms = template.Parameters.Count;
+
+            if(numParms > 0) 
+            {
+                for(var i = 0; i < numParms; ++i)
+                { 
+                    if(_parms.Count <= i)
+                        break;
+
+                    newContext.SetVariable(template.Parameters[i], _parms[i].Evaluate(context));
+                }
+            }
+
+            if(_valueExpression == null)
             { 
-                var val = jsonParams[paramName];
+                var jsonParams = paramsOutput.ToString().JTranToJsonObject(); 
 
-                newContext.SetVariable(paramName, val);
+                if(!_allowElements)
+                { 
+                    foreach(var paramName in template.Parameters)
+                    { 
+                        var val = jsonParams[paramName];
+
+                        newContext.SetVariable(paramName, val);
+                    }
+                }
+                else
+                {
+                    jsonParams.Parent = newContext.Data;
+                    newContext.Data = jsonParams;
+                }
             }
 
             template.Evaluate(output, newContext, wrap);
@@ -85,26 +142,26 @@ namespace JTran
         private readonly string _templateName;
         private readonly IList<IExpression> _parms;
         private readonly long _lineNumber;
+        private readonly bool _allowElements;
 
         /****************************************************************************/
-        internal TCallTemplateProperty(ICharacterSpan name, long lineNumber) 
+        internal TCallTemplateProperty(ICharacterSpan name, long lineNumber, bool allowElements = false) 
         {
             var parms = CompiledTransform.ParseElementParams("#calltemplate", name, CompiledTransform.TrueFalse);
 
-            _parms        = parms.Skip(1).ToList();
-            _templateName = parms[0].Evaluate(new ExpressionContext(null)).ToString();
-            _lineNumber   = lineNumber;
+            _parms         = parms.Skip(1).ToList();
+            _templateName  = parms[0].Evaluate(new ExpressionContext(null)).ToString()!;
+            _lineNumber    = lineNumber;
+            _allowElements = allowElements;
         }
+
+        private static ICharacterSpan _return = CharacterSpan.FromString("return");
 
         /****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var template = context.GetTemplate(_templateName);
-
-            if(template == null)
-                throw new Transformer.SyntaxException($"An element or template with that name was not found: {_templateName}") { LineNumber = _lineNumber};
-
-            var numParms = template.Parameters.Count;
+            var template   = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+            var numParms   = template.Parameters.Count;
             var newContext = new ExpressionContext(context.Data, context);
 
             for(var i = 0; i < numParms; ++i)
@@ -116,7 +173,13 @@ namespace JTran
             template.Evaluate(output, newContext, (f)=> f());
             output.EndObject();
 
-            return output.ToString().JTranToJsonObject(); 
+            var rtnVal = output.ToString().JTranToJsonObject()!;
+
+            // Is simple property?
+            if(rtnVal.Count == 1 && rtnVal.ContainsKey(_return))
+                return rtnVal[_return];
+
+            return rtnVal;
         }
     }
 }

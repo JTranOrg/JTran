@@ -16,6 +16,6 @@ namespace JTran.Project
         public Dictionary<string, string>         DocumentPaths     { get; set; } = new();
         public List<string>                       ExtensionPaths    { get; set; } = [];
         public Dictionary<string, object>?        Arguments         { get; set; }
-        public List<IDictionary<string, object>>  ArgumentProviders { get; set; } = [];
+        public List<IReadOnlyDictionary<string, object>>  ArgumentProviders { get; set; } = [];
     }    
 }

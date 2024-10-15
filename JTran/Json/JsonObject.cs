@@ -36,7 +36,7 @@ namespace JTran
         }
 
         public ICharacterSpan? Name   { get; }
-        public object?         Parent { get; }
+        public object?         Parent { get; set; }
 
         public object this[string key] => this[CharacterSpan.FromString(key)];
 

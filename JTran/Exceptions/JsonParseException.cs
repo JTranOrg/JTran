@@ -4,19 +4,22 @@ namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    public class JsonParseException : Exception
+    public abstract class JTranException : Exception
     {
-    private long _lineNumber = -1L;
+        private long _lineNumber = -1L;
 
-        public JsonParseException(string msg, long lineNo) : base(msg)
+        /****************************************************************************/
+        public JTranException(string msg, long lineNo) : base(msg)
         {
             this.LineNumber = lineNo;
         }
 
-        public JsonParseException(string msg, Exception inner) : base(msg, inner)
+        /****************************************************************************/
+        public JTranException(string msg, Exception inner) : base(msg, inner)
         {
         }
 
+        /****************************************************************************/
         public long LineNumber 
         { 
             get => _lineNumber; 
@@ -28,6 +31,32 @@ namespace JTran
             }
         }
 
+        /****************************************************************************/
         public override string Message => base.Message + $" at line {_lineNumber}";
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    public class JsonParseException : JTranException
+    {
+        /****************************************************************************/
+        public JsonParseException(string msg, long lineNo) : base(msg, lineNo)
+        {
+        }
+
+        /****************************************************************************/
+        public JsonParseException(string msg, Exception inner) : base(msg, inner)
+        {
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    public class AssertFailedException : JTranException
+    {
+        /****************************************************************************/
+        public AssertFailedException(string msg, long lineNo) : base(msg, lineNo)
+        {
+        }
     }
 }
