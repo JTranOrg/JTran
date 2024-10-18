@@ -1,0 +1,3 @@
+{  
+  "#assert(Model == 'Corvette')": "Model should be Corvette"            
+}

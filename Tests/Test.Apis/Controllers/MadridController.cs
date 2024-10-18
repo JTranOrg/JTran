@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
+using MondoCore.Collections;
 using MondoCore.Rest;
-using Test.Apis.Classes;
+using JTran;
 
 namespace Test.Apis.Controllers
 {
@@ -37,7 +38,7 @@ namespace Test.Apis.Controllers
         {
             var result = await _api.Get<string>("");
 
-            return _transformOne.Transform(result, new { Code = code} );
+            return _transformOne.Transform(result, new TransformerContext { Arguments = (new { Code = code }).ToReadOnlyDictionary() });
         }
     }
 

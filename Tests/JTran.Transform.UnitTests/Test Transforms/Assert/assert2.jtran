@@ -1,0 +1,7 @@
+{  
+  "#variable(ValidModels)":  "['Camaro', 'Corvette', 'Silverado']",
+
+  "#assert(contains($ValidModels, Model))":             "Not a valid model",            
+  "#assert(Model != 'Corvette' and Model != 'Camaro')": "Model should not be Corvette or Camaro",
+  "#assert(Year >= 1960 and Year < 1980)":              "#('Invalid year: ' + Year)"
+}

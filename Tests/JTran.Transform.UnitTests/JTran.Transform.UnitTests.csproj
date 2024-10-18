@@ -24,6 +24,7 @@
     <None Remove="Sample Data\Arrays\arrayitem.json" />
     <None Remove="Sample Data\Arrays\array_source.json" />
     <None Remove="Sample Data\Arrays\automobiles.json" />
+    <None Remove="Sample Data\Assert\assert1.json" />
     <None Remove="Sample Data\automobiles.json" />
     <None Remove="Sample Data\car1.json" />
     <None Remove="Sample Data\car2.json" />
@@ -42,6 +43,12 @@
     <None Remove="Sample Data\customers2.json" />
     <None Remove="Sample Data\customers3.json" />
     <None Remove="Sample Data\customers4.json" />
+    <None Remove="Sample Data\Element\element1.json" />
+    <None Remove="Sample Data\Element\element4 _expected.json" />
+    <None Remove="Sample Data\Element\element4.json" />
+    <None Remove="Sample Data\Element\element4_expected2.json" />
+    <None Remove="Sample Data\Element\element5.json" />
+    <None Remove="Sample Data\Element\element5_expected2.json" />
     <None Remove="Sample Data\ExtensionFunctions\empty.json" />
     <None Remove="Sample Data\ForEachGroup\drivers.json" />
     <None Remove="Sample Data\ForEachGroup\drivers2.json" />
@@ -74,6 +81,8 @@
     <None Remove="Test Transforms\Arrays\array_output.jtran" />
     <None Remove="Test Transforms\Arrays\array_source.jtran" />
     <None Remove="Test Transforms\Arrays\variable.jtran" />
+    <None Remove="Test Transforms\Assert\assert1.jtran" />
+    <None Remove="Test Transforms\Assert\assert2.jtran" />
     <None Remove="Test Transforms\coalesce.jtran" />
     <None Remove="Test Transforms\coalescenumber.jtran" />
     <None Remove="Test Transforms\CopyOf\array_noobject.jtran" />
@@ -86,6 +95,11 @@
     <None Remove="Test Transforms\CopyOf\expression.jtran" />
     <None Remove="Test Transforms\dotattributes.jtran" />
     <None Remove="Test Transforms\dotattributes2.jtran" />
+    <None Remove="Test Transforms\Element\element1.jtran" />
+    <None Remove="Test Transforms\Element\element2.jtran" />
+    <None Remove="Test Transforms\Element\element3.jtran" />
+    <None Remove="Test Transforms\Element\element4.jtran" />
+    <None Remove="Test Transforms\Element\element5.jtran" />
     <None Remove="Test Transforms\ExtensionFunctions\empties.jtran" />
     <None Remove="Test Transforms\extensionfunction.jtran" />
     <None Remove="Test Transforms\extensionfunction2.jtran" />
@@ -159,6 +173,13 @@
     <EmbeddedResource Include="Sample Data\Arrays\arrayitem.json" />
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\Element\element5.json" />
+    <EmbeddedResource Include="Sample Data\Element\element5_expected2.json" />
+    <EmbeddedResource Include="Sample Data\Element\element4_expected2.json" />
+    <EmbeddedResource Include="Sample Data\Element\element4 _expected.json" />
+    <EmbeddedResource Include="Sample Data\Element\element4.json" />
+    <EmbeddedResource Include="Sample Data\Element\element1.json" />
+    <EmbeddedResource Include="Sample Data\Assert\assert1.json" />
     <EmbeddedResource Include="Sample Data\automobiles.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\array_noobject3.json" />
     <EmbeddedResource Include="Sample Data\CopyOf\array_noobject2.json" />
@@ -200,6 +221,8 @@
     <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
+    <EmbeddedResource Include="Test Transforms\Assert\assert2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Assert\assert1.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof3.jtran" />
@@ -208,6 +231,11 @@
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof1.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\expression.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element1.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element5.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element4.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element3.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element2.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup_output.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup2.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup1.jtran" />
@@ -294,10 +322,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
-    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.1" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

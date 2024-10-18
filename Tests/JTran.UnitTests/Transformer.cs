@@ -6,7 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using JTran.Common;
+using MondoCore.Common;
 
 namespace JTran.UnitTests
 {
@@ -853,7 +853,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Array_2dim_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArray2dim, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_data4, context);
    
             Assert.AreNotEqual(_transformArray2dim, _data4);
@@ -907,7 +907,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Array_foreach_sequence_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformArrayForEachSequence, null);
-            var context     = new TransformerContext { Arguments = (new { prefix = "item", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { prefix = "item", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_data4, context);
    
             Assert.AreNotEqual(_transformArrayForEachSequence, _data4);
@@ -1039,7 +1039,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Sort_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformSort, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_data4, context);
    
             Assert.AreNotEqual(_transformSort, _data4);
@@ -1058,7 +1058,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Sort_desc_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformSortDesc, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_data4, context);
    
             Assert.AreNotEqual(_transformSortDesc, _data4);
@@ -1077,7 +1077,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Sort_2fields_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformSort2fields, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_data4, context);
    
             Assert.AreNotEqual(_transformSort2fields, _data4);
@@ -1096,7 +1096,7 @@ namespace JTran.UnitTests
         public void Transformer_Transform_Sort_3fields_Succeeds()
         {
             var transformer = new JTran.Transformer(_transformSort3fields, null);
-            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToDictionary()};
+            var context     = new TransformerContext { Arguments = (new { Fred = "Fred", Dude = "Jabberwocky" }).ToReadOnlyDictionary()};
             var result      = transformer.Transform(_dataSort3fields, context);
    
             Assert.AreNotEqual(_transformSort3fields, _dataSort3fields);

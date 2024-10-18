@@ -358,6 +358,45 @@ namespace JTran.Expressions
             return false;
         }
 
+        /*****************************************************************************/
+        public bool containsall(object? list1, object? list2)
+        {
+            if(list1 == null || list2 == null)
+                return false;
+
+            if(list1 is IEnumerable list_a && list2 is IEnumerable list_b)
+            {
+                if(AggregateFunctions.count_internal(list_a) != AggregateFunctions.count_internal(list_b))
+                    return false;
+
+                foreach(var a in list_a)
+                { 
+                    if(!any(list_b, a))
+                        return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /*****************************************************************************/
+        private static bool any(IEnumerable list, object? b)
+        {
+            foreach(var a in list)
+            { 
+                if(a is ICharacterSpan cs1 && b is ICharacterSpan cs2)
+                    if(cs1.Equals(cs2))
+                        return true;
+
+                if(a.CompareTo(b) == 0 )
+                    return true;
+            }
+
+            return false;
+        }
+
         #region trim
 
         /*****************************************************************************/

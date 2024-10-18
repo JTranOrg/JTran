@@ -17,7 +17,7 @@ namespace JTran.Transform.UnitTests
             var ex = await Assert.ThrowsExceptionAsync<Transformer.SyntaxException>( async ()=> await TransformerTest.Test("SyntaxErrors." + transform, data));
 
             Assert.IsNotNull(ex);
-            Assert.IsTrue(ex.Message.Contains(msg));
+            Assert.IsTrue(ex.Message.StartsWith(msg));
             Assert.IsTrue(ex.Data.Contains("LineNumber"));
             Assert.AreEqual(lineNumber.ToString(), ex.Data["LineNumber"]);
         }

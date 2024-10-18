@@ -41,7 +41,7 @@ namespace JTran.Transform.UnitTests
         // Generate test data
         private async Task CreateData(string dataGenerator, int numCustomers, int numOrders)
         {
-            var context = new TransformerContext() { Arguments = (new { NumCustomers = numCustomers, NumOrders = numOrders}).ToDictionary() };
+            var context = new TransformerContext() { Arguments = new Dictionary<string, object> { { "NumCustomers", numCustomers }, { "NumOrders", numOrders } }};
 
             using var output = File.Create($"c:\\Development\\Testing\\JTran\\{dataGenerator}_{numCustomers}_{numOrders}.json", 64 * 1024, FileOptions.SequentialScan);
 

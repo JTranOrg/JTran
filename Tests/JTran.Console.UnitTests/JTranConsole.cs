@@ -71,17 +71,28 @@ namespace JTran.Console.UnitTests
         } 
 
         [TestMethod]
-        [DataRow("Project1")]
-        public async Task JTranConsole_arguments_provider(string projectName)
+        [DataRow("Project1", "MyArgs")]
+        [DataRow("Project1", "MyArgs2")]
+        [DataRow("Project1", "MyArgs3")]
+        public async Task JTranConsole_arguments_provider(string projectName, string argsName)
         {
             var transformPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Transforms\\{projectName}b.jtran";
             var sourcePath    = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Sources\\{projectName}.json";
-            var destination   = "C:\\Development\\Testing\\JTran\\Console Tests\\Project1b.json";
+            var destination   = $"C:\\Development\\Testing\\JTran\\Console Tests\\Project1{Guid.NewGuid().ToString()}.json";
             var thisAssembly  = "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\TestArgumentsProvider\\bin\\Debug\\net8.0\\TestArgumentsProvider.dll";
             
-            await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-tp", "-environment 'prod' -arg2 \"bob\"", "-a", thisAssembly + "::TestArgumentsProvider.MyArgs"});
+            var returnCode = await JTran.Console.Program.Main(new string[] {"-t", transformPath, "-s", sourcePath, "-o", destination, "-tp", "-environment 'prod' -arg2 \"bob\"", "-a", thisAssembly + $"::TestArgumentsProvider.{argsName}"});
 
-            Assert.IsTrue(true);
+            Assert.AreEqual(0, returnCode);
+
+            var result = System.IO.File.ReadAllText(destination);
+            var persons = JsonConvert.DeserializeObject<Container>(result);
+
+            Assert.IsNotNull(persons.Persons);
+            Assert.AreEqual(4, persons.Persons.Count);
+
+            // Clean up
+            System.IO.File.Delete(destination);
         } 
     }
 
@@ -91,5 +102,18 @@ namespace JTran.Console.UnitTests
         {
             this.Add("Phrase", "bobs your uncle");
         }
+    }
+
+    internal class Container
+    {
+        public List<Person> Persons { get; set; }
+    }
+
+    internal class Person
+    {
+        public string  Name    { get; set; }
+        public string  Surname { get; set; }
+        public string  Address { get; set; }
+        public int     Age     { get; set; }
     }
 }

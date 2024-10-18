@@ -112,17 +112,17 @@ namespace JTran
                 if(_exclude.Equals(elementName))      return new TIncludeExcludeProperty(sval, false, lineNumber);
                 if(_innerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, true, lineNumber);
                 if(_outerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, false, lineNumber);  
-                if(_calltemplate.Equals(elementName)) return new TCallTemplateProperty(sval, lineNumber); 
-                    
-                var templateName = sval.SubstringBefore('(', 1);
-                var theRest      = sval.SubstringAfter('(');
-                var parm         = CharacterSpan.FromString("#calltemplate(" + templateName!.ToString()!.ToLower() + "," + theRest.ToString(), true); 
-
-                // Will do exception on evaluation if no template found
-                return new TCallTemplateProperty(parm, lineNumber);
             }
 
-            throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber+1 };    
+            if(_calltemplate.Equals(elementName)) 
+                return new TCallTemplateProperty(sval, lineNumber); 
+
+            var templateCall = TCallTemplate.SubstituteCustomName(sval);
+
+            // Will do exception on evaluation if no template found
+            return new TCallTemplateProperty(templateCall, lineNumber, true);
+           
+           // throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber+1 };    
         }   
-    }
+    } 
 }

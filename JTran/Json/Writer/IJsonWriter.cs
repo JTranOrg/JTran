@@ -228,10 +228,10 @@ namespace JTran
         /****************************************************************************/
         public void WriteProperty(ICharacterSpan? name, object val, bool forceString = false)
         {
-            StartChild();
-
             if(val is IObject obj)
             { 
+                StartChild();
+
                 if(name != null)
                 { 
                     WriteContainerName(name);
@@ -239,21 +239,28 @@ namespace JTran
                 }
                 else
                     WriteProperties(obj);
-            }
-            else if(val is IEnumerable<object> list)
-            { 
-                if(name != null)
-                    WriteContainerName(name);
-                
-                WriteList(list);
-            }
-            else
-            { 
-                WritePropertyName(name, false);
-                WriteValue(val);
-            }
 
-            EndChild();
+                EndChild();
+            }
+            else if(name is not null)
+            { 
+                StartChild();
+
+                if(val is IEnumerable<object> list)
+                { 
+                    if(name != null)
+                        WriteContainerName(name);
+                
+                    WriteList(list);
+                }
+                else
+                { 
+                    WritePropertyName(name, false);
+                    WriteValue(val);
+                }
+
+                EndChild();
+            }
         }        
 
         #endregion

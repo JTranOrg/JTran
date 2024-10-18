@@ -356,8 +356,10 @@ These functions operate on a list of values
 - [any](#any)
 - [avg](#avg)
 - [contains](#contains_list)
+- [containsall](#containsall)
 - [empty](#empty)  
 - [first](#first)
+- [isarray](#isarray)
 - [join](#join)
 - [last](#last)
 - [count](#count)
@@ -416,6 +418,16 @@ Then this expression:
     #(avg(Employees.Salary))
 
 Result is 950<br><br>
+
+##### <a id="isarray">isarray</a>(expr)
+
+Returns true if the expression is an array.
+
+This expression:
+
+    #(isarray([1, 2, 3]))
+
+Result is true<br><br>
 
 ##### <a id="join">join</a>(expr, separator)
 
@@ -490,6 +502,30 @@ Given this data:
 Then this expression:
 
     #(contains(Employees, "Fred"))
+
+Result is true<br><br>
+
+##### <a id="containsall">containsall</a>(expr1, expr2)
+
+Returns true when every item in the first array is also in the second array and vice versa 
+
+    {
+        Employees
+        [
+            "Bob",
+            "Fred"
+        ],
+
+        Managers
+        [
+            "Fred",
+            "Bob"
+        ]
+    }
+
+Then this expression:
+
+    #(containsall(Employees, Managers))
 
 Result is true<br><br>
 

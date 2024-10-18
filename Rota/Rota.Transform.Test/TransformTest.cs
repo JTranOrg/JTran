@@ -2,8 +2,7 @@ using System.Collections;
 using System.Reflection;
 
 using JTran;
-using JTran.Common;
-using Newtonsoft.Json.Linq;
+using MondoCore.Common;
 
 namespace Rota.Transform.Test
 {
@@ -24,7 +23,7 @@ namespace Rota.Transform.Test
             if(dataTransform != null) 
                 data = dataTransform(data);
 
-            var context = new TransformerContext() { DocumentRepositories = new Dictionary<string, IDocumentRepository> { { "docs", new DocumentRepository() } }, Arguments = args?.ToDictionary()};
+            var context = new TransformerContext() { DocumentRepositories = new Dictionary<string, IDocumentRepository> { { "docs", new DocumentRepository() } }, Arguments = args?.ToReadOnlyDictionary()};
             var result = transformer.Transform(data, context);
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(result));

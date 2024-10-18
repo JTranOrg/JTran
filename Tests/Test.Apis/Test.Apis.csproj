@@ -21,8 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MondoCore.Rest" Version="1.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="MondoCore.Collections" Version="2.0.0" />
+    <PackageReference Include="MondoCore.Common" Version="2.0.0" />
+    <PackageReference Include="MondoCore.Rest" Version="1.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
   </ItemGroup>
 
   <ItemGroup>

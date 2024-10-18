@@ -32,7 +32,24 @@ namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    public class Transformer
+    public class Transformer : Transformer<string>
+    {
+        /****************************************************************************/
+        public Transformer(string transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
+            : base(transform, extensionFunctions, includeSource)
+        {
+        }       
+        
+        /****************************************************************************/
+        public Transformer(Stream transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
+            : base(transform, extensionFunctions, includeSource)
+        { 
+        }
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    public class Transformer<T> : ITransformer<T>
     {
         private readonly CompiledTransform _transform;
         private readonly ExtensionFunctions? _extensionFunctions;
@@ -42,6 +59,8 @@ namespace JTran
         /// Construct a new Transformer
         /// </summary>
         /// <param name="transform">The JSON that defines the transform</param>
+        /// <param name="extensionFunctions">Extension functions</param>
+        /// <param name="includeSource">Source for include files</param>
         public Transformer(string transform, IEnumerable? extensionFunctions = null, IDictionary<string, string>? includeSource = null)
         {
             _transform = CompiledTransform.Compile(transform, includeSource);
@@ -61,7 +80,14 @@ namespace JTran
             _extensionFunctions = CompileFunctions(extensionFunctions);
         }
 
+        #region ITransformer
+
         /****************************************************************************/
+        /// <summary>
+        /// Transforms the input json and returns the output as a string
+        /// </summary>
+        /// <param name="input">Contains the source data as a string</param>
+        /// <param name="context">A transformer context</param>
         public string Transform(string data, TransformerContext? context = null)
         {
             return _transform.Transform(data, context, _extensionFunctions);
@@ -92,10 +118,19 @@ namespace JTran
         }
 
         /****************************************************************************/
+        /// <summary>
+        /// Transforms the input list and outputs to the given stream
+        /// </summary>
+        /// <param name="input">Contains the source data </param>
+        /// <param name="listName">An optional name for the list. If provided the input data is an object with an array with that name.</param>
+        /// <param name="output">A stream to write the results to</param>
+        /// <param name="context">A transformer context</param>
         public void Transform(IEnumerable list, string? listName, Stream output, TransformerContext? context = null)
         {
             _transform.Transform(CheckPocoList(list) as IEnumerable, listName, output, context, _extensionFunctions);
         }
+
+        #endregion
 
         #region Child Classes
 

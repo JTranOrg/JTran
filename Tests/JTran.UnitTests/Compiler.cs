@@ -102,7 +102,7 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow("-14 * .53 + 3.5", -3.92)]
         [DataRow("-14 - -.53 - 3.5", -16.97)]
-        public void Compiler_complex_bool_Success(string expr, decimal val)
+        public void Compiler_complex_bool_Success(string expr, double val)
         {
             var parser     = new JTranParser();
             var compiler   = new Compiler();
@@ -110,7 +110,7 @@ namespace JTran.UnitTests
             var context    = new ExpressionContext(CreateTestData(new {Age = 19, Licensed = true } ) );
    
             Assert.IsNotNull(expression);
-            Assert.AreEqual(val, Convert.ToDecimal(expression.Evaluate(context)));
+            Assert.AreEqual(val, Convert.ToDouble(expression.Evaluate(context)));
         }
 
         [TestMethod]
