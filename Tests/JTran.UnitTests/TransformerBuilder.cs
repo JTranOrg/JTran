@@ -1,13 +1,10 @@
+using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.DependencyInjection;
 
-using System.Reflection;
-
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using JTran.Common;
-using System.Text;
 
 namespace JTran.UnitTests
 {
@@ -76,7 +73,7 @@ namespace JTran.UnitTests
         {
             var transformer = TransformerBuilder                               
                                 .FromString(_transformDocument)
-                                .AddDocumentRepository("test1", new DocumentRepository())
+                                .AddDocumentRepository("cars", new DocumentRepository())
                                 .Build<string>();
  
             Assert.IsNotNull(transformer);
@@ -92,7 +89,7 @@ namespace JTran.UnitTests
         {
             var transformer = TransformerBuilder                               
                                 .FromString(_transformDocument2)
-                                .AddDocumentRepository("test1", new DocumentRepository())
+                                .AddDocumentRepository("cars", new DocumentRepository())
                                 .AddArguments(new Dictionary<string, object> { { "Hometown", "Whoville" }})
                                 .Build<string>();
  
@@ -109,7 +106,7 @@ namespace JTran.UnitTests
         {
             var transformer = TransformerBuilder                               
                                 .FromString(_transformDocument4)
-                                .AddDocumentRepository("test1", new DocumentRepository())
+                                .AddDocumentRepository("cars", new DocumentRepository())
                                 .AddArguments(new Dictionary<string, object> { { "Hometown", "Whoville" }})
                                 .AddArguments(new Dictionary<string, object> { { "Age", 36 }, { "Hometown", "Whereville" }})
                                 .Build<string>();
@@ -127,7 +124,7 @@ namespace JTran.UnitTests
         {
             var transformer = TransformerBuilder                               
                                 .FromString(_transformDocument4)
-                                .AddDocumentRepository("test1", new DocumentRepository())
+                                .AddDocumentRepository("cars", new DocumentRepository())
                                 .AddArguments(new Dictionary<string, object> { { "Hometown", "Whoville" }})
                                 .AddArguments(new Dictionary<string, object> { { "Age", 36 }, { "Hometown", "Whereville" }})
                                 .Build<string>();
@@ -150,7 +147,7 @@ namespace JTran.UnitTests
             var outputVal = "";
             var transformer = TransformerBuilder                               
                                 .FromString(_transformDocument3)
-                                .AddDocumentRepository("test1", new DocumentRepository())
+                                .AddDocumentRepository("cars", new DocumentRepository())
                                 .AddArguments(new Dictionary<string, object> { { "Hometown", "Whoville" }})
                                 .OnOutputArgument( (string name, object val)=> 
                                 {
@@ -166,7 +163,41 @@ namespace JTran.UnitTests
             Assert.AreNotEqual(_transformDocument3, result);
             Assert.AreEqual("Winner", outputName);
             Assert.AreEqual("Bob Jones", outputVal);
-        }             
+        }
+
+        #region Dependency Injection
+
+        [TestMethod]
+        public void TransformerBuilder_dependencyInjection_success()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddScoped<ITransformer<Manifest>>( (p)=>
+            {
+                return TransformerBuilder.FromString(_manifest)                                
+                                         .AddDocumentRepository("all", new DocumentRepository())
+                                         .AddInclude("manifestinclude.json", _manifestInclude)
+                                         .AddArguments(new Dictionary<string, object> { { "Captain", "Felicity Cortez" }, { "Doctor", "Luna Taylor" }})
+                                         .AddArguments(new Dictionary<string, object> { { "ShipName", "Ahwahnee" }, { "ShipClass", "Medium Freighter" }, { "MaxWarp", 4 }})
+                                         .AddExtension(new ManifestExtensions())
+                                         .Build<Manifest>();
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var transformer = serviceProvider.GetRequiredService<ITransformer<Manifest>>();
+
+            Assert.IsNotNull(transformer);
+
+            var result = transformer.Transform(_cargo);
+
+            Assert.AreNotEqual(_cargo, result);
+
+            // Validate result
+            JTran.Assert(_manifestValidation, result);
+        }
+
+        #endregion
 
         #region Transforms and Data
 
@@ -178,16 +209,38 @@ namespace JTran.UnitTests
 
             public string GetDocument(string name)
             {
-                return _doc1;
+                switch(name)
+                { 
+                    case "cars": return _doc1;
+                    case "products": return _products;
+                    default: throw new Exception("blah blah");
+                }
             }
 
             public Stream GetDocumentStream(string name)
             {
-                return new MemoryStream(UTF8Encoding.Default.GetBytes(_doc1));
+                return new MemoryStream(UTF8Encoding.Default.GetBytes(GetDocument(name)));
             }
         }
 
-        // "#variable(origins)":   "#(document(docs, origins))",
+        private class Manifest
+        {
+
+        }
+
+        private class UnitTest
+        {
+
+        }
+
+        private static readonly string _manifestInclude =
+        @"{
+             '#function(ManifestVolume, quantity, item)':
+             {
+                return:  '#($quantity * $item.Height * $item.Width * $item.Length)'
+             }
+        }";
+
         private static readonly string _otherFile =
         @"{
              '#template(DisplayName, name)': 
@@ -204,7 +257,7 @@ namespace JTran.UnitTests
 
         private static readonly string _transformDocument =
         @"{
-            '#variable(drivers)':      '#(document(test1, test1))',
+            '#variable(drivers)':      '#(document(cars, cars))',
             '#variable(DriverName)':   'John Smith',
 
             '#bind($drivers.Drivers[Name == $DriverName][0])':
@@ -216,7 +269,7 @@ namespace JTran.UnitTests
 
         private static readonly string _transformDocument2 =
         @"{
-            '#variable(drivers)':      '#(document(test1, test1))',
+            '#variable(drivers)':      '#(document(cars, cars))',
             '#variable(DriverName)':   'John Smith',
 
             '#bind($drivers.Drivers[Name == $DriverName][0])':
@@ -228,7 +281,7 @@ namespace JTran.UnitTests
 
         private static readonly string _transformDocument3 =
         @"{
-            '#variable(drivers)':      '#(document(test1, test1))',
+            '#variable(drivers)':      '#(document(cars, cars))',
             '#variable(DriverName)':   'John Smith',
             '#outputvariable(Winner)': 'Bob Jones',
 
@@ -241,7 +294,7 @@ namespace JTran.UnitTests
 
         private static readonly string _transformDocument4 =
         @"{
-            '#variable(drivers)':      '#(document(test1, test1))',
+            '#variable(drivers)':      '#(document(cars, cars))',
             '#variable(DriverName)':   'John Smith',
             '#outputvariable(Winner)': 'Bob Jones',
 
@@ -313,6 +366,79 @@ namespace JTran.UnitTests
             ]
         }";
         
+        private static readonly string _cargo = 
+        @"[
+            {
+                UPN:        '178',
+                Quantity: 400
+            },
+            {
+                UPN:        '4568',
+                Quantity: 100
+            },
+            {
+                UPN:        '924',
+                Quantity: 2000
+            },
+            {
+                UPN:        '1076',
+                Quantity: 350
+            },
+            {
+                UPN:        '8192',
+                Quantity: 900
+            }
+        ]";
+                        
+        private static readonly string _products = 
+        @"[
+            {
+                UPN:            '178',
+                Title:          'Zarconian Wine',
+                Manufacturer:   'Zarcossus Prime Agriculture',
+                Weight:         36,
+                Width:          24,
+                Length:         50,
+                Height:         50
+            },
+            {
+                UPN:            '4568',
+                Title:          'Berelium Batteries',
+                Manufacturer:   'Kronos Heavy Industries',
+                Weight:         48,
+                Width:          12,
+                Length:         20,
+                Height:         10
+            },
+            {
+                UPN:            '924',
+                Title:          'Terran Flu Vaccines',
+                Manufacturer:   'Johnson & Hohnson',
+                Weight:         20,
+                Width:          24,
+                Length:         18,
+                Height:         12
+            },
+            {
+                UPN:            '1076',
+                Title:          'Rigellian Drones',
+                Manufacturer:   'Rigel Prime Aero Industries',
+                Weight:         120,
+                Width:          100,
+                Length:         40,
+                Height:         42
+            },
+            {
+                UPN:            '8192',
+                Title:          'Gripper Rover Tires',
+                Manufacturer:   'Orion Beta Automotive',
+                Weight:         40,
+                Width:          140,
+                Length:         140,
+                Height:         24
+            }
+        ]";
+
         private static readonly string _doc1 = 
         @"{
             Drivers:
@@ -374,6 +500,53 @@ namespace JTran.UnitTests
             }
         }";
 
+        private static readonly string _manifest = 
+        @"{
+            '#include':             'manifestinclude.json',
+            '#variable(products)':  '#(document(all, products))',
+            '#variable(manifest)':  '#innerjoin(@, $products, left.UPN == right.UPN)',
+            '#variable(itemsList)': 
+            {
+               '#foreach($manifest, items)':
+                {
+                   UPN:             '#(left.UPN)',
+                   Title:           '#(right.Title)',
+                   Manufacturer:    '#(right.Manufacturer)',
+
+                   Quantity:        '#(left.Quantity)',
+                   TotalWeight:     '#(ManifestWeight(left.Quantity, right.Weight))',
+                   TotalVolume:     '#(ManifestVolume(left.Quantity, right))',
+                }
+            },
+
+            'Ship':
+            {
+                'name':             '#($ShipName)',
+                'skipper':          '#($Captain)',
+                'ship_doctor':      '#($Doctor)',
+                'class':            '#($ShipClass)',
+                'maxwarp':          '#($MaxWarp)'
+            },
+
+            'Manifest':
+            {
+                 TotalWeight:       '#(sum($itemsList.items.TotalWeight))',
+                 TotalVolume:       '#(sum($itemsList.items.TotalVolume))',
+
+                 'Items':           '#($itemsList.items)'
+            }
+          }
+        }";
+
+        private static readonly string _manifestValidation = 
+        @"{
+            '#variable(CountMsg)': 'There should be 3 items instead of ',
+
+            '#assert(isarray(Manifest.Items))':       'Manifest.Items is not array',
+            '#assert(count(Manifest.Items) == 5)':    '#($CountMsg + count(Manifest.Items))'
+          }
+        }";
+
         private static readonly string _data5 = 
         @"{
             Owner:           'Bob Smith',   
@@ -403,6 +576,31 @@ namespace JTran.UnitTests
             public string addy(string val)  { return "y" + val; }
         }
 
+        private class ManifestExtensions
+        {
+            public decimal ManifestWeight(int quantity, decimal weight)  
+            { 
+                return quantity * weight / 1000M; 
+            }
+        }
+
+        private static class JTran
+        {
+            internal static void Assert(string transformSource, string data)
+            {
+                try
+                { 
+                    TransformerBuilder                               
+                        .FromString(transformSource)
+                        .Build<string>()
+                        .Transform(data);
+                }
+                catch (AssertFailedException ex) 
+                {
+                    throw new Microsoft.VisualStudio.TestTools.UnitTesting.AssertFailedException(ex.Message, ex);
+                }
+            }
+        }
 
         #endregion
     }

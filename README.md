@@ -107,26 +107,29 @@ The TransformerContext provides a way of extending a default transform
     }
 
 <br />
-<small>IDictionary<string, object>?</small> <b>Arguments</b><br /><br />
-This is a dictionary to pass in a set of arguments. This dictionary is called at runtime and since it's an interface you could implement a custom dictionary that returns values from a secret store or configuration store, e.g. KeyVault or Microsoft.Extensions.IConfiguration<br /><br />
 
-<small>IDictionary<string, IDocumentRepository></small> <b>DocumentRepositories</b><br /><br />
-This is a dictionary of document repositories. These are how calls to the document() function are resolved. The repo name as the first argument in that function is the key in the dictionary you provide here.
+---
+<small>IDictionary<string, object>?</small> <b>Arguments</b><br />
+>This is a dictionary to pass in a set of arguments. This dictionary is called at runtime and since it's an interface you could implement a custom dictionary that returns values from a secret store or configuration store, e.g. KeyVault or Microsoft.Extensions.IConfiguration<br /><br />
 
-<small>bool</small> <b>AllowDeferredLoading</b><br /><br />
-When the input source document is a json array (starts with "[") by default the transform will not load the json until it starts to get processed, e.g. thru a #foreach loop and will only load one item at at time. This is to allow super large json documents that would otherwise cause memory issues. However in certain cases this may cause performance issues. For instance if you jtran code is accessing items out of order, e.g. "#(@[42])". Setting this value to false will cause the entire json source to be parsed and loaded at once.
+---
+<small>IDictionary<string, IDocumentRepository></small> <b>DocumentRepositories</b><br />
+>This is a dictionary of document repositories. These are how calls to the document() function are resolved. The repo name as the first argument in that function is the key in the dictionary you provide here.
 
-<small>IReadOnlyDictionary<string, object></small> <b>OutputArguments</b><br /><br />
-This dictionary is a readonly value. It where any output variables set in the transform, e.g. "#outputvariable(Name, 'Fred')". Once the transform is complete this dictionary will be filled with output variables
+---
+<small>bool</small> <b>AllowDeferredLoading</b><br />
+>When the input source document is a json array (starts with "[") by default the transform will not load the json until it starts to get processed, e.g. thru a #foreach loop and will only load one item at at time. This is to allow super large json documents that would otherwise cause memory issues. However in certain cases this may cause performance issues. For instance if you jtran code is accessing items out of order, e.g. "#(@[42])". Setting this value to false will cause the entire json source to be parsed and loaded at once.
 
-<small>Action<string, object>?</small> <b>OnOutputArgument</b><br /><br />
-Allows a lambda expression to passed in that will be called immediately as soon as an output variable is set in the transform.
+---
+<small>IReadOnlyDictionary<string, object></small> <b>OutputArguments</b><br />
+>This dictionary is a readonly value. It where any output variables set in the transform, e.g. "#outputvariable(Name, 'Fred')". Once the transform is complete this dictionary will be filled with output variables
+
+---
+<small>Action<string, object>?</small> <b>OnOutputArgument</b><br />
+>Allows a lambda expression to passed in that will be called immediately as soon as an output variable is set in the transform.
 
 <br>
 
-<small>Note: The transformer would benefit from caching so it would be better to inject the transformer object as a singleton in your dependency injection code.</small>
-    
-<br>
 
 <a id="TransformerBuilder" />
 
@@ -209,10 +212,31 @@ Creating a transformer in dependency injection (.Net Core+)
 ---
 <small>ITransformerBuilder</small> <b>AddInclude</b>(object extensionObject, Func\<string\> includeSource)<br />
 >Adds an include file by running the given lambda expression. Multiple includes can be added by calling this function for each one but the name must be unique for each call including the various flavors of this function.
+   
+    return TransformerBuilder.FromString(blobStore.Get("transforms/" + transformerPath + ".jtran"))
+                             .AddInclude("default", ()=>
+                              {
+                                 ... Load include
+                              })
+                              .AddArguments(p.GetRequiredService<IMyArgumentsProvider>())
+                             .AddArguments(p.GetRequiredService<IMyOtherArgumentsProvider>())
+                             .AddDocumentRepository(p.GetRequiredService<IDocumentRepository>())
+                             .AddExtension(new MyDomainLib())
+                             .AddExtension(new MyStringLib())
+                             .Build<T>();
 
 ---
 <small>async Task\<ITransformerBuilder\></small> <b>AddIncludeAsync</b>(string name, Func\<Task\<string\>\> includeSource)<br />
 >Adds an include file by running the given lambda expression. Multiple includes can be added by calling this function for each one but the name must be unique for each call including the various flavors of this function.
+   
+    var builder = await TransformerBuilder
+                          .FromString(transformSource)
+                          .AddIncludeAsync("default", await ()=>
+                          {
+                             ... Load include asynchronously
+                          });
+
+    return builder.Build<T>();
 
 ---
 <small>ITransformerBuilder</small> <b>AllowDeferredLoading</b>(object extensionObject)<br />

@@ -41,6 +41,12 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        public bool isarray(object val)
+        {
+            return val is IEnumerable;
+        }
+
+        /*****************************************************************************/
         internal static int count_internal(object val)
         {
             if(val is null)

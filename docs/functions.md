@@ -359,6 +359,7 @@ These functions operate on a list of values
 - [containsall](#containsall)
 - [empty](#empty)  
 - [first](#first)
+- [isarray](#isarray)
 - [join](#join)
 - [last](#last)
 - [count](#count)
@@ -417,6 +418,16 @@ Then this expression:
     #(avg(Employees.Salary))
 
 Result is 950<br><br>
+
+##### <a id="isarray">isarray</a>(expr)
+
+Returns true if the expression is an array.
+
+This expression:
+
+    #(isarray([1, 2, 3]))
+
+Result is true<br><br>
 
 ##### <a id="join">join</a>(expr, separator)
 

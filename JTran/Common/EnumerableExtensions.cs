@@ -91,8 +91,19 @@ namespace JTran
             if(enm == null) 
                 return false;
 
-            foreach(var item in enm)
+            try
+            { 
+                foreach(var item in enm)
+                    return true;
+            }
+            catch(NotSupportedException) 
+            {
                 return true;
+            }
+            catch(NotImplementedException) 
+            {
+                return true;
+            }
 
             return false;
         }   

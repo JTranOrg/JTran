@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MondoCore.Common;
 using MondoCore.Rest;
 using System.Reflection;
-using Test.Apis.Classes;
+using JTran;
 
 namespace Test.Apis.Controllers
 {
@@ -27,7 +27,7 @@ namespace Test.Apis.Controllers
         {
             var result = await _api.Get<string>("");
 
-            return _transform.Transform(result, new { Year = year } );
+            return _transform.Transform(result, new TransformerContext { Arguments = (new { Year = year }).ToReadOnlyDictionary() });
         }
     }
 

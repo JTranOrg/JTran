@@ -19,7 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 
 namespace JTran.Collections
@@ -86,11 +86,20 @@ namespace JTran.Collections
             value = null;
             return false;
         }
+
+        /****************************************************************************/
+        public override IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            if(!_providers.Any())
+                return Enumerable.Empty<KeyValuePair<string, object>>().GetEnumerator();
+
+            return _providers.First().GetEnumerator();
+        }
     }
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class Arguments(IReadOnlyDictionary<string, object> provider) : ReadonlyDictionary<string, object> 
+    file class Arguments(IReadOnlyDictionary<string, object> provider) : ReadonlyDictionary<string, object> 
     {
         /****************************************************************************/
         public override object this[string key]  => provider[key];
@@ -131,21 +140,21 @@ namespace JTran.Collections
         public abstract bool ContainsKey(K key);         
         public abstract bool TryGetValue(K key, [MaybeNullWhen(false)] out V value);
 
-        #region NotSupported
-
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotSupportedException();
+            return GetEnumerator();
         }
 
-        public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
+        public virtual IEnumerator<KeyValuePair<K, V>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerable<K> Keys => throw new NotSupportedException();
-        public IEnumerable<V> Values => throw new NotSupportedException();
-        public int Count => throw new NotSupportedException();
+        #region NotSupported
+
+        public virtual IEnumerable<K> Keys => throw new NotSupportedException();
+        public virtual IEnumerable<V> Values => throw new NotSupportedException();
+        public virtual int Count => throw new NotSupportedException();
 
         #endregion
     }
