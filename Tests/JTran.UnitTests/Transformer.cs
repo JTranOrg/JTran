@@ -6,6 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using MondoCore.Collections;
 using MondoCore.Common;
 
 namespace JTran.UnitTests
