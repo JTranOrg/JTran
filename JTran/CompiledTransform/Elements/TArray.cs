@@ -88,12 +88,15 @@ namespace JTran
     /****************************************************************************/
     internal class TArray : TBaseArray
     {
+        private static ICharacterSpan _brackets = CharacterSpan.FromString("[]");
+
         /****************************************************************************/
         internal TArray(ICharacterSpan name)
         { 
-           name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
-
-           this.Name = CreateValue(name, true, 0);
+            name = name.Substring("#array(".Length, name.Length - "#array(".Length - 1);
+            
+            this.Name          = CreateValue(name, true, 0);            
+            this.IsOutputArray = name.Equals(_brackets);
         }
 
         /****************************************************************************/
@@ -103,12 +106,16 @@ namespace JTran
             {
                 wrap( ()=>
                 { 
-                    WriteContainerName(output, context);
-                    output.StartArray();
+                    var arrayName   = WriteContainerName(output, context);
+                    var outputArray = this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject));
+
+                    if(outputArray)
+                        output.StartArray();                
 
                     fnc();
 
-                    output.EndArray();
+                    if(outputArray)
+                        output.EndArray();
                 });
             });
         }

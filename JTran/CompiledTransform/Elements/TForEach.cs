@@ -54,14 +54,15 @@ namespace JTran
       
             wrap( ()=> 
             { 
-                var arrayName = WriteContainerName(output, context);
+                var arrayName   = WriteContainerName(output, context);
+                var outputArray = this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject));
 
-                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
+                if(outputArray)
                     output.StartArray();
                 
                 EvaluateChildren(output, arrayName, list, context);
 
-                if(this.IsOutputArray || (arrayName != null && !arrayName.Equals(EmptyObject)))
+                if(outputArray)
                     output.EndArray();
             });
         }

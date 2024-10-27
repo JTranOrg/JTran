@@ -1,0 +1,13 @@
+{
+  "#array([])":
+  {
+    "#arrayitem(1)":
+    {
+      "Name": "Junebug"
+    },
+    "#arrayitem(2)":
+    {
+      "Name": "King Krakatoa"
+    }
+  }
+}

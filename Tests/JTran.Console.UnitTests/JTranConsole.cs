@@ -49,6 +49,17 @@ namespace JTran.Console.UnitTests
         } 
 
         [TestMethod]
+        [DataRow("Project_Multi")]
+        public async Task JTranConsole_singlesrc_splitoutput2(string projectName)
+        {
+            var projectPath = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin") + $"\\Projects\\{projectName}.json";
+            
+            await JTran.Console.Program.Main(new string[] {"-p", projectPath});
+
+            Assert.IsTrue(true);
+        } 
+
+        [TestMethod]
         [DataRow("Project2")]
         public async Task JTranConsole_wildcards(string projectName)
         {

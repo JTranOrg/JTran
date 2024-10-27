@@ -49,6 +49,19 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("King Jalusa",  array[4]["Name"]);
         }
 
+
+        [TestMethod]
+        [DataRow("array_brackets", "arrayitem")]
+        public async Task Arrays_brackets(string transform, string data)
+        {
+            var result  = await TestArray(transform, data);
+            var array = result.Array;
+
+            Assert.AreEqual(2,                 array!.Count());
+            Assert.AreEqual("Junebug",         array[0]["Name"]);
+            Assert.AreEqual("King Krakatoa",  array[1]["Name"]);
+        }
+
         #region Private
 
         public async Task<JObject> Test(string transform, string data, Dictionary<string, object>? parms = null)
