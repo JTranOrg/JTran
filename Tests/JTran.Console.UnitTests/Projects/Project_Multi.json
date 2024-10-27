@@ -1,0 +1,12 @@
+{
+   "Name":              "ProjectSplit",            
+   "TransformPath":     "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Transforms\\Project_Multi.jtran",    
+   "SourcePath":        "C:\\Development\\Projects\\JTranOrg\\JTran\\Tests\\JTran.Console.UnitTests\\Sources\\Project1.json",       
+   "DestinationPath":   "C:\\Development\\Testing\\JTran\\Console Tests\\",
+   "SplitOutput":       true,
+   "Arguments": 
+   {
+      "environment":     "dev",
+      "Phrase":          "Hello"
+   }
+}

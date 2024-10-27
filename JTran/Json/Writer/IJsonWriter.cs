@@ -91,7 +91,10 @@ namespace JTran
         public void WriteContainerName(ICharacterSpan name)
         {
             StartChild();
-            _stack.Peek().PreviousFinished = true;
+
+            if(_stack.Any())
+                _stack.Peek().PreviousFinished = true;
+
             WritePropertyName(name, true);
         }
 

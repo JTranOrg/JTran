@@ -46,8 +46,8 @@ namespace JTran
 
         #region IJsonWriter
         
-        public bool InObject => _current!.InObject;
-        public bool InArray  => _current!.InArray;
+        public bool InObject => _current?.InObject ?? false;
+        public bool InArray  => _current?.InArray ?? true;
 
         /****************************************************************************/
         public void StartObject()

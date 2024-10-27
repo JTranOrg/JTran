@@ -78,6 +78,7 @@
     <None Remove="Sample Data\sort.json" />
     <None Remove="Sample Data\Templates\after.json" />
     <None Remove="Test Transforms\Arrays\arrayitem.jtran" />
+    <None Remove="Test Transforms\Arrays\array_brackets.jtran" />
     <None Remove="Test Transforms\Arrays\array_output.jtran" />
     <None Remove="Test Transforms\Arrays\array_source.jtran" />
     <None Remove="Test Transforms\Arrays\variable.jtran" />
@@ -217,6 +218,7 @@
     <EmbeddedResource Include="Sample Data\JTranFunctions\nested.json" />
     <EmbeddedResource Include="Sample Data\Map\address.json" />
     <EmbeddedResource Include="Sample Data\Templates\after.json" />
+    <EmbeddedResource Include="Test Transforms\Arrays\array_brackets.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\arrayitem.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Arrays\array_source.jtran" />
