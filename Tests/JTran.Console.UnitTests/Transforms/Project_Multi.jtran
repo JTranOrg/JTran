@@ -1,15 +1,15 @@
 {
+  "#assert(contains(['dev', 'test', 'prod'], $environment))":     "#('Environment must be dev, test or prod. Actual value is ' + $environment)",
+
   "#array([])": 
   {
     "#arrayitem(1)": 
     {
-      "#outputvariable(FileName)": "#($DestinationPath + 'keyvault.json')",
-      "keyvault":                  "#('kv-jtran-cicd-' + $environment)",
+      "#outputvariable(FileName)":        "#($DestinationPath + 'keyvault.json')",
+      "#variable(keyvault)":              "#('kv-jtran-cicd-' + $environment)",
     
-      "entries": 
-      [
-        "CustomerDatabaseConnectionString"
-      ]
+      "CustomerDatabaseConnectionString": "#KeyVaultReference($keyvault, 'CustomerDatabaseConnectionString')",
+      "EmailServerPassword":              "#KeyVaultReference($keyvault, 'EmailServerPassword')"
     },
 
     "#arrayitem(2)": 
@@ -23,5 +23,12 @@
 
       "CosmosConnectionString":           "#('mongodb://mycompany.' + $environment + '.cosmos')"
     }
+  },
+
+  "#element(KeyVaultReference, keyvault, secretname)": 
+  {
+    "#variable(singlequote)":  "'",
+
+    "return":   "#('{' + $singlequote + 'uri' + $singlequote + ': ' + $singlequote + 'https://' + $keyvault + '.vault.azure.net/secrets/' + $secretname + $singlequote + '}' )"
   }
 }
