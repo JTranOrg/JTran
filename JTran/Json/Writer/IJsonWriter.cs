@@ -47,6 +47,8 @@ namespace JTran
 
         bool InObject { get; }
         bool InArray  { get; }
+
+        bool HasWritten { get; }
     }    
     
     /****************************************************************************/
@@ -84,6 +86,8 @@ namespace JTran
         /****************************************************************************/
         public bool InObject => !(_stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false);
         public bool InArray  => _stack.Count == 0 ? false : _stack.Peek()?.IsArray ?? false;
+
+        public bool HasWritten => false;
 
         #region Write
 
@@ -431,6 +435,7 @@ namespace JTran
         /****************************************************************************/
         public bool InObject => false;
         public bool InArray  => false;
+        public bool HasWritten => this.NumWrites > 0;
 
         #region Write
 

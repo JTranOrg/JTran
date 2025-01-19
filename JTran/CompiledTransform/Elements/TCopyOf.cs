@@ -25,6 +25,8 @@ namespace JTran
                 throw new Transformer.SyntaxException("Missing expression for #copyof");
 
             _expression = parms[0];
+
+            this.IsOutput = true;
         }
 
         /****************************************************************************/

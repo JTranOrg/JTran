@@ -165,6 +165,22 @@ namespace JTran.UnitTests
             Assert.AreEqual("Bob Jones", outputVal);
         }
 
+        [TestMethod]
+        public void TransformerBuilder_Build_wSplit_success()
+        {
+            var transformer = TransformerBuilder                               
+                                .FromString(_split)
+                                .AddArguments(new Dictionary<string, object> { { "environment", "dev" }, { "DestinationPath", "c:\\Development\\Testing\\JTran\\UnitTests\\" }})
+                                .SplitOutput("c:\\Development\\Testing\\JTran\\UnitTests")
+                                .Build<string>();
+ 
+            Assert.IsNotNull(transformer);
+
+            using var stream = new MemoryStream(UTF8Encoding.Default.GetBytes("{ 'bob': 'bob' }")); 
+
+            transformer.Transform(stream, new TransformerContext());
+        }
+
         #region Dependency Injection
 
         [TestMethod]
@@ -228,11 +244,6 @@ namespace JTran.UnitTests
 
         }
 
-        private class UnitTest
-        {
-
-        }
-
         private static readonly string _manifestInclude =
         @"{
              '#function(ManifestVolume, quantity, item)':
@@ -253,6 +264,38 @@ namespace JTran.UnitTests
              {
                 return:  '#($person2.FirstName + $person2.LastName)'
              }
+        }";
+
+        private static readonly string _split =
+        @"{
+            '#array([])': 
+            {
+              '#arrayitem(1)': 
+              {
+                '#variable(fileN)':                 'keyvault.json',
+                '#variable(keyVaultName)':          'kv-jtran-cicd-',
+                '#outputvariable(FileName)':        '#($DestinationPath + $fileN)',
+                '#variable(keyvault)':              '#($keyVaultName + $environment)',
+                '#variable(kvEntry1)':              '/CustomerDatabaseConnectionString',
+                '#variable(kvEntry2)':              '/EmailServerPassword',
+            
+                'CustomerDatabaseConnectionString': '#($keyvault + $kvEntry1)',
+                'EmailServerPassword':              '#($keyvault + $kvEntry2)'
+              },
+            
+              '#arrayitem(2)': 
+              {
+                '#variable(fileN2)':                'nonkeyvault.json',
+                '#variable(apiBaseUrl)':            'https://appcs-jtran-cicd-',
+                '#outputvariable(FileName)':        '#($DestinationPath + $fileN2)',
+                '#variable(ApiBaseAddress)':        '#($apiBaseUrl + $environment)',
+                '#variable(endpoint1)':              'invoices',
+                '#variable(endpoint2)':              'inventory',
+            
+                'InvoiceUrl':                       '#($ApiBaseAddress + $endpoint1)',
+                'InventoryUrl':                     '#($ApiBaseAddress + $endpoint2)'
+              }
+            }
         }";
 
         private static readonly string _transformDocument =

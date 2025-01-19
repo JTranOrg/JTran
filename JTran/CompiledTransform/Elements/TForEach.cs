@@ -81,6 +81,9 @@ namespace JTran
                 { 
                     if(EvaluateChild(output, arrayName, childScope, context, ref index))
                         break;
+
+                    if(context.MaxIterations == 1 && output.HasWritten) 
+                        break;
                 }
             }
             catch(AggregateException ex)
@@ -93,6 +96,9 @@ namespace JTran
         private bool EvaluateChild(IJsonWriter output, ICharacterSpan arrayName, object childScope, ExpressionContext context, ref long index)
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
+            var maxIterations = context.MaxIterations;
+
+            newContext.MaxIterations = 1;
 
             if(_hasConditionals)
             {
@@ -131,6 +137,7 @@ namespace JTran
 
             var bBreak = false;
 
+            newContext.MaxIterations = maxIterations;
             ++index;
 
             base.Evaluate(output, newContext, (fnc)=> 

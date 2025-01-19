@@ -30,21 +30,75 @@ namespace JTran
                 throw;
             }
 
+            this.IsOutput = true;
+            this.Evaluator = PreEvaluate;
         }
 
-        internal IValue? Name  { get; set; }
-        internal IValue Value  { get; set; }
-        internal long LineNumber  { get; }
+        internal IValue?        Name  { get; set; }
+        internal IValue         Value  { get; set; }
+        internal long           LineNumber  { get; }
+        private IEvaluator?     ValueEvaluator  { get; set; }
+        private Action<IJsonWriter, ExpressionContext, Action<Action>>? Evaluator  { get; set; }
 
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            this.Evaluator(output, context, wrap);
+        }
+
+        /****************************************************************************/
+        private void PreEvaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            bool? isSimpleValue = this.Value.IsSimpleValue(context);
+
+            if(isSimpleValue.HasValue && !isSimpleValue.Value && this.Value is IEvaluator evaluator)
+            {
+                this.ValueEvaluator = evaluator;
+                this.Evaluator      = EvaluateAsObject;
+
+                EvaluateAsObject(output, context, wrap);
+
+                return;
+            }
+
+            this.Evaluator = EvaluateAsProperty;
+
+            EvaluateAsProperty(output, context, wrap);
+        }
+
+        #region Private
+
+        /****************************************************************************/
+        private void EvaluateAsObject(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            var name = this.Name?.Evaluate(context) as ICharacterSpan;
+
+            wrap( ()=> 
+            {
+                if(name != null)
+                {
+                    output.WriteContainerName(name);
+                    output.StartObject();
+                }
+            
+                this.ValueEvaluator.Evaluate(output, context, (f) => f());
+            
+                if(name != null)
+                    output.EndObject();
+            });
+            
+            return;
+        }
+
+        /****************************************************************************/
+        private void EvaluateAsProperty(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
             var name = this.Name?.Evaluate(context) as ICharacterSpan;
             object? val = null;
 
             try
             { 
-                val  = this.Value.Evaluate(context);
+                val = this.Value.Evaluate(context);
             }
             catch(JsonParseException ex)
             {
@@ -56,6 +110,9 @@ namespace JTran
 
             wrap( ()=> output.WriteProperty(name, val));
         }
+
+
+        #endregion
     }
 
     /****************************************************************************/

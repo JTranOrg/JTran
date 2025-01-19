@@ -389,6 +389,7 @@ namespace JTran
     internal interface IValue
     {
         object Evaluate(ExpressionContext context);
+        bool? IsSimpleValue(ExpressionContext context);
     }
 
     /****************************************************************************/
@@ -407,6 +408,12 @@ namespace JTran
         public object Evaluate(ExpressionContext context)
         {
             return _value;
+        }
+
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return true;
         }
     }
 
@@ -453,6 +460,12 @@ namespace JTran
         {
             return _value;
         }
+
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return true;
+        }
     }
 
     /****************************************************************************/
@@ -471,6 +484,12 @@ namespace JTran
         public object Evaluate(ExpressionContext context)
         {
             return _expression?.Evaluate(context);
+        }
+
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return null;
         }
     }
 

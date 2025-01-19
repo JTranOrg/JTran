@@ -1,0 +1,16 @@
+{
+    "Manager": "Fred",
+    "Employees":
+    [
+        {
+            "FirstName": "Fred",
+            "LastName": "Flintstone",
+            "Age": 21
+        },
+        {
+            "FirstName": "Barney",
+            "LastName": "Rubble",
+            "Age": 21
+        }
+    ]
+}

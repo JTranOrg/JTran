@@ -1,0 +1,16 @@
+{
+    "Manager":  "Fred",
+
+    "#bind(Staff[0])":
+    {
+        "#noobject":   "#Person(@)" 
+    },
+
+    // Element must be defined in the root object but can be defined before or after it's use
+    "#element(Person, person)":
+    {
+        "FirstName": "#($person.FirstName)",
+        "LastName":  "#($person.LastName)",
+        "Age":       21
+    }
+}

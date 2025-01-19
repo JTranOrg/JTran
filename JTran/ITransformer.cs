@@ -60,6 +60,14 @@ namespace JTran
 
         /****************************************************************************/
         /// <summary>
+        /// Transforms the input json and writes to output stream(s) defined by the context
+        /// </summary>
+        /// <param name="input">Contains the source data stream</param>
+        /// <param name="context">A transformer context</param>
+        void Transform(Stream input, TransformerContext context);
+
+        /****************************************************************************/
+        /// <summary>
         /// Transforms the input list and outputs to the given stream
         /// </summary>
         /// <param name="input">Contains the source data </param>

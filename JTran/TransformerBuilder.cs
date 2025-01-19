@@ -24,6 +24,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 using JTran.Collections;
+using JTran.Extensions;
 using JTran.Streams;
 
 namespace JTran
@@ -97,9 +98,20 @@ namespace JTran
         /****************************************************************************/
         public TransformerBuilder AllowDeferredLoading(bool allow)
         {
-            _context = _context ?? new();
+            _context ??= new();
 
             _context.AllowDeferredLoading = allow;
+
+            return this;
+        }
+
+        /****************************************************************************/
+        public TransformerBuilder SplitOutput(string path)
+        {
+            _context ??= new();
+
+            _context.SplitOutput = true;
+            _context.OutputPath = path.EnsureEndsWith("\\");
 
             return this;
         }
@@ -197,6 +209,15 @@ namespace JTran
                 PostTransform(newContext, context);
 
                 return result;
+            }
+
+            /****************************************************************************/
+            public void Transform(Stream data, TransformerContext? context)
+            {
+                var newContext = CombinedContext(context);
+                _transformer.Transform(data, newContext);
+
+                PostTransform(newContext, context);
             }
 
             /****************************************************************************/

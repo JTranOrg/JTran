@@ -9,20 +9,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\flightgenerator.jtran" />
+    <None Remove="Resources\origins.json" />
+    <None Remove="Resources\ships.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\flightgenerator.jtran" />
+    <EmbeddedResource Include="Resources\origins.json" />
+    <EmbeddedResource Include="Resources\ships.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\JTran.Random\JTran.Random.csproj" />
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
     <ProjectReference Include="..\JTran.UnitTests\JTran.UnitTests.csproj" />
   </ItemGroup>

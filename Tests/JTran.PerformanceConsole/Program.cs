@@ -1,11 +1,15 @@
 ﻿
- namespace JTran.PerformanceConsole
+using System.Reflection;
+using System.Text;
+using MondoCore.Common;
+
+namespace JTran.PerformanceConsole
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-          Test1();
+          Test3();
         }
 
         static void Test1()
@@ -64,6 +68,20 @@
             transformer.Transform(list, output);
         }
 
+        static void Test3()
+        {
+            var transform = LoadFile("flightgenerator.jtran");
+            var transformer = TransformerBuilder.FromString(transform)
+                                                .AddDocumentRepository("docs", new DocumentRepository())
+                                                .AddExtension(new JTran.Random.RandomExtensions())
+                                                .Build<string>();
+
+            using var output = File.OpenWrite($"c:\\Documents\\Testing\\JTran\\flights.json");
+            using var input = new MemoryStream(UTF8Encoding.Default.GetBytes(LoadFile("ships.json")));
+            
+            transformer.Transform(input, output);
+        }
+
         public class Automobile
         {
             public string  Make     { get; set; } = "";
@@ -71,6 +89,40 @@
             public int     Year     { get; set; } 
             public string  Color    { get; set; } = "";
         }
+
+        internal static string LoadFile(string name)
+        {
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.PerformanceConsole.{name}");
+                       
+            if(stream == null)
+                throw new FileNotFoundException(name);
+
+            return stream!.ReadString();
+        }
+
+        internal static Stream LoadStream(string name)
+        {
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"JTran.PerformanceConsole.{name}");
+                       
+            if(stream == null)
+                throw new FileNotFoundException(name);
+
+            return stream;
+        }
+
+        public class DocumentRepository : IDocumentRepository2
+        { 
+            public string GetDocument(string name)
+            {
+                return LoadFile(name + ".json");
+            }
+
+            public Stream GetDocumentStream(string name)
+            {
+                return new MemoryStream(UTF8Encoding.Default.GetBytes(GetDocument(name)));
+            }
+        }
+
     }
 }
 

@@ -641,7 +641,7 @@ namespace JTran.Common
 
                 destLen = (destLen - find.Length) + replace.Length;
 
-                CheckBuffer(buffer, destLen);
+                buffer = CheckBuffer(buffer, destLen);
 
                 // Copy all characters before the search string
                 if(index > start)
@@ -659,7 +659,7 @@ namespace JTran.Common
 
             if(start < thisSpan.Length)
             {
-                CheckBuffer(buffer, destLen + thisSpan.Length - start);
+                buffer = CheckBuffer(buffer, destLen + thisSpan.Length - start);
                 Array.Copy(_source!, _offset + start, buffer, destIndex, thisSpan.Length - start);
                 destIndex += thisSpan.Length - start;
             }

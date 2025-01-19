@@ -159,14 +159,14 @@ namespace JTran
             AppendNewLine();
         }
 
+        private static ICharacterSpan _spaces = CharacterSpan.FromString("                                                                                                                                                                                                                                                                                                       ");
+
         /****************************************************************************/
         protected override void AppendSpaces(int numSpaces)
         {
-            if(_bufferWritten + numSpaces > _bufferSize)
-                Flush();
+            var indent = _spaces.Substring(0, numSpaces);
 
-            for(var i = 0; i < numSpaces; i++)
-                _buffer![_bufferWritten++] = ' ';
+            Append(indent);
         }        
 
         /****************************************************************************/

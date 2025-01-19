@@ -32,7 +32,7 @@ namespace JTran.Streams
         private List<TaskDepot>? _depots;
         private bool             _split  = false;
         private int              _roundRobinIndex = 0;
-        private const int        Max = 100;
+        private const int        Max = 400;
 
         /****************************************************************************/
         internal TaskDepot() 

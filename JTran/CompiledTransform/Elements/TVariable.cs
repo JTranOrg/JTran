@@ -24,6 +24,7 @@ namespace JTran
                     : base(name.Substring("#variable(".Length, name.Length - "#variable(".Length - 1), val, lineNumber)
         {
             this.LineNumber = lineNumber;
+            this.IsOutput = false;
         }
 
         public long LineNumber { get;}
