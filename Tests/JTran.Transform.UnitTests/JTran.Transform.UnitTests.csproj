@@ -49,6 +49,9 @@
     <None Remove="Sample Data\Element\element4_expected2.json" />
     <None Remove="Sample Data\Element\element5.json" />
     <None Remove="Sample Data\Element\element5_expected2.json" />
+    <None Remove="Sample Data\Element\element6_expected.json" />
+    <None Remove="Sample Data\Element\element7_expected.json" />
+    <None Remove="Sample Data\Element\element8_expected.json" />
     <None Remove="Sample Data\ExtensionFunctions\empty.json" />
     <None Remove="Sample Data\ForEachGroup\drivers.json" />
     <None Remove="Sample Data\ForEachGroup\drivers2.json" />
@@ -101,6 +104,9 @@
     <None Remove="Test Transforms\Element\element3.jtran" />
     <None Remove="Test Transforms\Element\element4.jtran" />
     <None Remove="Test Transforms\Element\element5.jtran" />
+    <None Remove="Test Transforms\Element\element6.jtran" />
+    <None Remove="Test Transforms\Element\element7.jtran" />
+    <None Remove="Test Transforms\Element\element8.jtran" />
     <None Remove="Test Transforms\ExtensionFunctions\empties.jtran" />
     <None Remove="Test Transforms\extensionfunction.jtran" />
     <None Remove="Test Transforms\extensionfunction2.jtran" />
@@ -174,6 +180,9 @@
     <EmbeddedResource Include="Sample Data\Arrays\arrayitem.json" />
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\Element\element8_expected.json" />
+    <EmbeddedResource Include="Sample Data\Element\element7_expected.json" />
+    <EmbeddedResource Include="Sample Data\Element\element6_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element5.json" />
     <EmbeddedResource Include="Sample Data\Element\element5_expected2.json" />
     <EmbeddedResource Include="Sample Data\Element\element4_expected2.json" />
@@ -234,6 +243,9 @@
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\expression.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element1.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element8.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element7.jtran" />
+    <EmbeddedResource Include="Test Transforms\Element\element6.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element5.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element4.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element3.jtran" />

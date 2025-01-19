@@ -69,6 +69,12 @@ namespace JTran
 
             return null;
         }
+       
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return false;
+        }
 
         #endregion
 

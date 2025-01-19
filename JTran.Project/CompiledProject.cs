@@ -111,34 +111,10 @@ namespace JTran.Project
 
             using var source = File.OpenRead(this.SourcePath);
 
-            if(this.SplitOutput)
-            { 
-                var output = new DeferredFileStreamFactory(this.Destinations); 
+            context.SplitOutput = this.SplitOutput;
+            context.OutputPath = this.Destinations;
 
-                context.OnOutputArgument = (key, value)=>
-                {
-                    if(key == "FileName" && value != null)
-                    { 
-                       output.CurrentStream!.FileName = value.ToString();
-                    }
-                };
-    
-                transformer.Transform(source, output, context);
-            }
-            else
-            {
-                using var output = new DeferredFileStream(this.Destinations);
-
-                context.OnOutputArgument = (key, value)=>
-                {
-                    if(key == "FileName")
-                    { 
-                       output.FileName = value.ToString();
-                   }
-                };
-
-                transformer.Transform(source, output, context);
-            }
+            transformer.Transform(source, context);
 
             return Task.CompletedTask;
         }

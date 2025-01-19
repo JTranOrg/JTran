@@ -206,8 +206,7 @@ namespace JTran.Json
             return dict;
         }
 
-        #region Private 
-      
+        #region Private       
         
         /****************************************************************************/
         private static object ToValue(object val, Type type)
@@ -252,8 +251,13 @@ namespace JTran.Json
                 return list;
             }
 
-            if(type.Name.ToLower() == "string")
+            var typeName = type.Name.ToLower();
+
+            if(typeName == "string")
                 return val.ToString();
+
+            if(typeName == "guid")
+                return Guid.TryParse(val.ToString(), out Guid guid) ? guid : Guid.Empty;
 
             return Convert.ChangeType(val, type);
         }

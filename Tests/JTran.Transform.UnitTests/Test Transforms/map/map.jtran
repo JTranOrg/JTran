@@ -12,5 +12,9 @@
     }
   },
 
-  "Region":  "#($Region)"
+  "Region":  "#($Region)",
+
+  "#variable(currentDate)":   "2512-5-7",
+  "#variable(age_in_days)":   "#(50 * 365 * -1)",
+  "DOB":                      "#(formatdatetime(adddays($currentDate, $age_in_days), 'yyyy-MM-dd'))"
 }

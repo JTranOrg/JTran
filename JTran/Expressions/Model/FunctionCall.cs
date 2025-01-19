@@ -78,7 +78,7 @@ namespace JTran.Expressions
                 }
             }
 
-            // JTran defined functons, e.g. #function(...)
+            // JTran defined functions, e.g. #function(...)
             var tfunc = context.GetFunction(_functionName);
             
             if(tfunc == null)

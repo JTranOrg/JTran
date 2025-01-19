@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using JTran.Common;
@@ -16,6 +17,8 @@ namespace JTran
         internal TSimpleArrayItem(ICharacterSpan? val, long lineNumber) 
         {
             _val = CreateValue(val, false, lineNumber);
+            
+            this.IsOutput = true;
         }
 
         /****************************************************************************/
@@ -30,6 +33,7 @@ namespace JTran
                     writer.StartChild(); 
 
                     wrap( ()=> writer.WriteList(list));
+
                     writer.EndChild();
                 }
             }

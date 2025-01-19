@@ -1,0 +1,148 @@
+{
+  "#variable(origins)": "#(document(docs, origins))",
+
+  "#variable(nature_of_goods)": 
+  [
+    "Drones",
+    "Medical Supplies",
+    "Machinery",
+    "Machinery Parts",
+    "Metal Stock",
+    "Lumber",
+    "Plastic Stock",
+    "Foodstuffs",
+    "Chemicals (non-volatile)",
+    "Chemicals (volatile)",
+    "Computer Parts",
+    "Computers",
+    "Spaceship Engines"
+  ],  
+  
+  "#variable(statuses)": 
+  [
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "In-flight",
+    "Arrived",
+    "Pending"
+  ],
+
+  "#variable(currentDate)":   "2512-5-7",
+
+  "#array([])":
+  {
+    "#bind(@[0])": 
+    {
+      "#variable(status)":       "In-flight",
+      "#variable(origin)":       "Terra",
+      "#variable(destination)":  "Rigel 5",
+      "#variable(flightlength)": 62,
+
+      "#arrayitem()": 
+      {
+        // Create one current flight
+        "#noobject":              "#flight(@, $status, $origin, $destination)"
+      },
+
+      // Create a flight history
+      "#iterate(randominteger(2, 20))": 
+      {
+        "#variable(destination2)":  "Orion",
+      
+        "#arrayitem()": 
+        {
+          "#noobject":            "#flight(@, 'Complete', $destination, $destination2)"
+        }
+      }
+    }
+  },
+
+  "#element(flight, ship, status, origin, destination)": 
+  {
+    "ShipId":                 "#($ship.Id)",
+    "Origin":                 "#($origin)",
+    "Destination":            "#($destination)",
+    "Status":                 "#($status)",
+
+    "#variable(departure)":   "#($currentDate)",
+
+    "#if($status == 'Pending')": 
+    {
+      "Departure":            "#(formatdatetime($departure, 'd MMM yyyy'))",
+      "Arrival":              "#(formatdatetime(adddays($departure, $flightlength), 'd MMM yyyy'))",
+      "Position":             "#('In-port: ' + $origin)"
+    },
+    "#elseif($status == 'Arrived')": 
+    {
+      "Departure":            "#(formatdatetime(adddays($departure, $flightlength * -1), 'd MMM yyyy'))",
+      "Arrival":              "#(formatdatetime($currentDate, 'd MMM yyyy'))",
+      "Position":             "#('In-port: ' + $destination)"
+    },
+    "#elseif($status == 'Complete')": 
+    {
+      "#variable(arrival)":   "#(adddays($departure, -4)",
+
+      "Departure":            "#(formatdatetime(adddays($departure, $flightlength * -1), 'd MMM yyyy'))",
+      "Arrival":              "#(formatdatetime(adddays($arrival, -36), 'd MMM yyyy'))",
+      "Position":             "#('')"
+    },
+    "#else": 
+    {
+      "#variable(days_into_flight)":  "#($flightlength / 2)",
+      "#variable(departure2)":        "#(adddays($departure, $days_into_flight))",
+
+      "Departure":            "#(formatdatetime($departure2, 'd MMM yyyy'))",
+      "Arrival":              "#(formatdatetime(adddays($departure, $flightlength), 'd MMM yyyy'))",
+      "Position":             "#(precision(randomnumber(7000, 28000), 4) + 'x ' + precision(randomnumber(0, 360), 3) + 'y ' + precision(randomnumber(0, 360), 3) + 'z')"
+    },
+
+    "Manifest": 
+    {
+      "#iterate($ship.MaxPods, Pods)": 
+      {
+        "Id":               "#(guid())",
+        "Index":            "#(position() + 1)",
+        "Origin":           "Rigel 4",
+        "Destination":      "Orion",
+
+        "#iterate(8, Containers)": 
+        {
+          "Id":             "#(guid())",
+          "Index":          "#(position() + 1)",
+          "Size":           "Full",
+
+          "#iterate(32, Shipments)": 
+          {
+            "Id":           "#(guid())",
+            "Index":        "#(position() + 1)",
+            "Description":  "Agricultural Drones",
+            "Quantity":     42,
+            "Width":        8.91,
+            "Length":       129,
+            "Height":       42,
+            "Volume":       725,
+            "Weight":       350
+          }
+        }
+      } 
+    }
+  }
+}

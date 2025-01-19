@@ -26,6 +26,8 @@ namespace JTran
             this.Name = parms![0].ToString().ToLower();
 
             this.Parameters.AddRange(parms.Skip(1));
+
+            this.IsOutput = false;
         }
 
         /****************************************************************************/
@@ -53,6 +55,7 @@ namespace JTran
         private readonly IValue? _valueExpression;
         private readonly long    _lineNumber;
         private readonly IList<IExpression> _parms;
+        private TTemplate? _template;
 
         /****************************************************************************/
         internal TCallTemplate(ICharacterSpan name, long lineNumber = -1L, ICharacterSpan? value = null, bool allowElements = false) 
@@ -81,9 +84,18 @@ namespace JTran
         }
 
         /****************************************************************************/
+        private TTemplate GetTemplate(ExpressionContext context)
+        {
+            if(_template == null)
+                _template = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+
+            return _template;
+        }
+
+        /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var template     = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+            var template     = GetTemplate(context);
             var newContext   = new ExpressionContext(context.Data, context);
             var paramsOutput = new JsonStringWriter();
 
@@ -137,12 +149,14 @@ namespace JTran
 
     /****************************************************************************/
     /****************************************************************************/
-    internal class TCallTemplateProperty : IValue
+    internal class TCallTemplateProperty : IValue, IEvaluator
     {
         private readonly string _templateName;
         private readonly IList<IExpression> _parms;
         private readonly long _lineNumber;
         private readonly bool _allowElements;
+        private TTemplate?    _template;
+        private bool?         _isReturnValue;
 
         /****************************************************************************/
         internal TCallTemplateProperty(ICharacterSpan name, long lineNumber, bool allowElements = false) 
@@ -155,31 +169,93 @@ namespace JTran
             _allowElements = allowElements;
         }
 
-        private static ICharacterSpan _return = CharacterSpan.FromString("return");
+        #region IValue
 
         /****************************************************************************/
         public object Evaluate(ExpressionContext context)
         {
-            var template   = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+            var template   = GetTemplate(context);
             var numParms   = template.Parameters.Count;
             var newContext = new ExpressionContext(context.Data, context);
 
             for(var i = 0; i < numParms; ++i)
                 newContext.SetVariable(template.Parameters[i], _parms[i].Evaluate(context));
 
-            var output = new JsonStringWriter();
+            if(IsReturnValue(context))
+            {
+                var output = new JsonStringWriter();
 
-            output.StartObject();
-            template.Evaluate(output, newContext, (f)=> f());
-            output.EndObject();
+                output.StartObject();
+                template.Evaluate(output, newContext, (f)=> f());
+                output.EndObject();
 
-            var rtnVal = output.ToString().JTranToJsonObject()!;
+                var rtnVal = output.ToString().JTranToJsonObject()!;
 
-            // Is simple property?
-            if(rtnVal.Count == 1 && rtnVal.ContainsKey(_return))
                 return rtnVal[_return];
+            }
 
-            return rtnVal;
+            return null;
         }
+
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return IsReturnValue(context);
+        }
+
+        #endregion
+
+        #region IEvaluator
+
+        /*****************************************************************************/
+        public void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
+        {
+            var template   = GetTemplate(context);
+            var numParms   = template.Parameters.Count;
+            var newContext = new ExpressionContext(context.Data, context);
+
+            for(var i = 0; i < numParms; ++i)
+                newContext.SetVariable(template.Parameters[i], _parms[i].Evaluate(context));
+
+            template.Evaluate(output, newContext, (f)=> f());
+        }
+
+        #endregion
+
+        #region Private
+
+        private static ICharacterSpan _return = CharacterSpan.FromString("return");
+
+        /****************************************************************************/
+        private TTemplate GetTemplate(ExpressionContext context)
+        {
+            if(_template == null)
+                _template = context.GetTemplateOrElement(_templateName, _allowElements, _lineNumber);
+
+            return _template;
+        }
+
+        /****************************************************************************/
+        private bool IsReturnValue(ExpressionContext context)
+        {
+            if(_isReturnValue == null)
+            { 
+                var template = GetTemplate(context);
+                var children = template.Children.Where(c => c.IsOutput);
+
+                if(children.Count() == 1 && children.First() is TProperty prop)
+                {
+                    ICharacterSpan propName = prop.Name.Evaluate(context).AsCharacterSpan();
+
+                    _isReturnValue = propName.Equals(_return);
+                }
+                else
+                    _isReturnValue = false;
+            }
+
+            return _isReturnValue.Value;
+        }
+        
+        #endregion
     }
 }

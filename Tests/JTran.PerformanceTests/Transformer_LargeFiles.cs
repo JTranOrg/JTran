@@ -4,9 +4,11 @@ using Newtonsoft.Json;
 
 using JTran.Common;
 using JTran.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace JTran.PerformanceTests
 {
+    [TestClass]
     public class TransformerTests
     {
         private static Transformer? _transformer;
@@ -16,15 +18,15 @@ namespace JTran.PerformanceTests
             _transformer = CreateTransformer(_transformForEach1);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public async Task Transform_create_test_list_files(int numItems)
         {
             var dataSource = CreateLargeDataSource(numItems);
@@ -32,15 +34,15 @@ namespace JTran.PerformanceTests
             await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_list_{numItems}.json", dataSource);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public async Task Transform_create_test_files(int numItems)
         {
             var dataSource = CreateLargeDataSource(numItems, false);
@@ -48,15 +50,15 @@ namespace JTran.PerformanceTests
             await File.WriteAllTextAsync($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json", dataSource);
         }
         
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Transform_Transform_large_array_file(int numItems)
         {
             var transformer = TransformerTests.CreateTransformer(_transformForEach1);
@@ -67,15 +69,15 @@ namespace JTran.PerformanceTests
             transformer.Transform(input, output);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Transform_Transform_large_file(int numItems)
         {
             var transformer = TransformerTests.CreateTransformer(_transformForEach1);
@@ -86,15 +88,15 @@ namespace JTran.PerformanceTests
             transformer.Transform(input, output);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Transform_Transform_large_list(int numItems)
         {
             var transformer = TransformerTests.CreateTransformer(_transformForEach1);
@@ -107,15 +109,15 @@ namespace JTran.PerformanceTests
             transformer.Transform(list, output);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Parser_parse(int numItems)
         {
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
@@ -124,15 +126,15 @@ namespace JTran.PerformanceTests
             parser.Parse(input, true);
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Parser_parse_and_transform_using_deferred(int numItems)
         {
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
@@ -144,15 +146,15 @@ namespace JTran.PerformanceTests
 
         private const string _transform = "{ '#foreach(@, [])': { '#noobject': '#copyof(@)' } }";
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        [InlineData(1000)]
-        [InlineData(5000)]
-        [InlineData(20000)]
-        [InlineData(100000)]
-        [InlineData(200000)]
-        [InlineData(2000000)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(100)]
+        [DataRow(1000)]
+        [DataRow(5000)]
+        [DataRow(20000)]
+        [DataRow(100000)]
+        [DataRow(200000)]
+        [DataRow(2000000)]
         public void Parser_parse_and_transform_no_deferred(int numItems)
         {
             using var input = File.OpenRead($"c:\\Documents\\Testing\\JTran\\largefile_input_{numItems}.json");
@@ -250,16 +252,16 @@ namespace JTran.PerformanceTests
 
         #region Test Data
 
-        private Random _randomSurname      = new Random();
-        private Random _randomMiddleName   = new Random();
-        private Random _randomFirstName    = new Random();
-        private Random _randomStreet       = new Random();
-        private Random _randomCity         = new Random();
-        private Random _randomState        = new Random();
-        private Random _randomStreetNumber = new Random();
-        private Random _randomBirthdate    = new Random();
-        private Random _randomZip          = new Random();
-        private Random _randomOrg          = new Random();
+        private System.Random _randomSurname      = new();
+        private System.Random _randomMiddleName   = new();
+        private System.Random _randomFirstName    = new();
+        private System.Random _randomStreet       = new();
+        private System.Random _randomCity         = new();
+        private System.Random _randomState        = new();
+        private System.Random _randomStreetNumber = new();
+        private System.Random _randomBirthdate    = new();
+        private System.Random _randomZip          = new();
+        private System.Random _randomOrg          = new();
 
         private Organization CreateRandomOrg()
         {
@@ -287,7 +289,7 @@ namespace JTran.PerformanceTests
             };
         }
 
-        private string GetRandomValue(Random random, string[] names)
+        private string GetRandomValue(System.Random random, string[] names)
         {
             return names[random.Next(names.Length)];
         }

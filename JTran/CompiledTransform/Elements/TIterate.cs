@@ -63,6 +63,9 @@ namespace JTran
                     { 
                         if(EvaluateChild(output, arrayName!, context.Data!, context, ref index))
                             break;
+
+                        if(context.MaxIterations == 1 && output.HasWritten)
+                            break;
                     }
                     catch(AggregateException ex)
                     {
@@ -83,19 +86,13 @@ namespace JTran
 
            try
             { 
-                var testWriter = new JsonStringWriter();
-
-                testWriter.StartObject();
+                var testWriter = new JsonTestWriter();
 
                 // First test if the child will ever write anything at all
                 base.Evaluate(testWriter, newContext, (fnc)=> fnc());
                     
-                testWriter.EndObject();
-
                 // Will never write anything, move on to next child
-                var test = testWriter.ToString();
-
-                if(test.Replace("\r", "").Replace("\n", "") == "{}")
+                if(!testWriter.HasWritten)
                     return false;
             }
             catch(Break)

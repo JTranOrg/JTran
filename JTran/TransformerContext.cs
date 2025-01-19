@@ -31,6 +31,8 @@ namespace JTran
         public IReadOnlyDictionary<string, object>?      Arguments               { get; set; }
         public IDictionary<string, IDocumentRepository>? DocumentRepositories    { get; set; } = new Dictionary<string, IDocumentRepository>();
         public bool                                      AllowDeferredLoading    { get; set; } = true;
+        public bool                                      SplitOutput             { get; set; } = false;
+        public string?                                   OutputPath              { get; set; }
         public IReadOnlyDictionary<string, object>       OutputArguments         => _internalOutputArguments;
         public Action<string, object>?                   OnOutputArgument        { get; set; }
 
@@ -40,6 +42,8 @@ namespace JTran
             Arguments               = copy.Arguments;
             DocumentRepositories    = copy.DocumentRepositories;
             AllowDeferredLoading    = copy.AllowDeferredLoading;
+            SplitOutput             = copy.SplitOutput;
+            OutputPath              = copy.OutputPath;
             OnOutputArgument        = copy.OnOutputArgument;
         }
 

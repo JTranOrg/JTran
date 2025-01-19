@@ -49,6 +49,12 @@ namespace JTran
             return new InnerOuterJoin(left, right, _expression, context, _inner);
         }
 
+        /*****************************************************************************/
+        public bool? IsSimpleValue(ExpressionContext context)
+        {
+            return false;
+        }
+
         #endregion
 
         /****************************************************************************/

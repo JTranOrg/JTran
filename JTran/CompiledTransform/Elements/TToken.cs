@@ -27,11 +27,19 @@ namespace JTran
 {
     /****************************************************************************/
     /****************************************************************************/
-    internal abstract class TToken
+    internal interface IEvaluator
+    {
+        void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
+    }
+
+    /****************************************************************************/
+    /****************************************************************************/
+    internal abstract class TToken : IEvaluator
     {
         public abstract void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap);
 
-        internal TContainer? Parent { get; set; }
+        internal TContainer? Parent   { get; set; }
+        internal bool        IsOutput { get; set; } = false;
 
         /****************************************************************************/
         private IValue CreateSimpleValue(ICharacterSpan? sval)
@@ -121,8 +129,6 @@ namespace JTran
 
             // Will do exception on evaluation if no template found
             return new TCallTemplateProperty(templateCall, lineNumber, true);
-           
-           // throw new Transformer.SyntaxException($"Unknown element name: {elementName}") { LineNumber = lineNumber+1 };    
         }   
     } 
 }

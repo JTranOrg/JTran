@@ -21,6 +21,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 using JTran.Collections;
@@ -115,6 +116,44 @@ namespace JTran
         public void Transform(object input, IStreamFactory output, TransformerContext? context = null)
         {
             _transform.Transform(CheckPocoList(input), output, context, _extensionFunctions);
+        }
+
+        /****************************************************************************/
+        /// <summary>
+        /// Transforms the input json and writes to the output path specified in the context
+        /// </summary>
+        /// <param name="input">Contains the source data (stream, list or POCO) </param>
+        /// <param name="context">A transformer context</param>
+        public void Transform(Stream input, TransformerContext? context = null)
+        {
+            if(context.SplitOutput)
+            { 
+                var output = new DeferredFileStreamFactory(context.OutputPath); 
+
+                context.OnOutputArgument = (key, value)=>
+                {
+                    if(key == "FileName" && value != null)
+                    { 
+                       output.CurrentStream!.FileName = value!.ToString()!;
+                    }
+                };
+
+                _transform.Transform(input, output, context, _extensionFunctions);
+            }
+            else
+            {
+                using var output = new DeferredFileStream(context.OutputPath);
+
+                context.OnOutputArgument = (key, value)=>
+                {
+                    if(key == "FileName")
+                    { 
+                       output.FileName = value!.ToString()!;
+                   }
+                };
+    
+                _transform.Transform(input, output, context, _extensionFunctions);
+            }
         }
 
         /****************************************************************************/

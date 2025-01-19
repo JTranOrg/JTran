@@ -8,6 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="flightgenerator.jtran" />
+    <None Remove="origins.json" />
+    <None Remove="ships.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="flightgenerator.jtran" />
+    <EmbeddedResource Include="ships.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="origins.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JTran.Random" Version="1.0.0" />
+    <PackageReference Include="MondoCore.Common" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\JTran\JTran.csproj" />
   </ItemGroup>
 

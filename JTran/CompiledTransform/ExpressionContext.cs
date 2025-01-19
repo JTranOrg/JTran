@@ -75,14 +75,15 @@ namespace JTran
         {
             this.Data = data;
 
-            _variables        = new Dictionary<ICharacterSpan, object?>();
-            _docRepositories  = parentContext?._docRepositories;
-            _parent           = parentContext;
-            this.CurrentGroup = parentContext?.CurrentGroup;
-            this.Name         = parentContext?.Name ?? "";
-            this.Templates    = templates ?? parentContext?.Templates;
-            this.Functions    = functions ?? parentContext?.Functions;
-            this.Elements     = elements ?? parentContext?.Elements;
+            _variables         = new Dictionary<ICharacterSpan, object?>();
+            _docRepositories   = parentContext?._docRepositories;
+            _parent            = parentContext;
+            this.CurrentGroup  = parentContext?.CurrentGroup;
+            this.Name          = parentContext?.Name ?? "";
+            this.Templates     = templates ?? parentContext?.Templates;
+            this.Functions     = functions ?? parentContext?.Functions;
+            this.Elements      = elements ?? parentContext?.Elements;
+            this.MaxIterations = parentContext?.MaxIterations ?? int.MaxValue;
 
             this.ExtensionFunctions = parentContext?.ExtensionFunctions;
         }
@@ -98,6 +99,7 @@ namespace JTran
         internal IList<object>?                   CurrentGroup       { get; set; }
         internal Transformer.UserError?           UserError          { get; set; }
         internal long                             Index              { get; set; } 
+        internal int                              MaxIterations      { get; set; } = int.MaxValue;
 
         /*****************************************************************************/
         internal object GetDocument(string repoName, string docName)
@@ -123,7 +125,7 @@ namespace JTran
                         return result;
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
                     // Eat the exception
                 }
@@ -149,7 +151,8 @@ namespace JTran
                 {
                     val = variable.GetActualValue(context);
 
-                    _variables[name] = val;
+                    if(context.MaxIterations != 1)
+                        _variables[name] = val;
                 }
 
                 return val;

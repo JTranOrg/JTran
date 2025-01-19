@@ -23,6 +23,8 @@ namespace JTran
             this.Templates = new Dictionary<string, TTemplate>();
             this.Elements  = new Dictionary<string, TElement>();
             this.Functions = new Dictionary<string, TFunction>();
+
+            this.IsOutput = true;
         }
 
         /****************************************************************************/
@@ -38,6 +40,9 @@ namespace JTran
                     {                  
                         cb();
                     });
+
+                    if(context.MaxIterations == 1 && output.HasWritten)
+                        break;
                 }
             });
         }
