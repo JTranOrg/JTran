@@ -6,13 +6,13 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>A JSON to JSON transformer</Description>
     <Authors>JTranOrg</Authors>
-    <Copyright>© 2020-2024 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <Copyright>© 2020-2025 - Jim Lightfoot, All Rights Reserved</Copyright>
     <Company>JTranOrg</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>4.6.0</Version>
+    <Version>4.6.1</Version>
     <Title>JTran</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>

@@ -5,6 +5,10 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>A console app/dotnet tool to perform JTran transformations.</Description>
+    <Copyright>© 2020-2025 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <Company>JTranOrg</Company>
+    <Authors>JTranOrg</Authors>
   </PropertyGroup>
 
   <ItemGroup>
