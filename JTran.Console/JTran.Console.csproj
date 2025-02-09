@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>jtrancmd</AssemblyName>
-    <Authors>jtranorg</Authors>
+    <Authors>JTranOrg</Authors>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
@@ -12,12 +12,15 @@
     <ToolCommandName>jtrancmd</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.3.1</Version>
+    <Version>2.4.1</Version>
     <Company>JTranOrg</Company>
     <Description>A JSON to JSON transformer command line tool</Description>
-    <Copyright>© 2020-2024 - Jim Lightfoot, All Rights Reserved</Copyright>
+    <Copyright>© 2020-2025 - Jim Lightfoot, All Rights Reserved</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Title>jtrancmd</Title>
+    <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

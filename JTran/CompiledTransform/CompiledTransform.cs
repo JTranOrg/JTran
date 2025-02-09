@@ -349,6 +349,19 @@ namespace JTran
 
             return function;
         }
+
+        /****************************************************************************/
+        internal protected override TElement AddElement(TElement element)
+        {
+            TContainer parent = this;
+
+            while(parent is IncludedTransform)
+                parent = parent.Parent!;
+
+            parent.Elements!.Add(element.Name, element);
+
+            return element;
+        }
     }
 
     /****************************************************************************/

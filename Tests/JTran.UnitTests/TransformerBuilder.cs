@@ -28,6 +28,41 @@ namespace JTran.UnitTests
         }     
         
         [TestMethod]
+        public void TransformerBuilder_Build_wInclude_element_success()
+        {
+            var transformer = TransformerBuilder                               
+                                .FromString(_transformInclude2)
+                                .AddInclude("otherfile.json", _otherFile2)
+                                .Build<string>();
+ 
+            Assert.IsNotNull(transformer);
+
+           var result  = transformer.Transform(_dataForEachGroup1, null);
+   
+            Assert.AreNotEqual(_transformInclude, _dataForEachGroup1);
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse("{ FirstName: \"bob\", Year: 1965 }"), JObject.Parse(result)));
+        }     
+
+        private static readonly string _transformInclude2 =
+        @"{
+            '#include':      'otherfile.json',
+
+            '#displayname()':
+            {
+                name: 'bob'
+            }
+        }";
+
+        private static readonly string _otherFile2 =
+        @"{
+             '#template(displayname)': 
+             {
+                'FirstName':  'bob',
+                'Year':       1965
+             }
+        }";
+        
+        [TestMethod]
         public void TransformerBuilder_Build_FromStream_wInclude_success()
         {
             using var stream = new MemoryStream(UTF8Encoding.Default.GetBytes(_transformInclude));
