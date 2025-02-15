@@ -209,6 +209,7 @@
     <EmbeddedResource Include="Sample Data\ForEachGroup\foreachgroup2_expected.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\drivers.json" />
     <EmbeddedResource Include="Sample Data\ForEachGroup\only1_group.json" />
+    <EmbeddedResource Include="Sample Data\ForEach\car.json" />
     <EmbeddedResource Include="Sample Data\Functions\union.json" />
     <EmbeddedResource Include="Sample Data\Functions\iif.json" />
     <EmbeddedResource Include="Sample Data\Functions\sortmultiple.json" />
@@ -258,6 +259,7 @@
     <EmbeddedResource Include="Test Transforms\ForEachGroup\foreachgroup3.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\explicit_array2.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\explicit_array.jtran" />
+    <EmbeddedResource Include="Test Transforms\ForEach\onobject.jtran" />
     <EmbeddedResource Include="Test Transforms\ForEach\foreach4.jtran" />
     <EmbeddedResource Include="Test Transforms\Functions\union2.jtran" />
     <EmbeddedResource Include="Test Transforms\Functions\union.jtran" />
@@ -302,6 +304,8 @@
     <EmbeddedResource Include="Test Transforms\ForEach\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\JTranFunctions\nested.jtran" />
     <EmbeddedResource Include="Test Transforms\Map\map5.jtran" />
+    <EmbeddedResource Include="Test Transforms\ObjectIndexer\objectindexer_poco.jtran" />
+    <EmbeddedResource Include="Test Transforms\ObjectIndexer\objectindexer.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_state.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_city.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after.jtran" />

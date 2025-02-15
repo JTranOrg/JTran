@@ -10,6 +10,7 @@ using JTran.Expressions;
 using JTran.Parser;
 using JTran.Common;
 using JTran.Collections;
+using System.Xml.Linq;
 
 namespace JTran
 {
@@ -48,7 +49,14 @@ namespace JTran
             if(result == null)
                 return;
 
-            var list = result.EnsureEnumerable();
+            IEnumerable? list;
+
+            if(result is JsonObject jobj)
+                list = jobj;
+            else if(result.IsPoco())
+                list = Poco.FromObject(result).ToCharacterSpanDictionary(result);
+            else
+                list = result.EnsureEnumerable();
 
             _hasConditionals = this.Children.Any() && this.Children[0] is IPropertyCondition;
       
@@ -77,7 +85,7 @@ namespace JTran
                 if(list is IEnumerable<object> enm && enm.IsPocoList(out Type? type))
                     list = new PocoEnumerableWrapper(type!, enm);
 
-                foreach(var childScope in list) 
+                foreach(var childScope in list)
                 { 
                     if(EvaluateChild(output, arrayName, childScope, context, ref index))
                         break;
@@ -97,6 +105,12 @@ namespace JTran
         {
             var newContext = new ExpressionContext(childScope, context, templates: this.Templates, functions: this.Functions) { Index = index };
             var maxIterations = context.MaxIterations;
+
+            if(childScope is KeyValuePair<ICharacterSpan, object> kv)
+            {
+                newContext.Data = kv.Value;
+                newContext.Name = kv.Key;
+            }
 
             newContext.MaxIterations = 1;
 

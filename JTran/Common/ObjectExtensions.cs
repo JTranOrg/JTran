@@ -187,5 +187,22 @@ namespace JTran.Common
 
             return false;
         }
+
+        /****************************************************************************/
+        internal static bool IsPoco(this object? obj)
+        {
+            if(obj is null)
+                return false;
+
+            if(obj is IObject)
+                return false;
+
+            if(obj is IEnumerable)
+                return false;
+
+            var t = obj.GetType();
+
+            return !t.IsPrimitive;
+        }
     }
 }

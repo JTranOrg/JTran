@@ -55,4 +55,10 @@ namespace JTran.Transform.UnitTests
     {
         public Owner? Owner  { get; set; }
     }
+
+    public class NameValue
+    {
+        public string? Name  { get; set; }
+        public string? Value  { get; set; }
+    }
 }

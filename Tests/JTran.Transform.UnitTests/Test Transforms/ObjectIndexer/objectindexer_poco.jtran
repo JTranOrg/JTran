@@ -1,0 +1,28 @@
+{
+  "#variable(Makes)": "#(@)",
+  "#variable(Cars)":
+  [
+    {
+      "Make":       "Chevy",
+      "Model":      "Corvette"
+    },
+    {
+      "Make":       "Honda",
+      "Model":      "CR-7"
+    },
+    {
+      "Make":       "Audi",
+      "Model":      "RS5"
+    }
+  ],
+
+  "#foreach($Cars, [])": 
+  {
+    "#variable(Make)": "#(Make)",
+
+    "Make":         "#(Make)",
+    "Model":        "#(Model)",
+    "Manufacturer": "#($Makes[$Make].Manufacturer)"
+  }
+
+}

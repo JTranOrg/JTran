@@ -351,6 +351,22 @@ namespace JTran.Expressions
             if(type != null) 
                 return new PocoWhereClause(type, enm, _expr, new ExpressionContext(enm, context));
 
+            var expr = _expr.Evaluate(context);
+
+            if(expr is ICharacterSpan name)
+            { 
+                if(context.Data is IObject jobj) 
+                    return jobj.GetPropertyValue(name);
+
+                if(context.Data.IsPoco()) 
+                {
+                    var poco = Poco.FromObject(context.Data);
+                    var pobj = new PocoObject(poco) { Data = context.Data };
+
+                    return pobj.GetPropertyValue(name);
+                }
+            }
+
             return new WhereClause<object>(enm, _expr, new ExpressionContext(enm, context));
         }
 

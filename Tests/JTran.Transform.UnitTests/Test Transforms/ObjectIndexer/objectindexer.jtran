@@ -1,0 +1,45 @@
+{
+  "#variable(Makes)":
+  {
+    "Chevy":  
+    {
+      "Manufacturer":  "General Motors",
+      "Founded":       1911
+    },
+    "Audi":  
+    {
+      "Manufacturer":  "Volkswagon Group",
+      "Founded":       1932
+    },
+    "Honda":  
+    {
+      "Manufacturer":  "Honda",
+      "Founded":       1946
+    }
+  },
+  "#variable(Cars)":
+  [
+    {
+      "Make":       "Chevy",
+      "Model":      "Corvette"
+    },
+    {
+      "Make":       "Honda",
+      "Model":      "CR-7"
+    },
+    {
+      "Make":       "Audi",
+      "Model":      "RS5"
+    }
+  ],
+
+  "#foreach($Cars, [])": 
+  {
+    "#variable(Make)": "#(Make)",
+
+    "Make":         "#(Make)",
+    "Model":        "#(Model)",
+    "Manufacturer": "#($Makes[$Make].Manufacturer)"
+  }
+
+}

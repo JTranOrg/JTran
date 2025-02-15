@@ -282,10 +282,12 @@ namespace JTran
             return;
         }                
 
+        private readonly static ICharacterSpan _root = CharacterSpan.FromString("__root");
+
         /****************************************************************************/
         private void TransformObject(object data, IJsonWriter output, TransformerContext? context, ExtensionFunctions? extensionFunctions)
         {
-            var newContext = new ExpressionContext(data, "__root", context, extensionFunctions, templates: this.Templates, functions: this.Functions, elements: this.Elements);
+            var newContext = new ExpressionContext(data, _root, context, extensionFunctions, templates: this.Templates, functions: this.Functions, elements: this.Elements);
 
             if(!_outputArray)
                 output.StartObject();
