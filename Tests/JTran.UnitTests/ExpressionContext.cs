@@ -15,7 +15,7 @@ namespace JTran.UnitTests
         {
             var tContext = new TransformerContext { Arguments = new Dictionary<string, object> {{ "FirstName", "Fred" } }};
 
-            var context = new ExpressionContext(new { Hello = "hello" }, "bob", tContext);  
+            var context = new ExpressionContext(new { Hello = "hello" }, CharacterSpan.FromString("bob"), tContext);  
 
             Assert.AreEqual("Fred", context.GetVariable(CharacterSpan.FromString("FirstName"), context).ToString());
         }
@@ -25,7 +25,7 @@ namespace JTran.UnitTests
         {
             var tContext = new TransformerContext { Arguments = new Dictionary<string, object> {{ "LastName", "Jones" } }};
 
-            var context = new ExpressionContext(new { Hello = "hello" }, "bob", tContext);  
+            var context = new ExpressionContext(new { Hello = "hello" }, CharacterSpan.FromString("bob"), tContext);  
 
             Assert.ThrowsException<Transformer.SyntaxException>( ()=> context.GetVariable(CharacterSpan.FromString("FirstName"), context));
         }
@@ -35,7 +35,7 @@ namespace JTran.UnitTests
         {
             var tContext = new TransformerContext {};
 
-            var context = new ExpressionContext(new { Hello = "hello" }, "bob", tContext);  
+            var context = new ExpressionContext(new { Hello = "hello" }, CharacterSpan.FromString("bob"), tContext);  
 
             Assert.ThrowsException<Transformer.SyntaxException>( ()=> context.GetVariable(CharacterSpan.FromString("FirstName"), context));
         }

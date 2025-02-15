@@ -92,6 +92,36 @@ namespace JTran.Transform.UnitTests
             return result;
         }
 
+        public static async Task<string> TestObject(string transformName, object data, bool isArray = false, TransformerContext? context = null)
+        {
+            var transform   = await LoadTransform(transformName);
+            var transformer = new JTran.Transformer(transform, null);
+            var result = "";
+
+            using var output = new MemoryStream();
+
+            transformer.Transform(data, output, context: context);
+
+            result = await output.ReadStringAsync();
+
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result));
+
+            if(!isArray)
+            { 
+                var jobj = JObject.Parse(result);
+
+                Assert.IsNotNull(jobj);
+            }
+            else
+            {
+                var array = JArray.Parse(result);
+
+                Assert.IsNotNull(array);
+            }
+
+            return result;
+        }
+
         internal static Task<string> LoadTransform(string name)
         {
             var files = Assembly.GetExecutingAssembly().GetManifestResourceNames();

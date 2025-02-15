@@ -44,7 +44,7 @@ namespace JTran
 
         /*****************************************************************************/
         internal ExpressionContext(object?                         data, 
-                                   string                          name = "", 
+                                   ICharacterSpan                  name = null, 
                                    TransformerContext?             transformerContext = null, 
                                    ExtensionFunctions?             extensionFunctions = null,
                                    IDictionary<string, TTemplate>? templates          = null,
@@ -79,7 +79,7 @@ namespace JTran
             _docRepositories   = parentContext?._docRepositories;
             _parent            = parentContext;
             this.CurrentGroup  = parentContext?.CurrentGroup;
-            this.Name          = parentContext?.Name ?? "";
+            this.Name          = parentContext?.Name ?? CharacterSpan.Empty;
             this.Templates     = templates ?? parentContext?.Templates;
             this.Functions     = functions ?? parentContext?.Functions;
             this.Elements      = elements ?? parentContext?.Elements;
@@ -90,7 +90,7 @@ namespace JTran
 
         /*****************************************************************************/
         internal object?                          Data               { get; set; }
-        internal string                           Name               { get; }
+        internal ICharacterSpan                   Name               { get; set; }
         internal bool                             PreviousCondition  { get; set; }
         internal ExtensionFunctions?              ExtensionFunctions { get; }
         internal IDictionary<string, TElement>?   Elements           { get; }

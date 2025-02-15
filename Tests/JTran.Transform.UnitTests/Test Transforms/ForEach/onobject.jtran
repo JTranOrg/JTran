@@ -1,0 +1,7 @@
+{
+  "#foreach(Car, [])":
+  {
+      "Name":    "#(name())",
+      "Value":   "#(@)"
+  }
+}

@@ -258,5 +258,39 @@ namespace JTran.Transform.UnitTests
             Assert.AreEqual("Bob",           roster?.Owner?.Cars[0].Mechanics[0].FirstName);
             Assert.AreEqual("Mendez",        roster?.Owner?.Cars[0].Mechanics[0].LastName);
         }
+
+        [TestMethod]
+        [DataRow("onobject", "car")]
+        public async Task ForEach_OnObject(string transform, string data)
+        {
+            var result = await TransformerTest.Test("ForEach." + transform, "ForEach." + data);
+            
+            _ = JArray.Parse(result);
+
+            var results = JsonConvert.DeserializeObject<List<NameValue>>(result);
+
+            Assert.AreEqual("Make", results[0].Name);
+            Assert.AreEqual("Chevy", results[0].Value);
+        }
+
+        [TestMethod]
+        [DataRow("onobject")]
+        public async Task ForEach_OnObject_poco(string transform)
+        {
+            var car    = new CarContainer { Car = new Automobile { Make = "Chevy", Model = "Corvette", Color = "Blue", Year = 1956 } };
+            var result = await TransformerTest.TestObject("ForEach." + transform, car, true);
+            
+            _ = JArray.Parse(result);
+
+            var results = JsonConvert.DeserializeObject<List<NameValue>>(result);
+
+            Assert.AreEqual("Make", results[0].Name);
+            Assert.AreEqual("Chevy", results[0].Value);
+        }
+
+        public class CarContainer
+        {
+            public Automobile? Car { get; set; }
+        }
     }
 }

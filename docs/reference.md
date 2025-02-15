@@ -69,11 +69,15 @@ The current scope is the current object within the source document being evaluat
 
 ##### Array Indexers
 
-Indexers can be added to arrays. Note: if an expression expects an array and it evaluates to a single object then that single object is treated as an array with that one object in it. This is true everywhere in JTran:
+Indexers can be added to arrays. Note: if an expression expects an array and it evaluates to a single object then that single object is treated as an array with that one object in it (with the exception of #foreach). This is true everywhere in JTran:
 
     #(Venues[1])
 
 If the expression inside the brackets evaluates to an integer then the indexer is treated as a classic array index (note that arrays are zero based). In the example above returns the second object in the Venues array.
+
+If the expression inside the brackets evaluates to a string and the expression itself is a single object then the property of that object with the name specified is returned (akin to a C# dictionary):
+
+    #(Car['Make'])
 
 If the expression inside the brackets does not evaluate to an integer then it is considered a boolean expression and the indexer acts like a "where" clause. Note the scope inside the brackets will then be on each child object in the array:
 
@@ -202,6 +206,7 @@ If the final property in a "dot" list is a simple property then an array of thos
 
 The result would be string array with the names of all the theaters in every city that is in the Northwest region.
 
+#
 ##### Ancestor Indicators
 
 Consider the following example source data:
@@ -433,6 +438,20 @@ You can also output single values using a foreach:
     }
 
 
+#### #assert
+
+Throws an exception if the assert condition is not met:
+
+###### Transform
+
+    {
+        "#bind(Driver)":
+        {
+            "#assert(Name != 'Bob')":   "Bob is not allowed to drive"
+        }
+    }
+
+
 #### #bind
 
 The only purpose of #bind is to change the scope:
@@ -546,7 +565,7 @@ Takes on object and outputs the properties of that object except for those that 
 
 #### #foreach
 
-#foreach iterates over an array (or just a single object) and processes the contents of the foreach block changing the scope to that child object. #foreach takes 1 or 2 parameters. The first parameter is the expression to evaluate to return an array of objects. The second parameter is optional and is the name of the output array.
+#foreach iterates over an array (or just a single object) and processes the contents of the foreach block changing the scope to that child object. #foreach takes 1 or 2 parameters. The first parameter is the expression to evaluate to return an array of objects or a single object. The second parameter is optional and is the name of the output array.
 
 ###### Transform
 
@@ -596,6 +615,51 @@ Takes on object and outputs the properties of that object except for those that 
             }
         }
     }
+
+If the expression evaluates to a single object then the properties of the object are iterated:
+
+###### Transform
+
+    {
+        "#foreach(Car, [])":
+        {
+            Name:   "#(name())",
+            Value:  "@"
+        }
+    }
+
+###### Source
+
+    {
+        Car:
+        {
+            Make:   "Chevy",
+            Model:  "Corvette"
+            Color:  "Blue",
+            Year:   1956
+        }
+    }
+
+###### Output
+
+    [
+        {
+            Name:  "Make",
+            Value: "Chevy"
+        },
+        {
+            Name:  "Model",
+            Value: "Chevy"
+        },
+        {
+            Name:  "Color",
+            Value: "Blue"
+        },
+        {
+            Name:  "Year",
+            Value: 1956"
+        }
+    ]
 
 If no array name is specified then no new array is created and contents are output for each child
 

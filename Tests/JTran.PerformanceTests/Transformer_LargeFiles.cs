@@ -93,7 +93,7 @@ namespace JTran.PerformanceTests
         [DataRow(100)]
         [DataRow(1000)]
         [DataRow(5000)]
-        [DataRow(20000)]
+        [DataRow(10000)]
         [DataRow(100000)]
         [DataRow(200000)]
         [DataRow(2000000)]
@@ -106,7 +106,14 @@ namespace JTran.PerformanceTests
 
             using var output = File.Open($"c:\\Documents\\Testing\\JTran\\largelist_output_{numItems}.json", FileMode.Create);
 
-            transformer.Transform(list, output);
+            try
+            { 
+                transformer.Transform(list, output);
+            }
+            catch (Exception ex) 
+            {
+                throw;
+            }
         }
 
         [TestMethod]

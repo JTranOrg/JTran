@@ -158,6 +158,30 @@ namespace JTran.Common
             
             return result;
         }
+
+        /****************************************************************************/
+        public IDictionary<ICharacterSpan, object> ToCharacterSpanDictionary(object poco)  
+        {
+            var result = new Dictionary<ICharacterSpan, object>();
+
+            foreach(var property in _properties.Values)
+            {
+                try
+                { 
+                    var value = property.GetValue(poco, null);
+
+                    // Add property name and value to dictionary
+                    if (value != null)
+                        result.Add(CharacterSpan.FromString(property.Name), value);
+                }
+                catch
+                {
+                    // Just ignore it
+                }
+            } 
+            
+            return result;
+        }
     }
 
     /****************************************************************************/

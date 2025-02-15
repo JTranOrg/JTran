@@ -196,7 +196,7 @@ namespace JTran.UnitTests
                                                                   }
                                                   };
 
-            var context    = new ExpressionContext(CreateTestData(new {} ), "", tContext);
+            var context    = new ExpressionContext(CreateTestData(new {} ), CharacterSpan.Empty, tContext);
 
             Assert.IsNotNull(expression);
             Assert.AreEqual("BobJones", expression.Evaluate(context).ToString());
@@ -293,7 +293,7 @@ namespace JTran.UnitTests
             var compiler   = new Compiler();
             var tokens     = parser.Parse("$isactive && Type == $Type3 && $LicenseState != $CA && $LicenseState != $Unknown");
             var expression = compiler.Compile(tokens);
-            var context    = new ExpressionContext(CreateTestData(new {Age = 42, Type = 2} ), "", 
+            var context    = new ExpressionContext(CreateTestData(new {Age = 42, Type = 2} ), CharacterSpan.Empty, 
                                                                   new TransformerContext { Arguments = new Dictionary<string, object> 
                                                                   { 
                                                                     {"Type3", 2},

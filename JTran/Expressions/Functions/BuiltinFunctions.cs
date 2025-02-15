@@ -720,6 +720,9 @@ namespace JTran.Expressions
             if(context.Data is JsonObject jobj)
                 return jobj.Name ?? CharacterSpan.Empty;
 
+            if(!(context.Name?.IsNullOrWhiteSpace() ?? true))
+                return context.Name;
+
             return CharacterSpan.Empty;
         }
 
