@@ -243,6 +243,10 @@
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof1.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\expression.jtran" />
+    <EmbeddedResource Include="Test Transforms\CallElement\element1.jtran" />
+    <EmbeddedResource Include="Test Transforms\CallElement\element2.jtran" />
+    <EmbeddedResource Include="Test Transforms\CallElement\element3.jtran" />
+    <EmbeddedResource Include="Test Transforms\CallElement\element4.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element1.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element8.jtran" />
     <EmbeddedResource Include="Test Transforms\Element\element7.jtran" />
@@ -270,7 +274,9 @@
     <EmbeddedResource Include="Test Transforms\IncludeExclude\exclude2.jtran" />
     <EmbeddedResource Include="Test Transforms\IncludeExclude\include2.jtran" />
     <EmbeddedResource Include="Test Transforms\IncludeExclude\include.jtran" />
+    <EmbeddedResource Include="Test Transforms\Include\include2.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\include.jtran" />
+    <EmbeddedResource Include="Test Transforms\Include\otherfile2.jtran" />
     <EmbeddedResource Include="Test Transforms\Include\otherfile.jtran" />
     <EmbeddedResource Include="Test Transforms\iterate_output.jtran" />
     <EmbeddedResource Include="Test Transforms\Joins\outerjoin.jtran" />

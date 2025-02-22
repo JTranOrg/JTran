@@ -55,6 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release Notes", "Release No
 		docs\Release Notes\v4_5_0.md = docs\Release Notes\v4_5_0.md
 		docs\Release Notes\v4_6_0.md = docs\Release Notes\v4_6_0.md
 		docs\Release Notes\v4_7_0.md = docs\Release Notes\v4_7_0.md
+		docs\Release Notes\v4_8_0.md = docs\Release Notes\v4_8_0.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Apis", "Tests\Test.Apis\Test.Apis.csproj", "{EBEDEB1D-9A3E-4426-8845-DAE251F61069}"

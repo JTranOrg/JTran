@@ -1,0 +1,8 @@
+{  
+ "#element(displayname, first, last)":
+  {
+    "return": "#($first + ' ' + $last)"
+  },
+
+  "Name":   "#callelement('displayname', 'Fred', 'Flintstone')" 
+}

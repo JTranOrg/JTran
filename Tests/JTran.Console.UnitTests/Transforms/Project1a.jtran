@@ -1,5 +1,5 @@
 {
-    "#include":                  "include1.jtran",
+    "#include":                  "*",
     "#variable(cities)":         "#(document(docs, doc1).cities)",
     "#outputvariable(FileName)": "#($DestinationPath + 'oldcustomer.json')",
 

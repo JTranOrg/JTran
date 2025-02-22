@@ -12,7 +12,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/JTranOrg/JTran</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>4.7.0</Version>
+    <Version>4.8.0</Version>
     <Title>JTran</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>

@@ -61,6 +61,7 @@ namespace JTran
         private readonly static ICharacterSpan _innerjoin    = CharacterSpan.FromString("#innerjoin");
         private readonly static ICharacterSpan _outerjoin    = CharacterSpan.FromString("#outerjoin");
         private readonly static ICharacterSpan _calltemplate = CharacterSpan.FromString("#calltemplate");
+        private readonly static ICharacterSpan _callelement  = CharacterSpan.FromString("#callelement");
        
         internal readonly static ICharacterSpan EmptyArray   = CharacterSpan.FromString("[]");
         internal readonly static ICharacterSpan EmptyObject  = CharacterSpan.FromString("{}");
@@ -121,6 +122,9 @@ namespace JTran
                 if(_innerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, true, lineNumber);
                 if(_outerjoin.Equals(elementName))    return new TInnerOuterJoinProperty(sval, false, lineNumber);  
             }
+
+            if(_callelement.Equals(elementName)) 
+                return new TCallElementProperty(sval, lineNumber); 
 
             if(_calltemplate.Equals(elementName)) 
                 return new TCallTemplateProperty(sval, lineNumber); 

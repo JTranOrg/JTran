@@ -1,0 +1,6 @@
+{
+  "#function(BlahName, name)":
+  {
+    return: "#($name + '_blah')"
+  }
+}
