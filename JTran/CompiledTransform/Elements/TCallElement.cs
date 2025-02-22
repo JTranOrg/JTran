@@ -7,6 +7,7 @@ using JTran.Extensions;
 using JTran.Json;
 using JTran.Common;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace JTran
 {
@@ -18,35 +19,31 @@ namespace JTran
         private readonly IValue?      _valueExpression;
         private readonly long         _lineNumber;
         private readonly IList<IExpression> _parms;
-        private TElement?             _element;
 
         /****************************************************************************/
         internal TCallElement(ICharacterSpan name, long lineNumber = -1L, ICharacterSpan? value = null) 
         {
-            var expr = name.Substring("#callelement(".Length).ToString()!.ReplaceEnding(")", "").SubstringBefore(",");
-
-            _elementName  = Compiler.Compile(CharacterSpan.FromString(expr));
             _lineNumber    = lineNumber;
 
             if(value != null)
                 _valueExpression = CreateValue(value, true, lineNumber);
 
-            var parms = CompiledTransform.ParseElementParams("#callelement", name, CompiledTransform.TrueFalse);
+            var parms = CompiledTransform.ParseElementParams("#callelement", name, CompiledTransform.SingleFalse);
 
+            _elementName = parms[0];
             _parms = parms.Skip(1).ToList();
         }
 
         /****************************************************************************/
         private TTemplate GetElement(ExpressionContext context)
         {
-            if(_element == null)
-            { 
-                var elementName = _elementName.Evaluate(context);
-                
-                _element = context.GetElement(elementName.ToString()!);
-            }
+            var elementName = _elementName.Evaluate(context);               
+            var element     = context.GetElement(elementName.ToString()!);
 
-            return _element;
+            if(element == null)
+                throw new Transformer.SyntaxException($"An element with that name was not found: {elementName}");
+
+            return element;
         }
 
         private readonly static ICharacterSpan kValue = CharacterSpan.FromString("__value");
@@ -54,7 +51,7 @@ namespace JTran
         /****************************************************************************/
         public override void Evaluate(IJsonWriter output, ExpressionContext context, Action<Action> wrap)
         {
-            var element     = GetElement(context);
+            var element      = GetElement(context);
             var newContext   = new ExpressionContext(context.Data, context);
             var paramsOutput = new JsonStringWriter();
 
@@ -101,7 +98,6 @@ namespace JTran
         private readonly IExpression  _elementName;
         private readonly IList<IExpression> _parms;
         private readonly long _lineNumber;
-        private TElement?     _element;
         private bool?         _isReturnValue;
 
         internal TCallElementProperty(ICharacterSpan name, long lineNumber, bool allowElements = false) 
@@ -169,14 +165,13 @@ namespace JTran
 
         private TElement GetElement(ExpressionContext context)
         {
-            if(_element == null)
-            { 
-                var elementName = _elementName.Evaluate(context);
-                
-                _element = context.GetElement(elementName.ToString()!);
-            }
+            var elementName = _elementName.Evaluate(context);               
+            var element = context.GetElement(elementName.ToString()!);
 
-            return _element;
+            if(element == null)
+                throw new Transformer.SyntaxException($"An element with that name was not found: {elementName}");
+
+            return element;
         }
 
         private bool IsReturnValue(ExpressionContext context)
