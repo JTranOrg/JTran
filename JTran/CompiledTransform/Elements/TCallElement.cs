@@ -7,6 +7,7 @@ using JTran.Extensions;
 using JTran.Json;
 using JTran.Common;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace JTran
 {
@@ -97,7 +98,6 @@ namespace JTran
         private readonly IExpression  _elementName;
         private readonly IList<IExpression> _parms;
         private readonly long _lineNumber;
-        private TElement?     _element;
         private bool?         _isReturnValue;
 
         internal TCallElementProperty(ICharacterSpan name, long lineNumber, bool allowElements = false) 
@@ -165,14 +165,13 @@ namespace JTran
 
         private TElement GetElement(ExpressionContext context)
         {
-            if(_element == null)
-            { 
-                var elementName = _elementName.Evaluate(context);
-                
-                _element = context.GetElement(elementName.ToString()!);
-            }
+            var elementName = _elementName.Evaluate(context);               
+            var element = context.GetElement(elementName.ToString()!);
 
-            return _element;
+            if(element == null)
+                throw new Transformer.SyntaxException($"An element with that name was not found: {elementName}");
+
+            return element;
         }
 
         private bool IsReturnValue(ExpressionContext context)
