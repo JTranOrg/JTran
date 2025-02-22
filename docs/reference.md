@@ -248,6 +248,7 @@ Elements are akin to programming constructs, e.g foreach and if. <br><br>
 - <strong>[arrayitem](#arrayitem)</strong> - Outputs an array item
 - <strong>[bind](#bind)</strong> - Changes the scope to a new object
 - <strong>[break](#break)</strong> - Breaks out of the the current iteration in a foreach loop
+- <strong>[callelement](#callelement)</strong> - Calls an element
 - <strong>[calltemplate](#Templates)</strong> - Calls a template
 - <strong>[catch](#trycatch)</strong> - Part of a try/catch block
 - <strong>[copyof](#copyof)</strong> - Copies on object as-is
@@ -971,7 +972,7 @@ If you want to output an array (starts with "[") then you can use "[]" as the ou
 #include provides a way to include JTran code from external files. Templates and functions are the only things that can be in included files.
 
     {
-        "#include":     "mytemplates.json",  // The value cannot be an expression. It must be a hardcoded value
+        "#include":     "mytemplates.json",  // The value cannot be an expression. It must be a hardcoded value. You can also put an asterisk "*" to load all known include files.
 
         "#calltemplate(Automobile)":  {}  // Automobile would be a template defined in mytemplates.json
     }
@@ -1316,6 +1317,45 @@ You can pass parameters to a custom element. When the element is called as an ob
         {
             // The properties are rendered "flat" with no enclosing object
             "#formatauto('Davey Carson')":
+            {
+                "Make":    "Chevy",
+                "Model":   "#('Silver' + 'ado')",
+                "Year":    1964
+            }
+        }
+    }
+
+###### Output
+
+    {
+        "automobile":
+        {
+            "Name":      "Chevy Silverado",
+            "Year":      "1964",
+            "Driver":    "Davey Carson"
+        }
+    }
+
+<a id="callelement"></a>
+
+You can call an element where the name is not known until runtime:
+
+###### Transform
+
+    {
+        "#variable(elementName)": "formatauto",
+
+        "#element(formatauto, Driver)":
+        {
+            "Name":      "#(Make + ' ' + Model)",
+            "Year":      "#(Year)",
+            "Driver":    "#($Driver)"
+        },
+        
+        "automobile": 
+        {
+            // Call the element with an expression for the name
+            "#callelement($elementName, 'Davey Carson')":
             {
                 "Make":    "Chevy",
                 "Model":   "#('Silver' + 'ado')",

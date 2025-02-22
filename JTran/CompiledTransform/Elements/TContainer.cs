@@ -96,6 +96,9 @@ namespace JTran
             else if(elementName.Equals(_map))
                 result = new TMap(name);
 
+            else if(elementName.Equals(_callelement))
+                result = new TCallElement(name);
+
             else if(elementName.Equals(_callTemplate))
                 result = new TCallTemplate(name);
 
@@ -198,6 +201,7 @@ namespace JTran
         private static readonly ICharacterSpan _assert          = CharacterSpan.FromString("#assert");
         private static readonly ICharacterSpan _bind            = CharacterSpan.FromString("#bind");
         private static readonly ICharacterSpan _break           = CharacterSpan.FromString("#break");
+        private static readonly ICharacterSpan _callelement     = CharacterSpan.FromString("#callelement");
         private static readonly ICharacterSpan _element         = CharacterSpan.FromString("#element");
         private static readonly ICharacterSpan _function        = CharacterSpan.FromString("#function");
         private static readonly ICharacterSpan _foreach         = CharacterSpan.FromString("#foreach");

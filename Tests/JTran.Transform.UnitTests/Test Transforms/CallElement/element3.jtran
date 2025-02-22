@@ -1,0 +1,20 @@
+{  
+  "#element(formatauto, Driver)":
+  {
+    "Vehicle":   "#(Make + ' ' + Model)",
+    "Year":      "#(Year)",
+    "Driver":    "#($Driver)"
+  },
+
+  "automobile": 
+  {
+    "#variable(ElementName)":  "formatauto",
+
+    "#callelement($ElementName, 'Davey Carson')":
+    {
+      "Make":    "Chevy",
+      "Model":   "#('Silver' + 'ado')",
+      "Year":    1964
+    }
+  }
+}

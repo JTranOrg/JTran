@@ -12,7 +12,7 @@
     <ToolCommandName>jtrancmd</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.5.0</Version>
+    <Version>2.6.0</Version>
     <Company>JTranOrg</Company>
     <Description>A JSON to JSON transformer command line tool</Description>
     <Copyright>© 2020-2025 - Jim Lightfoot, All Rights Reserved</Copyright>

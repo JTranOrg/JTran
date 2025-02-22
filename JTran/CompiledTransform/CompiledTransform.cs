@@ -82,6 +82,15 @@ namespace JTran
         }
 
         /*****************************************************************************/
+        private void LoadAll(TContainer? parent, long lineNumber)
+        {    
+            foreach(var item in _includeSource) 
+            {
+                LoadInclude(item.Key, parent, lineNumber);
+            }
+        }
+
+        /*****************************************************************************/
         internal void LoadInclude(string fileName, TContainer? parent, long lineNumber)
         {
             if(_includeSource == null)
@@ -89,7 +98,13 @@ namespace JTran
 
             fileName = fileName.ToLower();
 
-            if(!_loadedIncludes.ContainsKey(fileName))
+            if (fileName == "*")
+            { 
+                LoadAll(parent, lineNumber);
+                return;
+            }
+
+            if (!_loadedIncludes.ContainsKey(fileName))
             {
                 if(!_includeSource.ContainsKey(fileName))   
                     throw new Transformer.SyntaxException($"#include: file not found: {fileName}") { LineNumber = lineNumber};
