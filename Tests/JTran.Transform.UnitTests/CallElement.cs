@@ -27,5 +27,15 @@ namespace JTran.Transform.UnitTests
 
             Assert.IsTrue(JToken.DeepEquals(JObject.Parse(expected), JObject.Parse(result)));
         }
+
+        [TestMethod]
+        [DataRow("element_multiple", "element4")]
+        public async Task CallElement_succeeds3(string transform, string data)
+        {
+            var result   = await TransformerTest.Test("CallElement." + transform, "Element." + data);
+            var expected = await TransformerTest.LoadSample("CallElement." + transform + "_expected");
+
+            Assert.IsTrue(JToken.DeepEquals(JObject.Parse(expected), JObject.Parse(result)));
+        }
     }
 }

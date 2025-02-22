@@ -180,6 +180,7 @@
     <EmbeddedResource Include="Sample Data\Arrays\arrayitem.json" />
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
+    <EmbeddedResource Include="Sample Data\CallElement\element_multiple_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element8_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element7_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element6_expected.json" />
@@ -235,6 +236,7 @@
     <EmbeddedResource Include="Test Transforms\Arrays\variable.jtran" />
     <EmbeddedResource Include="Test Transforms\Assert\assert2.jtran" />
     <EmbeddedResource Include="Test Transforms\Assert\assert1.jtran" />
+    <EmbeddedResource Include="Test Transforms\CallElement\element_multiple.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\array_noobject2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof2.jtran" />
     <EmbeddedResource Include="Test Transforms\CopyOf\copyof3.jtran" />

@@ -1,0 +1,40 @@
+{
+  "#variable(data)": 
+  {
+    "resourcegroup": 
+    {
+      "basename": "rota-inventory-dev",
+      "applicationinsights":
+      {
+      },
+      "storageaccount":
+      {
+      }
+    }
+  },
+
+  "#variable(basename)":  "#($data.resourcegroup.basename)",
+  "#variable(location)":  "westus2",
+  "#variable(resources)": "#exclude($data.resourcegroup, basename)",
+
+  "#foreach($resources, resources)": 
+  {
+    "#callelement(name())":
+    {
+      "Name":           "#($basename)",
+      "Location":       "#($location)"
+    }
+  },
+
+  "#element(applicationinsights)":
+  {
+      "Type":  "ApplicationInsights",
+      "Name":  "#('appi-' + Name)"
+  },
+
+  "#element(storageaccount)":
+  {
+      "Type":  "StorageAccount",
+      "Name":  "#('sto-' + Name)"
+  }
+}

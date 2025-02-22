@@ -1,0 +1,13 @@
+{
+  "resources": 
+  [
+    {
+      "Type":  "ApplicationInsights",
+      "Name":  "appi-rota-inventory-dev"
+    },
+    {
+      "Type":  "StorageAccount",
+      "Name":  "sto-rota-inventory-dev"
+    }
+  ]
+}
