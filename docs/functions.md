@@ -939,6 +939,7 @@ Result is 45<br><br>
   - [document](#document)
   - [coalesce](#coalesce)
   - [coalescenumber](#coalescenumber)
+  - [coalescebool](#coalescebool)
   - [empty](#empty)
   - [errorcode](#errorcode)
   - [guid](#guid)
@@ -966,6 +967,14 @@ Returns the first parameter that evaluates to a non-zero value. Note that if the
     "#(coalescenumber('bob', 0, null, 34))"
 
 Result is 34<br><br>
+
+##### <a id="coalescebool">coalescebool</a>()
+
+Returns the first parameter that evaluates to a non-null value. 
+
+    "#(coalescebool(null, false))"
+
+Result is false<br><br>
 
 ##### <a id="empty">empty</a>()
 
