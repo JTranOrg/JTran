@@ -809,6 +809,22 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
+        [IgnoreParameterCount]
+        public bool coalescebool(bool? primary, params object?[] fields)
+        {
+            if(primary != null)
+                return primary.Value;
+
+            foreach(var field in fields)
+            {
+                if(field != null)
+                    return Convert.ToBoolean(field);
+            }
+
+            return false;
+        }
+
+        /*****************************************************************************/
         public object iif(bool condition, object first, object second)
         {
             return condition ? first : second;  
