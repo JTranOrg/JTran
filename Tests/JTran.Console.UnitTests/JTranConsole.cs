@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using JTran.Project;
 using System.Collections.Generic;
 using System;
+using System.IO;
 
 namespace JTran.Console.UnitTests
 {
@@ -80,6 +81,29 @@ namespace JTran.Console.UnitTests
 
             Assert.IsTrue(true);
         } 
+
+        [TestMethod]
+        [DataRow("Project1")]
+        [DataRow("Project1a")]
+        public async Task JTranConsole_singlefile_no_project(string projectName)
+        {
+            var basePath        = Assembly.GetExecutingAssembly().Location.SubstringBefore("\\bin");
+            var transformPath   = Path.Combine(basePath, "Transforms/Project1_cmd_line.jtran");
+            var sourcePath      = Path.Combine(basePath, "Sources/Project1.json");
+            var destinationPath = "C:\\Development\\Testing\\JTran\\Console Tests\\Project.json";
+            var documentPath    = Path.Combine(basePath, "Documents");
+            var includePath     = Path.Combine(basePath, "Includes");
+            
+            await JTran.Console.Program.Main(new string[] {"-t", transformPath,
+                                                           "-s", sourcePath,
+                                                           "-o", destinationPath,
+                                                           "-d", documentPath,
+                                                           "-i", includePath,
+                                                           "-tp", "-country US"});
+
+            Assert.IsTrue(true);
+        } 
+
 
         [TestMethod]
         [DataRow("Project1", "MyArgs")]

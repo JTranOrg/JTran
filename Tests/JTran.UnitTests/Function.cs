@@ -37,6 +37,20 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        public void Function_replace_Success()
+        {
+            var val        = CharacterSpan.FromString("bobs-your-uncle");
+            var func       = new Function(new BuiltinFunctions(), "replace");
+            var context    = new ExpressionContext("bob");
+            var parameters = new List<IExpression> { new JTran.Expressions.Value(val), new JTran.Expressions.Value("-"), new JTran.Expressions.Value("") };
+
+            var result = func.Evaluate(parameters, context);
+
+            Assert.AreEqual("bobsyouruncle", result.ToString());
+            Assert.AreEqual("bobs-your-uncle", val.ToString());
+        }
+
+        [TestMethod]
         public void Function_coalesce_Success()
         {
             var func       = new Function(new BuiltinFunctions(), "coalesce");

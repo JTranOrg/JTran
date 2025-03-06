@@ -595,10 +595,7 @@ namespace JTran.Common
             if(this.Equals(remove))
                 return CharacterSpan.Empty;
 
-            if(this.ExpressionResult)
-                return RemoveOutOfPlace(remove, start);
-
-            return RemoveInPlace(remove, start);
+            return RemoveOutOfPlace(remove, start);
         }
 
         /****************************************************************************/
