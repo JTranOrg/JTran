@@ -168,7 +168,7 @@ Result is "123"<br><br>
 
 Searches for all instances of a substring and replaces them with another string
     
-    #(replace('123abc456', 'xyz'))
+    #(replace('123abc456', 'abc', 'xyz'))
 
 Result is "123xyz456"<br><br>
 

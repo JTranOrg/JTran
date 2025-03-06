@@ -50,6 +50,22 @@ namespace JTran.UnitTests
         }
 
         [TestMethod]
+        [DataRow("franklin", "ran",   "bob",     "fbobklin")]
+        [DataRow("franklin", "frank", "john",    "johnlin")]
+        [DataRow("franklin", "lin",   "enstein", "frankenstein")]
+        [DataRow(null,       "",      "",        null)]
+        [DataRow("",         null,    null,      "")]
+        public void BuiltinFunctions_replace_charspan(string? val, string? replace, string? with, string? expected)
+        {
+            var valspan = val == null ? null : CharacterSpan.FromString(val);
+
+            var result = _fn.replace(valspan, replace, with);
+
+            Assert.AreEqual(result?.ToString(), expected);
+            Assert.AreEqual(val, valspan?.ToString());
+        }
+
+        [TestMethod]
         [DataRow("franklin", "ran",      "bob",     "franklin")]
         [DataRow("franklin", "frank",    "john",    "franklin")]
         [DataRow("franklin", "lin",      "enstein", "frankenstein")]

@@ -139,7 +139,7 @@ namespace JTran.Console
                 project.DestinationPath = output;
 
             if(!string.IsNullOrWhiteSpace(documents))
-                project.DocumentPaths.Add("", documents);
+                project.DocumentPaths.Add("all", documents);
 
             if(!string.IsNullOrWhiteSpace(includes))
                 project.IncludePaths.Add("", includes);
