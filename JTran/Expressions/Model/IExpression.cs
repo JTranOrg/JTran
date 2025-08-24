@@ -97,8 +97,17 @@ namespace JTran.Expressions
 
         internal static bool EvaluateToBool(object? value, ExpressionContext? context)
         {
+            if(value is null)
+                return false;  
+
+            if(value is JsonObject)
+                return true;  
+
             if(value is bool bval)
                 return bval;  
+
+            if(value is ICharacterSpan cspan)
+                return !cspan.IsNullOrWhiteSpace();  
 
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  

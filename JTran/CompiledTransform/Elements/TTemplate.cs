@@ -167,6 +167,13 @@ namespace JTran
             _templateName  = parms[0].Evaluate(new ExpressionContext(null)).ToString()!;
             _lineNumber    = lineNumber;
             _allowElements = allowElements;
+
+            if(string.IsNullOrWhiteSpace(_templateName))
+            { 
+                parms = CompiledTransform.ParseElementParams("#calltemplate", name, CompiledTransform.TrueFalse);
+
+                throw new Transformer.SyntaxException("Template name resolves to blank");
+            }
         }
 
         #region IValue
@@ -179,7 +186,12 @@ namespace JTran
             var newContext = new ExpressionContext(context.Data, context);
 
             for(var i = 0; i < numParms; ++i)
+            { 
+                if(i >= _parms.Count)
+                    throw new Transformer.SyntaxException($"Template or element: {template.Name} not called with proper number of parameters: {i}");
+
                 newContext.SetVariable(template.Parameters[i], _parms[i].Evaluate(context));
+            }
 
             if(IsReturnValue(context))
             {

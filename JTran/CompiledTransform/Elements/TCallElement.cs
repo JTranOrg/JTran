@@ -37,8 +37,11 @@ namespace JTran
         /****************************************************************************/
         private TTemplate GetElement(ExpressionContext context)
         {
-            var elementName = _elementName.Evaluate(context);               
-            var element     = context.GetElement(elementName.ToString()!);
+            var elementName = _elementName.Evaluate(context);    
+            TElement? element = null;
+
+            if(elementName != null)
+                element = context.GetElement(elementName!.ToString()!);
 
             if(element == null)
                 throw new Transformer.SyntaxException($"An element with that name was not found: {elementName}");

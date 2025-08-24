@@ -114,7 +114,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext? context)
         {
-            return Convert.ToBoolean(Evaluate(context));
+            return Value.EvaluateToBool(Evaluate(context), context);
         }
 
         /*****************************************************************************/
