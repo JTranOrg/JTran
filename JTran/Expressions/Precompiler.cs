@@ -80,6 +80,7 @@ namespace JTran.Expressions
                 return null;
 
             var result = new Token("", Token.TokenType.Text);
+            Token? ancestor = null;
 
             while(tokens.Count > 0)
             {
@@ -121,6 +122,12 @@ namespace JTran.Expressions
                     continue;
                 }
 
+                else if(token.Type == Token.TokenType.Ancestor)
+                {   
+                    ancestor = token;
+                    continue;
+                }
+
                 // Check for invalid operators
                 else if((token.IsOperator || token.IsPunctuation) && !_validOperators.ContainsKey(token.Value))
                     throw new Transformer.SyntaxException($"Invalid operator: {token.Value}");
@@ -139,6 +146,12 @@ namespace JTran.Expressions
 
                     result.Type = Token.TokenType.Expression;
                 }
+
+                if(ancestor != null)
+                { 
+                    token = new Token("", Token.TokenType.Expression) { ancestor, token };
+                    ancestor = null;
+                }   
 
                 result.Add(token);
             }
@@ -178,6 +191,9 @@ namespace JTran.Expressions
         /*****************************************************************************/
         private static void HandleParens(Queue<Token> tokens, Token result)
         {
+            if(result.LastOrDefault() != null && result.LastOrDefault()!.Type == Token.TokenType.Expression && result!.LastOrDefault()?.FirstOrDefault()?.Type == Token.TokenType.Ancestor)
+                result = result.LastOrDefault()!;
+
             var last = result.LastOrDefault();
 
             var newToken = InnerPrecompile(tokens, Token.EndParen);
@@ -262,7 +278,10 @@ namespace JTran.Expressions
                     break;
             }
 
-            if(token.Count == 5 && token[1].Value == "?" && token[3].Value == ":")
+            if(token.Count > 1 && token.Type == Token.TokenType.Text)
+                token.Type = Token.TokenType.Expression;
+
+            if (token.Count == 5 && token[1].Value == "?" && token[3].Value == ":")
             {
                 var newToken = new Token("", Token.TokenType.Tertiary);
 

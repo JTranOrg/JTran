@@ -27,6 +27,7 @@ namespace JTran.Expressions
     internal static class OperatorPrecendence
     {
         internal const int OrOperator                   = 3;
+
         internal const int AndOperator                  = 4;
         internal const int NotEqualOperator             = 8;
         internal const int EqualOperator                = 9;
@@ -41,6 +42,8 @@ namespace JTran.Expressions
         internal const int ModulusOperator              = 13;
         internal const int DivisionOperator             = 14;
         internal const int MultiplyOperator             = 15;
+
+        internal const int AncestorOperator             = 99;
     }
 
     /*****************************************************************************/
@@ -89,9 +92,34 @@ namespace JTran.Expressions
         public override int Precedence => OperatorPrecendence.OrOperator;
 
         /*****************************************************************************/
-        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context)
+        public override bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
         {
             return left.EvaluateToBool(context) || right.EvaluateToBool(context);
+        }
+    }
+
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class AncestorOperator(string value) : IOperator
+    {
+        public int Precedence => OperatorPrecendence.AncestorOperator;
+
+        /*****************************************************************************/
+        public object Evaluate(IExpression left, IExpression right, ExpressionContext? context)
+        {
+            return EvaluateToBool(left, right, context);
+        }
+
+        /*****************************************************************************/
+        public bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context)
+        {
+            return true;
+        }
+
+        /*****************************************************************************/
+        protected int CompareTo(IExpression left, IExpression right, ExpressionContext? context)
+        {
+            return 0;
         }
     }
 }

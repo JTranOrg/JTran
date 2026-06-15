@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2022 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2026 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -32,13 +32,13 @@ namespace JTran.Expressions
         public abstract int Precedence { get; }
 
         /*****************************************************************************/
-        public object Evaluate(IExpression left, IExpression right, ExpressionContext context)
+        public object Evaluate(IExpression left, IExpression right, ExpressionContext? context)
         {
             return EvaluateToBool(left, right, context);
         }
 
         /*****************************************************************************/
-        public abstract bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext context);
+        public abstract bool EvaluateToBool(IExpression left, IExpression right, ExpressionContext? context);
 
         /*****************************************************************************/
         protected int CompareTo(IExpression left, IExpression right, ExpressionContext? context)

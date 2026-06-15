@@ -11,7 +11,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2026 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -49,7 +49,7 @@ namespace JTran.Expressions
         }
 
         /*****************************************************************************/
-        public object Evaluate(ExpressionContext context)
+        public object Evaluate(ExpressionContext? context)
         {
             return this.SubExpressions.Select( x=> x.Evaluate(context) );
         }
@@ -97,8 +97,17 @@ namespace JTran.Expressions
 
         internal static bool EvaluateToBool(object? value, ExpressionContext? context)
         {
+            if(value is null)
+                return false;  
+
+            if(value is JsonObject)
+                return true;  
+
             if(value is bool bval)
                 return bval;  
+
+            if(value is ICharacterSpan cspan)
+                return !cspan.IsNullOrWhiteSpace();  
 
             if(value is string sval)
                 return !string.IsNullOrWhiteSpace(sval);  
@@ -404,13 +413,13 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext? context)
         {
-            return context.GetVariable(_name, context);
+            return context!.GetVariable(_name, context);
         }
 
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext? context)
         {
-            object val = context.GetVariable(_name, context);
+            object val = context!.GetVariable(_name, context);
 
             return Value.EvaluateToBool(val, context);
         }
@@ -462,6 +471,48 @@ namespace JTran.Expressions
         {
             return this.Operator is ComparisonOperator;
         }
+    }
 
+    /*****************************************************************************/
+    /*****************************************************************************/
+    internal class AncestorExpression(string ancestor, IExpression appliesTo) : IExpression
+    {
+        /*****************************************************************************/
+        public object Evaluate(ExpressionContext? context)
+        {
+            context = new ExpressionContext(context.Data, context);
+            
+            context.Data = GetAncestor(ancestor, context.Data!);
+
+            return appliesTo.Evaluate(context);
+        }
+
+        /*****************************************************************************/
+        public bool EvaluateToBool(ExpressionContext? context)
+        {
+            context = new ExpressionContext(context.Data, context);
+            
+            context.Data = GetAncestor(ancestor, context.Data!);
+
+            return appliesTo.EvaluateToBool(context);
+        }
+                                
+        /*****************************************************************************/
+        public bool IsConditional(ExpressionContext context)
+        {
+            return false;
+        }
+                                
+        /*****************************************************************************/
+        public object GetAncestor(string ancestor, object child)
+        {
+            if(ancestor == "")
+                return child;
+
+            if(!child.GetParent(ref child))
+                return child;
+
+            return GetAncestor(ancestor.Substring(1), child);
+        }
     }
 }

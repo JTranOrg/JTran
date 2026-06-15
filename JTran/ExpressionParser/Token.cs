@@ -83,7 +83,8 @@ namespace JTran.Parser
             ArrayIndexer,
             CommaDelimited,
             ExplicitArray,
-            Multipart
+            Multipart,
+            Ancestor
         }    
         
         #region IList

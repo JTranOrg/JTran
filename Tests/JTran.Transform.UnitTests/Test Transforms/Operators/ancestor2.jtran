@@ -1,0 +1,20 @@
+{
+    "#bind(Address)": 
+    {
+        "#bind(Street)":  
+        {
+            "Name":         "#(//FirstName)",
+            "City":         "#(/City)",
+            "ParentName":   "#(/name())"
+        }
+    },
+
+    "#foreach(Emails, Emails)": 
+    {
+        "#variable(position)": "#(position())",
+
+        "Email":    "#(Email)",
+        "Index":    "#(position())",
+        "Previous": "#(/Emails[0].Email)"
+    }
+ }

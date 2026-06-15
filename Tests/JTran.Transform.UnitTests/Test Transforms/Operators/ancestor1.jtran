@@ -1,0 +1,6 @@
+{
+    "#foreach(Customers.Residents, [])": 
+    {
+        "name": "#('Mr. ' + //Surname + ', ' + Name)"
+    }
+}

@@ -43,7 +43,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public object Evaluate(ExpressionContext? context)
         {
-            var func = context.ExtensionFunctions.GetFunction(_functionName, _parameters.Count());
+            var func = context!.ExtensionFunctions!.GetFunction(_functionName, _parameters.Count());
 
             // Built-in or custom functions (e.g. in .Net)
             if(func != null)
@@ -114,7 +114,7 @@ namespace JTran.Expressions
         /*****************************************************************************/
         public bool EvaluateToBool(ExpressionContext? context)
         {
-            return Convert.ToBoolean(Evaluate(context));
+            return Value.EvaluateToBool(Evaluate(context), context);
         }
 
         /*****************************************************************************/

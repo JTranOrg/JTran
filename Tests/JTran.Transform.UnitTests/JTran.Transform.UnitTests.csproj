@@ -181,6 +181,8 @@
     <EmbeddedResource Include="Sample Data\Arrays\array_source.json" />
     <EmbeddedResource Include="Sample Data\Arrays\automobiles.json" />
     <EmbeddedResource Include="Sample Data\CallElement\element_multiple_expected.json" />
+    <EmbeddedResource Include="Sample Data\profile.json" />
+    <EmbeddedResource Include="Sample Data\customers5.json" />
     <EmbeddedResource Include="Sample Data\Element\element8_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element7_expected.json" />
     <EmbeddedResource Include="Sample Data\Element\element6_expected.json" />
@@ -314,6 +316,9 @@
     <EmbeddedResource Include="Test Transforms\Map\map5.jtran" />
     <EmbeddedResource Include="Test Transforms\ObjectIndexer\objectindexer_poco.jtran" />
     <EmbeddedResource Include="Test Transforms\ObjectIndexer\objectindexer.jtran" />
+    <EmbeddedResource Include="Test Transforms\Operators\ancestor2.jtran" />
+    <EmbeddedResource Include="Test Transforms\Operators\ancestor1.jtran" />
+    <EmbeddedResource Include="Test Transforms\Operators\dotattributes.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_state.jtran" />
     <EmbeddedResource Include="Test Transforms\Scenarios\sales_report_by_city.jtran" />
     <EmbeddedResource Include="Test Transforms\Templates\after.jtran" />
