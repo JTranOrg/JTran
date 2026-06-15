@@ -19,7 +19,6 @@ namespace JTran.UnitTests
         [TestMethod]
         [DataRow("bob")]
         [DataRow("$bob")]
-        [DataRow("//bob")]
         public void Precompiler_Precompile_single(string expressionStr)
         {
             var token = Test(expressionStr);
@@ -27,6 +26,92 @@ namespace JTran.UnitTests
             Assert.AreEqual(0, token.Count);
             Assert.AreEqual(expressionStr, token.Value);
             Assert.AreEqual(Token.TokenType.Text, token.Type);
+        }
+
+        [TestMethod]
+        [DataRow("//bob", "//")]
+        [DataRow("/bob", "/")]
+        public void Precompiler_Precompile_ancestor(string expressionStr, string ancestor)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(2, token.Count);
+            Assert.AreEqual(ancestor, token.First().Value);
+            Assert.AreEqual("bob", token.Skip(1).First().Value);
+            Assert.AreEqual(Token.TokenType.Expression, token.Type);
+        }
+
+        [TestMethod]
+        [DataRow("//name()")]
+        public void Precompiler_Precompile_ancestor_w_func(string expressionStr)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(2, token.Count);
+            Assert.AreEqual("//", token.First().Value);
+            Assert.AreEqual("name", token.Skip(1).First().Value);
+            Assert.AreEqual(Token.TokenType.Function, token.Skip(1).First().Type);
+        }
+
+        [TestMethod]
+        [DataRow("name()")]
+        public void Precompiler_Precompile_func(string expressionStr)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(0, token.Count);
+            Assert.AreEqual("name", token.Value);
+            Assert.AreEqual(Token.TokenType.Function, token.Type);
+        }
+
+        [TestMethod]
+        [DataRow("/bob / //fred")]
+        public void Precompiler_Precompile_ancestor_with_op(string expressionStr)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(3, token.Count);
+
+            Assert.AreEqual(Token.TokenType.Expression, token.First().Type);
+            Assert.AreEqual(Token.TokenType.Operator, token.Skip(1).First().Type);
+            Assert.AreEqual(Token.TokenType.Expression, token.Skip(2).First().Type);
+
+            Assert.AreEqual(Token.TokenType.Ancestor, token.First().First().Type);
+            Assert.AreEqual(Token.TokenType.Text,     token.First().Skip(1).First().Type);
+            Assert.AreEqual("/",                      token.First().First().Value);
+            Assert.AreEqual("bob",                    token.First().Skip(1).First().Value);
+
+            Assert.AreEqual(Token.TokenType.Operator, token.Skip(1).First().Type);
+            Assert.AreEqual("/",                      token.Skip(1).First().Value);
+
+            Assert.AreEqual(Token.TokenType.Ancestor, token.Skip(2).First().First().Type);
+            Assert.AreEqual(Token.TokenType.Text,     token.Skip(2).First().Skip(1).First().Type);
+            Assert.AreEqual("//",                     token.Skip(2).First().First().Value);
+            Assert.AreEqual("fred",                   token.Skip(2).First().Skip(1).First().Value);
+
+        }
+
+        [TestMethod]
+        [DataRow("//bob.fred", "//")]
+        [DataRow("/bob.fred", "/")]
+        public void Precompiler_Precompile_ancestor_with_dot(string expressionStr, string ancestor)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(2, token.Count);
+            Assert.AreEqual(ancestor, token.First().First().Value);
+            Assert.AreEqual("bob", token.First().Skip(1).First().Value);
+            Assert.AreEqual(Token.TokenType.Multipart, token.Type);
+            Assert.AreEqual(Token.TokenType.Expression, token.First().Type);
+        }
+
+        [TestMethod]
+        [DataRow("bob.fred")]
+        public void Precompiler_Precompile_with_dot(string expressionStr)
+        {
+            var token = Test(expressionStr);
+
+            Assert.AreEqual(2, token.Count);
         }
 
         [TestMethod]

@@ -35,6 +35,12 @@ namespace JTran.Parser
           
                 #pragma warning disable CS0642  
 
+                if(!(this._token?.IsLiteral ?? false) && ch != '/' && (this._token?.Value?.Contains("/") ?? false) && !char.IsWhiteSpace(ch))
+                { 
+                    this._token.Type = Token.TokenType.Ancestor;
+                    this.PushToken();
+                }
+
                 // String literals
                 if(this.CheckStringLiteral('\'', ch, prev, Token.TokenType.Literal))
                     ;
@@ -44,7 +50,7 @@ namespace JTran.Parser
                 {
                     this._token.Value += ch;
                 }
-                else if(ch == ' ')
+                else if(char.IsWhiteSpace(ch))
                 {
                     this.PushToken();
                 }
@@ -140,7 +146,11 @@ namespace JTran.Parser
 
             if(!string.IsNullOrEmpty(token?.Value))
             {
-                if(_operators.Contains(token.Value))
+                if(token.Type == Token.TokenType.Ancestor)
+                {
+                    this._sb.Add(CreateToken(token.Value, Token.TokenType.Ancestor)); 
+                }
+                else if(_operators.Contains(token.Value))
                 {
                     this._sb.Add(CreateToken(token.Value, Token.TokenType.Operator)); 
                 }

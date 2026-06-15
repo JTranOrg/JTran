@@ -10,7 +10,7 @@
  *  Original Author: Jim Lightfoot                                          
  *    Creation Date: 25 Apr 2020                                             
  *                                                                          
- *   Copyright (c) 2020-2024 - Jim Lightfoot, All rights reserved           
+ *   Copyright (c) 2020-2026 - Jim Lightfoot, All rights reserved           
  *                                                                          
  *  Licensed under the MIT license:                                         
  *    http://www.opensource.org/licenses/mit-license.php                    
@@ -21,9 +21,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 using JTran.Common;
 using JTran.Extensions;
 using JTran.Parser;
+
 using JTranParser = JTran.Parser.ExpressionParser;
 
 [assembly: InternalsVisibleTo("JTran.UnitTests")]
@@ -97,6 +99,15 @@ namespace JTran.Expressions
 
             lastToken = null;
 
+            if(tokens.Count == 2 && tokens.Peek().Type == Token.TokenType.Ancestor)
+            {
+                var ancestor = tokens.Pop().Value;
+                var token    = tokens.Pop();
+                var expr     = InnerCompile(new [] { token });
+
+                return new AncestorExpression(ancestor, expr);
+            }
+            
             while(tokens.Count > 0)
             {
                 var token = tokens.Pop();
@@ -157,6 +168,15 @@ namespace JTran.Expressions
                     case Token.TokenType.ExplicitArray:
                         expr = CreateArrayExpression(token);
                         break;
+
+                    case Token.TokenType.Ancestor:
+                    { 
+                        var newOp = new AncestorOperator(token.Value);
+                        leftExpr  = new ComplexExpression { Left = null, Operator = newOp, Right = rightExpr };
+                        rightExpr = CreateExpression(tokens, out lastToken);
+
+                        break;
+                    }
 
                     case Token.TokenType.Operator:
                     {

@@ -1,0 +1,29 @@
+{
+  "FirstName":  "John",
+  "Surname":  "Smith",
+
+  "Address":
+  {
+    "Street": 
+    {
+        "Number": "123",
+        "Name":   "Elm",
+        "Type":   "St"
+    },
+    "City":       "Chicago",
+    "State":      "IL",
+    "PostalCode": "09272"
+  },
+
+  "Emails": 
+  [
+    {
+        "Type": "Personal",
+        "Email": "bob@bob.com"
+    },
+    {
+        "Type": "Work",
+        "Email": "fred@fred.com"
+    }
+  ]   
+}
